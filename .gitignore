@@ -43,3 +43,4 @@ next-env.d.ts
 # Claude Code
 .agents/
 skills-lock.json
+AGENT_TEAM_PROMPT.md
