@@ -1,1 +1,63 @@
-export {}
+import { NextRequest } from 'next/server'
+import { prisma } from '@/lib/prisma'
+import { auth } from '@/lib/auth'
+import { Game, CardStatus } from '@prisma/client'
+
+export async function GET(req: NextRequest) {
+  const { searchParams } = req.nextUrl
+  const game = searchParams.get('game')
+  const q = searchParams.get('q')
+  const setId = searchParams.get('setId')
+  const pageNum = Math.max(1, parseInt(searchParams.get('page') ?? '1', 10))
+  const pageSizeNum = Math.min(100, Math.max(1, parseInt(searchParams.get('pageSize') ?? '20', 10)))
+
+  if (!game || !Object.values(Game).includes(game as Game)) {
+    return Response.json({ error: 'game is required' }, { status: 400 })
+  }
+
+  const where = {
+    game: game as Game,
+    ...(q && { name: { contains: q, mode: 'insensitive' as const } }),
+    ...(setId && { setId }),
+  }
+
+  const [cards, total] = await prisma.$transaction([
+    prisma.card.findMany({
+      where,
+      include: { set: true },
+      skip: (pageNum - 1) * pageSizeNum,
+      take: pageSizeNum,
+      orderBy: [
+        { set: { releaseDate: 'desc' } },
+        { cardNumber: 'asc' },
+      ],
+    }),
+    prisma.card.count({ where }),
+  ])
+
+  const session = await auth()
+  let collectionMap: Record<string, CardStatus> = {}
+  if (session?.user?.id) {
+    const cardIds = cards.map(c => c.id)
+    if (cardIds.length > 0) {
+      const userCards = await prisma.userCard.findMany({
+        where: { userId: session.user.id, cardId: { in: cardIds } },
+        select: { cardId: true, status: true },
+      })
+      collectionMap = Object.fromEntries(
+        userCards.map(uc => [uc.cardId, uc.status])
+      )
+    }
+  }
+
+  return Response.json({
+    cards: cards.map(card => ({
+      ...card,
+      collectionStatus: collectionMap[card.id] ?? null,
+    })),
+    total,
+    page: pageNum,
+    pageSize: pageSizeNum,
+    totalPages: Math.ceil(total / pageSizeNum),
+  })
+}
