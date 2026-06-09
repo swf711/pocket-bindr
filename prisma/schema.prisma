@@ -54,6 +54,7 @@ model CardSet {
   totalCards  Int
   releaseDate DateTime?
   symbolUrl   String?
+  game        Game      @default(PTCG)
   syncedAt    DateTime  @default(now())
   cards       Card[]
 }
@@ -72,6 +73,8 @@ model Card {
   rarity      String?
   imageSmall  String
   imageLarge  String
+  game        Game         @default(PTCG)
+  attributes  Json?
   syncedAt    DateTime     @default(now())
   userCards   UserCard[]
   binderSlots BinderSlot[]
@@ -114,6 +117,11 @@ model BinderSlot {
   slotIndex  Int
   createdAt  DateTime @default(now())
   @@unique([binderId, pageNumber, slotIndex])
+}
+
+enum Game {
+  PTCG
+  OPCG
 }
 
 enum CardStatus {

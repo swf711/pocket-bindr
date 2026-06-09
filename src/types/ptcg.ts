@@ -1,3 +1,5 @@
+export type GameType = 'PTCG' | 'OPCG'
+
 export interface PtcgApiSet {
   id: string
   name: string
