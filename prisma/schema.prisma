@@ -1,0 +1,130 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id            String      @id @default(uuid())
+  email         String      @unique
+  emailVerified DateTime?
+  username      String?     @unique
+  image         String?
+  passwordHash  String?
+  provider      String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  accounts      Account[]
+  sessions      Session[]
+  userCards     UserCard[]
+  binders       Binder[]
+}
+
+model Account {
+  id                String  @id @default(uuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(uuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model CardSet {
+  id          String    @id
+  name        String
+  series      String
+  totalCards  Int
+  releaseDate DateTime?
+  symbolUrl   String?
+  syncedAt    DateTime  @default(now())
+  cards       Card[]
+}
+
+model Card {
+  id          String       @id @default(uuid())
+  ptcgId      String       @unique
+  name        String
+  supertype   String
+  subtypes    String[]
+  hp          Int?
+  types       String[]
+  setId       String
+  set         CardSet      @relation(fields: [setId], references: [id])
+  cardNumber  String
+  rarity      String?
+  imageSmall  String
+  imageLarge  String
+  syncedAt    DateTime     @default(now())
+  userCards   UserCard[]
+  binderSlots BinderSlot[]
+}
+
+model UserCard {
+  id        String    @id @default(uuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id])
+  cardId    String
+  card      Card      @relation(fields: [cardId], references: [id])
+  status    CardStatus
+  quantity  Int       @default(1)
+  condition String?
+  notes     String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  @@unique([userId, cardId])
+}
+
+model Binder {
+  id        String       @id @default(uuid())
+  userId    String
+  user      User         @relation(fields: [userId], references: [id])
+  name      String
+  gridType  GridType
+  settings  Json?
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  slots     BinderSlot[]
+}
+
+model BinderSlot {
+  id         String   @id @default(uuid())
+  binderId   String
+  binder     Binder   @relation(fields: [binderId], references: [id], onDelete: Cascade)
+  cardId     String?
+  card       Card?    @relation(fields: [cardId], references: [id])
+  pageNumber Int
+  slotIndex  Int
+  createdAt  DateTime @default(now())
+  @@unique([binderId, pageNumber, slotIndex])
+}
+
+enum CardStatus {
+  owned
+  wanted
+}
+
+enum GridType {
+  grid_1x2
+  grid_2x2
+  grid_3x3
+  grid_3x4
+  grid_4x4
+}
