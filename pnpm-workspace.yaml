@@ -3,6 +3,7 @@ allowBuilds:
   unrs-resolver: true
   "@prisma/engines": true
   prisma: true
+  esbuild: true
 onlyBuiltDependencies:
   - sharp
   - unrs-resolver
