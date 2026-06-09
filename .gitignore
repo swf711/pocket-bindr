@@ -42,5 +42,10 @@ next-env.d.ts
 
 # Claude Code
 .agents/
+.claude/
 skills-lock.json
 AGENT_TEAM_PROMPT.md
+
+# Playwright
+test-results/
+playwright-report/
