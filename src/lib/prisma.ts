@@ -6,7 +6,14 @@ const globalForPrisma = globalThis as unknown as {
 }
 
 function createPrismaClient() {
-  const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! })
+  // Strip pgbouncer param — not understood by pg driver
+  const rawUrl = process.env.DATABASE_URL!
+  const url = new URL(rawUrl)
+  url.searchParams.delete('pgbouncer')
+
+  const adapter = new PrismaPg(
+    { connectionString: url.toString(), ssl: { rejectUnauthorized: false } },
+  )
   return new PrismaClient({
     adapter,
     log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],

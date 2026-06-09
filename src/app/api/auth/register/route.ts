@@ -9,11 +9,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: false, error: 'INVALID_INPUT' }, { status: 400 })
   }
 
-  const result = await registerUser({ email, username, password })
-
-  if (!result.success) {
-    return NextResponse.json(result, { status: 409 })
+  try {
+    const result = await registerUser({ email, username, password })
+    if (!result.success) {
+      return NextResponse.json(result, { status: 409 })
+    }
+    return NextResponse.json(result, { status: 201 })
+  } catch (err) {
+    console.error('[register] error:', err)
+    return NextResponse.json({ success: false, error: 'SERVER_ERROR' }, { status: 500 })
   }
-
-  return NextResponse.json(result, { status: 201 })
 }

@@ -9,6 +9,7 @@ const errorMessages: Record<string, string> = {
   EMAIL_TAKEN: '此 Email 已被使用',
   USERNAME_TAKEN: '此使用者名稱已被使用',
   INVALID_INPUT: '請填寫所有欄位',
+  SERVER_ERROR: '伺服器錯誤，請稍後再試',
 }
 
 export default function RegisterPage() {
