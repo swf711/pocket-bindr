@@ -2,6 +2,8 @@ import type { NextAuthConfig } from 'next-auth'
 import Credentials from 'next-auth/providers/credentials'
 import Google from 'next-auth/providers/google'
 
+const protectedRoutes = ['/binders', '/settings']
+
 // Edge-safe config: no PrismaAdapter, no PrismaClient
 export const authConfig: NextAuthConfig = {
   session: { strategy: 'jwt' },
@@ -20,8 +22,12 @@ export const authConfig: NextAuthConfig = {
     }),
   ],
   callbacks: {
-    authorized({ auth }) {
-      return !!auth?.user
+    authorized({ auth, request: { nextUrl } }) {
+      const isProtected = protectedRoutes.some(route =>
+        nextUrl.pathname.startsWith(route)
+      )
+      if (isProtected) return !!auth?.user
+      return true // allow public routes
     },
     async session({ session, token }) {
       if (token.sub) session.user.id = token.sub
