@@ -37,8 +37,9 @@ export default function LoginPage() {
       <h1>登入</h1>
       <form onSubmit={handleSubmit}>
         <div>
-          <label>Email</label>
+          <label htmlFor="email">Email</label>
           <input
+            id="email"
             type="email"
             value={email}
             onChange={e => setEmail(e.target.value)}
@@ -47,8 +48,9 @@ export default function LoginPage() {
           />
         </div>
         <div>
-          <label>密碼</label>
+          <label htmlFor="password">密碼</label>
           <input
+            id="password"
             type="password"
             value={password}
             onChange={e => setPassword(e.target.value)}

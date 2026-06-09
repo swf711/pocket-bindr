@@ -48,8 +48,9 @@ export default function RegisterPage() {
       <h1>註冊</h1>
       <form onSubmit={handleSubmit}>
         <div>
-          <label>Email</label>
+          <label htmlFor="email">Email</label>
           <input
+            id="email"
             type="email"
             value={email}
             onChange={e => setEmail(e.target.value)}
@@ -58,8 +59,9 @@ export default function RegisterPage() {
           />
         </div>
         <div>
-          <label>使用者名稱</label>
+          <label htmlFor="username">使用者名稱</label>
           <input
+            id="username"
             type="text"
             value={username}
             onChange={e => setUsername(e.target.value)}
@@ -68,8 +70,9 @@ export default function RegisterPage() {
           />
         </div>
         <div>
-          <label>密碼</label>
+          <label htmlFor="password">密碼</label>
           <input
+            id="password"
             type="password"
             value={password}
             onChange={e => setPassword(e.target.value)}
