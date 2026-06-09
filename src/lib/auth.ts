@@ -4,13 +4,11 @@ import Credentials from 'next-auth/providers/credentials'
 import Google from 'next-auth/providers/google'
 import { prisma } from '@/lib/prisma'
 import { verifyCredentials } from '@/lib/auth-utils'
+import { authConfig } from '@/lib/auth.config'
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  ...authConfig,
   adapter: PrismaAdapter(prisma),
-  session: { strategy: 'jwt' },
-  pages: {
-    signIn: '/login',
-  },
   providers: [
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -30,14 +28,4 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
     }),
   ],
-  callbacks: {
-    async session({ session, token }) {
-      if (token.sub) session.user.id = token.sub
-      return session
-    },
-    async jwt({ token, user }) {
-      if (user) token.sub = user.id
-      return token
-    },
-  },
 })
