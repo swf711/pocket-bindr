@@ -1,7 +1,8 @@
-import { Game } from '@prisma/client'
+import { Game, Language } from '@prisma/client'
 
 export interface CardSearchParams {
   game: Game
+  language?: Language
   q?: string
   setId?: string
   page?: number

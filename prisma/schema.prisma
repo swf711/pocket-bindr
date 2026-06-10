@@ -55,13 +55,17 @@ model CardSet {
   releaseDate DateTime?
   symbolUrl   String?
   game        Game      @default(PTCG)
+  language    Language  @default(EN)
+  externalId  String    @default("")
   syncedAt    DateTime  @default(now())
   cards       Card[]
 }
 
 model Card {
   id          String       @id @default(uuid())
-  ptcgId      String       @unique
+  externalId  String
+  language    Language     @default(EN)
+  game        Game         @default(PTCG)
   name        String
   supertype   String
   subtypes    String[]
@@ -73,11 +77,12 @@ model Card {
   rarity      String?
   imageSmall  String
   imageLarge  String
-  game        Game         @default(PTCG)
-  attributes  Json?
   syncedAt    DateTime     @default(now())
+  attributes  Json?
   userCards   UserCard[]
   binderSlots BinderSlot[]
+
+  @@unique([game, language, externalId])
 }
 
 model UserCard {
@@ -122,6 +127,12 @@ model BinderSlot {
 enum Game {
   PTCG
   OPCG
+}
+
+enum Language {
+  EN
+  ZH_TW
+  JA
 }
 
 enum CardStatus {
