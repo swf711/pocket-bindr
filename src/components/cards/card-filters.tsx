@@ -4,10 +4,13 @@ import { Input } from '@/components/ui/input'
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { SetGroup } from '@/types/card'
 
 const ALL_SETS = 'all'
 
@@ -17,18 +20,12 @@ const LANGUAGE_OPTIONS = [
   { value: 'EN', label: 'English' },
 ] as const
 
-interface SetOption {
-  id: string
-  name: string
-  series: string
-}
-
 interface CardFiltersProps {
   query: string
   onQueryChange: (q: string) => void
   language: string
   onLanguageChange: (language: string) => void
-  sets: SetOption[]
+  groups: SetGroup[]
   selectedSetId: string | null
   onSetChange: (setId: string | null) => void
 }
@@ -38,7 +35,7 @@ export function CardFilters({
   onQueryChange,
   language,
   onLanguageChange,
-  sets,
+  groups,
   selectedSetId,
   onSetChange,
 }: CardFiltersProps) {
@@ -71,8 +68,15 @@ export function CardFilters({
         </SelectTrigger>
         <SelectContent>
           <SelectItem value={ALL_SETS}>所有系列</SelectItem>
-          {sets.map(s => (
-            <SelectItem key={s.id} value={s.id}>{s.series} - {s.name}</SelectItem>
+          {groups.map(group => (
+            <SelectGroup key={group.series}>
+              <SelectLabel>{group.series}</SelectLabel>
+              {group.sets.map(set => (
+                <SelectItem key={set.id} value={set.id}>
+                  {set.name}
+                </SelectItem>
+              ))}
+            </SelectGroup>
           ))}
         </SelectContent>
       </Select>

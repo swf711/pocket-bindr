@@ -1,5 +1,40 @@
 import { Game, Language } from '@prisma/client'
 
+export interface SetSummary {
+  id: string
+  name: string
+  series: string
+  releaseDate: string | null
+}
+
+export interface SetGroup {
+  series: string
+  latestRelease: string | null
+  sets: SetSummary[]
+}
+
+export interface CollectionStatus {
+  owned: number | null
+  wanted: number | null
+}
+
+export interface CardWithCollectionStatus {
+  id: string
+  name: string
+  imageSmall: string
+  imageLarge: string
+  rarity: string | null
+  hp: number | null
+  types: string[]
+  cardNumber: string
+  collectionStatus: CollectionStatus
+  set: {
+    id: string
+    name: string
+    series: string
+  }
+}
+
 export interface CardSearchParams {
   game: Game
   language?: Language

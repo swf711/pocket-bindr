@@ -11,3 +11,13 @@ export async function clearTestUserCards() {
     where: { user: { email: TEST_USER.email } },
   })
 }
+
+/**
+ * 清除測試帳號的所有 binders（含 slots），
+ * 確保卡冊相關測試之間互不影響。
+ */
+export async function clearTestUserBinders() {
+  await prisma.binder.deleteMany({
+    where: { user: { email: TEST_USER.email } },
+  })
+}

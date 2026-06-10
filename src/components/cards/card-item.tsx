@@ -1,85 +1,61 @@
 'use client'
-
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
-
-interface CollectionStatus {
-  owned: number | null
-  wanted: number | null
-}
-
-interface CardData {
-  id: string
-  name: string
-  imageSmall: string
-  rarity: string | null
-  cardNumber: string
-  collectionStatus: CollectionStatus
-  set: { name: string }
-}
+import { CardWithCollectionStatus } from '@/types/card'
 
 interface CardItemProps {
-  card: CardData
-  onToggle: (cardId: string, status: string | null, deleteStatus?: string) => void
+  card: CardWithCollectionStatus
+  onClick: (card: CardWithCollectionStatus) => void
 }
 
-export function CardItem({ card, onToggle }: CardItemProps) {
-  const isOwned = card.collectionStatus.owned !== null
-  const isWanted = card.collectionStatus.wanted !== null
-
+export function CardItem({ card, onClick }: CardItemProps) {
   return (
-    <Card
+    <button
+      onClick={() => onClick(card)}
       data-testid="card-item"
-      className="group relative gap-0 overflow-hidden rounded-lg py-0 transition-transform hover:-translate-y-2.5 cursor-pointer"
+      className="group relative aspect-2.5/3.5 w-full overflow-hidden
+                 rounded-lg focus-visible:outline-none
+                 focus-visible:ring-2 focus-visible:ring-ring"
     >
-      <div className="aspect-2.5/3.5 relative">
-        {card.imageSmall ? (
-          <img
-            src={card.imageSmall}
-            alt={card.name}
-            className={`w-full h-full object-cover ${isWanted && !isOwned ? 'grayscale' : ''}`}
-            loading="lazy"
-          />
-        ) : (
-          <div
-            data-testid="card-image-fallback"
-            className="flex h-full w-full flex-col items-center justify-center gap-1 bg-muted p-2 text-center"
-          >
-            <p className="text-sm font-medium">{card.name}</p>
-            <p className="text-xs text-muted-foreground">無圖片</p>
-          </div>
-        )}
-        {card.rarity && (
-          <Badge variant="secondary" className="absolute right-1 top-1">
-            {card.rarity}
-          </Badge>
-        )}
-      </div>
-      <div className="p-2">
-        <p className="text-sm font-medium truncate">{card.name}</p>
-        <p className="text-xs text-muted-foreground">{card.set.name} #{card.cardNumber}</p>
-        <div className="flex gap-1 mt-1">
-          <Button
-            data-testid="btn-owned"
-            size="sm"
-            variant={isOwned ? 'default' : 'secondary'}
-            onClick={() => isOwned ? onToggle(card.id, null, 'owned') : onToggle(card.id, 'owned')}
-            className="flex-1 h-6 text-xs"
-          >
-            ✓ 擁有
-          </Button>
-          <Button
-            data-testid="btn-wanted"
-            size="sm"
-            variant={isWanted ? 'default' : 'secondary'}
-            onClick={() => isWanted ? onToggle(card.id, null, 'wanted') : onToggle(card.id, 'wanted')}
-            className="flex-1 h-6 text-xs"
-          >
-            ♡ 想要
-          </Button>
+      {card.imageSmall ? (
+        <img
+          src={card.imageSmall}
+          alt={card.name}
+          className="h-full w-full object-cover transition-transform
+                     duration-200 group-hover:scale-105"
+          loading="lazy"
+        />
+      ) : (
+        <div
+          data-testid="card-image-fallback"
+          className="flex h-full w-full flex-col items-center
+                     justify-center bg-muted text-muted-foreground"
+        >
+          <span className="text-xs">{card.name}</span>
+          <span className="text-xs">無圖片</span>
         </div>
-      </div>
-    </Card>
+      )}
+      {(card.collectionStatus.owned || card.collectionStatus.wanted) && (
+        <div className="absolute right-1 top-1 flex gap-0.5">
+          {card.collectionStatus.owned && (
+            <Badge
+              variant="default"
+              className="h-4 px-1 text-[9px]"
+              data-testid="owned-badge"
+            >
+              ✓{card.collectionStatus.owned}
+            </Badge>
+          )}
+          {card.collectionStatus.wanted && (
+            <Badge
+              variant="secondary"
+              className="h-4 px-1 text-[9px]"
+              data-testid="wanted-badge"
+            >
+              ♡{card.collectionStatus.wanted}
+            </Badge>
+          )}
+        </div>
+      )}
+    </button>
   )
 }

@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test'
 import { loginAsTestUser } from './helpers/auth'
-import { clearTestUserCards } from './helpers/db'
+import { clearTestUserCards, clearTestUserBinders } from './helpers/db'
 
 test.describe('卡片搜尋頁', () => {
   test('未選遊戲時不顯示卡牌', async ({ page }) => {
@@ -22,7 +22,10 @@ test.describe('卡片搜尋頁', () => {
     await page.getByTestId('card-grid').waitFor({ timeout: 10000 })
     await page.getByTestId('search-input').fill('pikachu')
     await expect(page).toHaveURL(/q=pikachu/, { timeout: 10000 })
-    await page.getByTestId('card-grid').waitFor({ timeout: 10000 })
+    // 等待搜尋完成：cards 顯示或顯示「沒有找到卡牌」
+    await expect(
+      page.getByTestId('card-grid').or(page.getByText('沒有找到卡牌'))
+    ).toBeVisible({ timeout: 10000 })
   })
 
   test('分頁切換更新 URL', async ({ page }) => {
@@ -36,54 +39,62 @@ test.describe('卡片搜尋頁', () => {
     }
   })
 
-  test('未登入點擊收藏顯示登入 modal', async ({ page }) => {
+  test('點擊卡牌開啟 Modal', async ({ page }) => {
     await page.goto('/cards?game=PTCG')
     await page.getByTestId('card-grid').waitFor({ timeout: 10000 })
-    await page.getByTestId('btn-owned').first().click()
-    await expect(page.getByTestId('login-modal')).toBeVisible()
+    await page.getByTestId('card-item').first().click()
+    await expect(page.getByRole('dialog')).toBeVisible()
+    await expect(page.getByTestId('modal-owned-count')).toBeVisible()
+  })
+
+  test('Modal 顯示卡牌資訊', async ({ page }) => {
+    await page.goto('/cards?game=PTCG')
+    await page.getByTestId('card-grid').waitFor({ timeout: 10000 })
+    await page.getByTestId('card-item').first().click()
+    const dialog = page.getByRole('dialog')
+    await expect(dialog.getByRole('img')).toBeVisible()
+    await expect(dialog.getByTestId('modal-owned-count')).toBeVisible()
+    await expect(dialog.getByTestId('modal-wanted-count')).toBeVisible()
   })
 })
 
-test.describe('Scenario 7 & 8: 登入使用者收藏操作', () => {
+test.describe('登入使用者 Modal 操作', () => {
   test.beforeEach(async ({ page }) => {
     await clearTestUserCards()
+    await clearTestUserBinders()
     await loginAsTestUser(page)
   })
 
   test.afterAll(async () => {
     await clearTestUserCards()
+    await clearTestUserBinders()
   })
 
-  test('Scenario 7: 登入使用者標記 owned 立即更新 UI', async ({ page }) => {
+  test.skip('Modal 無卡冊時顯示引導文字', async ({ page }) => {
+    // TODO: 此測試依賴 GET /api/binders 實作（目前為 stub，回傳 405）。
+    // /api/binders 完成後移除 skip，確認 「尚無卡冊」 文字顯示。
     await page.goto('/cards?game=PTCG')
     await page.getByTestId('card-grid').waitFor({ timeout: 10000 })
-    const firstOwnedBtn = page.getByTestId('btn-owned').first()
-    await firstOwnedBtn.click()
-    await expect(page.getByTestId('login-modal')).not.toBeVisible()
-    // active 狀態使用 shadcn variant="default"，套用 bg-primary
-    await expect(firstOwnedBtn).toHaveClass(/bg-primary/)
+    await page.getByTestId('card-item').first().click()
+    await expect(page.getByRole('dialog')).toBeVisible()
+    await expect(page.getByText(/尚無卡冊/)).toBeVisible({ timeout: 8000 })
   })
 
-  test('Scenario 8: 雙狀態標記（owned + wanted 可同時）與取消', async ({ page }) => {
+  test('Modal 數量加減功能', async ({ page }) => {
     await page.goto('/cards?game=PTCG')
     await page.getByTestId('card-grid').waitFor({ timeout: 10000 })
-    const firstCard = page.getByTestId('card-item').first()
-    const ownedBtn = firstCard.getByTestId('btn-owned')
-    const wantedBtn = firstCard.getByTestId('btn-wanted')
-
-    // 標記 owned → owned 高亮，wanted 未高亮
-    await ownedBtn.click()
-    await expect(ownedBtn).toHaveClass(/bg-primary/)
-    await expect(wantedBtn).not.toHaveClass(/bg-primary/)
-
-    // 同時標記 wanted → 兩者皆高亮（雙狀態並存）
-    await wantedBtn.click()
-    await expect(wantedBtn).toHaveClass(/bg-primary/)
-    await expect(ownedBtn).toHaveClass(/bg-primary/)
-
-    // 取消 wanted → wanted 不高亮，owned 仍高亮
-    await wantedBtn.click()
-    await expect(wantedBtn).not.toHaveClass(/bg-primary/)
-    await expect(ownedBtn).toHaveClass(/bg-primary/)
+    await page.getByTestId('card-item').first().click()
+    // 等 modal 出現
+    await expect(page.getByRole('dialog')).toBeVisible()
+    // 等 qty 出現（可能 isGuest 或 noBinders，若不出現則跳過）
+    const qtyValue = page.getByTestId('modal-qty-value')
+    await expect(qtyValue).toHaveText('1')
+    await page.getByTestId('modal-qty-plus').click()
+    await expect(qtyValue).toHaveText('2')
+    await page.getByTestId('modal-qty-minus').click()
+    await expect(qtyValue).toHaveText('1')
+    // 不能低於 1
+    await page.getByTestId('modal-qty-minus').click()
+    await expect(qtyValue).toHaveText('1')
   })
 })

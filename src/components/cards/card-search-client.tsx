@@ -2,36 +2,12 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useSession } from 'next-auth/react'
 import { GameSelector } from './game-selector'
 import { CardFilters } from './card-filters'
 import { CardGrid } from './card-grid'
 import { CardPagination } from './card-pagination'
-import { LoginModal } from '../auth/login-modal'
-
-interface CollectionStatus {
-  owned: number | null
-  wanted: number | null
-}
-
-interface CardData {
-  id: string
-  name: string
-  imageSmall: string
-  imageLarge: string
-  rarity: string | null
-  hp: number | null
-  types: string[]
-  cardNumber: string
-  collectionStatus: CollectionStatus
-  set: { id: string; name: string; series: string }
-}
-
-interface SetOption {
-  id: string
-  name: string
-  series: string
-}
+import { CardDetailModal } from './card-detail-modal'
+import { CardWithCollectionStatus, SetGroup } from '@/types/card'
 
 const DEFAULT_LANGUAGE = 'ZH_TW'
 const VALID_LANGUAGES = ['EN', 'JA', 'ZH_TW']
@@ -49,7 +25,6 @@ interface CardSearchClientProps {
 export function CardSearchClient({ initialParams }: CardSearchClientProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { data: session } = useSession()
 
   const [game, setGame] = useState<string | null>(initialParams.game ?? null)
   const [query, setQuery] = useState(initialParams.q ?? '')
@@ -61,13 +36,12 @@ export function CardSearchClient({ initialParams }: CardSearchClientProps) {
       : DEFAULT_LANGUAGE
   )
 
-  const [cards, setCards] = useState<CardData[]>([])
-  const [sets, setSets] = useState<SetOption[]>([])
+  const [cards, setCards] = useState<CardWithCollectionStatus[]>([])
+  const [groups, setGroups] = useState<SetGroup[]>([])
   const [totalPages, setTotalPages] = useState(0)
   const [loading, setLoading] = useState(false)
 
-  const [showLoginModal, setShowLoginModal] = useState(false)
-  const [pendingAction, setPendingAction] = useState<(() => void) | null>(null)
+  const [selectedCard, setSelectedCard] = useState<CardWithCollectionStatus | null>(null)
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -102,7 +76,7 @@ export function CardSearchClient({ initialParams }: CardSearchClientProps) {
       const res = await fetch(`/api/sets?game=${g}&language=${lang}`)
       if (res.ok) {
         const data = await res.json()
-        setSets(data.sets)
+        setGroups(data.groups ?? [])
       }
     } catch { /* ignore */ }
   }, [])
@@ -119,7 +93,7 @@ export function CardSearchClient({ initialParams }: CardSearchClientProps) {
     setQuery('')
     setSetId(null)
     setPage(1)
-    setSets([])
+    setGroups([])
     setCards([])
     updateParams({ game: g, q: null, setId: null, page: null })
     fetchSets(g, language)
@@ -136,7 +110,7 @@ export function CardSearchClient({ initialParams }: CardSearchClientProps) {
       page: null,
     })
     if (game) {
-      setSets([])
+      setGroups([])
       fetchSets(game, lang)
       fetchCards(game, query, null, 1, lang)
     }
@@ -165,42 +139,16 @@ export function CardSearchClient({ initialParams }: CardSearchClientProps) {
     if (game) fetchCards(game, query, setId, p, language)
   }
 
-  const executeToggle = async (cardId: string, newStatus: string | null, deleteStatus?: string) => {
-    const prevCards = [...cards]
-    setCards(prev => prev.map(card => {
-      if (card.id !== cardId) return card
-      const next = { ...card.collectionStatus }
-      if (deleteStatus === 'owned') next.owned = null
-      else if (deleteStatus === 'wanted') next.wanted = null
-      if (newStatus === 'owned') next.owned = 1
-      else if (newStatus === 'wanted') next.wanted = 1
-      return { ...card, collectionStatus: next }
-    }))
-    try {
-      const res = await fetch('/api/collection', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ cardId, status: newStatus, deleteStatus }),
-      })
-      if (!res.ok) setCards(prevCards)
-    } catch {
-      setCards(prevCards)
+  const handleCollectionUpdate = (
+    cardId: string,
+    newStatus: { owned: number | null; wanted: number | null }
+  ) => {
+    setCards(prev =>
+      prev.map(c => c.id === cardId ? { ...c, collectionStatus: newStatus } : c)
+    )
+    if (selectedCard?.id === cardId) {
+      setSelectedCard(prev => prev ? { ...prev, collectionStatus: newStatus } : prev)
     }
-  }
-
-  const handleCollectionToggle = (cardId: string, status: string | null, deleteStatus?: string) => {
-    if (!session) {
-      setPendingAction(() => () => executeToggle(cardId, status, deleteStatus))
-      setShowLoginModal(true)
-      return
-    }
-    executeToggle(cardId, status, deleteStatus)
-  }
-
-  const handleLoginSuccess = () => {
-    setShowLoginModal(false)
-    pendingAction?.()
-    setPendingAction(null)
   }
 
   return (
@@ -217,16 +165,16 @@ export function CardSearchClient({ initialParams }: CardSearchClientProps) {
               onQueryChange={handleQueryChange}
               language={language}
               onLanguageChange={handleLanguageChange}
-              sets={sets}
+              groups={groups}
               selectedSetId={setId}
               onSetChange={handleSetChange}
             />
 
             {loading ? (
-              <CardGrid cards={[]} onToggle={handleCollectionToggle} loading />
+              <CardGrid cards={[]} onCardClick={() => {}} loading />
             ) : (
               <>
-                <CardGrid cards={cards} onToggle={handleCollectionToggle} />
+                <CardGrid cards={cards} onCardClick={setSelectedCard} />
                 <CardPagination currentPage={page} totalPages={totalPages} onPageChange={handlePageChange} />
               </>
             )}
@@ -234,10 +182,11 @@ export function CardSearchClient({ initialParams }: CardSearchClientProps) {
         )}
       </div>
 
-      <LoginModal
-        isOpen={showLoginModal}
-        onClose={() => { setShowLoginModal(false); setPendingAction(null) }}
-        onSuccess={handleLoginSuccess}
+      <CardDetailModal
+        card={selectedCard}
+        open={!!selectedCard}
+        onClose={() => setSelectedCard(null)}
+        onCollectionUpdate={handleCollectionUpdate}
       />
     </div>
   )
