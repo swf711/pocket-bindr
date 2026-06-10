@@ -3,6 +3,7 @@ import { auth } from '@/lib/auth'
 import { Button } from '@/components/ui/button'
 import { UserMenu } from '@/components/layout/user-menu'
 import { MobileNav } from '@/components/layout/mobile-nav'
+import { ModeToggle } from './mode-toggle'
 
 export async function Header() {
   const session = await auth()
@@ -13,7 +14,7 @@ export async function Header() {
   return (
     <header
       data-testid="app-header"
-      className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+      className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60"
     >
       <div className="container mx-auto flex h-14 items-center justify-between px-4">
         <div className="flex items-center gap-6">
@@ -56,6 +57,7 @@ export async function Header() {
               </Button>
             </>
           )}
+          <ModeToggle />
         </div>
       </div>
     </header>
