@@ -31,7 +31,7 @@ export function CardItem({ card, onToggle }: CardItemProps) {
   return (
     <Card
       data-testid="card-item"
-      className="group relative gap-0 overflow-hidden rounded-lg py-0 transition-shadow hover:shadow-md"
+      className="group relative gap-0 overflow-hidden rounded-lg py-0 transition-transform hover:-translate-y-2.5 cursor-pointer"
     >
       <div className="aspect-2.5/3.5 relative">
         {card.imageSmall ? (
