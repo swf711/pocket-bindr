@@ -46,7 +46,7 @@ describe('POST /api/collection', () => {
     const data = await res.json()
     expect(data).toEqual({ success: true, cardId: 'c1', status: 'owned' })
     expect(prisma.userCard.upsert).toHaveBeenCalledWith({
-      where: { userId_cardId: { userId: 'u1', cardId: 'c1' } },
+      where: { userId_cardId_status: { userId: 'u1', cardId: 'c1', status: 'owned' } },
       create: { userId: 'u1', cardId: 'c1', status: 'owned' },
       update: { status: 'owned' },
     })
@@ -55,12 +55,24 @@ describe('POST /api/collection', () => {
   it('status=null 時刪除 UserCard', async () => {
     mockAuth.mockResolvedValue({ user: { id: 'u1' } })
     vi.mocked(prisma.userCard.deleteMany).mockResolvedValue({ count: 1 })
-    const res = await POST(makeRequest({ cardId: 'c1', status: null }))
+    const res = await POST(makeRequest({ cardId: 'c1', status: null, deleteStatus: 'owned' }))
     expect(res.status).toBe(200)
     const data = await res.json()
     expect(data).toEqual({ success: true, cardId: 'c1', status: null })
     expect(prisma.userCard.deleteMany).toHaveBeenCalledWith({
-      where: { userId: 'u1', cardId: 'c1' },
+      where: { userId: 'u1', cardId: 'c1', status: 'owned' },
     })
+  })
+
+  it('status=null 且 deleteStatus 缺少時回傳 400', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'u1' } })
+    const res = await POST(makeRequest({ cardId: 'c1', status: null }))
+    expect(res.status).toBe(400)
+  })
+
+  it('status=null 且 deleteStatus 不合法時回傳 400', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'u1' } })
+    const res = await POST(makeRequest({ cardId: 'c1', status: null, deleteStatus: 'invalid' }))
+    expect(res.status).toBe(400)
   })
 })

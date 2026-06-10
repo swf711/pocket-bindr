@@ -60,27 +60,30 @@ test.describe('Scenario 7 & 8: 登入使用者收藏操作', () => {
     const firstOwnedBtn = page.getByTestId('btn-owned').first()
     await firstOwnedBtn.click()
     await expect(page.getByTestId('login-modal')).not.toBeVisible()
-    await expect(firstOwnedBtn).toHaveClass(/bg-green-500/)
+    // active 狀態使用 shadcn variant="default"，套用 bg-primary
+    await expect(firstOwnedBtn).toHaveClass(/bg-primary/)
   })
 
-  test('Scenario 8: 切換標記（owned → wanted）與取消', async ({ page }) => {
+  test('Scenario 8: 雙狀態標記（owned + wanted 可同時）與取消', async ({ page }) => {
     await page.goto('/cards?game=PTCG')
     await page.getByTestId('card-grid').waitFor({ timeout: 10000 })
     const firstCard = page.getByTestId('card-item').first()
     const ownedBtn = firstCard.getByTestId('btn-owned')
     const wantedBtn = firstCard.getByTestId('btn-wanted')
 
-    // 標記 owned
+    // 標記 owned → owned 高亮，wanted 未高亮
     await ownedBtn.click()
-    await expect(ownedBtn).toHaveClass(/bg-green-500/)
+    await expect(ownedBtn).toHaveClass(/bg-primary/)
+    await expect(wantedBtn).not.toHaveClass(/bg-primary/)
 
-    // 切換至 wanted
+    // 同時標記 wanted → 兩者皆高亮（雙狀態並存）
     await wantedBtn.click()
-    await expect(wantedBtn).toHaveClass(/bg-pink-500/)
-    await expect(ownedBtn).not.toHaveClass(/bg-green-500/)
+    await expect(wantedBtn).toHaveClass(/bg-primary/)
+    await expect(ownedBtn).toHaveClass(/bg-primary/)
 
-    // 取消 wanted
+    // 取消 wanted → wanted 不高亮，owned 仍高亮
     await wantedBtn.click()
-    await expect(wantedBtn).not.toHaveClass(/bg-pink-500/)
+    await expect(wantedBtn).not.toHaveClass(/bg-primary/)
+    await expect(ownedBtn).toHaveClass(/bg-primary/)
   })
 })

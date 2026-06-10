@@ -97,7 +97,7 @@ model UserCard {
   notes     String?
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
-  @@unique([userId, cardId])
+  @@unique([userId, cardId, status])
 }
 
 model Binder {
@@ -118,6 +118,7 @@ model BinderSlot {
   binder     Binder   @relation(fields: [binderId], references: [id], onDelete: Cascade)
   cardId     String?
   card       Card?    @relation(fields: [cardId], references: [id])
+  status     CardStatus?
   pageNumber Int
   slotIndex  Int
   createdAt  DateTime @default(now())
