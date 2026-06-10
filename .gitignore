@@ -49,3 +49,7 @@ AGENT_TEAM_PROMPT.md
 # Playwright
 test-results/
 playwright-report/
+
+# 官網爬蟲腳本（本機工具，不進版控）
+scripts/scrape-*.ts
+scripts/scrape-*/
