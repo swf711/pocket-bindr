@@ -28,7 +28,7 @@ export function CardItem({ card, onToggle }: CardItemProps) {
       data-testid="card-item"
       className="group relative gap-0 overflow-hidden rounded-lg py-0 transition-shadow hover:shadow-md"
     >
-      <div className="aspect-[2.5/3.5] relative">
+      <div className="aspect-2.5/3.5 relative">
         <img
           src={card.imageSmall}
           alt={card.name}

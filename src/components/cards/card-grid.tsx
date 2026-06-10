@@ -28,7 +28,7 @@ export function CardGrid({ cards, onToggle, loading = false }: CardGridProps) {
       <div data-testid="card-grid-loading" className={gridClassName}>
         {Array.from({ length: 20 }).map((_, i) => (
           <div key={i} className="space-y-2">
-            <Skeleton className="aspect-[2.5/3.5] w-full rounded-lg" />
+            <Skeleton className="aspect-2.5/3.5 w-full rounded-lg" />
             <Skeleton className="h-4 w-3/4" />
             <Skeleton className="h-3 w-1/2" />
           </div>
