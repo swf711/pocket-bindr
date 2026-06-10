@@ -59,6 +59,34 @@ test.describe('Scenario 2b: 選擇語言', () => {
     await page.keyboard.press('Escape')
   })
 
+  test('切換至日本語：卡片圖片 src 含 /low.webp 且圖片實際載入成功', async ({ page }) => {
+    await page.goto('/cards?game=PTCG')
+    await page.getByTestId('card-grid').waitFor({ timeout: 10000 })
+
+    await selectLanguage(page, '日本語')
+    await expect(page).toHaveURL(/language=JA/, { timeout: 10000 })
+    await page.getByTestId('card-grid').waitFor({ timeout: 10000 })
+
+    // 部分 JA 卡牌無圖片（顯示 fallback），搜尋「ピカチュウ」確保結果含有圖片的卡，
+    // 並鎖定第一個有 img 的卡片
+    await page.getByTestId('search-input').fill('ピカチュウ')
+    await expect(page).toHaveURL(/q=/, { timeout: 10000 })
+    await page.getByTestId('card-grid').waitFor({ timeout: 10000 })
+
+    const firstImg = page.getByTestId('card-item').locator('img').first()
+    await firstImg.waitFor({ timeout: 10000 })
+    await expect(firstImg).toHaveAttribute('src', /\/low\.webp/)
+
+    // 圖片為 lazy loading，捲動至可視範圍後確認實際載入成功
+    await firstImg.scrollIntoViewIfNeeded()
+    await expect
+      .poll(
+        () => firstImg.evaluate((img: HTMLImageElement) => img.naturalWidth),
+        { timeout: 15000 }
+      )
+      .toBeGreaterThan(0)
+  })
+
   test('URL 帶無效 language 值時 fallback 為 EN', async ({ page }) => {
     await page.goto('/cards?game=PTCG&language=INVALID')
     await page.getByTestId('card-grid').waitFor({ timeout: 10000 })

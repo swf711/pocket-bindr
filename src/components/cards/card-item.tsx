@@ -29,12 +29,22 @@ export function CardItem({ card, onToggle }: CardItemProps) {
       className="group relative gap-0 overflow-hidden rounded-lg py-0 transition-shadow hover:shadow-md"
     >
       <div className="aspect-2.5/3.5 relative">
-        <img
-          src={card.imageSmall}
-          alt={card.name}
-          className={`w-full h-full object-cover ${isWanted ? 'grayscale' : ''}`}
-          loading="lazy"
-        />
+        {card.imageSmall ? (
+          <img
+            src={card.imageSmall}
+            alt={card.name}
+            className={`w-full h-full object-cover ${isWanted ? 'grayscale' : ''}`}
+            loading="lazy"
+          />
+        ) : (
+          <div
+            data-testid="card-image-fallback"
+            className="flex h-full w-full flex-col items-center justify-center gap-1 bg-muted p-2 text-center"
+          >
+            <p className="text-sm font-medium">{card.name}</p>
+            <p className="text-xs text-muted-foreground">無圖片</p>
+          </div>
+        )}
         {card.rarity && (
           <Badge variant="secondary" className="absolute right-1 top-1">
             {card.rarity}
