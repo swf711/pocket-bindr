@@ -33,7 +33,7 @@ interface SetOption {
   series: string
 }
 
-const DEFAULT_LANGUAGE = 'EN'
+const DEFAULT_LANGUAGE = 'ZH_TW'
 const VALID_LANGUAGES = ['EN', 'JA', 'ZH_TW']
 
 interface CardSearchClientProps {

@@ -12,9 +12,9 @@ import {
 const ALL_SETS = 'all'
 
 const LANGUAGE_OPTIONS = [
-  { value: 'EN', label: 'English' },
-  { value: 'JA', label: '日本語' },
   { value: 'ZH_TW', label: '繁體中文' },
+  { value: 'JA', label: '日本語' },
+  { value: 'EN', label: 'English' },
 ] as const
 
 interface SetOption {
