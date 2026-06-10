@@ -1,5 +1,7 @@
 'use client'
 
+import { Button } from '@/components/ui/button'
+
 const games = [
   { id: 'PTCG', label: 'Pokemon TCG' },
   { id: 'OPCG', label: 'One Piece TCG' },
@@ -14,18 +16,15 @@ export function GameSelector({ selected, onSelect }: GameSelectorProps) {
   return (
     <div data-testid="game-selector" className="flex gap-3">
       {games.map(g => (
-        <button
+        <Button
           key={g.id}
           data-testid={`game-btn-${g.id.toLowerCase()}`}
+          variant={selected === g.id ? 'default' : 'outline'}
+          size="lg"
           onClick={() => onSelect(g.id)}
-          className={`px-6 py-3 rounded-lg font-medium transition-colors ${
-            selected === g.id
-              ? 'bg-blue-600 text-white'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-          }`}
         >
           {g.label}
-        </button>
+        </Button>
       ))}
     </div>
   )

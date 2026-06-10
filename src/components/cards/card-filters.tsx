@@ -1,5 +1,16 @@
 'use client'
 
+import { Input } from '@/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+
+const ALL_SETS = 'all'
+
 interface SetOption {
   id: string
   name: string
@@ -17,25 +28,28 @@ interface CardFiltersProps {
 export function CardFilters({ query, onQueryChange, sets, selectedSetId, onSetChange }: CardFiltersProps) {
   return (
     <div className="flex flex-col sm:flex-row gap-3">
-      <input
+      <Input
         data-testid="search-input"
         type="text"
         placeholder="搜尋卡牌名稱..."
         value={query}
         onChange={(e) => onQueryChange(e.target.value)}
-        className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className="flex-1"
       />
-      <select
-        data-testid="set-filter"
-        value={selectedSetId ?? ''}
-        onChange={(e) => onSetChange(e.target.value || null)}
-        className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+      <Select
+        value={selectedSetId ?? ALL_SETS}
+        onValueChange={(value) => onSetChange(value === ALL_SETS ? null : value)}
       >
-        <option value="">所有系列</option>
-        {sets.map(s => (
-          <option key={s.id} value={s.id}>{s.series} - {s.name}</option>
-        ))}
-      </select>
+        <SelectTrigger data-testid="set-filter" className="w-full sm:w-64">
+          <SelectValue placeholder="所有系列" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value={ALL_SETS}>所有系列</SelectItem>
+          {sets.map(s => (
+            <SelectItem key={s.id} value={s.id}>{s.series} - {s.name}</SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
     </div>
   )
 }

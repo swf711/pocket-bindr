@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test'
 import { loginAsTestUser } from './helpers/auth'
+import { clearTestUserCards } from './helpers/db'
 
 test.describe('卡片搜尋頁', () => {
   test('未選遊戲時不顯示卡牌', async ({ page }) => {
@@ -20,8 +21,7 @@ test.describe('卡片搜尋頁', () => {
     await page.goto('/cards?game=PTCG')
     await page.getByTestId('card-grid').waitFor({ timeout: 10000 })
     await page.getByTestId('search-input').fill('pikachu')
-    await page.waitForTimeout(500)
-    expect(page.url()).toContain('q=pikachu')
+    await expect(page).toHaveURL(/q=pikachu/, { timeout: 10000 })
     await page.getByTestId('card-grid').waitFor({ timeout: 10000 })
   })
 
@@ -46,7 +46,12 @@ test.describe('卡片搜尋頁', () => {
 
 test.describe('Scenario 7 & 8: 登入使用者收藏操作', () => {
   test.beforeEach(async ({ page }) => {
+    await clearTestUserCards()
     await loginAsTestUser(page)
+  })
+
+  test.afterAll(async () => {
+    await clearTestUserCards()
   })
 
   test('Scenario 7: 登入使用者標記 owned 立即更新 UI', async ({ page }) => {

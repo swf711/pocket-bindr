@@ -185,7 +185,7 @@ export function CardSearchClient({ initialParams }: CardSearchClientProps) {
             />
 
             {loading ? (
-              <div className="text-center py-12 text-gray-500">載入中...</div>
+              <CardGrid cards={[]} onToggle={handleCollectionToggle} loading />
             ) : (
               <>
                 <CardGrid cards={cards} onToggle={handleCollectionToggle} />

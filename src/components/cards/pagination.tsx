@@ -1,5 +1,7 @@
 'use client'
 
+import { Button } from '@/components/ui/button'
+
 interface PaginationProps {
   currentPage: number
   totalPages: number
@@ -20,33 +22,34 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Pagination
 
   return (
     <div data-testid="pagination" className="flex items-center justify-center gap-2">
-      <button
+      <Button
         data-testid="page-prev"
+        variant="outline"
+        size="sm"
         onClick={() => onPageChange(currentPage - 1)}
         disabled={currentPage <= 1}
-        className="px-3 py-1 rounded border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
       >
         上一頁
-      </button>
+      </Button>
       {getPageNumbers().map(p => (
-        <button
+        <Button
           key={p}
+          variant={p === currentPage ? 'default' : 'outline'}
+          size="sm"
           onClick={() => onPageChange(p)}
-          className={`px-3 py-1 rounded ${
-            p === currentPage ? 'bg-blue-600 text-white' : 'border border-gray-300 hover:bg-gray-100'
-          }`}
         >
           {p}
-        </button>
+        </Button>
       ))}
-      <button
+      <Button
         data-testid="page-next"
+        variant="outline"
+        size="sm"
         onClick={() => onPageChange(currentPage + 1)}
         disabled={currentPage >= totalPages}
-        className="px-3 py-1 rounded border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
       >
         下一頁
-      </button>
+      </Button>
     </div>
   )
 }

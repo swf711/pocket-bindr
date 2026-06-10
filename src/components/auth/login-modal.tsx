@@ -2,6 +2,15 @@
 
 import { useState } from 'react'
 import { signIn } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
+import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
 
 interface LoginModalProps {
   isOpen: boolean
@@ -10,12 +19,11 @@ interface LoginModalProps {
 }
 
 export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
+  const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-
-  if (!isOpen) return null
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -24,6 +32,7 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
     const res = await signIn('credentials', { email, password, redirect: false })
     setLoading(false)
     if (res?.ok) {
+      router.refresh()
       onSuccess()
     } else {
       setError('登入失敗，請確認帳號密碼')
@@ -31,44 +40,35 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
   }
 
   return (
-    <div data-testid="login-modal" className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={onClose}>
-      <div className="bg-white rounded-xl p-6 w-full max-w-sm mx-4 shadow-xl" onClick={e => e.stopPropagation()}>
-        <h2 className="text-xl font-bold mb-4">登入以繼續</h2>
+    <Dialog open={isOpen} onOpenChange={open => { if (!open) onClose() }}>
+      <DialogContent data-testid="login-modal" className="sm:max-w-sm">
+        <DialogHeader>
+          <DialogTitle>登入以繼續</DialogTitle>
+        </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-3">
-          <input
+          <Input
             type="email"
             placeholder="Email"
             value={email}
             onChange={e => setEmail(e.target.value)}
             required
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
-          <input
+          <Input
             type="password"
             placeholder="密碼"
             value={password}
             onChange={e => setPassword(e.target.value)}
             required
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
-          {error && <p className="text-red-500 text-sm">{error}</p>}
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
-          >
+          {error && <p className="text-sm text-destructive">{error}</p>}
+          <Button type="submit" disabled={loading} className="w-full">
             {loading ? '登入中...' : '登入'}
-          </button>
+          </Button>
         </form>
-        <div className="mt-3">
-          <button
-            onClick={() => signIn('google')}
-            className="w-full py-2 border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center justify-center gap-2"
-          >
-            使用 Google 登入
-          </button>
-        </div>
-      </div>
-    </div>
+        <Button variant="outline" className="w-full" onClick={() => signIn('google')}>
+          使用 Google 登入
+        </Button>
+      </DialogContent>
+    </Dialog>
   )
 }

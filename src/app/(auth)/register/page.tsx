@@ -4,6 +4,10 @@ import { useState } from 'react'
 import { signIn } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 
 const errorMessages: Record<string, string> = {
   EMAIL_TAKEN: '此 Email 已被使用',
@@ -41,53 +45,60 @@ export default function RegisterPage() {
 
     await signIn('credentials', { email, password, redirect: false })
     router.push('/cards')
+    router.refresh()
   }
 
   return (
-    <div style={{ maxWidth: 400, margin: '80px auto', padding: '0 16px' }}>
-      <h1>註冊</h1>
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label htmlFor="email">Email</label>
-          <input
-            id="email"
-            type="email"
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-            required
-            style={{ display: 'block', width: '100%', marginBottom: 12, padding: 8 }}
-          />
-        </div>
-        <div>
-          <label htmlFor="username">使用者名稱</label>
-          <input
-            id="username"
-            type="text"
-            value={username}
-            onChange={e => setUsername(e.target.value)}
-            required
-            style={{ display: 'block', width: '100%', marginBottom: 12, padding: 8 }}
-          />
-        </div>
-        <div>
-          <label htmlFor="password">密碼</label>
-          <input
-            id="password"
-            type="password"
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-            required
-            style={{ display: 'block', width: '100%', marginBottom: 12, padding: 8 }}
-          />
-        </div>
-        {error && <p style={{ color: 'red' }}>{error}</p>}
-        <button type="submit" disabled={loading} style={{ width: '100%', padding: 10 }}>
-          {loading ? '註冊中...' : '註冊'}
-        </button>
-      </form>
-      <p>
-        已有帳號？<Link href="/login">登入</Link>
-      </p>
+    <div className="mx-auto mt-20 w-full max-w-md px-4">
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-2xl">註冊</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="username">使用者名稱</Label>
+              <Input
+                id="username"
+                type="text"
+                value={username}
+                onChange={e => setUsername(e.target.value)}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">密碼</Label>
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                required
+              />
+            </div>
+            {error && <p className="text-sm text-destructive">{error}</p>}
+            <Button type="submit" disabled={loading} className="w-full">
+              {loading ? '註冊中...' : '註冊'}
+            </Button>
+          </form>
+          <p className="text-sm text-muted-foreground">
+            已有帳號？
+            <Link href="/login" className="text-primary underline-offset-4 hover:underline">
+              登入
+            </Link>
+          </p>
+        </CardContent>
+      </Card>
     </div>
   )
 }
