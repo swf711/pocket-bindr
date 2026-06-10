@@ -1,8 +1,13 @@
 import { CardStatus } from '@prisma/client'
 import { CardWithSet } from './card'
 
+export interface CollectionStatus {
+  owned: number | null
+  wanted: number | null
+}
+
 export interface CardWithCollectionStatus extends CardWithSet {
-  collectionStatus: CardStatus | null
+  collectionStatus: CollectionStatus
 }
 
 export interface CollectionToggleInput {

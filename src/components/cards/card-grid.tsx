@@ -3,13 +3,18 @@
 import { Skeleton } from '@/components/ui/skeleton'
 import { CardItem } from './card-item'
 
+interface CollectionStatus {
+  owned: number | null
+  wanted: number | null
+}
+
 interface CardData {
   id: string
   name: string
   imageSmall: string
   rarity: string | null
   cardNumber: string
-  collectionStatus: string | null
+  collectionStatus: CollectionStatus
   set: { name: string }
 }
 

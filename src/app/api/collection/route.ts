@@ -12,7 +12,7 @@ export async function POST(req: Request) {
 
   const userId = session.user.id
   const body = await req.json()
-  const { cardId, status } = body
+  const { cardId, status, deleteStatus } = body
 
   if (!cardId || typeof cardId !== 'string') {
     return Response.json({ error: 'cardId is required' }, { status: 400 })
@@ -23,14 +23,17 @@ export async function POST(req: Request) {
   }
 
   if (status === null) {
+    if (!deleteStatus || !validStatuses.includes(deleteStatus)) {
+      return Response.json({ error: 'deleteStatus is required and must be a valid status' }, { status: 400 })
+    }
     await prisma.userCard.deleteMany({
-      where: { userId, cardId },
+      where: { userId, cardId, status: deleteStatus },
     })
     return Response.json({ success: true, cardId, status: null })
   }
 
   const userCard = await prisma.userCard.upsert({
-    where: { userId_cardId: { userId, cardId } },
+    where: { userId_cardId_status: { userId, cardId, status } },
     create: { userId, cardId, status },
     update: { status },
   })

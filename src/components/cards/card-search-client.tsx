@@ -9,6 +9,11 @@ import { CardGrid } from './card-grid'
 import { Pagination } from './pagination'
 import { LoginModal } from '../auth/login-modal'
 
+interface CollectionStatus {
+  owned: number | null
+  wanted: number | null
+}
+
 interface CardData {
   id: string
   name: string
@@ -18,7 +23,7 @@ interface CardData {
   hp: number | null
   types: string[]
   cardNumber: string
-  collectionStatus: string | null
+  collectionStatus: CollectionStatus
   set: { id: string; name: string; series: string }
 }
 
@@ -160,16 +165,22 @@ export function CardSearchClient({ initialParams }: CardSearchClientProps) {
     if (game) fetchCards(game, query, setId, p, language)
   }
 
-  const executeToggle = async (cardId: string, newStatus: string | null) => {
+  const executeToggle = async (cardId: string, newStatus: string | null, deleteStatus?: string) => {
     const prevCards = [...cards]
-    setCards(prev => prev.map(card =>
-      card.id === cardId ? { ...card, collectionStatus: newStatus } : card
-    ))
+    setCards(prev => prev.map(card => {
+      if (card.id !== cardId) return card
+      const next = { ...card.collectionStatus }
+      if (deleteStatus === 'owned') next.owned = null
+      else if (deleteStatus === 'wanted') next.wanted = null
+      if (newStatus === 'owned') next.owned = 1
+      else if (newStatus === 'wanted') next.wanted = 1
+      return { ...card, collectionStatus: next }
+    }))
     try {
       const res = await fetch('/api/collection', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ cardId, status: newStatus }),
+        body: JSON.stringify({ cardId, status: newStatus, deleteStatus }),
       })
       if (!res.ok) setCards(prevCards)
     } catch {
@@ -177,13 +188,13 @@ export function CardSearchClient({ initialParams }: CardSearchClientProps) {
     }
   }
 
-  const handleCollectionToggle = (cardId: string, status: string | null) => {
+  const handleCollectionToggle = (cardId: string, status: string | null, deleteStatus?: string) => {
     if (!session) {
-      setPendingAction(() => () => executeToggle(cardId, status))
+      setPendingAction(() => () => executeToggle(cardId, status, deleteStatus))
       setShowLoginModal(true)
       return
     }
-    executeToggle(cardId, status)
+    executeToggle(cardId, status, deleteStatus)
   }
 
   const handleLoginSuccess = () => {

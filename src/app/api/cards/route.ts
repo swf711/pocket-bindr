@@ -2,7 +2,7 @@ import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/lib/auth'
 import { parseLanguage } from '@/lib/language'
-import { Game, CardStatus } from '@prisma/client'
+import { Game } from '@prisma/client'
 
 export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl
@@ -43,24 +43,32 @@ export async function GET(req: NextRequest) {
   ])
 
   const session = await auth()
-  let collectionMap: Record<string, CardStatus> = {}
+  type CollectionEntry = { owned: number | null; wanted: number | null }
+  let collectionMap: Record<string, CollectionEntry> = {}
   if (session?.user?.id) {
     const cardIds = cards.map(c => c.id)
     if (cardIds.length > 0) {
       const userCards = await prisma.userCard.findMany({
         where: { userId: session.user.id, cardId: { in: cardIds } },
-        select: { cardId: true, status: true },
+        select: { cardId: true, status: true, quantity: true },
       })
-      collectionMap = Object.fromEntries(
-        userCards.map(uc => [uc.cardId, uc.status])
-      )
+      for (const uc of userCards) {
+        if (!collectionMap[uc.cardId]) {
+          collectionMap[uc.cardId] = { owned: null, wanted: null }
+        }
+        if (uc.status === 'owned') {
+          collectionMap[uc.cardId].owned = uc.quantity
+        } else if (uc.status === 'wanted') {
+          collectionMap[uc.cardId].wanted = uc.quantity
+        }
+      }
     }
   }
 
   return Response.json({
     cards: cards.map(card => ({
       ...card,
-      collectionStatus: collectionMap[card.id] ?? null,
+      collectionStatus: collectionMap[card.id] ?? { owned: null, wanted: null },
     })),
     total,
     page: pageNum,

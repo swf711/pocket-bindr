@@ -4,24 +4,29 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 
+interface CollectionStatus {
+  owned: number | null
+  wanted: number | null
+}
+
 interface CardData {
   id: string
   name: string
   imageSmall: string
   rarity: string | null
   cardNumber: string
-  collectionStatus: string | null
+  collectionStatus: CollectionStatus
   set: { name: string }
 }
 
 interface CardItemProps {
   card: CardData
-  onToggle: (cardId: string, status: string | null) => void
+  onToggle: (cardId: string, status: string | null, deleteStatus?: string) => void
 }
 
 export function CardItem({ card, onToggle }: CardItemProps) {
-  const isOwned = card.collectionStatus === 'owned'
-  const isWanted = card.collectionStatus === 'wanted'
+  const isOwned = card.collectionStatus.owned !== null
+  const isWanted = card.collectionStatus.wanted !== null
 
   return (
     <Card
@@ -33,7 +38,7 @@ export function CardItem({ card, onToggle }: CardItemProps) {
           <img
             src={card.imageSmall}
             alt={card.name}
-            className={`w-full h-full object-cover ${isWanted ? 'grayscale' : ''}`}
+            className={`w-full h-full object-cover ${isWanted && !isOwned ? 'grayscale' : ''}`}
             loading="lazy"
           />
         ) : (
@@ -59,10 +64,8 @@ export function CardItem({ card, onToggle }: CardItemProps) {
             data-testid="btn-owned"
             size="sm"
             variant={isOwned ? 'default' : 'secondary'}
-            onClick={() => onToggle(card.id, isOwned ? null : 'owned')}
-            className={`flex-1 h-6 text-xs ${
-              isOwned ? 'bg-green-500 text-white hover:bg-green-600' : ''
-            }`}
+            onClick={() => isOwned ? onToggle(card.id, null, 'owned') : onToggle(card.id, 'owned')}
+            className="flex-1 h-6 text-xs"
           >
             ✓ 擁有
           </Button>
@@ -70,10 +73,8 @@ export function CardItem({ card, onToggle }: CardItemProps) {
             data-testid="btn-wanted"
             size="sm"
             variant={isWanted ? 'default' : 'secondary'}
-            onClick={() => onToggle(card.id, isWanted ? null : 'wanted')}
-            className={`flex-1 h-6 text-xs ${
-              isWanted ? 'bg-pink-500 text-white hover:bg-pink-600' : ''
-            }`}
+            onClick={() => isWanted ? onToggle(card.id, null, 'wanted') : onToggle(card.id, 'wanted')}
+            className="flex-1 h-6 text-xs"
           >
             ♡ 想要
           </Button>
