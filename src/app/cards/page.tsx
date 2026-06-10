@@ -6,6 +6,7 @@ interface PageProps {
     q?: string
     setId?: string
     page?: string
+    language?: string
   }>
 }
 

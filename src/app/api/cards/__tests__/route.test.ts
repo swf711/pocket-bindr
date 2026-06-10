@@ -41,4 +41,39 @@ describe('GET /api/cards', () => {
     expect(data).toHaveProperty('page', 1)
     expect(data).toHaveProperty('pageSize', 20)
   })
+
+  it('language 值無效時回傳 400', async () => {
+    const req = new NextRequest('http://localhost/api/cards?game=PTCG&language=INVALID')
+    const res = await GET(req)
+    expect(res.status).toBe(400)
+    const data = await res.json()
+    expect(data.error).toBe('language must be one of EN, JA, ZH_TW')
+  })
+
+  it('language=JA 時 where 條件包含 language: JA', async () => {
+    vi.mocked(prisma.$transaction).mockResolvedValue([[], 0])
+    const req = new NextRequest('http://localhost/api/cards?game=PTCG&language=JA')
+    const res = await GET(req)
+    expect(res.status).toBe(200)
+    expect(prisma.card.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ game: 'PTCG', language: 'JA' }),
+      })
+    )
+    expect(prisma.card.count).toHaveBeenCalledWith({
+      where: expect.objectContaining({ language: 'JA' }),
+    })
+  })
+
+  it('未傳 language 時 where 條件預設為 EN', async () => {
+    vi.mocked(prisma.$transaction).mockResolvedValue([[], 0])
+    const req = new NextRequest('http://localhost/api/cards?game=PTCG')
+    const res = await GET(req)
+    expect(res.status).toBe(200)
+    expect(prisma.card.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ language: 'EN' }),
+      })
+    )
+  })
 })

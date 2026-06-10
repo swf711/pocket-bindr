@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/lib/auth'
+import { parseLanguage } from '@/lib/language'
 import { Game, CardStatus } from '@prisma/client'
 
 export async function GET(req: NextRequest) {
@@ -15,8 +16,14 @@ export async function GET(req: NextRequest) {
     return Response.json({ error: 'game is required' }, { status: 400 })
   }
 
+  const language = parseLanguage(searchParams.get('language'))
+  if (!language) {
+    return Response.json({ error: 'language must be one of EN, JA, ZH_TW' }, { status: 400 })
+  }
+
   const where = {
     game: game as Game,
+    language,
     ...(q && { name: { contains: q, mode: 'insensitive' as const } }),
     ...(setId && { setId }),
   }

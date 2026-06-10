@@ -28,12 +28,16 @@ interface SetOption {
   series: string
 }
 
+const DEFAULT_LANGUAGE = 'EN'
+const VALID_LANGUAGES = ['EN', 'JA', 'ZH_TW']
+
 interface CardSearchClientProps {
   initialParams: {
     game?: string
     q?: string
     setId?: string
     page?: string
+    language?: string
   }
 }
 
@@ -46,6 +50,11 @@ export function CardSearchClient({ initialParams }: CardSearchClientProps) {
   const [query, setQuery] = useState(initialParams.q ?? '')
   const [setId, setSetId] = useState<string | null>(initialParams.setId ?? null)
   const [page, setPage] = useState(parseInt(initialParams.page ?? '1', 10))
+  const [language, setLanguage] = useState(
+    initialParams.language && VALID_LANGUAGES.includes(initialParams.language)
+      ? initialParams.language
+      : DEFAULT_LANGUAGE
+  )
 
   const [cards, setCards] = useState<CardData[]>([])
   const [sets, setSets] = useState<SetOption[]>([])
@@ -66,9 +75,9 @@ export function CardSearchClient({ initialParams }: CardSearchClientProps) {
     router.push(`/cards?${params.toString()}`)
   }, [router, searchParams])
 
-  const fetchCards = useCallback(async (g: string, q: string, sid: string | null, p: number) => {
+  const fetchCards = useCallback(async (g: string, q: string, sid: string | null, p: number, lang: string) => {
     setLoading(true)
-    const params = new URLSearchParams({ game: g, page: String(p), pageSize: '20' })
+    const params = new URLSearchParams({ game: g, language: lang, page: String(p), pageSize: '20' })
     if (q) params.set('q', q)
     if (sid) params.set('setId', sid)
     try {
@@ -83,9 +92,9 @@ export function CardSearchClient({ initialParams }: CardSearchClientProps) {
     }
   }, [])
 
-  const fetchSets = useCallback(async (g: string) => {
+  const fetchSets = useCallback(async (g: string, lang: string) => {
     try {
-      const res = await fetch(`/api/sets?game=${g}`)
+      const res = await fetch(`/api/sets?game=${g}&language=${lang}`)
       if (res.ok) {
         const data = await res.json()
         setSets(data.sets)
@@ -95,8 +104,8 @@ export function CardSearchClient({ initialParams }: CardSearchClientProps) {
 
   useEffect(() => {
     if (game) {
-      fetchSets(game)
-      fetchCards(game, query, setId, page)
+      fetchSets(game, language)
+      fetchCards(game, query, setId, page, language)
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -108,8 +117,24 @@ export function CardSearchClient({ initialParams }: CardSearchClientProps) {
     setSets([])
     setCards([])
     updateParams({ game: g, q: null, setId: null, page: null })
-    fetchSets(g)
-    fetchCards(g, '', null, 1)
+    fetchSets(g, language)
+    fetchCards(g, '', null, 1, language)
+  }
+
+  const handleLanguageChange = (lang: string) => {
+    setLanguage(lang)
+    setSetId(null)
+    setPage(1)
+    updateParams({
+      language: lang === DEFAULT_LANGUAGE ? null : lang,
+      setId: null,
+      page: null,
+    })
+    if (game) {
+      setSets([])
+      fetchSets(game, lang)
+      fetchCards(game, query, null, 1, lang)
+    }
   }
 
   const handleQueryChange = (q: string) => {
@@ -118,7 +143,7 @@ export function CardSearchClient({ initialParams }: CardSearchClientProps) {
     debounceRef.current = setTimeout(() => {
       setPage(1)
       updateParams({ q: q || null, page: null })
-      if (game) fetchCards(game, q, setId, 1)
+      if (game) fetchCards(game, q, setId, 1, language)
     }, 300)
   }
 
@@ -126,13 +151,13 @@ export function CardSearchClient({ initialParams }: CardSearchClientProps) {
     setSetId(sid)
     setPage(1)
     updateParams({ setId: sid, page: null })
-    if (game) fetchCards(game, query, sid, 1)
+    if (game) fetchCards(game, query, sid, 1, language)
   }
 
   const handlePageChange = (p: number) => {
     setPage(p)
     updateParams({ page: String(p) })
-    if (game) fetchCards(game, query, setId, p)
+    if (game) fetchCards(game, query, setId, p, language)
   }
 
   const executeToggle = async (cardId: string, newStatus: string | null) => {
@@ -179,6 +204,8 @@ export function CardSearchClient({ initialParams }: CardSearchClientProps) {
             <CardFilters
               query={query}
               onQueryChange={handleQueryChange}
+              language={language}
+              onLanguageChange={handleLanguageChange}
               sets={sets}
               selectedSetId={setId}
               onSetChange={handleSetChange}
