@@ -6,7 +6,7 @@ import { useSession } from 'next-auth/react'
 import { GameSelector } from './game-selector'
 import { CardFilters } from './card-filters'
 import { CardGrid } from './card-grid'
-import { Pagination } from './pagination'
+import { CardPagination } from './card-pagination'
 import { LoginModal } from '../auth/login-modal'
 
 interface CollectionStatus {
@@ -227,7 +227,7 @@ export function CardSearchClient({ initialParams }: CardSearchClientProps) {
             ) : (
               <>
                 <CardGrid cards={cards} onToggle={handleCollectionToggle} />
-                <Pagination currentPage={page} totalPages={totalPages} onPageChange={handlePageChange} />
+                <CardPagination currentPage={page} totalPages={totalPages} onPageChange={handlePageChange} />
               </>
             )}
           </>
