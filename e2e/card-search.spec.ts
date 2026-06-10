@@ -70,7 +70,7 @@ test.describe('登入使用者 Modal 操作', () => {
     await clearTestUserBinders()
   })
 
-  test.skip('Modal 無卡冊時顯示引導文字', async ({ page }) => {
+  test('Modal 無卡冊時顯示引導文字', async ({ page }) => {
     // TODO: 此測試依賴 GET /api/binders 實作（目前為 stub，回傳 405）。
     // /api/binders 完成後移除 skip，確認 「尚無卡冊」 文字顯示。
     await page.goto('/cards?game=PTCG')

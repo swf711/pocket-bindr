@@ -11,14 +11,14 @@ async function selectLanguage(page: Page, optionLabel: string) {
 }
 
 test.describe('Scenario 2b: 選擇語言', () => {
-  test('預設顯示 EN 卡牌且 URL 不含 language 參數', async ({ page }) => {
+  test('預設顯示繁體中文卡牌且 URL 不含 language 參數', async ({ page }) => {
     await page.goto('/cards?game=PTCG')
     await page.getByTestId('card-grid').waitFor({ timeout: 10000 })
     expect(page.url()).not.toContain('language=')
-    await expect(page.getByTestId('language-filter')).toContainText('English')
+    await expect(page.getByTestId('language-filter')).toContainText('繁體中文')
   })
 
-  test('切換至繁體中文：URL 更新、系列篩選重置、顯示繁中卡牌', async ({ page }) => {
+  test('切換至英文：URL 更新、系列篩選重置、顯示英文卡牌', async ({ page }) => {
     await page.goto('/cards?game=PTCG')
     await page.getByTestId('card-grid').waitFor({ timeout: 10000 })
 
@@ -28,14 +28,15 @@ test.describe('Scenario 2b: 選擇語言', () => {
     await expect(page).toHaveURL(/setId=/, { timeout: 10000 })
     await page.getByTestId('card-grid').waitFor({ timeout: 10000 })
 
-    // 切換語言至繁體中文
-    await selectLanguage(page, '繁體中文')
-    await expect(page).toHaveURL(/language=ZH_TW/, { timeout: 10000 })
+    // 切換語言至英文
+    await selectLanguage(page, 'English')
+    await expect(page).toHaveURL(/language=EN/, { timeout: 10000 })
     expect(page.url()).not.toContain('setId=')
     await expect(page.getByTestId('set-filter')).toContainText('所有系列')
     await page.getByTestId('card-grid').waitFor({ timeout: 10000 })
 
     // 搜尋「皮卡丘」應有繁中結果
+    await selectLanguage(page, '繁體中文')
     await page.getByTestId('search-input').fill('皮卡丘')
     await expect(page).toHaveURL(/q=/, { timeout: 10000 })
     await page.getByTestId('card-grid').waitFor({ timeout: 10000 })
@@ -48,13 +49,9 @@ test.describe('Scenario 2b: 選擇語言', () => {
     await page.goto('/cards?game=PTCG')
     await page.getByTestId('card-grid').waitFor({ timeout: 10000 })
 
-    await selectLanguage(page, '繁體中文')
-    await expect(page).toHaveURL(/language=ZH_TW/, { timeout: 10000 })
-    await page.getByTestId('card-grid').waitFor({ timeout: 10000 })
-
     await page.getByTestId('set-filter').click()
     await expect(
-      page.getByRole('option', { name: /朱&紫系列/ }).first()
+      page.getByRole('option', { name: /火箭隊的榮耀/ }).first()
     ).toBeVisible({ timeout: 10000 })
     await page.keyboard.press('Escape')
   })
@@ -87,9 +84,9 @@ test.describe('Scenario 2b: 選擇語言', () => {
       .toBeGreaterThan(0)
   })
 
-  test('URL 帶無效 language 值時 fallback 為 EN', async ({ page }) => {
+  test('URL 帶無效 language 值時 fallback 為 繁體中文', async ({ page }) => {
     await page.goto('/cards?game=PTCG&language=INVALID')
     await page.getByTestId('card-grid').waitFor({ timeout: 10000 })
-    await expect(page.getByTestId('language-filter')).toContainText('English')
+    await expect(page.getByTestId('language-filter')).toContainText('繁體中文')
   })
 })

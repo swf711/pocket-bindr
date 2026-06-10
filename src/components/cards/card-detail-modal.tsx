@@ -94,7 +94,7 @@ function AddToBinderSection({
         if (res.status === 401) { setIsGuest(true); return }
         if (res.ok) {
           const data = await res.json()
-          const list: BinderSummary[] = data.binders ?? []
+          const list: BinderSummary[] = Array.isArray(data) ? data : (data.binders ?? [])
           setBinders(list)
           if (list.length === 0) setNoBinders(true)
           else setSelectedBinderId(list[0].id)
