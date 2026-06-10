@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+import { loginAsTestUser } from './helpers/auth'
 
 test.describe('卡片搜尋頁', () => {
   test('未選遊戲時不顯示卡牌', async ({ page }) => {
@@ -40,5 +41,41 @@ test.describe('卡片搜尋頁', () => {
     await page.getByTestId('card-grid').waitFor({ timeout: 10000 })
     await page.getByTestId('btn-owned').first().click()
     await expect(page.getByTestId('login-modal')).toBeVisible()
+  })
+})
+
+test.describe('Scenario 7 & 8: 登入使用者收藏操作', () => {
+  test.beforeEach(async ({ page }) => {
+    await loginAsTestUser(page)
+  })
+
+  test('Scenario 7: 登入使用者標記 owned 立即更新 UI', async ({ page }) => {
+    await page.goto('/cards?game=PTCG')
+    await page.getByTestId('card-grid').waitFor({ timeout: 10000 })
+    const firstOwnedBtn = page.getByTestId('btn-owned').first()
+    await firstOwnedBtn.click()
+    await expect(page.getByTestId('login-modal')).not.toBeVisible()
+    await expect(firstOwnedBtn).toHaveClass(/bg-green-500/)
+  })
+
+  test('Scenario 8: 切換標記（owned → wanted）與取消', async ({ page }) => {
+    await page.goto('/cards?game=PTCG')
+    await page.getByTestId('card-grid').waitFor({ timeout: 10000 })
+    const firstCard = page.getByTestId('card-item').first()
+    const ownedBtn = firstCard.getByTestId('btn-owned')
+    const wantedBtn = firstCard.getByTestId('btn-wanted')
+
+    // 標記 owned
+    await ownedBtn.click()
+    await expect(ownedBtn).toHaveClass(/bg-green-500/)
+
+    // 切換至 wanted
+    await wantedBtn.click()
+    await expect(wantedBtn).toHaveClass(/bg-pink-500/)
+    await expect(ownedBtn).not.toHaveClass(/bg-green-500/)
+
+    // 取消 wanted
+    await wantedBtn.click()
+    await expect(wantedBtn).not.toHaveClass(/bg-pink-500/)
   })
 })

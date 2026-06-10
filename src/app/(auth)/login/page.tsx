@@ -58,7 +58,7 @@ export default function LoginPage() {
             style={{ display: 'block', width: '100%', marginBottom: 12, padding: 8 }}
           />
         </div>
-        {error && <p style={{ color: 'red' }}>{error}</p>}
+        {error && <p data-testid="login-error" style={{ color: 'red' }}>{error}</p>}
         <button type="submit" disabled={loading} style={{ width: '100%', padding: 10, marginBottom: 8 }}>
           {loading ? '登入中...' : '登入'}
         </button>
