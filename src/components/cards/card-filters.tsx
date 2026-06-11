@@ -1,5 +1,6 @@
 'use client'
 
+import React from 'react'
 import { Input } from '@/components/ui/input'
 import {
   Select,
@@ -70,9 +71,9 @@ export function CardFilters({
         <SelectContent>
           <SelectItem value={ALL_SETS}>所有系列</SelectItem>
           {groups.map(group => (
-            <>
-              <SelectSeparator key={group.series + '-separator'} />
-              <SelectGroup key={group.series}>
+            <React.Fragment key={group.series}>
+              <SelectSeparator />
+              <SelectGroup>
                 <SelectLabel>{group.series}</SelectLabel>
                 {group.sets.map(set => (
                   <SelectItem key={set.id} value={set.id}>
@@ -80,7 +81,7 @@ export function CardFilters({
                   </SelectItem>
                 ))}
               </SelectGroup>
-            </>
+            </React.Fragment>
           ))}
         </SelectContent>
       </Select>
