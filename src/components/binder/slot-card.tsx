@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Trash2 } from 'lucide-react'
+import { Eye, EyeOff, Trash2 } from 'lucide-react'
 import { useDraggable, useDroppable } from '@dnd-kit/core'
 import { Button } from '@/components/ui/button'
 import {
@@ -21,10 +21,11 @@ import type { SlotWithCard } from '@/types/binder'
 interface SlotCardProps {
   slot: SlotWithCard
   onDelete: (slotId: string) => void
+  onToggleStatus: (slotId: string) => void
   isDragOverlay?: boolean
 }
 
-export function SlotCard({ slot, onDelete, isDragOverlay = false }: SlotCardProps) {
+export function SlotCard({ slot, onDelete, onToggleStatus, isDragOverlay = false }: SlotCardProps) {
   const [open, setOpen] = useState(false)
 
   const {
@@ -68,7 +69,17 @@ export function SlotCard({ slot, onDelete, isDragOverlay = false }: SlotCardProp
       )}
 
       {!isDragOverlay && (
-        <div className="absolute inset-0 flex items-start justify-end p-1 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+        <div className="absolute inset-0 flex items-start justify-between p-1 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+          <Button
+            variant="secondary"
+            size="icon"
+            className="h-6 w-6 pointer-events-auto"
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={() => onToggleStatus(slot.id)}
+            title={slot.status === 'owned' ? '切換為想要' : '切換為擁有'}
+          >
+            {slot.status === 'owned' ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+          </Button>
           <AlertDialog open={open} onOpenChange={setOpen}>
             <AlertDialogTrigger asChild>
               <Button

@@ -28,11 +28,12 @@ interface BinderGridProps {
   slots: BinderSlotItem[]
   gridType: GridType
   onDelete: (slotId: string) => void
+  onToggleStatus: (slotId: string) => void
   onSwap: (slotAId: string, slotBId: string) => void
   onMove: (slotId: string, pageNumber: number, slotIndex: number) => void
 }
 
-export function BinderGrid({ slots, gridType, onDelete, onSwap, onMove }: BinderGridProps) {
+export function BinderGrid({ slots, gridType, onDelete, onToggleStatus, onSwap, onMove }: BinderGridProps) {
   const [activeSlot, setActiveSlot] = useState<SlotWithCard | null>(null)
 
   const sensors = useSensors(
@@ -87,13 +88,14 @@ export function BinderGrid({ slots, gridType, onDelete, onSwap, onMove }: Binder
               key={slot.id}
               slot={slot as SlotWithCard}
               onDelete={onDelete}
+              onToggleStatus={onToggleStatus}
             />
           ),
         )}
       </div>
       <DragOverlay>
         {activeSlot ? (
-          <SlotCard slot={activeSlot} onDelete={() => {}} isDragOverlay />
+          <SlotCard slot={activeSlot} onDelete={() => {}} onToggleStatus={() => {}} isDragOverlay />
         ) : null}
       </DragOverlay>
     </DndContext>

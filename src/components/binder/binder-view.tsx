@@ -50,6 +50,17 @@ export function BinderView({ binder }: { binder: BinderDetailResponse }) {
     }
   }
 
+  const handleToggleStatus = async (slotId: string) => {
+    const slot = slots.find((s) => s.id === slotId)
+    if (!slot) return
+    const newStatus = slot.status === 'owned' ? 'wanted' : 'owned'
+    setSlots((prev) => prev.map((s) => (s.id === slotId ? { ...s, status: newStatus } : s)))
+    const res = await fetch(`/api/binders/${binder.id}/slots/${slotId}/status`, { method: 'PATCH' })
+    if (!res.ok) {
+      setSlots((prev) => prev.map((s) => (s.id === slotId ? { ...s, status: slot.status } : s)))
+    }
+  }
+
   const handleMove = async (slotId: string, pageNumber: number, slotIndex: number) => {
     const slot = slots.find((s) => s.id === slotId)
     if (!slot) return
@@ -102,6 +113,7 @@ export function BinderView({ binder }: { binder: BinderDetailResponse }) {
         slots={currentSlots}
         gridType={gridType}
         onDelete={handleDelete}
+        onToggleStatus={handleToggleStatus}
         onSwap={handleSwap}
         onMove={handleMove}
       />
