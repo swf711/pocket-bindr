@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import { Trash2 } from 'lucide-react'
 import { useDraggable, useDroppable } from '@dnd-kit/core'
-import { CSS } from '@dnd-kit/utilities'
 import { Button } from '@/components/ui/button'
 import {
   AlertDialog,
@@ -32,7 +31,6 @@ export function SlotCard({ slot, onDelete, isDragOverlay = false }: SlotCardProp
     attributes,
     listeners,
     setNodeRef: setDragRef,
-    transform,
     isDragging,
   } = useDraggable({ id: `slot-${slot.id}`, disabled: isDragOverlay })
 
@@ -42,7 +40,6 @@ export function SlotCard({ slot, onDelete, isDragOverlay = false }: SlotCardProp
   })
 
   const imageUrl = getCardImageUrl(slot.card.imageSmall)
-  const style = transform ? { transform: CSS.Translate.toString(transform) } : undefined
 
   return (
     <div
@@ -50,7 +47,6 @@ export function SlotCard({ slot, onDelete, isDragOverlay = false }: SlotCardProp
         setDragRef(node)
         setDropRef(node)
       }}
-      style={style}
       {...attributes}
       {...listeners}
       className={`relative group aspect-[5/7] w-full overflow-hidden rounded-md border border-border bg-card cursor-grab active:cursor-grabbing transition-opacity ${
@@ -72,13 +68,15 @@ export function SlotCard({ slot, onDelete, isDragOverlay = false }: SlotCardProp
       )}
 
       {!isDragOverlay && (
-        <div
-          className="absolute inset-0 flex items-start justify-end p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-          onPointerDown={(e) => e.stopPropagation()}
-        >
+        <div className="absolute inset-0 flex items-start justify-end p-1 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
           <AlertDialog open={open} onOpenChange={setOpen}>
             <AlertDialogTrigger asChild>
-              <Button variant="destructive" size="icon" className="h-6 w-6">
+              <Button
+                variant="destructive"
+                size="icon"
+                className="h-6 w-6 pointer-events-auto"
+                onPointerDown={(e) => e.stopPropagation()}
+              >
                 <Trash2 className="h-3 w-3" />
               </Button>
             </AlertDialogTrigger>

@@ -70,7 +70,7 @@ export function BinderGrid({ slots, gridType, onDelete, onSwap, onMove }: Binder
   const cols = GRID_COLS[gridType]
 
   return (
-    <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+    <DndContext id="binder-dnd" sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
       <div
         style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
         className="grid gap-2"
