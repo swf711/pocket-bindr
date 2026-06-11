@@ -27,13 +27,13 @@ export function CardDetailModal({ card, open, onClose, onAddToBinder, onCollecti
 
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o) onClose() }}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="md:w-8/12 max-w-full md:max-w-5xl">
         <DialogHeader>
           <DialogTitle>{card.name}</DialogTitle>
         </DialogHeader>
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 no-scrollbar max-h-[90vh] overflow-y-auto">
           {/* 左欄：卡圖 */}
-          <div>
+          <div className="flex justify-center items-start">
             <img
               src={card.imageLarge || card.imageSmall || ''}
               alt={card.name}
