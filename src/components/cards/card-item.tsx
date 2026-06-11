@@ -1,6 +1,7 @@
 'use client'
 import { Badge } from '@/components/ui/badge'
 import { CardWithCollectionStatus } from '@/types/card'
+import { getCardImageUrl } from '@/lib/get-card-image-url'
 
 interface CardItemProps {
   card: CardWithCollectionStatus
@@ -16,9 +17,9 @@ export function CardItem({ card, onClick }: CardItemProps) {
                  rounded-lg cursor-pointer shadow-sm transition-all hover:scale-105 hover:shadow-lg focus-visible:outline-none
                  focus-visible:ring-2 focus-visible:ring-ring"
     >
-      {card.imageSmall ? (
+      {getCardImageUrl(card.imageSmall) ? (
         <img
-          src={card.imageSmall}
+          src={getCardImageUrl(card.imageSmall)!}
           alt={card.name}
           className="h-full w-full object-cover"
           loading="lazy"

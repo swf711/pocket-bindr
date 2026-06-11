@@ -13,6 +13,7 @@ import {
   SelectTrigger, SelectValue
 } from '@/components/ui/select'
 import { CardWithCollectionStatus } from '@/types/card'
+import { getCardImageUrl } from '@/lib/get-card-image-url'
 import { BinderSummary } from '@/types/binder'
 import { LoginModal } from '@/components/auth/login-modal'
 
@@ -37,7 +38,7 @@ export function CardDetailModal({ card, open, onClose, onAddToBinder, onCollecti
           {/* 左欄：卡圖 */}
           <div className="flex justify-center items-start">
             <img
-              src={card.imageLarge || card.imageSmall || ''}
+              src={getCardImageUrl(card.imageLarge) || getCardImageUrl(card.imageSmall) || ''}
               alt={card.name}
               className="w-full rounded-lg"
             />
