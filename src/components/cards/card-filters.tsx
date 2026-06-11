@@ -7,6 +7,7 @@ import {
   SelectGroup,
   SelectItem,
   SelectLabel,
+  SelectSeparator,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
@@ -69,14 +70,17 @@ export function CardFilters({
         <SelectContent>
           <SelectItem value={ALL_SETS}>所有系列</SelectItem>
           {groups.map(group => (
-            <SelectGroup key={group.series}>
-              <SelectLabel>{group.series}</SelectLabel>
-              {group.sets.map(set => (
-                <SelectItem key={set.id} value={set.id}>
-                  {set.name}
-                </SelectItem>
-              ))}
-            </SelectGroup>
+            <>
+              <SelectSeparator key={group.series + '-separator'} />
+              <SelectGroup key={group.series}>
+                <SelectLabel>{group.series}</SelectLabel>
+                {group.sets.map(set => (
+                  <SelectItem key={set.id} value={set.id}>
+                    {set.name}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </>
           ))}
         </SelectContent>
       </Select>
