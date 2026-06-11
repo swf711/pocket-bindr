@@ -13,15 +13,14 @@ export function CardItem({ card, onClick }: CardItemProps) {
       onClick={() => onClick(card)}
       data-testid="card-item"
       className="group relative aspect-2.5/3.5 w-full overflow-hidden
-                 rounded-lg focus-visible:outline-none
+                 rounded-lg cursor-pointer shadow-sm transition-all hover:scale-105 hover:shadow-lg focus-visible:outline-none
                  focus-visible:ring-2 focus-visible:ring-ring"
     >
       {card.imageSmall ? (
         <img
           src={card.imageSmall}
           alt={card.name}
-          className="h-full w-full object-cover transition-transform
-                     duration-200 group-hover:scale-105"
+          className="h-full w-full object-cover"
           loading="lazy"
         />
       ) : (
