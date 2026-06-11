@@ -2,12 +2,14 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { CardStatus } from '@prisma/client'
 import { GameSelector } from './game-selector'
 import { CardFilters } from './card-filters'
 import { CardGrid } from './card-grid'
 import { CardPagination } from './card-pagination'
 import { CardDetailModal } from './card-detail-modal'
 import { CardWithCollectionStatus, SetGroup } from '@/types/card'
+import { AddToBinderResult } from '@/types/binder'
 
 const DEFAULT_LANGUAGE = 'ZH_TW'
 const VALID_LANGUAGES = ['EN', 'JA', 'ZH_TW']
@@ -151,6 +153,30 @@ export function CardSearchClient({ initialParams }: CardSearchClientProps) {
     }
   }
 
+  const handleAddToBinder = async (binderId: string, status: CardStatus, quantity: number) => {
+    if (!selectedCard) return
+    const res = await fetch(`/api/binders/${binderId}/cards`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ cardId: selectedCard.id, status, quantity }),
+    })
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}))
+      throw new Error(err?.error ?? '加入失敗')
+    }
+    const result: AddToBinderResult = await res.json()
+    if (result.userCard) {
+      const current = selectedCard.collectionStatus
+      const newOwned = status === 'owned'
+        ? (current.owned ?? 0) + quantity
+        : (current.owned ?? null)
+      const newWanted = status === 'wanted'
+        ? (current.wanted ?? 0) + quantity
+        : (current.wanted ?? null)
+      handleCollectionUpdate(selectedCard.id, { owned: newOwned, wanted: newWanted })
+    }
+  }
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold mb-6">卡牌搜尋</h1>
@@ -187,6 +213,7 @@ export function CardSearchClient({ initialParams }: CardSearchClientProps) {
         open={!!selectedCard}
         onClose={() => setSelectedCard(null)}
         onCollectionUpdate={handleCollectionUpdate}
+        onAddToBinder={handleAddToBinder}
       />
     </div>
   )

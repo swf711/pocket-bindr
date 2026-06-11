@@ -34,3 +34,24 @@ export const GRID_TYPE_SLOTS: Record<GridType, number> = {
   grid_3x4: 12,
   grid_4x4: 16,
 }
+
+export interface AddToBinderPayload {
+  cardId: string
+  status: 'owned' | 'wanted'
+  quantity: number
+}
+
+export interface AddToBinderResult {
+  slotsAdded: number
+  userCard: {
+    id: string
+    cardId: string
+    status: 'owned' | 'wanted'
+    quantity: number
+  }
+}
+
+export interface CardCollectionSummary {
+  ownedCount: number
+  wantedCount: number
+}

@@ -21,3 +21,17 @@ export async function clearTestUserBinders() {
     where: { user: { email: TEST_USER.email } },
   })
 }
+
+/**
+ * 清除指定 userId 的所有 UserCard 紀錄。
+ */
+export async function cleanUserCards(userId: string) {
+  await prisma.userCard.deleteMany({ where: { userId } })
+}
+
+/**
+ * 清除指定 binderId 的所有 BinderSlot 紀錄。
+ */
+export async function cleanBinderSlots(binderId: string) {
+  await prisma.binderSlot.deleteMany({ where: { binderId } })
+}

@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { CardStatus } from '@prisma/client'
+import { toast } from 'sonner'
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle
 } from '@/components/ui/dialog'
@@ -13,6 +14,7 @@ import {
 } from '@/components/ui/select'
 import { CardWithCollectionStatus } from '@/types/card'
 import { BinderSummary } from '@/types/binder'
+import { LoginModal } from '@/components/auth/login-modal'
 
 interface CardDetailModalProps {
   card: CardWithCollectionStatus | null
@@ -103,11 +105,36 @@ function AddToBinderSection({
       .catch(() => {})
   }, [card.id])
 
+  const [loginModalOpen, setLoginModalOpen] = useState(false)
+
   if (isGuest) {
     return (
-      <p className="text-sm text-muted-foreground">
-        <a href="/login" className="underline">登入</a>後可加入卡冊
-      </p>
+      <div className="flex flex-col gap-3">
+        <p className="text-sm text-muted-foreground">請先登入以加入卡冊</p>
+        <Button
+          data-testid="modal-add-btn"
+          onClick={() => setLoginModalOpen(true)}
+        >
+          加入卡冊
+        </Button>
+        <LoginModal
+          isOpen={loginModalOpen}
+          onClose={() => setLoginModalOpen(false)}
+          onSuccess={() => {
+            setLoginModalOpen(false)
+            setIsGuest(false)
+            fetch('/api/binders').then(async res => {
+              if (res.ok) {
+                const data = await res.json()
+                const list: BinderSummary[] = Array.isArray(data) ? data : (data.binders ?? [])
+                setBinders(list)
+                if (list.length === 0) setNoBinders(true)
+                else setSelectedBinderId(list[0].id)
+              }
+            })
+          }}
+        />
+      </div>
     )
   }
 
@@ -125,6 +152,9 @@ function AddToBinderSection({
     try {
       await onAddToBinder(selectedBinderId, selectedStatus, quantity)
       setQuantity(1)
+      toast.success(`已加入 ${quantity} 張到卡冊`)
+    } catch {
+      toast.error('加入失敗，請重試')
     } finally {
       setLoading(false)
     }
