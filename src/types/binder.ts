@@ -1,5 +1,56 @@
 import { GridType } from '@prisma/client'
 
+// ── Binder view types ──────────────────────────────────────────────────────
+
+export type SlotWithCard = {
+  id: string
+  binderId: string
+  cardId: string
+  pageNumber: number
+  slotIndex: number
+  status: 'owned' | 'wanted'
+  card: {
+    id: string
+    name: string
+    imageSmall: string
+    language: 'EN' | 'JA' | 'ZH_TW'
+    cardNumber: string
+    rarity: string | null
+  }
+}
+
+export type EmptySlot = {
+  id: null
+  pageNumber: number
+  slotIndex: number
+}
+
+export type BinderSlotItem = SlotWithCard | EmptySlot
+
+export type BinderDetailResponse = {
+  id: string
+  name: string
+  gridType: 'grid_1x2' | 'grid_2x2' | 'grid_3x3' | 'grid_3x4' | 'grid_4x4'
+  slots: SlotWithCard[]
+}
+
+export type SwapSlotsBody = {
+  slotAId: string
+  slotBId: string
+}
+
+export type SwapSlotsResponse = {
+  slotA: { id: string; pageNumber: number; slotIndex: number }
+  slotB: { id: string; pageNumber: number; slotIndex: number }
+}
+
+export type MoveSlotBody = {
+  pageNumber: number
+  slotIndex: number
+}
+
+// ── End binder view types ──────────────────────────────────────────────────
+
 export interface BinderSummary {
   id: string
   name: string

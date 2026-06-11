@@ -35,3 +35,31 @@ export async function cleanUserCards(userId: string) {
 export async function cleanBinderSlots(binderId: string) {
   await prisma.binderSlot.deleteMany({ where: { binderId } })
 }
+
+/**
+ * 建立含格位的卡冊，供 binder-view E2E 測試使用。
+ */
+export async function createBinderWithSlots(
+  userId: string,
+  gridType: string,
+  slotData: Array<{ cardId: string; status: 'owned' | 'wanted'; pageNumber: number; slotIndex: number }>,
+): Promise<{ binder: { id: string }; slots: Array<{ id: string }> }> {
+  const binder = await prisma.binder.create({
+    data: { userId, name: 'E2E Test Binder', gridType: gridType as never },
+  })
+  const slots = await Promise.all(
+    slotData.map((s) =>
+      prisma.binderSlot.create({
+        data: { binderId: binder.id, cardId: s.cardId, status: s.status as never, pageNumber: s.pageNumber, slotIndex: s.slotIndex },
+      }),
+    ),
+  )
+  return { binder, slots }
+}
+
+/**
+ * 刪除指定卡冊（含所有 BinderSlot，由 cascade 處理）。
+ */
+export async function cleanupBinder(binderId: string): Promise<void> {
+  await prisma.binder.delete({ where: { id: binderId } }).catch(() => {})
+}

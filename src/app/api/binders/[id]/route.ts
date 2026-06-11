@@ -23,6 +23,51 @@ async function getBinderOrError(id: string, userId: string) {
   return { binder, error: null }
 }
 
+export async function GET(_request: Request, context: RouteContext) {
+  const session = await auth()
+  if (!session?.user?.id) {
+    return Response.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+  const { id } = await context.params
+  const { error } = await getBinderOrError(id, session.user.id)
+  if (error) return error
+
+  const binderWithSlots = await prisma.binder.findUnique({
+    where: { id },
+    include: {
+      slots: {
+        where: { cardId: { not: null } },
+        orderBy: [{ pageNumber: 'asc' }, { slotIndex: 'asc' }],
+        select: {
+          id: true,
+          binderId: true,
+          cardId: true,
+          pageNumber: true,
+          slotIndex: true,
+          status: true,
+          card: {
+            select: {
+              id: true,
+              name: true,
+              imageSmall: true,
+              language: true,
+              cardNumber: true,
+              rarity: true,
+            },
+          },
+        },
+      },
+    },
+  })
+
+  return Response.json({
+    id: binderWithSlots!.id,
+    name: binderWithSlots!.name,
+    gridType: binderWithSlots!.gridType,
+    slots: binderWithSlots!.slots,
+  })
+}
+
 export async function PATCH(request: Request, context: RouteContext) {
   const session = await auth()
   if (!session?.user?.id) {
