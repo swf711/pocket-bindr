@@ -45,7 +45,7 @@ export function CardFilters({
       <Input
         data-testid="search-input"
         type="text"
-        placeholder="搜尋卡牌名稱..."
+        placeholder="搜尋卡牌名稱或型號..."
         value={query}
         onChange={(e) => onQueryChange(e.target.value)}
         className="flex-1"
@@ -67,7 +67,7 @@ export function CardFilters({
         <SelectTrigger data-testid="set-filter" className="w-full sm:w-64">
           <SelectValue placeholder="所有系列" />
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent position="popper" align="end">
           <SelectItem value={ALL_SETS}>所有系列</SelectItem>
           {groups.map(group => (
             <React.Fragment key={group.series}>
@@ -75,7 +75,7 @@ export function CardFilters({
               <TwoColumnSelectGroup label={group.series}>
                 {group.sets.map(set => (
                   <SelectItem key={set.id} value={set.id} className="w-full">
-                    {set.name}（<span className="text-muted-foreground">{set.externalId}</span>）
+                    {set.name} <span className="text-muted-foreground">{set.externalId}</span>
                   </SelectItem>
                 ))}
               </TwoColumnSelectGroup>

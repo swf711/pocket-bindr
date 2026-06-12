@@ -12,8 +12,8 @@ interface TwoColumnSelectGroupProps {
 
 export function TwoColumnSelectGroup({ label, children, className }: TwoColumnSelectGroupProps) {
   return (
-    <SelectGroup className={cn('grid grid-cols-2', className)}>
-      {label && <SelectLabel className="col-span-2">{label}</SelectLabel>}
+    <SelectGroup className={cn('grid sm:grid-cols-2', className)}>
+      {label && <SelectLabel className="sm:col-span-2">{label}</SelectLabel>}
       {children}
     </SelectGroup>
   )
