@@ -24,6 +24,41 @@ const GRID_COLS: Record<GridType, number> = {
   grid_4x4: 4,
 }
 
+interface BinderGridSlotsProps {
+  slots: BinderSlotItem[]
+  gridType: GridType
+  onDelete: (slotId: string) => void
+  onToggleStatus: (slotId: string) => void
+}
+
+/** Pure slot grid rendering — no DndContext. Use inside a parent DndContext. */
+export function BinderGridSlots({ slots, gridType, onDelete, onToggleStatus }: BinderGridSlotsProps) {
+  const cols = GRID_COLS[gridType]
+  return (
+    <div
+      style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
+      className="grid gap-2"
+    >
+      {slots.map((slot) =>
+        slot.id === null ? (
+          <EmptySlotCard
+            key={`empty-${slot.pageNumber}-${slot.slotIndex}`}
+            pageNumber={slot.pageNumber}
+            slotIndex={slot.slotIndex}
+          />
+        ) : (
+          <SlotCard
+            key={slot.id}
+            slot={slot as SlotWithCard}
+            onDelete={onDelete}
+            onToggleStatus={onToggleStatus}
+          />
+        ),
+      )}
+    </div>
+  )
+}
+
 interface BinderGridProps {
   slots: BinderSlotItem[]
   gridType: GridType
@@ -68,31 +103,9 @@ export function BinderGrid({ slots, gridType, onDelete, onToggleStatus, onSwap, 
     }
   }
 
-  const cols = GRID_COLS[gridType]
-
   return (
     <DndContext id="binder-dnd" sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-      <div
-        style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
-        className="grid gap-2"
-      >
-        {slots.map((slot) =>
-          slot.id === null ? (
-            <EmptySlotCard
-              key={`empty-${slot.pageNumber}-${slot.slotIndex}`}
-              pageNumber={slot.pageNumber}
-              slotIndex={slot.slotIndex}
-            />
-          ) : (
-            <SlotCard
-              key={slot.id}
-              slot={slot as SlotWithCard}
-              onDelete={onDelete}
-              onToggleStatus={onToggleStatus}
-            />
-          ),
-        )}
-      </div>
+      <BinderGridSlots slots={slots} gridType={gridType} onDelete={onDelete} onToggleStatus={onToggleStatus} />
       <DragOverlay>
         {activeSlot ? (
           <SlotCard slot={activeSlot} onDelete={() => {}} onToggleStatus={() => {}} isDragOverlay />

@@ -1,20 +1,10 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { Pencil, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { BinderSummary, GRID_TYPE_LABELS } from '@/types/binder'
-import { GridType } from '@prisma/client'
+import { BinderSummary } from '@/types/binder'
+import { BinderCoverCard } from './binder-cover-card'
 import { CreateBinderDialog } from './create-binder-dialog'
 import { EditBinderDialog } from './edit-binder-dialog'
 import { DeleteBinderDialog } from './delete-binder-dialog'
@@ -24,7 +14,6 @@ interface BinderListClientProps {
 }
 
 export function BinderListClient({ initialBinders }: BinderListClientProps) {
-  const router = useRouter()
   const [binderList, setBinderList] = useState<BinderSummary[]>(initialBinders)
   const [createOpen, setCreateOpen] = useState(false)
   const [editOpen, setEditOpen] = useState(false)
@@ -76,44 +65,12 @@ export function BinderListClient({ initialBinders }: BinderListClientProps) {
       ) : (
         <div className="grid gap-4 md:grid-cols-3">
           {binderList.map(binder => (
-            <Card key={binder.id} data-testid="binder-card">
-              <CardHeader>
-                <CardTitle>{binder.name}</CardTitle>
-              </CardHeader>
-              <CardContent className="flex items-center gap-2">
-                <Badge variant="secondary">
-                  {GRID_TYPE_LABELS[binder.gridType as GridType]}
-                </Badge>
-                <span className="text-sm text-muted-foreground">
-                  {binder._count.slots} 張卡
-                </span>
-              </CardContent>
-              <CardFooter className="flex gap-2">
-                <Button
-                  variant="default"
-                  data-testid="enter-binder-btn"
-                  onClick={() => router.push('/binders/' + binder.id)}
-                >
-                  進入卡冊
-                </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  data-testid="edit-binder-btn"
-                  onClick={() => openEdit(binder)}
-                >
-                  <Pencil className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  data-testid="delete-binder-btn"
-                  onClick={() => openDelete(binder)}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </CardFooter>
-            </Card>
+            <BinderCoverCard
+              key={binder.id}
+              binder={binder}
+              onEdit={openEdit}
+              onDelete={openDelete}
+            />
           ))}
         </div>
       )}

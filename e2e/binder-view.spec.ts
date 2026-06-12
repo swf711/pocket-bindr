@@ -9,7 +9,8 @@ async function getTestUserId(): Promise<string> {
 }
 
 async function getAnyCardId(): Promise<string> {
-  const card = await prisma.card.findFirstOrThrow()
+  // 需要有圖片的卡片，否則 SlotCard 會渲染文字 fallback 而非 <img>
+  const card = await prisma.card.findFirstOrThrow({ where: { imageSmall: { not: '' } } })
   return card.id
 }
 
@@ -100,7 +101,7 @@ test.describe('卡冊格位檢視頁', () => {
       // Hover to reveal delete button
       const slotContainer = page.locator('.group').first()
       await slotContainer.hover()
-      const deleteBtn = slotContainer.locator('button[class*="destructive"]')
+      const deleteBtn = slotContainer.locator('button[data-variant="destructive"]')
       await deleteBtn.click()
       // AlertDialog should appear
       await expect(page.getByRole('alertdialog')).toBeVisible()
@@ -125,7 +126,7 @@ test.describe('卡冊格位檢視頁', () => {
       await page.goto(`/binders/${binder.id}`)
       const slotContainer = page.locator('.group').first()
       await slotContainer.hover()
-      const deleteBtn = slotContainer.locator('button[class*="destructive"]')
+      const deleteBtn = slotContainer.locator('button[data-variant="destructive"]')
       await deleteBtn.click()
       await page.getByRole('button', { name: '確認移除' }).click()
       // After delete, the slot becomes empty (no img)

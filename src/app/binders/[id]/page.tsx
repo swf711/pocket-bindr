@@ -43,6 +43,7 @@ export default async function BinderDetailPage({ params }: { params: Promise<{ i
     id: binder.id,
     name: binder.name,
     gridType: binder.gridType as BinderDetailResponse['gridType'],
+    coverColor: binder.coverColor,
     slots: binder.slots.filter((s) => s.cardId !== null) as BinderDetailResponse['slots'],
   }
 

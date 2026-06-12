@@ -20,6 +20,8 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { BinderSummary, GRID_TYPE_LABELS } from '@/types/binder'
+import { DEFAULT_COVER_COLOR } from '@/lib/cover-colors'
+import { CoverColorPicker } from './cover-color-picker'
 
 interface CreateBinderDialogProps {
   open: boolean
@@ -34,6 +36,7 @@ export function CreateBinderDialog({
 }: CreateBinderDialogProps) {
   const [name, setName] = useState('')
   const [gridType, setGridType] = useState<GridType>('grid_3x3')
+  const [coverColor, setCoverColor] = useState(DEFAULT_COVER_COLOR)
   const [loading, setLoading] = useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
@@ -43,7 +46,7 @@ export function CreateBinderDialog({
       const res = await fetch('/api/binders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, gridType }),
+        body: JSON.stringify({ name, gridType, coverColor }),
       })
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
@@ -53,6 +56,7 @@ export function CreateBinderDialog({
       onCreated(data)
       setName('')
       setGridType('grid_3x3')
+      setCoverColor(DEFAULT_COVER_COLOR)
       onOpenChange(false)
     } catch (err) {
       toast((err as Error).message)
@@ -99,6 +103,10 @@ export function CreateBinderDialog({
                 )}
               </SelectContent>
             </Select>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label>封面顏色</Label>
+            <CoverColorPicker value={coverColor} onChange={setCoverColor} />
           </div>
           <Button
             type="submit"

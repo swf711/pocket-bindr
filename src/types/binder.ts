@@ -31,6 +31,7 @@ export type BinderDetailResponse = {
   id: string
   name: string
   gridType: 'grid_1x2' | 'grid_2x2' | 'grid_3x3' | 'grid_3x4' | 'grid_4x4'
+  coverColor: string
   slots: SlotWithCard[]
 }
 
@@ -55,6 +56,7 @@ export interface BinderSummary {
   id: string
   name: string
   gridType: GridType
+  coverColor: string
   settings: Record<string, unknown> | null
   createdAt: string
   _count: { slots: number }
@@ -63,11 +65,13 @@ export interface BinderSummary {
 export interface CreateBinderInput {
   name: string
   gridType: GridType
+  coverColor?: string
 }
 
 export interface UpdateBinderInput {
   name?: string
   gridType?: GridType
+  coverColor?: string
 }
 
 export const GRID_TYPE_LABELS: Record<GridType, string> = {

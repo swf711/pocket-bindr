@@ -18,6 +18,7 @@ export default async function BindersPage() {
     ...b,
     settings: b.settings as Record<string, unknown> | null,
     createdAt: b.createdAt.toISOString(),
+    coverColor: b.coverColor,
   }))
 
   return <BinderListClient initialBinders={binderSummaries} />

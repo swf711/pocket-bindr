@@ -1,6 +1,7 @@
 import { GridType } from '@prisma/client'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { DEFAULT_COVER_COLOR } from '@/lib/cover-colors'
 
 const VALID_GRID_TYPES = new Set<GridType>([
   'grid_1x2',
@@ -9,6 +10,8 @@ const VALID_GRID_TYPES = new Set<GridType>([
   'grid_3x4',
   'grid_4x4',
 ])
+
+const HEX_COLOR_RE = /^#[0-9A-Fa-f]{6}$/
 
 export async function GET() {
   const session = await auth()
@@ -40,7 +43,7 @@ export async function POST(request: Request) {
     return Response.json({ error: 'Invalid JSON' }, { status: 400 })
   }
 
-  const { name, gridType } = body as Record<string, unknown>
+  const { name, gridType, coverColor } = body as Record<string, unknown>
 
   if (typeof name !== 'string' || name.trim().length === 0 || name.trim().length > 50) {
     return Response.json(
@@ -56,8 +59,13 @@ export async function POST(request: Request) {
     )
   }
 
+  const resolvedColor = coverColor === undefined ? DEFAULT_COVER_COLOR : coverColor
+  if (typeof resolvedColor !== 'string' || !HEX_COLOR_RE.test(resolvedColor)) {
+    return Response.json({ error: 'coverColor must be a valid hex color (e.g. #4A5568)' }, { status: 400 })
+  }
+
   const binder = await prisma.binder.create({
-    data: { userId, name: name.trim(), gridType: gridType as GridType },
+    data: { userId, name: name.trim(), gridType: gridType as GridType, coverColor: resolvedColor },
     include: { _count: { select: { slots: true } } },
   })
 

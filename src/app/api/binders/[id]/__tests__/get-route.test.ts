@@ -21,6 +21,7 @@ const mockBinder = {
   userId: 'user-1',
   name: '測試卡冊',
   gridType: 'grid_3x3',
+  coverColor: '#4A5568',
   settings: null,
   createdAt: new Date(),
   updatedAt: new Date(),

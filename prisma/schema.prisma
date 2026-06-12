@@ -101,15 +101,16 @@ model UserCard {
 }
 
 model Binder {
-  id        String       @id @default(uuid())
-  userId    String
-  user      User         @relation(fields: [userId], references: [id])
-  name      String
-  gridType  GridType
-  settings  Json?
-  createdAt DateTime     @default(now())
-  updatedAt DateTime     @updatedAt
-  slots     BinderSlot[]
+  id         String       @id @default(uuid())
+  userId     String
+  user       User         @relation(fields: [userId], references: [id])
+  name       String
+  gridType   GridType
+  coverColor String       @default("#4A5568")
+  settings   Json?
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  slots      BinderSlot[]
 }
 
 model BinderSlot {

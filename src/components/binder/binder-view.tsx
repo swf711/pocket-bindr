@@ -2,21 +2,22 @@
 
 import { useState } from 'react'
 import { GridType } from '@prisma/client'
-import { Button } from '@/components/ui/button'
-import { BinderGrid } from './binder-grid'
+import { BinderSpreadView } from './binder-spread-view'
+import { BinderMobileView } from './binder-mobile-view'
 import type { BinderDetailResponse, SlotWithCard } from '@/types/binder'
-import { buildGridPages } from '@/lib/binder-utils'
-
-export { buildGridPages }
+import { buildGridPages, buildSpreads, buildMobilePages } from '@/lib/binder-utils'
 
 export function BinderView({ binder }: { binder: BinderDetailResponse }) {
   const [slots, setSlots] = useState<SlotWithCard[]>(binder.slots)
-  const [currentPage, setCurrentPage] = useState(1)
+  const [spreadIndex, setSpreadIndex] = useState(0)
+  const [mobilePageIndex, setMobilePageIndex] = useState(0)
 
   const gridType = binder.gridType as GridType
   const pages = buildGridPages(slots, gridType)
   const totalPages = Math.max(pages.size, 1)
-  const currentSlots = pages.get(currentPage) ?? []
+  const pagesArray = Array.from({ length: totalPages }, (_, i) => pages.get(i + 1) ?? [])
+  const spreads = buildSpreads(pagesArray)
+  const mobilePages = buildMobilePages(pagesArray)
 
   const handleDelete = async (slotId: string) => {
     await fetch(`/api/binders/${binder.id}/slots/${slotId}`, { method: 'DELETE' })
@@ -83,39 +84,31 @@ export function BinderView({ binder }: { binder: BinderDetailResponse }) {
     }
   }
 
+  const sharedHandlers = {
+    onDelete: handleDelete,
+    onSwap: handleSwap,
+    onToggleStatus: handleToggleStatus,
+    onMove: handleMove,
+  }
+
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">{binder.name}</h1>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-            disabled={currentPage <= 1}
-          >
-            ← Prev
-          </Button>
-          <span className="text-sm text-muted-foreground">
-            Page {currentPage} / {totalPages}
-          </span>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-            disabled={currentPage >= totalPages}
-          >
-            Next →
-          </Button>
-        </div>
-      </div>
-      <BinderGrid
-        slots={currentSlots}
+      <h1 className="text-2xl font-bold">{binder.name}</h1>
+      <BinderSpreadView
+        spreads={spreads}
+        spreadIndex={spreadIndex}
+        onSpreadChange={setSpreadIndex}
+        coverColor={binder.coverColor}
         gridType={gridType}
-        onDelete={handleDelete}
-        onToggleStatus={handleToggleStatus}
-        onSwap={handleSwap}
-        onMove={handleMove}
+        {...sharedHandlers}
+      />
+      <BinderMobileView
+        mobilePages={mobilePages}
+        pageIndex={mobilePageIndex}
+        onPageChange={setMobilePageIndex}
+        coverColor={binder.coverColor}
+        gridType={gridType}
+        {...sharedHandlers}
       />
     </div>
   )

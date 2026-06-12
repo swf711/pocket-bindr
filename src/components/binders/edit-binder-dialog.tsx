@@ -20,6 +20,8 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { BinderSummary, GRID_TYPE_LABELS } from '@/types/binder'
+import { DEFAULT_COVER_COLOR } from '@/lib/cover-colors'
+import { CoverColorPicker } from './cover-color-picker'
 
 interface EditBinderDialogProps {
   open: boolean
@@ -36,12 +38,14 @@ export function EditBinderDialog({
 }: EditBinderDialogProps) {
   const [name, setName] = useState('')
   const [gridType, setGridType] = useState<GridType>('grid_3x3')
+  const [coverColor, setCoverColor] = useState(DEFAULT_COVER_COLOR)
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     if (binder) {
       setName(binder.name)
       setGridType(binder.gridType as GridType)
+      setCoverColor(binder.coverColor ?? DEFAULT_COVER_COLOR)
     }
   }, [binder])
 
@@ -53,7 +57,7 @@ export function EditBinderDialog({
       const res = await fetch(`/api/binders/${binder.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, gridType }),
+        body: JSON.stringify({ name, gridType, coverColor }),
       })
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
@@ -107,6 +111,10 @@ export function EditBinderDialog({
                 )}
               </SelectContent>
             </Select>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label>封面顏色</Label>
+            <CoverColorPicker value={coverColor} onChange={setCoverColor} />
           </div>
           <Button
             type="submit"

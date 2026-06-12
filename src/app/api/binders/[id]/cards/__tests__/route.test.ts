@@ -40,6 +40,7 @@ const mockBinder = {
   userId: 'u1',
   name: 'Test Binder',
   gridType: 'grid_3x3' as const,
+  coverColor: '#4A5568',
   settings: null,
   createdAt: new Date(),
   updatedAt: new Date(),
@@ -55,7 +56,7 @@ const mockCard = {
   rarity: null,
   number: '001',
   createdAt: new Date(),
-}
+} as never
 
 const mockUserCard = {
   id: 'uc1',
@@ -183,8 +184,8 @@ describe('POST /api/binders/[id]/cards', () => {
     expect(prisma.binderSlot.update).toHaveBeenCalledTimes(1)
     // createMany called with 2 new slots
     expect(prisma.binderSlot.createMany).toHaveBeenCalledTimes(1)
-    const createManyCall = vi.mocked(prisma.binderSlot.createMany).mock.calls[0][0]
-    expect(createManyCall.data).toHaveLength(2)
+    const createManyCall = vi.mocked(prisma.binderSlot.createMany).mock.calls[0]?.[0]
+    expect(createManyCall?.data).toHaveLength(2)
   })
 
   it('成功：回傳 slotsAdded 與 userCard', async () => {

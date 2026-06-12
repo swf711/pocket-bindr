@@ -24,3 +24,59 @@ export function buildGridPages(
   }
   return pages
 }
+
+export type GridPage = BinderSlotItem[]
+
+export type SpreadPageContent =
+  | { type: 'cover' }
+  | { type: 'page'; pageNumber: number; page: GridPage }
+  | { type: 'blank' }
+
+export interface Spread {
+  index: number
+  left: SpreadPageContent
+  right: SpreadPageContent
+}
+
+/**
+ * Spread 0: left = cover, right = Page 1 (pages[0])
+ * Spread N (N>=1): left = Page 2N-1 (pages[2N-2]), right = Page 2N (pages[2N-1])
+ * If right page doesn't exist (odd-length pages), right = { type: 'blank' }
+ */
+export function buildSpreads(pages: GridPage[]): Spread[] {
+  const spreads: Spread[] = []
+
+  const right0: SpreadPageContent =
+    pages.length > 0
+      ? { type: 'page', pageNumber: 1, page: pages[0] }
+      : { type: 'blank' }
+  spreads.push({ index: 0, left: { type: 'cover' }, right: right0 })
+
+  // pages[1] onward, grouped in pairs
+  let i = 1
+  while (i < pages.length) {
+    const spreadIndex = spreads.length
+    const leftPageNum = i + 1       // page numbers are 1-based
+    const rightPageNum = i + 2
+    const left: SpreadPageContent = { type: 'page', pageNumber: leftPageNum, page: pages[i] }
+    const right: SpreadPageContent =
+      i + 1 < pages.length
+        ? { type: 'page', pageNumber: rightPageNum, page: pages[i + 1] }
+        : { type: 'blank' }
+    spreads.push({ index: spreadIndex, left, right })
+    i += 2
+  }
+
+  return spreads
+}
+
+/**
+ * Mobile page sequence: [cover, Page1, Page2, Page3, ...]
+ */
+export function buildMobilePages(pages: GridPage[]): SpreadPageContent[] {
+  const result: SpreadPageContent[] = [{ type: 'cover' }]
+  for (let i = 0; i < pages.length; i++) {
+    result.push({ type: 'page', pageNumber: i + 1, page: pages[i] })
+  }
+  return result
+}

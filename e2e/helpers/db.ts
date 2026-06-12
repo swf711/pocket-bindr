@@ -63,3 +63,50 @@ export async function createBinderWithSlots(
 export async function cleanupBinder(binderId: string): Promise<void> {
   await prisma.binder.delete({ where: { id: binderId } }).catch(() => {})
 }
+
+/**
+ * 建立含多頁格位的卡冊，供 spread layout E2E 測試使用。
+ * 建立足夠的格位讓 grid 分成多頁（預設 grid_3x3，9格/頁，建立 2+ 頁）。
+ */
+export async function createMultiPageBinder(
+  userId: string,
+  options: {
+    name?: string
+    coverColor?: string
+    gridType?: string
+    pageCount?: number
+  } = {},
+): Promise<{ binder: { id: string; coverColor: string } }> {
+  const {
+    name = 'Multi-Page Test Binder',
+    coverColor = '#2C5282',
+    gridType = 'grid_3x3',
+    pageCount = 2,
+  } = options
+
+  const binder = await prisma.binder.create({
+    data: { userId, name, gridType: gridType as never, coverColor },
+  })
+
+  // Find a card with an image to use in slots
+  const card = await prisma.card.findFirst({ where: { imageSmall: { not: '' } } })
+  if (card) {
+    // Add a userCard so slots are valid
+    const userCard = await prisma.userCard.upsert({
+      where: { userId_cardId_status: { userId, cardId: card.id, status: 'owned' } },
+      create: { userId, cardId: card.id, status: 'owned', quantity: pageCount },
+      update: { quantity: pageCount },
+    })
+
+    // Create one slot per page so we have enough pages
+    const slotPromises = Array.from({ length: pageCount }, (_, i) =>
+      prisma.binderSlot.create({
+        data: { binderId: binder.id, cardId: card.id, status: 'owned', pageNumber: i + 1, slotIndex: 0 },
+      }),
+    )
+    await Promise.all(slotPromises)
+    void userCard
+  }
+
+  return { binder: { id: binder.id, coverColor } }
+}

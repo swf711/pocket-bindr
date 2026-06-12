@@ -17,7 +17,7 @@ vi.mock('@/lib/auth', () => ({
 import { DELETE, PATCH } from '../route'
 import { prisma } from '@/lib/prisma'
 
-const mockBinder = { id: 'b1', userId: 'u1', name: 'Test', gridType: 'grid_3x3', settings: null, createdAt: new Date(), updatedAt: new Date() }
+const mockBinder = { id: 'b1', userId: 'u1', name: 'Test', gridType: 'grid_3x3', coverColor: '#4A5568', settings: null, createdAt: new Date(), updatedAt: new Date() }
 const mockSlot = { id: 's1', binderId: 'b1', cardId: 'c1', status: 'owned' as const, pageNumber: 1, slotIndex: 0, createdAt: new Date() }
 
 function makeContext(binderId: string, slotId: string) {

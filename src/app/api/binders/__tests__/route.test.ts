@@ -27,6 +27,7 @@ const mockBinder = {
   userId: 'user-1',
   name: '我的卡冊',
   gridType: 'grid_3x3',
+  coverColor: '#4A5568',
   settings: null,
   createdAt: new Date('2024-01-01'),
   updatedAt: new Date('2024-01-01'),
@@ -189,5 +190,81 @@ describe('DELETE /api/binders/[id]', () => {
     })
     const res = await DELETE(req, { params: Promise.resolve({ id: 'binder-1' }) })
     expect(res.status).toBe(204)
+  })
+})
+
+describe('POST /api/binders - coverColor 驗證', () => {
+  beforeEach(() => vi.clearAllMocks())
+
+  it('合法 hex 色碼，建立成功', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'user-1' } })
+    vi.mocked(prisma.binder.create).mockResolvedValue({ ...mockBinder, coverColor: '#2C5282' } as never)
+    const req = new NextRequest('http://localhost/api/binders', {
+      method: 'POST',
+      body: JSON.stringify({ name: '測試', gridType: 'grid_3x3', coverColor: '#2C5282' }),
+    })
+    const res = await POST(req)
+    expect(res.status).toBe(201)
+  })
+
+  it('未提供 coverColor，套用 DEFAULT_COVER_COLOR', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'user-1' } })
+    vi.mocked(prisma.binder.create).mockResolvedValue(mockBinder as never)
+    const req = new NextRequest('http://localhost/api/binders', {
+      method: 'POST',
+      body: JSON.stringify({ name: '測試', gridType: 'grid_3x3' }),
+    })
+    const res = await POST(req)
+    expect(res.status).toBe(201)
+    expect(vi.mocked(prisma.binder.create).mock.calls[0][0].data.coverColor).toBe('#4A5568')
+  })
+
+  it('非法格式（"red"），回傳 400', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'user-1' } })
+    const req = new NextRequest('http://localhost/api/binders', {
+      method: 'POST',
+      body: JSON.stringify({ name: '測試', gridType: 'grid_3x3', coverColor: 'red' }),
+    })
+    const res = await POST(req)
+    expect(res.status).toBe(400)
+  })
+
+  it('非法格式（"#zzz"），回傳 400', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'user-1' } })
+    const req = new NextRequest('http://localhost/api/binders', {
+      method: 'POST',
+      body: JSON.stringify({ name: '測試', gridType: 'grid_3x3', coverColor: '#zzz' }),
+    })
+    const res = await POST(req)
+    expect(res.status).toBe(400)
+  })
+})
+
+describe('PATCH /api/binders/[id] - coverColor 更新', () => {
+  beforeEach(() => vi.clearAllMocks())
+
+  it('成功更新 coverColor', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'user-1' } })
+    vi.mocked(prisma.binder.findUnique).mockResolvedValue(mockBinder as never)
+    vi.mocked(prisma.binder.update).mockResolvedValue({ ...mockBinder, coverColor: '#9B2C2C' } as never)
+    const req = new NextRequest('http://localhost/api/binders/binder-1', {
+      method: 'PATCH',
+      body: JSON.stringify({ coverColor: '#9B2C2C' }),
+    })
+    const res = await PATCH(req, { params: Promise.resolve({ id: 'binder-1' }) })
+    expect(res.status).toBe(200)
+    const data = await res.json()
+    expect(data.coverColor).toBe('#9B2C2C')
+  })
+
+  it('非本人卡冊回傳 403', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'user-1' } })
+    vi.mocked(prisma.binder.findUnique).mockResolvedValue({ ...mockBinder, userId: 'other' } as never)
+    const req = new NextRequest('http://localhost/api/binders/binder-1', {
+      method: 'PATCH',
+      body: JSON.stringify({ coverColor: '#9B2C2C' }),
+    })
+    const res = await PATCH(req, { params: Promise.resolve({ id: 'binder-1' }) })
+    expect(res.status).toBe(403)
   })
 })
