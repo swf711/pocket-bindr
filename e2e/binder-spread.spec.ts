@@ -1,18 +1,14 @@
 import { test, expect } from '@playwright/test'
 import { prisma } from '../src/lib/prisma'
-import { loginAsTestUser, TEST_USER } from './helpers/auth'
-import { createMultiPageBinder, cleanupBinder } from './helpers/db'
+import { getTestUser, loginAs } from './helpers/auth'
+import { getUserIdByEmail, createMultiPageBinder, cleanupBinder } from './helpers/db'
+import { startDrag, dropOn } from './helpers/drag'
 
-async function getTestUserId(page: import('@playwright/test').Page): Promise<string> {
-  // Test user is created during loginAsTestUser if missing
-  const user = await prisma.user.findUniqueOrThrow({ where: { email: TEST_USER.email } })
-  void page
-  return user.id
-}
+const USER = getTestUser('binderspread')
 
 test.describe('Binder Spread Layout - 封面顏色', () => {
   test('建立卡冊時可選擇封面顏色，列表頁封面套用該顏色', async ({ page }) => {
-    await loginAsTestUser(page)
+    await loginAs(page, USER)
     await page.goto('/binders')
 
     const name = `顏色測試冊-${Date.now()}`
@@ -33,7 +29,7 @@ test.describe('Binder Spread Layout - 封面顏色', () => {
   })
 
   test('編輯卡冊封面顏色，列表頁即時更新', async ({ page }) => {
-    await loginAsTestUser(page)
+    await loginAs(page, USER)
     await page.goto('/binders')
 
     const name = `編輯顏色冊-${Date.now()}`
@@ -65,8 +61,8 @@ test.describe('Binder Spread Layout - 桌面雙頁', () => {
   test.use({ viewport: { width: 1280, height: 800 } })
 
   test('桌面：進入卡冊顯示 Spread 0（內封面 + Page 1）', async ({ page }) => {
-    await loginAsTestUser(page)
-    const userId = await getTestUserId(page)
+    await loginAs(page, USER)
+    const userId = await getUserIdByEmail(USER.email)
     const { binder } = await createMultiPageBinder(userId, { pageCount: 2 })
     try {
       await page.goto(`/binders/${binder.id}`)
@@ -80,8 +76,8 @@ test.describe('Binder Spread Layout - 桌面雙頁', () => {
   })
 
   test('桌面：點擊下一頁切換至 Spread 1，上一頁按鈕變為可點擊', async ({ page }) => {
-    await loginAsTestUser(page)
-    const userId = await getTestUserId(page)
+    await loginAs(page, USER)
+    const userId = await getUserIdByEmail(USER.email)
     const { binder } = await createMultiPageBinder(userId, { pageCount: 3 })
     try {
       await page.goto(`/binders/${binder.id}`)
@@ -97,8 +93,8 @@ test.describe('Binder Spread Layout - 桌面雙頁', () => {
   })
 
   test('桌面：Spread 0 時上一頁按鈕為 disabled', async ({ page }) => {
-    await loginAsTestUser(page)
-    const userId = await getTestUserId(page)
+    await loginAs(page, USER)
+    const userId = await getUserIdByEmail(USER.email)
     const { binder } = await createMultiPageBinder(userId)
     try {
       await page.goto(`/binders/${binder.id}`)
@@ -108,8 +104,56 @@ test.describe('Binder Spread Layout - 桌面雙頁', () => {
     }
   })
 
-  test.skip('桌面：跨頁拖拉懸停邊緣自動翻頁並完成放置（需真實瀏覽器 pointer events，暫時 skip，沿用既有 DnD E2E skip 慣例）', async () => {
-    // TODO: implement when pointer event simulation is reliable in CI
+  test('桌面：跨頁拖拉懸停邊緣自動翻頁並完成放置', async ({ page }) => {
+    await loginAs(page, USER)
+    const userId = await getUserIdByEmail(USER.email)
+    // 3 頁卡冊 → Spread 0（封面 + Page 1）、Spread 1（Page 2 + Page 3）
+    const { binder, slots } = await createMultiPageBinder(userId, { pageCount: 3 })
+    const sourceSlot = slots.find((s) => s.pageNumber === 1 && s.slotIndex === 0)
+    expect(sourceSlot).toBeDefined()
+    try {
+      await page.goto(`/binders/${binder.id}`)
+      const spreadView = page.getByTestId('binder-spread-view')
+      await expect(spreadView).toBeVisible()
+
+      const source = spreadView.getByTestId(`slot-card-${sourceSlot!.id}`)
+      await startDrag(page, source)
+
+      // 移到容器右緣 zone（edgeWidth 40px，取距右邊 ~20px；hook 只看 X，Y 取容器中線）
+      const container = page.getByTestId('spread-drag-container')
+      const box = await container.boundingBox()
+      expect(box).not.toBeNull()
+      const edgeX = box!.x + box!.width - 20
+      const midY = box!.y + box!.height / 2
+      await page.mouse.move(edgeX, midY, { steps: 15 })
+      // 補一發 -2px move（仍在 zone 內）確保 dragMove 觸發 zone 判定
+      await page.mouse.move(edgeX - 2, midY)
+
+      // 按住不動，等 600ms hold 計時翻頁至 Spread 1（Page 2 + Page 3）
+      await expect(spreadView.getByText('第 2 頁')).toBeVisible({ timeout: 3000 })
+      // 翻頁後原 source 節點已 unmount（DragOverlay 維持拖拉），不可再對 source 斷言
+
+      // 重新量測目標（DOM 已重渲染）；移過去即離開右緣 zone，避免二次翻頁
+      const target = page.locator('[data-page="2"][data-index="3"]')
+      await expect(target).toBeVisible()
+      await dropOn(page, target)
+
+      // 最終以 DB 為準（optimistic update 可能回滾）
+      await expect
+        .poll(
+          async () => {
+            const slot = await prisma.binderSlot.findUnique({
+              where: { id: sourceSlot!.id },
+              select: { pageNumber: true, slotIndex: true },
+            })
+            return slot ? `${slot.pageNumber}-${slot.slotIndex}` : null
+          },
+          { timeout: 5000 },
+        )
+        .toBe('2-3')
+    } finally {
+      await cleanupBinder(binder.id)
+    }
   })
 })
 
@@ -117,8 +161,8 @@ test.describe('Binder Spread Layout - 行動裝置', () => {
   test.use({ viewport: { width: 390, height: 844 }, hasTouch: true })
 
   test('行動裝置（viewport 模擬）：一次顯示一頁，初始為內封面', async ({ page }) => {
-    await loginAsTestUser(page)
-    const userId = await getTestUserId(page)
+    await loginAs(page, USER)
+    const userId = await getUserIdByEmail(USER.email)
     const { binder } = await createMultiPageBinder(userId)
     try {
       await page.goto(`/binders/${binder.id}`)
@@ -132,8 +176,8 @@ test.describe('Binder Spread Layout - 行動裝置', () => {
   })
 
   test('行動裝置：swipe 切換頁面', async ({ page }) => {
-    await loginAsTestUser(page)
-    const userId = await getTestUserId(page)
+    await loginAs(page, USER)
+    const userId = await getUserIdByEmail(USER.email)
     const { binder } = await createMultiPageBinder(userId, { pageCount: 2 })
     try {
       await page.goto(`/binders/${binder.id}`)

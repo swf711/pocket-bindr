@@ -1,6 +1,8 @@
 import { test, expect } from '@playwright/test'
-import { loginAsTestUser } from './helpers/auth'
-import { clearTestUserCards, clearTestUserBinders } from './helpers/db'
+import { getTestUser, loginAs } from './helpers/auth'
+import { clearUserCardsByEmail, clearUserBindersByEmail } from './helpers/db'
+
+const USER = getTestUser('cardsearch')
 
 test.describe('卡片搜尋頁', () => {
   test('未選遊戲時不顯示卡牌', async ({ page }) => {
@@ -60,14 +62,14 @@ test.describe('卡片搜尋頁', () => {
 
 test.describe('登入使用者 Modal 操作', () => {
   test.beforeEach(async ({ page }) => {
-    await clearTestUserCards()
-    await clearTestUserBinders()
-    await loginAsTestUser(page)
+    await clearUserCardsByEmail(USER.email)
+    await clearUserBindersByEmail(USER.email)
+    await loginAs(page, USER)
   })
 
   test.afterAll(async () => {
-    await clearTestUserCards()
-    await clearTestUserBinders()
+    await clearUserCardsByEmail(USER.email)
+    await clearUserBindersByEmail(USER.email)
   })
 
   test('Modal 無卡冊時顯示引導文字', async ({ page }) => {

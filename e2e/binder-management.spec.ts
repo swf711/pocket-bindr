@@ -1,6 +1,8 @@
 import { test, expect } from '@playwright/test'
-import { loginAsTestUser } from './helpers/auth'
-import { clearTestUserBinders } from './helpers/db'
+import { getTestUser, loginAs } from './helpers/auth'
+import { clearUserBindersByEmail } from './helpers/db'
+
+const USER = getTestUser('bindermgmt')
 
 test.describe('卡冊管理頁', () => {
   test('未登入導向 /login', async ({ page }) => {
@@ -9,15 +11,15 @@ test.describe('卡冊管理頁', () => {
   })
 
   test('無卡冊時顯示空狀態', async ({ page }) => {
-    await clearTestUserBinders()
-    await loginAsTestUser(page)
+    await clearUserBindersByEmail(USER.email)
+    await loginAs(page, USER)
     await page.goto('/binders')
     await expect(page.getByTestId('empty-binder-state')).toBeVisible()
   })
 
   test('建立新卡冊', async ({ page }) => {
-    await clearTestUserBinders()
-    await loginAsTestUser(page)
+    await clearUserBindersByEmail(USER.email)
+    await loginAs(page, USER)
     await page.goto('/binders')
     await page.getByTestId('create-binder-btn').click()
     await page.getByTestId('binder-name-input').fill('我的第一本冊')
@@ -29,8 +31,8 @@ test.describe('卡冊管理頁', () => {
   })
 
   test('編輯卡冊名稱', async ({ page }) => {
-    await clearTestUserBinders()
-    await loginAsTestUser(page)
+    await clearUserBindersByEmail(USER.email)
+    await loginAs(page, USER)
     await page.goto('/binders')
     // 先建立一本
     await page.getByTestId('create-binder-btn').click()
@@ -46,8 +48,8 @@ test.describe('卡冊管理頁', () => {
   })
 
   test('刪除卡冊', async ({ page }) => {
-    await clearTestUserBinders()
-    await loginAsTestUser(page)
+    await clearUserBindersByEmail(USER.email)
+    await loginAs(page, USER)
     await page.goto('/binders')
     // 先建立一本
     await page.getByTestId('create-binder-btn').click()
@@ -61,8 +63,8 @@ test.describe('卡冊管理頁', () => {
   })
 
   test('點擊進入卡冊導向正確 URL', async ({ page }) => {
-    await clearTestUserBinders()
-    await loginAsTestUser(page)
+    await clearUserBindersByEmail(USER.email)
+    await loginAs(page, USER)
     await page.goto('/binders')
     // 先建立一本
     await page.getByTestId('create-binder-btn').click()

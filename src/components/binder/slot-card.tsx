@@ -50,6 +50,7 @@ export function SlotCard({ slot, onDelete, onToggleStatus, isDragOverlay = false
       }}
       {...attributes}
       {...listeners}
+      data-testid={isDragOverlay ? 'drag-overlay-card' : `slot-card-${slot.id}`}
       className={`relative group aspect-5/7 w-full overflow-hidden rounded-md border border-border bg-card cursor-grab active:cursor-grabbing transition-opacity ${
         isDragging ? 'opacity-40' : 'opacity-100'
       } ${isOver && !isDragOverlay ? 'ring-2 ring-primary' : ''}`}

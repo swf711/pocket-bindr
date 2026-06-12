@@ -139,7 +139,7 @@ export function BinderSpreadView({
         onDragMove={handleDragMoveEvent}
         onDragEnd={handleDragEnd}
       >
-        <div ref={containerRef} className="flex gap-4">
+        <div ref={containerRef} data-testid="spread-drag-container" className="flex gap-4">
           <div className="flex-1 border rounded-lg p-4">
             <SpreadPanelContent
               content={spread.left}

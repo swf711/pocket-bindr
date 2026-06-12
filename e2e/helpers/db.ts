@@ -3,23 +3,43 @@ import { prisma } from '../../src/lib/prisma'
 import { TEST_USER } from './auth'
 
 /**
- * 清除測試帳號的所有 user_cards 紀錄，
+ * 清除指定 email 帳號的所有 user_cards 紀錄，
  * 確保收藏相關測試之間互不影響。
  */
-export async function clearTestUserCards() {
+export async function clearUserCardsByEmail(email: string): Promise<void> {
   await prisma.userCard.deleteMany({
-    where: { user: { email: TEST_USER.email } },
+    where: { user: { email } },
   })
 }
 
 /**
- * 清除測試帳號的所有 binders（含 slots），
+ * 清除指定 email 帳號的所有 binders（含 slots），
  * 確保卡冊相關測試之間互不影響。
  */
-export async function clearTestUserBinders() {
+export async function clearUserBindersByEmail(email: string): Promise<void> {
   await prisma.binder.deleteMany({
-    where: { user: { email: TEST_USER.email } },
+    where: { user: { email } },
   })
+}
+
+/**
+ * 取得指定 email 帳號的 userId（帳號需已存在，通常由 loginAs 註冊）。
+ */
+export async function getUserIdByEmail(email: string): Promise<string> {
+  const user = await prisma.user.findUniqueOrThrow({ where: { email } })
+  return user.id
+}
+
+// ---- 舊 API（保留為 wrapper，未遷移的呼叫點繼續可用）----
+
+/** @deprecated 改用 clearUserCardsByEmail(user.email) */
+export async function clearTestUserCards() {
+  await clearUserCardsByEmail(TEST_USER.email)
+}
+
+/** @deprecated 改用 clearUserBindersByEmail(user.email) */
+export async function clearTestUserBinders() {
+  await clearUserBindersByEmail(TEST_USER.email)
 }
 
 /**
@@ -58,6 +78,20 @@ export async function createBinderWithSlots(
 }
 
 /**
+ * 取得兩張不同且有圖片的卡片 id，供 DnD E2E 測試使用。
+ */
+export async function getTwoCardIds(): Promise<[string, string]> {
+  const cards = await prisma.card.findMany({
+    where: { imageSmall: { not: '' } },
+    take: 2,
+  })
+  if (cards.length < 2) {
+    throw new Error('getTwoCardIds: 資料庫中不足兩張有圖片的卡片')
+  }
+  return [cards[0].id, cards[1].id]
+}
+
+/**
  * 刪除指定卡冊（含所有 BinderSlot，由 cascade 處理）。
  */
 export async function cleanupBinder(binderId: string): Promise<void> {
@@ -67,6 +101,7 @@ export async function cleanupBinder(binderId: string): Promise<void> {
 /**
  * 建立含多頁格位的卡冊，供 spread layout E2E 測試使用。
  * 建立足夠的格位讓 grid 分成多頁（預設 grid_3x3，9格/頁，建立 2+ 頁）。
+ * 回傳值含 slots（每頁 slotIndex 0 各一格），供 DnD 測試以 slot id 斷言。
  */
 export async function createMultiPageBinder(
   userId: string,
@@ -76,7 +111,10 @@ export async function createMultiPageBinder(
     gridType?: string
     pageCount?: number
   } = {},
-): Promise<{ binder: { id: string; coverColor: string } }> {
+): Promise<{
+  binder: { id: string; coverColor: string }
+  slots: Array<{ id: string; pageNumber: number; slotIndex: number }>
+}> {
   const {
     name = 'Multi-Page Test Binder',
     coverColor = '#2C5282',
@@ -90,23 +128,25 @@ export async function createMultiPageBinder(
 
   // Find a card with an image to use in slots
   const card = await prisma.card.findFirst({ where: { imageSmall: { not: '' } } })
+  let slots: Array<{ id: string; pageNumber: number; slotIndex: number }> = []
   if (card) {
     // Add a userCard so slots are valid
-    const userCard = await prisma.userCard.upsert({
+    await prisma.userCard.upsert({
       where: { userId_cardId_status: { userId, cardId: card.id, status: 'owned' } },
       create: { userId, cardId: card.id, status: 'owned', quantity: pageCount },
       update: { quantity: pageCount },
     })
 
     // Create one slot per page so we have enough pages
-    const slotPromises = Array.from({ length: pageCount }, (_, i) =>
-      prisma.binderSlot.create({
-        data: { binderId: binder.id, cardId: card.id, status: 'owned', pageNumber: i + 1, slotIndex: 0 },
-      }),
+    slots = await Promise.all(
+      Array.from({ length: pageCount }, (_, i) =>
+        prisma.binderSlot.create({
+          data: { binderId: binder.id, cardId: card.id, status: 'owned', pageNumber: i + 1, slotIndex: 0 },
+          select: { id: true, pageNumber: true, slotIndex: true },
+        }),
+      ),
     )
-    await Promise.all(slotPromises)
-    void userCard
   }
 
-  return { binder: { id: binder.id, coverColor } }
+  return { binder: { id: binder.id, coverColor }, slots }
 }

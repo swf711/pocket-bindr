@@ -1,13 +1,15 @@
 // Requires running server and test database
 import { test, expect } from '@playwright/test'
-import { loginAsTestUser } from './helpers/auth'
-import { clearTestUserBinders, clearTestUserCards } from './helpers/db'
+import { getTestUser, loginAs } from './helpers/auth'
+import { clearUserBindersByEmail, clearUserCardsByEmail } from './helpers/db'
+
+const USER = getTestUser('addtobinder')
 
 test.describe('加入卡冊功能', () => {
   test.beforeEach(async ({ page }) => {
-    await clearTestUserCards()
-    await clearTestUserBinders()
-    await loginAsTestUser(page)
+    await clearUserCardsByEmail(USER.email)
+    await clearUserBindersByEmail(USER.email)
+    await loginAs(page, USER)
 
     // Create a test binder via API
     const res = await page.request.post('/api/binders', {
@@ -17,8 +19,8 @@ test.describe('加入卡冊功能', () => {
   })
 
   test.afterAll(async () => {
-    await clearTestUserCards()
-    await clearTestUserBinders()
+    await clearUserCardsByEmail(USER.email)
+    await clearUserBindersByEmail(USER.email)
   })
 
   test('已登入有卡冊：加入後 Modal 數字即時更新，顯示 toast', async ({ page }) => {
@@ -89,15 +91,15 @@ test.describe('加入卡冊功能', () => {
 
 test.describe('加入卡冊 - 無卡冊情境', () => {
   test.beforeEach(async ({ page }) => {
-    await clearTestUserCards()
-    await clearTestUserBinders()
-    await loginAsTestUser(page)
+    await clearUserCardsByEmail(USER.email)
+    await clearUserBindersByEmail(USER.email)
+    await loginAs(page, USER)
     // Intentionally do NOT create a binder
   })
 
   test.afterAll(async () => {
-    await clearTestUserCards()
-    await clearTestUserBinders()
+    await clearUserCardsByEmail(USER.email)
+    await clearUserBindersByEmail(USER.email)
   })
 
   test('已登入無卡冊：顯示建立連結', async ({ page }) => {
