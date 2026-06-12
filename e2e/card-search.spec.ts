@@ -81,12 +81,19 @@ test.describe('登入使用者 Modal 操作', () => {
   })
 
   test('Modal 數量加減功能', async ({ page }) => {
+    // 數量控制僅在有卡冊時渲染（noBinders 為引導文字 early return），需先建立卡冊
+    const res = await page.request.post('/api/binders', {
+      data: { name: 'E2E Qty Binder', gridType: 'grid_3x3' },
+    })
+    expect(res.status()).toBe(201)
+
     await page.goto('/cards?game=PTCG')
     await page.getByTestId('card-grid').waitFor({ timeout: 10000 })
     await page.getByTestId('card-item').first().click()
     // 等 modal 出現
     await expect(page.getByRole('dialog')).toBeVisible()
-    // 等 qty 出現（可能 isGuest 或 noBinders，若不出現則跳過）
+    // 等 binders fetch 完成（binder select 出現）再操作，避免 re-render 造成 element detached
+    await expect(page.getByTestId('modal-binder-select')).toBeVisible({ timeout: 8000 })
     const qtyValue = page.getByTestId('modal-qty-value')
     await expect(qtyValue).toHaveText('1')
     await page.getByTestId('modal-qty-plus').click()

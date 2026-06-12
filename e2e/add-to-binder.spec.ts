@@ -36,7 +36,9 @@ test.describe('加入卡冊功能', () => {
     const initialCount = parseInt(initialText ?? '0', 10)
 
     // Select binder, set status=owned, qty=1, click add button
-    await page.getByTestId('modal-binder-select').selectOption({ index: 0 })
+    // Radix Select 為 button，需 click trigger 再 click option（非原生 select）
+    await page.getByTestId('modal-binder-select').click()
+    await page.getByRole('option').first().click()
     // Status should default to owned; ensure it's selected
     const ownedToggle = page.getByTestId('modal-status-owned')
     if (await ownedToggle.isVisible()) {
@@ -64,8 +66,9 @@ test.describe('加入卡冊功能', () => {
     const initialText = await ownedCountEl.textContent()
     const initialCount = parseInt(initialText ?? '0', 10)
 
-    // Select binder
-    await page.getByTestId('modal-binder-select').selectOption({ index: 0 })
+    // Select binder（Radix Select：click trigger 再 click option）
+    await page.getByTestId('modal-binder-select').click()
+    await page.getByRole('option').first().click()
 
     // Add owned 1, first time
     const ownedToggle = page.getByTestId('modal-status-owned')

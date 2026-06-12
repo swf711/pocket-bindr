@@ -37,11 +37,17 @@ test.describe('Scenario 2b: 選擇語言', () => {
 
     // 搜尋「皮卡丘」應有繁中結果
     await selectLanguage(page, '繁體中文')
+    // 等 URL 移除 language 參數後再輸入，避免與搜尋更新 race
+    await expect(page).not.toHaveURL(/language=/, { timeout: 10000 })
     await page.getByTestId('search-input').fill('皮卡丘')
     await expect(page).toHaveURL(/q=/, { timeout: 10000 })
     await page.getByTestId('card-grid').waitFor({ timeout: 10000 })
+    // 卡片名稱僅存在於 img alt（無文字節點），需以 img name 比對
     await expect(
-      page.getByTestId('card-item').filter({ hasText: '皮卡丘' }).first()
+      page
+        .getByTestId('card-item')
+        .filter({ has: page.getByRole('img', { name: /皮卡丘/ }) })
+        .first()
     ).toBeVisible({ timeout: 10000 })
   })
 

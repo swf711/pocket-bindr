@@ -8,7 +8,7 @@ import { test, expect } from '@playwright/test'
  */
 
 test.describe('系列篩選顯示 externalId', () => {
-  test('每個系列選項標籤包含 externalId（格式：名稱（id））', async ({ page }) => {
+  test('每個系列選項標籤包含 externalId（格式：名稱 id）', async ({ page }) => {
     await page.goto('/cards?game=PTCG')
     await page.getByTestId('card-grid').waitFor({ timeout: 10000 })
 
@@ -25,7 +25,8 @@ test.describe('系列篩選顯示 externalId', () => {
     let found = false
     for (let i = 1; i < Math.min(count, 6); i++) {
       const text = await options.nth(i).textContent()
-      if (text && text.includes('（') && text.includes('）')) {
+      // 實作格式為「名稱 <span>externalId</span>」，textContent 為空格分隔
+      if (text && /\s[A-Z0-9]/.test(text.trim())) {
         found = true
         break
       }
@@ -45,7 +46,7 @@ test.describe('系列篩選顯示 externalId', () => {
 
     // The TwoColumnSelectGroup renders a SelectGroup with grid-cols-2 class.
     // Multiple series groups render, so check that at least one is present.
-    const gridGroups = selectContent.locator('.grid-cols-2')
+    const gridGroups = selectContent.locator('.sm\\:grid-cols-2')
     await expect(gridGroups.first()).toBeVisible({ timeout: 5000 })
   })
 })
