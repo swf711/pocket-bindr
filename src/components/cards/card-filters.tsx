@@ -5,13 +5,12 @@ import { Input } from '@/components/ui/input'
 import {
   Select,
   SelectContent,
-  SelectGroup,
   SelectItem,
-  SelectLabel,
   SelectSeparator,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { TwoColumnSelectGroup } from '@/components/ui/two-column-select-group'
 import { SetGroup } from '@/types/card'
 
 const ALL_SETS = 'all'
@@ -73,14 +72,13 @@ export function CardFilters({
           {groups.map(group => (
             <React.Fragment key={group.series}>
               <SelectSeparator />
-              <SelectGroup>
-                <SelectLabel>{group.series}</SelectLabel>
+              <TwoColumnSelectGroup label={group.series}>
                 {group.sets.map(set => (
-                  <SelectItem key={set.id} value={set.id}>
-                    {set.name}
+                  <SelectItem key={set.id} value={set.id} className="w-full">
+                    {set.name}（<span className="text-muted-foreground">{set.externalId}</span>）
                   </SelectItem>
                 ))}
-              </SelectGroup>
+              </TwoColumnSelectGroup>
             </React.Fragment>
           ))}
         </SelectContent>

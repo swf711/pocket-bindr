@@ -24,7 +24,12 @@ export async function GET(req: NextRequest) {
   const where = {
     game: game as Game,
     language,
-    ...(q && { name: { contains: q, mode: 'insensitive' as const } }),
+    ...(q && {
+      OR: [
+        { name: { contains: q, mode: 'insensitive' as const } },
+        { externalId: { startsWith: q, mode: 'insensitive' as const } },
+      ],
+    }),
     ...(setId && { setId }),
   }
 

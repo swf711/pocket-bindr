@@ -4,6 +4,7 @@ export interface SetSummary {
   id: string
   name: string
   series: string
+  externalId: string
   releaseDate: string | null
 }
 

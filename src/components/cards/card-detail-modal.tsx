@@ -12,6 +12,7 @@ import {
   Select, SelectContent, SelectItem,
   SelectTrigger, SelectValue
 } from '@/components/ui/select'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { CardWithCollectionStatus } from '@/types/card'
 import { getCardImageUrl } from '@/lib/get-card-image-url'
 import { BinderSummary } from '@/types/binder'
@@ -23,14 +24,60 @@ interface CardDetailModalProps {
   onClose: () => void
   onAddToBinder?: (binderId: string, status: CardStatus, quantity: number) => Promise<void>
   onCollectionUpdate?: (cardId: string, newStatus: { owned: number | null; wanted: number | null }) => void
+  cards?: CardWithCollectionStatus[]
+  currentIndex?: number
+  onNavigate?: (index: number) => void
 }
 
-export function CardDetailModal({ card, open, onClose, onAddToBinder, onCollectionUpdate }: CardDetailModalProps) {
+export function CardDetailModal({ card, open, onClose, onAddToBinder, onCollectionUpdate, cards, currentIndex, onNavigate }: CardDetailModalProps) {
+  useEffect(() => {
+    if (!open) return
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowLeft') {
+        if (onNavigate && currentIndex !== undefined && currentIndex > 0) {
+          onNavigate(currentIndex - 1)
+        }
+      } else if (e.key === 'ArrowRight') {
+        if (onNavigate && currentIndex !== undefined && cards && currentIndex < cards.length - 1) {
+          onNavigate(currentIndex + 1)
+        }
+      }
+    }
+    window.addEventListener('keydown', handleKey)
+    return () => window.removeEventListener('keydown', handleKey)
+  }, [open, currentIndex, cards, onNavigate])
+
   if (!card) return null
 
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o) onClose() }}>
       <DialogContent className="md:w-8/12 max-w-full md:max-w-5xl">
+        {/* Prev button */}
+        {onNavigate && (
+          <Button
+            data-testid="modal-nav-prev"
+            variant="ghost"
+            size="icon"
+            className="absolute left-2 top-1/2 -translate-y-1/2 z-10"
+            disabled={currentIndex === undefined || currentIndex === 0}
+            onClick={() => onNavigate(currentIndex! - 1)}
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+        )}
+        {/* Next button */}
+        {onNavigate && (
+          <Button
+            data-testid="modal-nav-next"
+            variant="ghost"
+            size="icon"
+            className="absolute right-2 top-1/2 -translate-y-1/2 z-10"
+            disabled={currentIndex === undefined || !cards || currentIndex === cards.length - 1}
+            onClick={() => onNavigate(currentIndex! + 1)}
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        )}
         <DialogHeader>
           <DialogTitle>{card.name}</DialogTitle>
         </DialogHeader>

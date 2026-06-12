@@ -43,7 +43,9 @@ export function CardSearchClient({ initialParams }: CardSearchClientProps) {
   const [totalPages, setTotalPages] = useState(0)
   const [loading, setLoading] = useState(false)
 
-  const [selectedCard, setSelectedCard] = useState<CardWithCollectionStatus | null>(null)
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
+
+  const selectedCard = selectedIndex !== null ? cards[selectedIndex] ?? null : null
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -148,9 +150,6 @@ export function CardSearchClient({ initialParams }: CardSearchClientProps) {
     setCards(prev =>
       prev.map(c => c.id === cardId ? { ...c, collectionStatus: newStatus } : c)
     )
-    if (selectedCard?.id === cardId) {
-      setSelectedCard(prev => prev ? { ...prev, collectionStatus: newStatus } : prev)
-    }
   }
 
   const handleAddToBinder = async (binderId: string, status: CardStatus, quantity: number) => {
@@ -200,7 +199,7 @@ export function CardSearchClient({ initialParams }: CardSearchClientProps) {
               <CardGrid cards={[]} onCardClick={() => {}} loading />
             ) : (
               <>
-                <CardGrid cards={cards} onCardClick={setSelectedCard} />
+                <CardGrid cards={cards} onCardClick={(card) => setSelectedIndex(cards.indexOf(card))} />
                 <CardPagination currentPage={page} totalPages={totalPages} onPageChange={handlePageChange} />
               </>
             )}
@@ -211,9 +210,12 @@ export function CardSearchClient({ initialParams }: CardSearchClientProps) {
       <CardDetailModal
         card={selectedCard}
         open={!!selectedCard}
-        onClose={() => setSelectedCard(null)}
+        onClose={() => setSelectedIndex(null)}
         onCollectionUpdate={handleCollectionUpdate}
         onAddToBinder={handleAddToBinder}
+        cards={cards}
+        currentIndex={selectedIndex ?? 0}
+        onNavigate={setSelectedIndex}
       />
     </div>
   )

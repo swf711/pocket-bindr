@@ -149,3 +149,77 @@ describe('GET /api/cards', () => {
     expect(data.cards[0].collectionStatus).toEqual({ owned: null, wanted: null })
   })
 })
+
+describe('GET /api/cards - externalId prefix search', () => {
+  beforeEach(() => vi.clearAllMocks())
+
+  it('有關鍵字時 where 條件包含 name contains 和 externalId startsWith 的 OR', async () => {
+    mockAuth.mockResolvedValue(null)
+    vi.mocked(prisma.$transaction).mockResolvedValue([[], 0])
+    const req = new NextRequest('http://localhost/api/cards?game=PTCG&q=pikachu')
+    const res = await GET(req)
+    expect(res.status).toBe(200)
+    expect(prisma.card.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          OR: [
+            { name: { contains: 'pikachu', mode: 'insensitive' } },
+            { externalId: { startsWith: 'pikachu', mode: 'insensitive' } },
+          ],
+        }),
+      })
+    )
+  })
+
+  it('q=OP15 時 externalId startsWith 條件被帶入', async () => {
+    mockAuth.mockResolvedValue(null)
+    vi.mocked(prisma.$transaction).mockResolvedValue([[], 0])
+    const req = new NextRequest('http://localhost/api/cards?game=OPCG&q=OP15')
+    const res = await GET(req)
+    expect(res.status).toBe(200)
+    expect(prisma.card.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          OR: [
+            { name: { contains: 'OP15', mode: 'insensitive' } },
+            { externalId: { startsWith: 'OP15', mode: 'insensitive' } },
+          ],
+        }),
+      })
+    )
+  })
+
+  it('未傳 q 時 where 條件不包含 OR', async () => {
+    mockAuth.mockResolvedValue(null)
+    vi.mocked(prisma.$transaction).mockResolvedValue([[], 0])
+    const req = new NextRequest('http://localhost/api/cards?game=PTCG')
+    const res = await GET(req)
+    expect(res.status).toBe(200)
+    expect(prisma.card.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.not.objectContaining({ OR: expect.anything() }),
+      })
+    )
+  })
+
+  it('keyword + language + setId 組合篩選時所有條件都被帶入 where', async () => {
+    mockAuth.mockResolvedValue(null)
+    vi.mocked(prisma.$transaction).mockResolvedValue([[], 0])
+    const req = new NextRequest('http://localhost/api/cards?game=PTCG&q=eevee&language=EN&setId=set123')
+    const res = await GET(req)
+    expect(res.status).toBe(200)
+    expect(prisma.card.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          game: 'PTCG',
+          language: 'EN',
+          setId: 'set123',
+          OR: [
+            { name: { contains: 'eevee', mode: 'insensitive' } },
+            { externalId: { startsWith: 'eevee', mode: 'insensitive' } },
+          ],
+        }),
+      })
+    )
+  })
+})

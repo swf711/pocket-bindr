@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
   const sets = await prisma.cardSet.findMany({
     where: { game: game as Game, language },
     orderBy: { releaseDate: 'desc' },
-    select: { id: true, name: true, series: true, releaseDate: true },
+    select: { id: true, name: true, series: true, externalId: true, releaseDate: true },
   })
 
   // 依 series 分組，groups 本身依 latestRelease 由新到舊排序
@@ -32,7 +32,10 @@ export async function GET(req: NextRequest) {
       })
     }
     groupMap.get(set.series)!.sets.push({
-      ...set,
+      id: set.id,
+      name: set.name,
+      series: set.series,
+      externalId: set.externalId,
       releaseDate: set.releaseDate?.toISOString() ?? null,
     })
   }
