@@ -12,7 +12,7 @@ import {
   Select, SelectContent, SelectItem,
   SelectTrigger, SelectValue
 } from '@/components/ui/select'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { ArrowLeft, ArrowRight } from 'lucide-react'
 import { CardWithCollectionStatus } from '@/types/card'
 import { getCardImageUrl } from '@/lib/get-card-image-url'
 import { BinderSummary } from '@/types/binder'
@@ -56,26 +56,26 @@ export function CardDetailModal({ card, open, onClose, onAddToBinder, onCollecti
         {onNavigate && (
           <Button
             data-testid="modal-nav-prev"
-            variant="ghost"
-            size="icon"
-            className="absolute left-2 top-1/2 -translate-y-1/2 z-10"
+            variant="outline"
+            size="icon-lg"
+            className="rounded-full absolute left-2 sm:-left-16 top-1/2 -translate-y-1/2 z-10"
             disabled={currentIndex === undefined || currentIndex === 0}
             onClick={() => onNavigate(currentIndex! - 1)}
           >
-            <ChevronLeft className="h-4 w-4" />
+            <ArrowLeft />
           </Button>
         )}
         {/* Next button */}
         {onNavigate && (
           <Button
             data-testid="modal-nav-next"
-            variant="ghost"
-            size="icon"
-            className="absolute right-2 top-1/2 -translate-y-1/2 z-10"
+            variant="outline"
+            size="icon-lg"
+            className="rounded-full absolute right-2 sm:-right-16 top-1/2 -translate-y-1/2 z-10"
             disabled={currentIndex === undefined || !cards || currentIndex === cards.length - 1}
             onClick={() => onNavigate(currentIndex! + 1)}
           >
-            <ChevronRight className="h-4 w-4" />
+            <ArrowRight />
           </Button>
         )}
         <DialogHeader>
