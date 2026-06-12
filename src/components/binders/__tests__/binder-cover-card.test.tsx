@@ -52,13 +52,13 @@ describe('BinderCoverCard', () => {
   it('顯示卡冊名稱、格式與卡片數量', () => {
     render(
       <BinderCoverCard
-        binder={makeBinder({ name: 'My Binder', gridType: 'grid_3x3', _count: { slots: 12 } })}
+        binder={makeBinder({ name: 'My Binder', gridType: 'grid_4x3', _count: { slots: 12 } })}
         onEdit={() => {}}
         onDelete={() => {}}
       />,
     )
     expect(screen.getByText('My Binder')).toBeInTheDocument()
-    expect(screen.getByText('3×3')).toBeInTheDocument()
+    expect(screen.getByText('4×3')).toBeInTheDocument()
     expect(screen.getByText('12 張卡')).toBeInTheDocument()
   })
 })

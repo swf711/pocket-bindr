@@ -20,7 +20,7 @@ const GRID_COLS: Record<GridType, number> = {
   grid_1x2: 1,
   grid_2x2: 2,
   grid_3x3: 3,
-  grid_3x4: 3,
+  grid_4x3: 4,
   grid_4x4: 4,
 }
 

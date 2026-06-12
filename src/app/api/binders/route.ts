@@ -7,7 +7,7 @@ const VALID_GRID_TYPES = new Set<GridType>([
   'grid_1x2',
   'grid_2x2',
   'grid_3x3',
-  'grid_3x4',
+  'grid_4x3',
   'grid_4x4',
 ])
 

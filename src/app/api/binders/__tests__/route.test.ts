@@ -109,6 +109,27 @@ describe('POST /api/binders', () => {
     const res = await POST(req)
     expect(res.status).toBe(400)
   })
+
+  it('接受 grid_4x3', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'user-1' } })
+    vi.mocked(prisma.binder.create).mockResolvedValue({ ...mockBinder, gridType: 'grid_4x3' } as never)
+    const req = new NextRequest('http://localhost/api/binders', {
+      method: 'POST',
+      body: JSON.stringify({ name: '測試', gridType: 'grid_4x3' }),
+    })
+    const res = await POST(req)
+    expect(res.status).toBe(201)
+  })
+
+  it('拒絕已移除的 grid_3x4 回傳 400', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'user-1' } })
+    const req = new NextRequest('http://localhost/api/binders', {
+      method: 'POST',
+      body: JSON.stringify({ name: '測試', gridType: 'grid_3x4' }),
+    })
+    const res = await POST(req)
+    expect(res.status).toBe(400)
+  })
 })
 
 describe('PATCH /api/binders/[id]', () => {

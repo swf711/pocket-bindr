@@ -62,6 +62,34 @@ test.describe('卡冊管理頁', () => {
     await expect(page.getByTestId('binder-card')).toHaveCount(initialCount - 1)
   })
 
+  test('建立 4x3 卡冊並以 4 欄 12 格顯示', async ({ page }) => {
+    await clearUserBindersByEmail(USER.email)
+    await loginAs(page, USER)
+    await page.goto('/binders')
+    await page.getByTestId('create-binder-btn').click()
+    await page.getByTestId('binder-name-input').fill('4x3 測試冊')
+    await page.getByTestId('binder-grid-select').click()
+    await page.getByRole('option', { name: /4 × 3/ }).click()
+    await page.getByTestId('create-binder-submit').click()
+    await expect(page.getByTestId('binder-card')).toBeVisible()
+    await expect(page.getByText('4×3')).toBeVisible()
+    // 進入卡冊內頁，第一頁應為 4 欄 × 12 格
+    await page.getByTestId('enter-binder-btn').first().click()
+    await expect(page).toHaveURL(/\/binders\/[a-z0-9-]+/)
+    const grid = page.locator('div.grid[style*="repeat(4"]').first()
+    await expect(grid).toBeVisible()
+    await expect(grid.locator('[data-index]')).toHaveCount(12)
+  })
+
+  test('規格選單包含 4 × 3、不包含 3 × 4', async ({ page }) => {
+    await loginAs(page, USER)
+    await page.goto('/binders')
+    await page.getByTestId('create-binder-btn').click()
+    await page.getByTestId('binder-grid-select').click()
+    await expect(page.getByRole('option', { name: /4 × 3/ })).toBeVisible()
+    await expect(page.getByRole('option', { name: /3 × 4/ })).toHaveCount(0)
+  })
+
   test('點擊進入卡冊導向正確 URL', async ({ page }) => {
     await clearUserBindersByEmail(USER.email)
     await loginAs(page, USER)
