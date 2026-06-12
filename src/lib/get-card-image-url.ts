@@ -1,5 +1,6 @@
 export const PROXY_HOSTNAMES = [
   'asia-tc.onepiece-cardgame.com',
+  'www.onepiece-cardgame.com',
   'asia.pokemon-card.com',
   'www.pokemon-card.com',
 ]
