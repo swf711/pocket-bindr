@@ -150,7 +150,10 @@ export function BinderSpreadView({
       >
         <div className="relative">
           <div ref={containerRef} data-testid="spread-drag-container" className="flex gap-4">
-            <div className="flex-1 border rounded-lg p-4">
+            <div
+              className="flex-1 rounded-lg p-4 bg-black"
+              style={{ border: `2px solid ${coverColor}` }}
+            >
               <SpreadPanelContent
                 content={spread.left}
                 coverColor={coverColor}
@@ -159,7 +162,10 @@ export function BinderSpreadView({
                 onToggleStatus={onToggleStatus}
               />
             </div>
-            <div className="flex-1 border rounded-lg p-4">
+            <div
+              className="flex-1 rounded-lg p-4 bg-black"
+              style={{ border: `2px solid ${coverColor}` }}
+            >
               <SpreadPanelContent
                 content={spread.right}
                 coverColor={coverColor}

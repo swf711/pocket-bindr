@@ -1,7 +1,10 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { GridType } from '@prisma/client'
+import { ChevronLeft } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import { BinderSpreadView } from './binder-spread-view'
 import { BinderMobileView } from './binder-mobile-view'
 import { BinderSettingsDrawer } from './binder-settings-drawer'
@@ -109,7 +112,7 @@ export function BinderView({ binder }: { binder: BinderDetailResponse }) {
     setMobilePageIndex((prev) => Math.min(prev, totalPages - 1))
   }
 
-  const handlePageReorder = (_pageA: number, _pageB: number, newSlots: SlotWithCard[]) => {
+  const handlePageReorder = (newSlots: SlotWithCard[]) => {
     setSlots(newSlots)
   }
 
@@ -129,7 +132,14 @@ export function BinderView({ binder }: { binder: BinderDetailResponse }) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">{binderName}</h1>
+        <div className="flex items-center gap-1">
+          <Button variant="ghost" size="icon" asChild>
+            <Link href="/binders" aria-label="返回卡冊列表" data-testid="back-to-binders">
+              <ChevronLeft className="h-5 w-5" />
+            </Link>
+          </Button>
+          <h1 className="text-2xl font-bold">{binderName}</h1>
+        </div>
         <BinderSettingsDrawer
           binderId={binder.id}
           binderName={binderName}

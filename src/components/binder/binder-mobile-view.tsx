@@ -61,7 +61,7 @@ export function BinderMobileView({
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      <div className="border rounded-lg p-4">
+      <div className="rounded-lg p-4 bg-black" style={{ border: `2px solid ${coverColor}` }}>
         {content.type === 'cover' && <BinderCoverPanel coverColor={coverColor} />}
         {content.type === 'blank' && <div className="w-full min-h-75 rounded-lg bg-muted" />}
         {content.type === 'page' && (
