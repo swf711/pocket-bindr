@@ -150,6 +150,82 @@ describe('GET /api/cards', () => {
   })
 })
 
+describe('GET /api/cards - OPCG ZH_TW alias canonicalization', () => {
+  beforeEach(() => vi.clearAllMocks())
+
+  it('OPCG+ZH_TW alias 卡：collectionStatus 查 canonicalCardId 而非 alias id', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'u1' } })
+    const aliasCard = {
+      id: 'zhtw-c1',
+      name: '魯夫',
+      imageSmall: '',
+      rarity: null,
+      cardNumber: 'OP01-001',
+      isCollectible: false,
+      canonicalCardId: 'ja-c1',
+      set: { name: 'OP-01' },
+    }
+    vi.mocked(prisma.$transaction).mockResolvedValue([[aliasCard], 1])
+    vi.mocked(prisma.userCard.findMany).mockResolvedValue([
+      { cardId: 'ja-c1', status: 'owned', quantity: 3 },
+    ] as never)
+    const req = new NextRequest('http://localhost/api/cards?game=OPCG&language=ZH_TW')
+    const res = await GET(req)
+    expect(res.status).toBe(200)
+    const data = await res.json()
+    expect(data.cards[0].collectionStatus).toEqual({ owned: 3, wanted: null })
+  })
+
+  it('OPCG+ZH_TW：collectible 卡（台灣限定）使用自身 id 查 collectionStatus', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'u1' } })
+    const twLimitedCard = {
+      id: 'tw-limited-c1',
+      name: '台灣限定卡',
+      imageSmall: '',
+      rarity: null,
+      cardNumber: 'P-136',
+      isCollectible: true,
+      canonicalCardId: null,
+      set: { name: 'ZH-TW Limited' },
+    }
+    vi.mocked(prisma.$transaction).mockResolvedValue([[twLimitedCard], 1])
+    vi.mocked(prisma.userCard.findMany).mockResolvedValue([
+      { cardId: 'tw-limited-c1', status: 'owned', quantity: 1 },
+    ] as never)
+    const req = new NextRequest('http://localhost/api/cards?game=OPCG&language=ZH_TW')
+    const res = await GET(req)
+    expect(res.status).toBe(200)
+    const data = await res.json()
+    expect(data.cards[0].collectionStatus).toEqual({ owned: 1, wanted: null })
+  })
+
+  it('OPCG+JA：response 不包含 canonicalCard include', async () => {
+    mockAuth.mockResolvedValue(null)
+    vi.mocked(prisma.$transaction).mockResolvedValue([[], 0])
+    const req = new NextRequest('http://localhost/api/cards?game=OPCG&language=JA')
+    const res = await GET(req)
+    expect(res.status).toBe(200)
+    expect(prisma.card.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        include: expect.not.objectContaining({ canonicalCard: expect.anything() }),
+      })
+    )
+  })
+
+  it('PTCG+ZH_TW：不受影響（無 canonicalCard include）', async () => {
+    mockAuth.mockResolvedValue(null)
+    vi.mocked(prisma.$transaction).mockResolvedValue([[], 0])
+    const req = new NextRequest('http://localhost/api/cards?game=PTCG&language=ZH_TW')
+    const res = await GET(req)
+    expect(res.status).toBe(200)
+    expect(prisma.card.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        include: expect.not.objectContaining({ canonicalCard: expect.anything() }),
+      })
+    )
+  })
+})
+
 describe('GET /api/cards - externalId prefix search', () => {
   beforeEach(() => vi.clearAllMocks())
 

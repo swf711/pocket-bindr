@@ -33,10 +33,19 @@ export async function GET(req: NextRequest) {
     ...(setId && { setId }),
   }
 
+  const includeCanonical = game === 'OPCG' && language === 'ZH_TW'
+
   const [cards, total] = await prisma.$transaction([
     prisma.card.findMany({
       where,
-      include: { set: true },
+      include: {
+        set: true,
+        ...(includeCanonical && {
+          canonicalCard: {
+            select: { id: true, imageSmall: true, imageLarge: true, language: true },
+          },
+        }),
+      },
       skip: (pageNum - 1) * pageSizeNum,
       take: pageSizeNum,
       orderBy: [
@@ -52,9 +61,13 @@ export async function GET(req: NextRequest) {
   let collectionMap: Record<string, CollectionEntry> = {}
   if (session?.user?.id) {
     const cardIds = cards.map(c => c.id)
-    if (cardIds.length > 0) {
+    const canonicalIds = includeCanonical
+      ? cards.flatMap(c => (c as { canonicalCardId?: string | null }).canonicalCardId ? [(c as { canonicalCardId: string }).canonicalCardId] : [])
+      : []
+    const allIds = [...new Set([...cardIds, ...canonicalIds])]
+    if (allIds.length > 0) {
       const userCards = await prisma.userCard.findMany({
-        where: { userId: session.user.id, cardId: { in: cardIds } },
+        where: { userId: session.user.id, cardId: { in: allIds } },
         select: { cardId: true, status: true, quantity: true },
       })
       for (const uc of userCards) {
@@ -71,10 +84,14 @@ export async function GET(req: NextRequest) {
   }
 
   return Response.json({
-    cards: cards.map(card => ({
-      ...card,
-      collectionStatus: collectionMap[card.id] ?? { owned: null, wanted: null },
-    })),
+    cards: cards.map(card => {
+      const canonicalCardId = (card as { canonicalCardId?: string | null }).canonicalCardId
+      const lookupId = !card.isCollectible && canonicalCardId ? canonicalCardId : card.id
+      return {
+        ...card,
+        collectionStatus: collectionMap[lookupId] ?? { owned: null, wanted: null },
+      }
+    }),
     total,
     page: pageNum,
     pageSize: pageSizeNum,

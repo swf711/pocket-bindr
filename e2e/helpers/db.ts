@@ -92,6 +92,27 @@ export async function getTwoCardIds(): Promise<[string, string]> {
 }
 
 /**
+ * 取得一組 OPCG ZH_TW alias 卡資料，供 alias E2E 測試使用。
+ * 若環境中無 OPCG 資料則回傳 null（CI 環境可跳過）。
+ */
+export async function getOpcgZhTwAliasCard(): Promise<{
+  zhTwCardId: string
+  jaCardId: string
+  externalId: string
+} | null> {
+  const aliasCard = await prisma.card.findFirst({
+    where: { game: 'OPCG', language: 'ZH_TW', isCollectible: false, canonicalCardId: { not: null } },
+    select: { id: true, canonicalCardId: true, externalId: true },
+  })
+  if (!aliasCard || !aliasCard.canonicalCardId) return null
+  return {
+    zhTwCardId: aliasCard.id,
+    jaCardId: aliasCard.canonicalCardId,
+    externalId: aliasCard.externalId,
+  }
+}
+
+/**
  * 刪除指定卡冊（含所有 BinderSlot，由 cascade 處理）。
  */
 export async function cleanupBinder(binderId: string): Promise<void> {

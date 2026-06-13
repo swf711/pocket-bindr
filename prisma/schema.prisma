@@ -77,10 +77,14 @@ model Card {
   rarity      String?
   imageSmall  String
   imageLarge  String
-  syncedAt    DateTime     @default(now())
-  attributes  Json?
-  userCards   UserCard[]
-  binderSlots BinderSlot[]
+  syncedAt        DateTime     @default(now())
+  attributes      Json?
+  isCollectible   Boolean      @default(true)
+  canonicalCardId String?
+  canonicalCard   Card?        @relation("CardAlias", fields: [canonicalCardId], references: [id], onDelete: SetNull)
+  aliases         Card[]       @relation("CardAlias")
+  userCards       UserCard[]
+  binderSlots     BinderSlot[]
 
   @@unique([game, language, externalId])
 }

@@ -211,4 +211,37 @@ describe('POST /api/binders/[id]/cards', () => {
       },
     })
   })
+
+  it('alias 卡（isCollectible=false）：寫入重定向至 canonicalCardId', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'u1' } })
+    vi.mocked(prisma.binder.findUnique).mockResolvedValue(mockBinder)
+    // First call: alias card; second call: canonical card (exists)
+    vi.mocked(prisma.card.findUnique)
+      .mockResolvedValueOnce({ id: 'zhtw-c1', isCollectible: false, canonicalCardId: 'ja-c1' } as never)
+      .mockResolvedValueOnce({ id: 'ja-c1', isCollectible: true, canonicalCardId: null } as never)
+    vi.mocked(prisma.binderSlot.findMany).mockResolvedValue([])
+    vi.mocked(prisma.binderSlot.findFirst).mockResolvedValue(null)
+    vi.mocked(prisma.binderSlot.createMany).mockResolvedValue({ count: 1 })
+    vi.mocked(prisma.userCard.upsert).mockResolvedValue({ ...mockUserCard, cardId: 'ja-c1', quantity: 1 })
+
+    await POST(makeRequest({ cardId: 'zhtw-c1', status: 'owned', quantity: 1 }), makeContext('b1'))
+
+    expect(prisma.userCard.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ userId_cardId_status: expect.objectContaining({ cardId: 'ja-c1' }) }),
+      })
+    )
+  })
+
+  it('alias 卡 canonical 不存在時回傳 404', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'u1' } })
+    vi.mocked(prisma.binder.findUnique).mockResolvedValue(mockBinder)
+    vi.mocked(prisma.card.findUnique)
+      .mockResolvedValueOnce({ id: 'zhtw-c1', isCollectible: false, canonicalCardId: 'ja-c1' } as never)
+      .mockResolvedValueOnce(null)
+    const res = await POST(makeRequest({ cardId: 'zhtw-c1', status: 'owned', quantity: 1 }), makeContext('b1'))
+    expect(res.status).toBe(404)
+    const data = await res.json()
+    expect(data.error).toBe('Canonical card not found')
+  })
 })

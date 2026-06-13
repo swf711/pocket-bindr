@@ -19,6 +19,13 @@ export interface CollectionStatus {
   wanted: number | null
 }
 
+export interface CanonicalCardRef {
+  id: string
+  imageSmall: string
+  imageLarge: string
+  language: string
+}
+
 export interface CardWithCollectionStatus {
   id: string
   name: string
@@ -28,6 +35,8 @@ export interface CardWithCollectionStatus {
   hp: number | null
   types: string[]
   cardNumber: string
+  isCollectible: boolean
+  canonicalCard?: CanonicalCardRef | null
   collectionStatus: CollectionStatus
   set: {
     id: string

@@ -82,10 +82,14 @@ export function CardDetailModal({ card, open, onClose, onAddToBinder, onCollecti
           <DialogTitle>{card.name}</DialogTitle>
         </DialogHeader>
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 no-scrollbar max-h-[90vh] overflow-y-auto">
-          {/* 左欄：卡圖 */}
+          {/* 左欄：卡圖 — alias 卡顯示 canonical（JA）圖片 */}
           <div className="flex justify-center items-start">
             <img
-              src={getCardImageUrl(card.imageLarge) || getCardImageUrl(card.imageSmall) || ''}
+              src={
+                getCardImageUrl(!card.isCollectible && card.canonicalCard ? card.canonicalCard.imageLarge : card.imageLarge) ||
+                getCardImageUrl(!card.isCollectible && card.canonicalCard ? card.canonicalCard.imageSmall : card.imageSmall) ||
+                ''
+              }
               alt={card.name}
               className="w-full rounded-lg"
             />

@@ -29,7 +29,10 @@ export async function POST(request: Request, context: RouteContext) {
 
   const { cardId, status, quantity } = body as Record<string, unknown>
 
-  const card = await prisma.card.findUnique({ where: { id: cardId as string } })
+  const card = await prisma.card.findUnique({
+    where: { id: cardId as string },
+    select: { id: true, isCollectible: true, canonicalCardId: true },
+  })
   if (!card) {
     return Response.json({ error: 'Card not found' }, { status: 404 })
   }
@@ -42,7 +45,15 @@ export async function POST(request: Request, context: RouteContext) {
     return Response.json({ error: "status must be 'owned' or 'wanted'" }, { status: 400 })
   }
 
-  const typedCardId = cardId as string
+  // Resolve alias cards to their canonical (JA) counterpart
+  let typedCardId = cardId as string
+  if (!card.isCollectible && card.canonicalCardId) {
+    const canonical = await prisma.card.findUnique({ where: { id: card.canonicalCardId } })
+    if (!canonical) {
+      return Response.json({ error: 'Canonical card not found' }, { status: 404 })
+    }
+    typedCardId = card.canonicalCardId
+  }
   const typedStatus = status as CardStatus
   const typedQuantity = quantity as number
 

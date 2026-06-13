@@ -22,21 +22,30 @@ export async function POST(req: Request) {
     return Response.json({ error: 'Invalid status' }, { status: 400 })
   }
 
+  // Resolve alias cards to their canonical (JA) counterpart
+  const cardRecord = await prisma.card.findUnique({
+    where: { id: cardId },
+    select: { isCollectible: true, canonicalCardId: true },
+  })
+  const resolvedCardId = cardRecord && !cardRecord.isCollectible && cardRecord.canonicalCardId
+    ? cardRecord.canonicalCardId
+    : cardId
+
   if (status === null) {
     if (!deleteStatus || !validStatuses.includes(deleteStatus)) {
       return Response.json({ error: 'deleteStatus is required and must be a valid status' }, { status: 400 })
     }
     await prisma.userCard.deleteMany({
-      where: { userId, cardId, status: deleteStatus },
+      where: { userId, cardId: resolvedCardId, status: deleteStatus },
     })
-    return Response.json({ success: true, cardId, status: null })
+    return Response.json({ success: true, cardId: resolvedCardId, status: null })
   }
 
   const userCard = await prisma.userCard.upsert({
-    where: { userId_cardId_status: { userId, cardId, status } },
-    create: { userId, cardId, status },
+    where: { userId_cardId_status: { userId, cardId: resolvedCardId, status } },
+    create: { userId, cardId: resolvedCardId, status },
     update: { status },
   })
 
-  return Response.json({ success: true, cardId, status: userCard.status })
+  return Response.json({ success: true, cardId: resolvedCardId, status: userCard.status })
 }

@@ -29,6 +29,7 @@ function makeCard(id: string, name: string): CardWithCollectionStatus {
     hp: null,
     types: [],
     cardNumber: `00${id}`,
+    isCollectible: true,
     collectionStatus: { owned: null, wanted: null },
     set: { id: 'set1', name: 'Test Set', series: 'Test Series' },
   }
