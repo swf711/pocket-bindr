@@ -44,7 +44,7 @@ async function handleGet(req: NextRequest) {
 
   const includeCanonical = game === 'OPCG' && language === 'ZH_TW'
 
-  const [cards, total] = await prisma.$transaction([
+  const [cards, total] = await Promise.all([
     prisma.card.findMany({
       where,
       include: {
