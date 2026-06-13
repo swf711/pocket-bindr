@@ -54,3 +54,4 @@ playwright-report/
 scripts/scrape-*.ts
 scripts/scrape-*/
 scripts/sync-*.ts
+scripts/lib/
