@@ -42,6 +42,7 @@ export function CardSearchClient({ initialParams }: CardSearchClientProps) {
   const [groups, setGroups] = useState<SetGroup[]>([])
   const [totalPages, setTotalPages] = useState(0)
   const [loading, setLoading] = useState(false)
+  const [fetchError, setFetchError] = useState<string | null>(null)
 
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
 
@@ -69,6 +70,10 @@ export function CardSearchClient({ initialParams }: CardSearchClientProps) {
         const data = await res.json()
         setCards(data.cards)
         setTotalPages(data.totalPages)
+        setFetchError(null)
+      } else {
+        const errData = await res.json().catch(() => ({}))
+        setFetchError((errData as { error?: string }).error ?? '載入失敗，請稍後再試')
       }
     } finally {
       setLoading(false)
@@ -99,6 +104,7 @@ export function CardSearchClient({ initialParams }: CardSearchClientProps) {
     setPage(1)
     setGroups([])
     setCards([])
+    setFetchError(null)
     updateParams({ game: g, q: null, setId: null, page: null })
     fetchSets(g, language)
     fetchCards(g, '', null, 1, language)
@@ -108,6 +114,7 @@ export function CardSearchClient({ initialParams }: CardSearchClientProps) {
     setLanguage(lang)
     setSetId(null)
     setPage(1)
+    setFetchError(null)
     updateParams({
       language: lang === DEFAULT_LANGUAGE ? null : lang,
       setId: null,
@@ -197,6 +204,8 @@ export function CardSearchClient({ initialParams }: CardSearchClientProps) {
 
             {loading ? (
               <CardGrid cards={[]} onCardClick={() => {}} loading />
+            ) : fetchError ? (
+              <div className="text-center py-12 text-destructive">{fetchError}</div>
             ) : (
               <>
                 <CardGrid cards={cards} onCardClick={(card) => setSelectedIndex(cards.indexOf(card))} />

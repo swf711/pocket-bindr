@@ -226,6 +226,20 @@ describe('GET /api/cards - OPCG ZH_TW alias canonicalization', () => {
   })
 })
 
+describe('GET /api/cards - error handling', () => {
+  beforeEach(() => vi.clearAllMocks())
+
+  it('Prisma 拋出錯誤時回傳 500 JSON', async () => {
+    mockAuth.mockResolvedValue(null)
+    vi.mocked(prisma.$transaction).mockRejectedValue(new Error('DB connection failed'))
+    const req = new NextRequest('http://localhost/api/cards?game=OPCG&language=ZH_TW')
+    const res = await GET(req)
+    expect(res.status).toBe(500)
+    const data = await res.json()
+    expect(data).toHaveProperty('error')
+  })
+})
+
 describe('GET /api/cards - externalId prefix search', () => {
   beforeEach(() => vi.clearAllMocks())
 

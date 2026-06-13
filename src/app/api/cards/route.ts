@@ -5,6 +5,15 @@ import { parseLanguage } from '@/lib/language'
 import { Game } from '@prisma/client'
 
 export async function GET(req: NextRequest) {
+  try {
+    return await handleGet(req)
+  } catch (err) {
+    console.error('[GET /api/cards]', err)
+    return Response.json({ error: 'Internal server error' }, { status: 500 })
+  }
+}
+
+async function handleGet(req: NextRequest) {
   const { searchParams } = req.nextUrl
   const game = searchParams.get('game')
   const q = searchParams.get('q')
@@ -98,3 +107,4 @@ export async function GET(req: NextRequest) {
     totalPages: Math.ceil(total / pageSizeNum),
   })
 }
+

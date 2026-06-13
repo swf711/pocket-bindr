@@ -18,22 +18,7 @@ test.describe('OPCG ZH_TW alias card canonicalization', () => {
   })
 
   test('OPCG ZH_TW 搜尋頁顯示卡牌', async ({ page }) => {
-    const aliasData = await getOpcgZhTwAliasCard()
-    if (!aliasData) {
-      test.skip()
-      return
-    }
-
-    await page.goto('/cards')
-    await page.getByTestId('game-btn-opcg').click()
-
-    // 切換到 ZH_TW
-    const langSelect = page.getByTestId('language-select')
-    if (await langSelect.isVisible()) {
-      await langSelect.click()
-      await page.getByRole('option', { name: '繁體中文' }).click()
-    }
-
+    await page.goto('/cards?game=OPCG&language=ZH_TW')
     await expect(page.getByTestId('card-grid')).toBeVisible({ timeout: 10000 })
     const cardItems = page.getByTestId('card-item')
     await expect(cardItems.first()).toBeVisible({ timeout: 10000 })
