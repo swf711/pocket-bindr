@@ -2,6 +2,7 @@
 
 import { useRef } from 'react'
 import { GridType } from '@prisma/client'
+import { PlusCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { BinderGrid } from './binder-grid'
 import { BinderCoverPanel } from './binder-cover-panel'
@@ -13,6 +14,7 @@ interface BinderMobileViewProps {
   onPageChange: (index: number) => void
   coverColor: string
   gridType: GridType
+  onAddPage: () => void
   onDelete: (slotId: string) => void
   onToggleStatus: (slotId: string) => void
   onSwap: (slotAId: string, slotBId: string) => void
@@ -25,6 +27,7 @@ export function BinderMobileView({
   onPageChange,
   coverColor,
   gridType,
+  onAddPage,
   onDelete,
   onToggleStatus,
   onSwap,
@@ -32,6 +35,7 @@ export function BinderMobileView({
 }: BinderMobileViewProps) {
   const touchStartX = useRef<number | null>(null)
   const content = mobilePages[pageIndex]
+  const isLastPage = pageIndex === mobilePages.length - 1
 
   function handleTouchStart(e: React.TouchEvent) {
     touchStartX.current = e.touches[0].clientX
@@ -59,7 +63,7 @@ export function BinderMobileView({
     >
       <div className="border rounded-lg p-4">
         {content.type === 'cover' && <BinderCoverPanel coverColor={coverColor} />}
-        {content.type === 'blank' && <div className="w-full min-h-[300px] rounded-lg bg-muted" />}
+        {content.type === 'blank' && <div className="w-full min-h-75 rounded-lg bg-muted" />}
         {content.type === 'page' && (
           <div>
             <p className="text-xs text-muted-foreground mb-2 text-center">第 {content.pageNumber} 頁</p>
@@ -87,15 +91,26 @@ export function BinderMobileView({
         <span className="text-sm text-muted-foreground">
           {pageIndex + 1} / {mobilePages.length}
         </span>
-        <Button
-          variant="outline"
-          size="sm"
-          data-testid="mobile-next-btn"
-          onClick={() => onPageChange(pageIndex + 1)}
-          disabled={pageIndex === mobilePages.length - 1}
-        >
-          下一頁 →
-        </Button>
+        {isLastPage ? (
+          <Button
+            variant="outline"
+            size="sm"
+            data-testid="mobile-add-page-btn"
+            onClick={onAddPage}
+            aria-label="新增內頁"
+          >
+            <PlusCircle className="h-4 w-4" />
+          </Button>
+        ) : (
+          <Button
+            variant="outline"
+            size="sm"
+            data-testid="mobile-next-btn"
+            onClick={() => onPageChange(pageIndex + 1)}
+          >
+            下一頁 →
+          </Button>
+        )}
       </div>
     </div>
   )

@@ -1,0 +1,271 @@
+'use client'
+
+import { useState } from 'react'
+import { GridType } from '@prisma/client'
+import { toast } from 'sonner'
+import { Settings, ChevronUp, ChevronDown, Trash2 } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from '@/components/ui/drawer'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
+import { Separator } from '@/components/ui/separator'
+import { CoverColorPicker } from '@/components/binders/cover-color-picker'
+import { GRID_TYPE_LABELS, type SlotWithCard } from '@/types/binder'
+
+const GRID_TYPE_SHORT: Record<GridType, string> = {
+  grid_1x2: '1×2',
+  grid_2x2: '2×2',
+  grid_3x3: '3×3',
+  grid_4x3: '4×3',
+  grid_4x4: '4×4',
+}
+
+interface BinderSettingsDrawerProps {
+  binderId: string
+  binderName: string
+  gridType: GridType
+  coverColor: string
+  totalPages: number
+  onSettingsUpdate: (updated: { name: string; gridType: GridType; coverColor: string }) => void
+  onPageDelete: (pageNumber: number, newSlots: SlotWithCard[]) => void
+  onPageReorder: (pageA: number, pageB: number, newSlots: SlotWithCard[]) => void
+  onTotalPagesChange: (n: number) => void
+}
+
+export function BinderSettingsDrawer({
+  binderId,
+  binderName,
+  gridType,
+  coverColor,
+  totalPages,
+  onSettingsUpdate,
+  onPageDelete,
+  onPageReorder,
+  onTotalPagesChange,
+}: BinderSettingsDrawerProps) {
+  const [open, setOpen] = useState(false)
+  const [name, setName] = useState(binderName)
+  const [localGridType, setLocalGridType] = useState<GridType>(gridType)
+  const [localCoverColor, setLocalCoverColor] = useState(coverColor)
+  const [savingSettings, setSavingSettings] = useState(false)
+  const [reorderingPage, setReorderingPage] = useState<number | null>(null)
+  const [deletingPage, setDeletingPage] = useState<number | null>(null)
+
+  async function handleSaveSettings() {
+    setSavingSettings(true)
+    try {
+      const res = await fetch(`/api/binders/${binderId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, gridType: localGridType, coverColor: localCoverColor }),
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err?.error ?? '更新失敗')
+      }
+      onSettingsUpdate({ name, gridType: localGridType, coverColor: localCoverColor })
+      toast('設定已儲存')
+    } catch (err) {
+      toast((err as Error).message)
+    } finally {
+      setSavingSettings(false)
+    }
+  }
+
+  async function handleMovePage(pageNumber: number, direction: 'up' | 'down') {
+    const pageA = pageNumber
+    const pageB = direction === 'up' ? pageNumber - 1 : pageNumber + 1
+    setReorderingPage(pageNumber)
+    try {
+      const res = await fetch(`/api/binders/${binderId}/pages/reorder`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pageA, pageB }),
+      })
+      if (!res.ok) throw new Error('重排失敗')
+      const data = await res.json()
+      onPageReorder(pageA, pageB, data.slots)
+    } catch (err) {
+      toast((err as Error).message)
+    } finally {
+      setReorderingPage(null)
+    }
+  }
+
+  async function handleDeletePage(pageNumber: number) {
+    setDeletingPage(pageNumber)
+    try {
+      const res = await fetch(`/api/binders/${binderId}/pages/${pageNumber}`, {
+        method: 'DELETE',
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err?.error ?? '刪除失敗')
+      }
+      const data = await res.json()
+      onPageDelete(pageNumber, data.slots)
+      onTotalPagesChange(data.totalPages)
+      toast(`第 ${pageNumber} 頁已刪除`)
+    } catch (err) {
+      toast((err as Error).message)
+    } finally {
+      setDeletingPage(null)
+    }
+  }
+
+  return (
+    <Drawer open={open} onOpenChange={setOpen} direction="right">
+      <DrawerTrigger asChild>
+        <Button variant="ghost" size="icon" data-testid="binder-settings-btn" aria-label="卡冊設定">
+          <Settings className="h-5 w-5" />
+        </Button>
+      </DrawerTrigger>
+      <DrawerContent className="h-full w-80 right-0 left-auto">
+        <DrawerHeader>
+          <DrawerTitle>卡冊設定</DrawerTitle>
+        </DrawerHeader>
+        <div className="flex flex-col gap-6 p-4 overflow-y-auto">
+          {/* 基本設定 */}
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="drawer-binder-name">名稱</Label>
+              <Input
+                id="drawer-binder-name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                maxLength={50}
+                data-testid="drawer-binder-name-input"
+              />
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <Label>格式</Label>
+              <ToggleGroup
+                type="single"
+                value={localGridType}
+                onValueChange={(v) => v && setLocalGridType(v as GridType)}
+                className="flex flex-wrap gap-1 justify-start"
+                data-testid="drawer-grid-toggle"
+              >
+                {(Object.keys(GRID_TYPE_SHORT) as GridType[]).map((gt) => (
+                  <ToggleGroupItem
+                    key={gt}
+                    value={gt}
+                    aria-label={GRID_TYPE_LABELS[gt]}
+                    className="text-xs px-2"
+                  >
+                    {GRID_TYPE_SHORT[gt]}
+                  </ToggleGroupItem>
+                ))}
+              </ToggleGroup>
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <Label>封面顏色</Label>
+              <CoverColorPicker value={localCoverColor} onChange={setLocalCoverColor} />
+            </div>
+
+            <Button
+              onClick={handleSaveSettings}
+              disabled={savingSettings || !name.trim()}
+              data-testid="drawer-save-settings-btn"
+            >
+              {savingSettings ? '儲存中…' : '儲存設定'}
+            </Button>
+          </div>
+
+          <Separator />
+
+          {/* 內頁管理 */}
+          <div className="flex flex-col gap-2">
+            <p className="text-sm font-medium">內頁管理</p>
+            <div className="flex flex-col gap-1" data-testid="page-manager-list">
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <div
+                  key={page}
+                  className="flex items-center justify-between rounded-md border px-3 py-2"
+                  data-testid={`page-manager-row-${page}`}
+                >
+                  <span className="text-sm">第 {page} 頁</span>
+                  <div className="flex items-center gap-1">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7"
+                      disabled={page === 1 || reorderingPage === page}
+                      onClick={() => handleMovePage(page, 'up')}
+                      aria-label={`第 ${page} 頁上移`}
+                      data-testid={`page-up-btn-${page}`}
+                    >
+                      <ChevronUp className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7"
+                      disabled={page === totalPages || reorderingPage === page}
+                      onClick={() => handleMovePage(page, 'down')}
+                      aria-label={`第 ${page} 頁下移`}
+                      data-testid={`page-down-btn-${page}`}
+                    >
+                      <ChevronDown className="h-4 w-4" />
+                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 text-destructive hover:text-destructive"
+                          disabled={totalPages <= 1 || deletingPage === page}
+                          aria-label={`刪除第 ${page} 頁`}
+                          data-testid={`page-delete-btn-${page}`}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>刪除第 {page} 頁？</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            此頁上的所有卡牌將從卡冊中移除，後續頁碼將自動重新編號。
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>取消</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => handleDeletePage(page)}
+                            data-testid={`page-delete-confirm-${page}`}
+                          >
+                            刪除
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </DrawerContent>
+    </Drawer>
+  )
+}

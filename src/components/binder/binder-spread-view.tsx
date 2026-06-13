@@ -12,6 +12,7 @@ import {
   useSensor,
   useSensors,
 } from '@dnd-kit/core'
+import { ChevronLeft, ChevronRight, PlusCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { BinderGridSlots } from './binder-grid'
 import { BinderCoverPanel } from './binder-cover-panel'
@@ -26,6 +27,7 @@ interface BinderSpreadViewProps {
   onSpreadChange: (index: number) => void
   coverColor: string
   gridType: GridType
+  onAddPage: () => void
   onDelete: (slotId: string) => void
   onToggleStatus: (slotId: string) => void
   onSwap: (slotAId: string, slotBId: string) => void
@@ -49,7 +51,7 @@ function SpreadPanelContent({
     return <BinderCoverPanel coverColor={coverColor} />
   }
   if (content.type === 'blank') {
-    return <div className="w-full min-h-[400px] rounded-lg bg-muted" />
+    return <div className="w-full min-h-100 rounded-lg bg-muted" />
   }
   return (
     <div className="w-full">
@@ -70,6 +72,7 @@ export function BinderSpreadView({
   onSpreadChange,
   coverColor,
   gridType,
+  onAddPage,
   onDelete,
   onToggleStatus,
   onSwap,
@@ -78,12 +81,12 @@ export function BinderSpreadView({
   const spread = spreads[spreadIndex]
   const containerRef = useRef<HTMLDivElement>(null)
   const [activeSlot, setActiveSlot] = useState<SlotWithCard | null>(null)
+  const [isDragging, setIsDragging] = useState(false)
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
   )
 
-  // Collect all slots from the current spread (left + right) for drag lookup
   const allSlots = [
     ...(spread?.left.type === 'page' ? spread.left.page : []),
     ...(spread?.right.type === 'page' ? spread.right.page : []),
@@ -100,6 +103,7 @@ export function BinderSpreadView({
     const slotId = (event.active.id as string).replace('slot-', '')
     const slot = allSlots.find((s): s is SlotWithCard => s.id === slotId)
     setActiveSlot(slot ?? null)
+    setIsDragging(true)
   }
 
   function handleDragMoveEvent(event: DragMoveEvent) {
@@ -109,6 +113,7 @@ export function BinderSpreadView({
   function handleDragEnd(event: DragEndEvent) {
     flipHandleDragEnd()
     setActiveSlot(null)
+    setIsDragging(false)
     const { active, over } = event
     if (!over) return
 
@@ -130,6 +135,10 @@ export function BinderSpreadView({
 
   if (!spread) return null
 
+  const isLastSpread = spreadIndex === spreads.length - 1
+  const hasPrev = spreadIndex > 0
+  const hasNext = !isLastSpread
+
   return (
     <div data-testid="binder-spread-view" className="hidden md:flex flex-col gap-4">
       <DndContext
@@ -139,25 +148,47 @@ export function BinderSpreadView({
         onDragMove={handleDragMoveEvent}
         onDragEnd={handleDragEnd}
       >
-        <div ref={containerRef} data-testid="spread-drag-container" className="flex gap-4">
-          <div className="flex-1 border rounded-lg p-4">
-            <SpreadPanelContent
-              content={spread.left}
-              coverColor={coverColor}
-              gridType={gridType}
-              onDelete={onDelete}
-              onToggleStatus={onToggleStatus}
-            />
+        <div className="relative">
+          <div ref={containerRef} data-testid="spread-drag-container" className="flex gap-4">
+            <div className="flex-1 border rounded-lg p-4">
+              <SpreadPanelContent
+                content={spread.left}
+                coverColor={coverColor}
+                gridType={gridType}
+                onDelete={onDelete}
+                onToggleStatus={onToggleStatus}
+              />
+            </div>
+            <div className="flex-1 border rounded-lg p-4">
+              <SpreadPanelContent
+                content={spread.right}
+                coverColor={coverColor}
+                gridType={gridType}
+                onDelete={onDelete}
+                onToggleStatus={onToggleStatus}
+              />
+            </div>
           </div>
-          <div className="flex-1 border rounded-lg p-4">
-            <SpreadPanelContent
-              content={spread.right}
-              coverColor={coverColor}
-              gridType={gridType}
-              onDelete={onDelete}
-              onToggleStatus={onToggleStatus}
-            />
-          </div>
+
+          {/* Drag hint panels — shown only while dragging */}
+          {isDragging && hasPrev && (
+            <div
+              className="absolute left-0 top-0 bottom-0 w-16 flex flex-col items-center justify-center gap-1 bg-primary/10 border-2 border-dashed border-primary/40 rounded-l-lg pointer-events-none"
+              data-testid="drag-hint-prev"
+            >
+              <ChevronLeft className="h-5 w-5 text-primary/60" />
+              <span className="text-[10px] text-primary/60 text-center leading-tight">拖到此處翻頁</span>
+            </div>
+          )}
+          {isDragging && hasNext && (
+            <div
+              className="absolute right-0 top-0 bottom-0 w-16 flex flex-col items-center justify-center gap-1 bg-primary/10 border-2 border-dashed border-primary/40 rounded-r-lg pointer-events-none"
+              data-testid="drag-hint-next"
+            >
+              <ChevronRight className="h-5 w-5 text-primary/60" />
+              <span className="text-[10px] text-primary/60 text-center leading-tight">拖到此處翻頁</span>
+            </div>
+          )}
         </div>
         <DragOverlay>
           {activeSlot ? (
@@ -171,22 +202,35 @@ export function BinderSpreadView({
           size="sm"
           data-testid="spread-prev-btn"
           onClick={() => onSpreadChange(spreadIndex - 1)}
-          disabled={spreadIndex === 0}
+          disabled={!hasPrev || isDragging}
         >
           ← 上一頁
         </Button>
         <span className="text-sm text-muted-foreground">
           {spreadIndex + 1} / {spreads.length}
         </span>
-        <Button
-          variant="outline"
-          size="sm"
-          data-testid="spread-next-btn"
-          onClick={() => onSpreadChange(spreadIndex + 1)}
-          disabled={spreadIndex === spreads.length - 1}
-        >
-          下一頁 →
-        </Button>
+        {isLastSpread ? (
+          <Button
+            variant="outline"
+            size="sm"
+            data-testid="spread-add-page-btn"
+            onClick={onAddPage}
+            disabled={isDragging}
+            aria-label="新增內頁"
+          >
+            <PlusCircle className="h-4 w-4" />
+          </Button>
+        ) : (
+          <Button
+            variant="outline"
+            size="sm"
+            data-testid="spread-next-btn"
+            onClick={() => onSpreadChange(spreadIndex + 1)}
+            disabled={isDragging}
+          >
+            下一頁 →
+          </Button>
+        )}
       </div>
     </div>
   )

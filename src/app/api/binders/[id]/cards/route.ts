@@ -75,6 +75,8 @@ export async function POST(request: Request, context: RouteContext) {
       )
     }
 
+    let updatedTotalPages: number | undefined
+
     if (slotsToCreate > 0) {
       const lastSlot = await tx.binderSlot.findFirst({
         where: { binderId },
@@ -117,18 +119,33 @@ export async function POST(request: Request, context: RouteContext) {
       }
 
       await tx.binderSlot.createMany({ data: newSlots })
+
+      const maxNewPage = Math.max(...newSlots.map((s) => s.pageNumber))
+      const currentSettings = (binder.settings as Record<string, unknown> | null) ?? {}
+      const currentTotalPages =
+        typeof currentSettings.totalPages === 'number' ? currentSettings.totalPages : 0
+      if (maxNewPage > currentTotalPages) {
+        await tx.binder.update({
+          where: { id: binderId },
+          data: { settings: { ...currentSettings, totalPages: maxNewPage } },
+        })
+        updatedTotalPages = maxNewPage
+      }
     }
 
-    return userCard
+    return { userCard, updatedTotalPages }
   })
 
   return Response.json({
     slotsAdded: typedQuantity,
     userCard: {
-      id: result.id,
-      cardId: result.cardId,
-      status: result.status,
-      quantity: result.quantity,
+      id: result.userCard.id,
+      cardId: result.userCard.cardId,
+      status: result.userCard.status,
+      quantity: result.userCard.quantity,
     },
+    ...(result.updatedTotalPages !== undefined
+      ? { updatedTotalPages: result.updatedTotalPages }
+      : {}),
   })
 }

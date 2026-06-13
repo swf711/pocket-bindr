@@ -5,6 +5,7 @@ import { GRID_TYPE_SLOTS } from '@/types/binder'
 export function buildGridPages(
   slots: SlotWithCard[],
   gridType: GridType,
+  totalPages?: number,
 ): Map<number, BinderSlotItem[]> {
   const slotsPerPage = GRID_TYPE_SLOTS[gridType]
   const byPage = new Map<number, SlotWithCard[]>()
@@ -12,7 +13,8 @@ export function buildGridPages(
     if (!byPage.has(slot.pageNumber)) byPage.set(slot.pageNumber, [])
     byPage.get(slot.pageNumber)!.push(slot)
   }
-  const maxPage = byPage.size > 0 ? Math.max(...byPage.keys()) : 1
+  const maxPageFromSlots = byPage.size > 0 ? Math.max(...byPage.keys()) : 0
+  const maxPage = Math.max(totalPages ?? 0, maxPageFromSlots, 1)
   const pages = new Map<number, BinderSlotItem[]>()
   for (let page = 1; page <= maxPage; page++) {
     const pageSlots = byPage.get(page) ?? []

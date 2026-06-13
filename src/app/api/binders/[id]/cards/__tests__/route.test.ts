@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 vi.mock('@/lib/prisma', () => ({
   prisma: {
-    binder: { findUnique: vi.fn() },
+    binder: { findUnique: vi.fn(), update: vi.fn() },
     card: { findUnique: vi.fn() },
     binderSlot: {
       findMany: vi.fn(),

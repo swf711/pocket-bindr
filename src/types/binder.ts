@@ -27,11 +27,16 @@ export type EmptySlot = {
 
 export type BinderSlotItem = SlotWithCard | EmptySlot
 
+export interface BinderSettings {
+  totalPages: number
+}
+
 export type BinderDetailResponse = {
   id: string
   name: string
   gridType: 'grid_1x2' | 'grid_2x2' | 'grid_3x3' | 'grid_4x3' | 'grid_4x4'
   coverColor: string
+  settings: BinderSettings | null
   slots: SlotWithCard[]
 }
 
@@ -104,6 +109,7 @@ export interface AddToBinderResult {
     status: 'owned' | 'wanted'
     quantity: number
   }
+  updatedTotalPages?: number
 }
 
 export interface CardCollectionSummary {

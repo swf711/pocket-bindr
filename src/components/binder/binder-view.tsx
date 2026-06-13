@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { GridType } from '@prisma/client'
 import { BinderSpreadView } from './binder-spread-view'
 import { BinderMobileView } from './binder-mobile-view'
+import { BinderSettingsDrawer } from './binder-settings-drawer'
 import type { BinderDetailResponse, SlotWithCard } from '@/types/binder'
 import { buildGridPages, buildSpreads, buildMobilePages } from '@/lib/binder-utils'
 
@@ -11,10 +12,13 @@ export function BinderView({ binder }: { binder: BinderDetailResponse }) {
   const [slots, setSlots] = useState<SlotWithCard[]>(binder.slots)
   const [spreadIndex, setSpreadIndex] = useState(0)
   const [mobilePageIndex, setMobilePageIndex] = useState(0)
+  const [totalPages, setTotalPages] = useState(binder.settings?.totalPages ?? 1)
+  const [binderName, setBinderName] = useState(binder.name)
+  const [binderGridType, setBInderGridType] = useState<GridType>(binder.gridType as GridType)
+  const [binderCoverColor, setBinderCoverColor] = useState(binder.coverColor)
 
-  const gridType = binder.gridType as GridType
-  const pages = buildGridPages(slots, gridType)
-  const totalPages = Math.max(pages.size, 1)
+  const gridType = binderGridType
+  const pages = buildGridPages(slots, gridType, totalPages)
   const pagesArray = Array.from({ length: totalPages }, (_, i) => pages.get(i + 1) ?? [])
   const spreads = buildSpreads(pagesArray)
   const mobilePages = buildMobilePages(pagesArray)
@@ -84,6 +88,37 @@ export function BinderView({ binder }: { binder: BinderDetailResponse }) {
     }
   }
 
+  const handleAddPage = async () => {
+    const res = await fetch(`/api/binders/${binder.id}/pages`, { method: 'POST' })
+    if (res.ok) {
+      const data = await res.json()
+      setTotalPages(data.totalPages)
+    }
+  }
+
+  const handlePageDelete = (pageNumber: number, newSlots: SlotWithCard[]) => {
+    setSlots(newSlots)
+    setSpreadIndex((prev) => {
+      const newSpreadCount = buildSpreads(
+        Array.from({ length: totalPages - 1 }, (_, i) =>
+          buildGridPages(newSlots, gridType, totalPages - 1).get(i + 1) ?? [],
+        ),
+      ).length
+      return Math.min(prev, Math.max(newSpreadCount - 1, 0))
+    })
+    setMobilePageIndex((prev) => Math.min(prev, totalPages - 1))
+  }
+
+  const handlePageReorder = (_pageA: number, _pageB: number, newSlots: SlotWithCard[]) => {
+    setSlots(newSlots)
+  }
+
+  const handleSettingsUpdate = (updated: { name: string; gridType: GridType; coverColor: string }) => {
+    setBinderName(updated.name)
+    setBInderGridType(updated.gridType)
+    setBinderCoverColor(updated.coverColor)
+  }
+
   const sharedHandlers = {
     onDelete: handleDelete,
     onSwap: handleSwap,
@@ -93,21 +128,36 @@ export function BinderView({ binder }: { binder: BinderDetailResponse }) {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-bold">{binder.name}</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">{binderName}</h1>
+        <BinderSettingsDrawer
+          binderId={binder.id}
+          binderName={binderName}
+          gridType={binderGridType}
+          coverColor={binderCoverColor}
+          totalPages={totalPages}
+          onSettingsUpdate={handleSettingsUpdate}
+          onPageDelete={handlePageDelete}
+          onPageReorder={handlePageReorder}
+          onTotalPagesChange={setTotalPages}
+        />
+      </div>
       <BinderSpreadView
         spreads={spreads}
         spreadIndex={spreadIndex}
         onSpreadChange={setSpreadIndex}
-        coverColor={binder.coverColor}
+        coverColor={binderCoverColor}
         gridType={gridType}
+        onAddPage={handleAddPage}
         {...sharedHandlers}
       />
       <BinderMobileView
         mobilePages={mobilePages}
         pageIndex={mobilePageIndex}
         onPageChange={setMobilePageIndex}
-        coverColor={binder.coverColor}
+        coverColor={binderCoverColor}
         gridType={gridType}
+        onAddPage={handleAddPage}
         {...sharedHandlers}
       />
     </div>
