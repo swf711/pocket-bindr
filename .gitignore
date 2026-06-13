@@ -55,3 +55,6 @@ scripts/scrape-*.ts
 scripts/scrape-*/
 scripts/sync-*.ts
 scripts/lib/
+
+# 腳本產出的暫存檔
+/tmp/
