@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { GridType } from '@prisma/client'
-import { buildGridPages, buildSpreads, buildMobilePages } from '../binder-utils'
+import { buildGridPages, buildSpreads, buildMobilePages, computeSlotMigration } from '../binder-utils'
 import type { SlotWithCard } from '@/types/binder'
 import type { GridPage } from '../binder-utils'
 
@@ -106,5 +106,69 @@ describe('buildMobilePages', () => {
     const result = buildMobilePages([])
     expect(result).toHaveLength(1)
     expect(result[0]).toEqual({ type: 'cover' })
+  })
+})
+
+describe('computeSlotMigration', () => {
+  function makeOverflow(id: string, pageNumber: number, slotIndex: number) {
+    return { id, pageNumber, slotIndex }
+  }
+
+  it('無越界 slots 時回傳空陣列', () => {
+    expect(computeSlotMigration([], 4, 3)).toEqual([])
+  })
+
+  it('單一越界 slot 搬至 currentTotalPages+1 第 0 格', () => {
+    const result = computeSlotMigration([makeOverflow('s1', 1, 5)], 4, 3)
+    expect(result).toEqual([{ id: 's1', newPageNumber: 4, newSlotIndex: 0 }])
+  })
+
+  it('多個越界 slots 依序填入新頁，滿頁才開新頁', () => {
+    const slots = [
+      makeOverflow('s1', 1, 4),
+      makeOverflow('s2', 1, 5),
+      makeOverflow('s3', 1, 6),
+      makeOverflow('s4', 1, 7),
+    ]
+    const result = computeSlotMigration(slots, 4, 2)
+    // newSlotsPerPage=4: s1→page3/slot0, s2→page3/slot1, s3→page3/slot2, s4→page3/slot3
+    expect(result).toEqual([
+      { id: 's1', newPageNumber: 3, newSlotIndex: 0 },
+      { id: 's2', newPageNumber: 3, newSlotIndex: 1 },
+      { id: 's3', newPageNumber: 3, newSlotIndex: 2 },
+      { id: 's4', newPageNumber: 3, newSlotIndex: 3 },
+    ])
+  })
+
+  it('overflow 超過一頁容量時開新頁', () => {
+    const slots = [
+      makeOverflow('s1', 1, 2),
+      makeOverflow('s2', 1, 3),
+      makeOverflow('s3', 2, 2),
+    ]
+    const result = computeSlotMigration(slots, 2, 2)
+    // newSlotsPerPage=2: s1→page3/slot0, s2→page3/slot1, s3→page4/slot0
+    expect(result).toEqual([
+      { id: 's1', newPageNumber: 3, newSlotIndex: 0 },
+      { id: 's2', newPageNumber: 3, newSlotIndex: 1 },
+      { id: 's3', newPageNumber: 4, newSlotIndex: 0 },
+    ])
+  })
+
+  it('跨多個原頁面的越界 slots 依 (pageNumber, slotIndex) 升冪排序', () => {
+    // page 2 slotIndex 5 should come before page 3 slotIndex 4
+    const slots = [
+      makeOverflow('s2', 3, 4),
+      makeOverflow('s1', 2, 5),
+    ]
+    const result = computeSlotMigration(slots, 4, 3)
+    expect(result[0].id).toBe('s1')
+    expect(result[1].id).toBe('s2')
+  })
+
+  it('新頁每格 slotIndex 不超過 newSlotsPerPage - 1', () => {
+    const slots = Array.from({ length: 10 }, (_, i) => makeOverflow(`s${i}`, 1, i + 3))
+    const result = computeSlotMigration(slots, 3, 1)
+    expect(result.every((m) => m.newSlotIndex < 3)).toBe(true)
   })
 })

@@ -116,3 +116,13 @@ export interface CardCollectionSummary {
   ownedCount: number
   wantedCount: number
 }
+
+export interface PatchBinderResponse {
+  id: string
+  name: string
+  gridType: GridType
+  coverColor: string
+  settings: Record<string, unknown> | null
+  _count: { slots: number }
+  affectedSlotsCount?: number
+}

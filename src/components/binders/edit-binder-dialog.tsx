@@ -19,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { BinderSummary, GRID_TYPE_LABELS } from '@/types/binder'
+import { BinderSummary, PatchBinderResponse, GRID_TYPE_LABELS } from '@/types/binder'
 import { DEFAULT_COVER_COLOR } from '@/lib/cover-colors'
 import { CoverColorPicker } from './cover-color-picker'
 
@@ -63,8 +63,11 @@ export function EditBinderDialog({
         const err = await res.json().catch(() => ({}))
         throw new Error(err?.error ?? '更新失敗')
       }
-      const data: BinderSummary = await res.json()
-      onUpdated(data)
+      const data: PatchBinderResponse = await res.json()
+      if (data.affectedSlotsCount && data.affectedSlotsCount > 0) {
+        toast(`格式已更新，${data.affectedSlotsCount} 張卡片已搬移至新頁`)
+      }
+      onUpdated(data as unknown as BinderSummary)
       onOpenChange(false)
     } catch (err) {
       toast((err as Error).message)

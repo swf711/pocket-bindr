@@ -27,6 +27,21 @@ export function buildGridPages(
   return pages
 }
 
+export function computeSlotMigration(
+  overflowSlots: { id: string; pageNumber: number; slotIndex: number }[],
+  newSlotsPerPage: number,
+  currentTotalPages: number,
+): { id: string; newPageNumber: number; newSlotIndex: number }[] {
+  const sorted = [...overflowSlots].sort(
+    (a, b) => a.pageNumber - b.pageNumber || a.slotIndex - b.slotIndex,
+  )
+  return sorted.map((slot, i) => ({
+    id: slot.id,
+    newPageNumber: currentTotalPages + Math.floor(i / newSlotsPerPage) + 1,
+    newSlotIndex: i % newSlotsPerPage,
+  }))
+}
+
 export type GridPage = BinderSlotItem[]
 
 export type SpreadPageContent =

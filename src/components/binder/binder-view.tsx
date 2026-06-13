@@ -116,10 +116,18 @@ export function BinderView({ binder }: { binder: BinderDetailResponse }) {
     setSlots(newSlots)
   }
 
-  const handleSettingsUpdate = (updated: { name: string; gridType: GridType; coverColor: string }) => {
+  const handleSettingsUpdate = (updated: {
+    name: string
+    gridType: GridType
+    coverColor: string
+    newSlots?: SlotWithCard[]
+    newTotalPages?: number
+  }) => {
     setBinderName(updated.name)
     setBInderGridType(updated.gridType)
     setBinderCoverColor(updated.coverColor)
+    if (updated.newSlots !== undefined) setSlots(updated.newSlots)
+    if (updated.newTotalPages !== undefined) setTotalPages(updated.newTotalPages)
   }
 
   const sharedHandlers = {

@@ -1,6 +1,8 @@
 import { GridType } from '@prisma/client'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { computeSlotMigration } from '@/lib/binder-utils'
+import { GRID_TYPE_SLOTS } from '@/types/binder'
 
 const HEX_COLOR_RE = /^#[0-9A-Fa-f]{6}$/
 
@@ -79,7 +81,7 @@ export async function PATCH(request: Request, context: RouteContext) {
   const userId = session.user.id
   const { id } = await context.params
 
-  const { error } = await getBinderOrError(id, userId)
+  const { binder: currentBinder, error } = await getBinderOrError(id, userId)
   if (error) return error
 
   let body: unknown
@@ -117,6 +119,55 @@ export async function PATCH(request: Request, context: RouteContext) {
       return Response.json({ error: 'coverColor must be a valid hex color (e.g. #4A5568)' }, { status: 400 })
     }
     updateData.coverColor = coverColor
+  }
+
+  // When gridType shrinks, repack out-of-bounds slots onto new pages
+  const newGridType = updateData.gridType
+  let affectedSlotsCount = 0
+
+  if (
+    newGridType !== undefined &&
+    GRID_TYPE_SLOTS[newGridType] < GRID_TYPE_SLOTS[currentBinder!.gridType]
+  ) {
+    const newSlotsPerPage = GRID_TYPE_SLOTS[newGridType]
+    const currentSettings = currentBinder!.settings as { totalPages?: number } | null
+    const currentTotalPages = Math.max(currentSettings?.totalPages ?? 0, 1)
+
+    const overflowSlots = await prisma.binderSlot.findMany({
+      where: { binderId: id, slotIndex: { gte: newSlotsPerPage } },
+      select: { id: true, pageNumber: true, slotIndex: true },
+    })
+
+    if (overflowSlots.length > 0) {
+      const migrations = computeSlotMigration(overflowSlots, newSlotsPerPage, currentTotalPages)
+      const newTotalPages =
+        currentTotalPages + Math.ceil(overflowSlots.length / newSlotsPerPage)
+
+      const currentSettingsObj = (currentBinder!.settings as Record<string, unknown>) ?? {}
+      const newSettings = { ...currentSettingsObj, totalPages: newTotalPages }
+
+      const [updated] = await prisma.$transaction([
+        prisma.binder.update({
+          where: { id },
+          data: {
+            name: updateData.name,
+            gridType: updateData.gridType,
+            coverColor: updateData.coverColor,
+            settings: newSettings,
+          },
+          include: { _count: { select: { slots: true } } },
+        }),
+        ...migrations.map((m) =>
+          prisma.binderSlot.update({
+            where: { id: m.id },
+            data: { pageNumber: m.newPageNumber, slotIndex: m.newSlotIndex },
+          }),
+        ),
+      ])
+
+      affectedSlotsCount = migrations.length
+      return Response.json({ ...updated, affectedSlotsCount })
+    }
   }
 
   const updated = await prisma.binder.update({

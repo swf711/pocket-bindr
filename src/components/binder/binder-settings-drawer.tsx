@@ -45,7 +45,7 @@ import {
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { Separator } from '@/components/ui/separator'
 import { CoverColorPicker } from '@/components/binders/cover-color-picker'
-import { GRID_TYPE_LABELS, type SlotWithCard } from '@/types/binder'
+import { GRID_TYPE_LABELS, type SlotWithCard, type BinderSettings } from '@/types/binder'
 
 const GRID_TYPE_SHORT: Record<GridType, string> = {
   grid_1x2: '1×2',
@@ -61,7 +61,13 @@ interface BinderSettingsDrawerProps {
   gridType: GridType
   coverColor: string
   totalPages: number
-  onSettingsUpdate: (updated: { name: string; gridType: GridType; coverColor: string }) => void
+  onSettingsUpdate: (updated: {
+    name: string
+    gridType: GridType
+    coverColor: string
+    newSlots?: SlotWithCard[]
+    newTotalPages?: number
+  }) => void
   onPageDelete: (pageNumber: number, newSlots: SlotWithCard[]) => void
   onPageReorder: (newSlots: SlotWithCard[]) => void
   onTotalPagesChange: (n: number) => void
@@ -183,8 +189,26 @@ export function BinderSettingsDrawer({
         const err = await res.json().catch(() => ({}))
         throw new Error(err?.error ?? '更新失敗')
       }
-      onSettingsUpdate({ name, gridType: localGridType, coverColor: localCoverColor })
-      toast('設定已儲存')
+      const data = await res.json()
+      const affectedSlotsCount: number = data.affectedSlotsCount ?? 0
+
+      if (affectedSlotsCount > 0) {
+        // PATCH response already has updated settings; re-fetch only for migrated slot positions
+        const newTotalPages = (data.settings as BinderSettings | null)?.totalPages ?? totalPages
+        const refreshRes = await fetch(`/api/binders/${binderId}`)
+        const refreshData = await refreshRes.json()
+        onSettingsUpdate({
+          name,
+          gridType: localGridType,
+          coverColor: localCoverColor,
+          newSlots: refreshData.slots,
+          newTotalPages,
+        })
+        toast(`格式已更新，${affectedSlotsCount} 張卡片已搬移至第 ${totalPages + 1}～${newTotalPages} 頁`)
+      } else {
+        onSettingsUpdate({ name, gridType: localGridType, coverColor: localCoverColor })
+        toast('設定已儲存')
+      }
     } catch (err) {
       toast((err as Error).message)
     } finally {
