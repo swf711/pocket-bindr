@@ -8,7 +8,7 @@ export function BinderCoverPanel({ coverColor }: BinderCoverPanelProps) {
     <div
       data-testid="binder-cover-panel"
       data-droppable="false"
-      className="w-full h-full min-h-[400px] rounded-lg flex items-center justify-center"
+      className="w-full h-full min-h-100 rounded-lg flex items-center justify-center"
       style={{ backgroundColor: coverColor }}
     />
   )

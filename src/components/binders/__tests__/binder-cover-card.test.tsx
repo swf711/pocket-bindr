@@ -61,4 +61,34 @@ describe('BinderCoverCard', () => {
     expect(screen.getByText('4×3')).toBeInTheDocument()
     expect(screen.getByText('12 張卡')).toBeInTheDocument()
   })
+
+  it('edit/delete 按鈕區預設有 opacity-0 class（hover 前不可見）', () => {
+    const { container } = render(
+      <BinderCoverCard binder={makeBinder()} onEdit={() => {}} onDelete={() => {}} />,
+    )
+    const buttonWrapper = container.querySelector('.opacity-0')
+    expect(buttonWrapper).toBeInTheDocument()
+    expect(buttonWrapper).toContainElement(screen.getByTestId('edit-binder-btn'))
+    expect(buttonWrapper).toContainElement(screen.getByTestId('delete-binder-btn'))
+  })
+
+  it('書脊 div 存在並套用 coverColor', () => {
+    const { container } = render(
+      <BinderCoverCard binder={makeBinder({ coverColor: '#FF5733' })} onEdit={() => {}} onDelete={() => {}} />,
+    )
+    const spine = container.querySelector('[data-testid="binder-spine"]') as HTMLElement
+    expect(spine).toBeInTheDocument()
+    expect(spine.style.backgroundColor).toBe('rgb(255, 87, 51)')
+  })
+
+  it('顯示建立日期', () => {
+    render(
+      <BinderCoverCard
+        binder={makeBinder({ createdAt: '2024-03-15T00:00:00.000Z' })}
+        onEdit={() => {}}
+        onDelete={() => {}}
+      />,
+    )
+    expect(screen.getByText(/2024/)).toBeInTheDocument()
+  })
 })

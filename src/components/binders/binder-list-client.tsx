@@ -48,7 +48,10 @@ export function BinderListClient({ initialBinders }: BinderListClientProps) {
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">我的卡冊</h1>
+        <div>
+          <h1 className="text-2xl font-bold">我的卡冊</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">共 {binderList.length} 本</p>
+        </div>
         <Button onClick={() => setCreateOpen(true)} data-testid="create-binder-btn">
           新增卡冊
         </Button>
@@ -63,7 +66,7 @@ export function BinderListClient({ initialBinders }: BinderListClientProps) {
           <Button onClick={() => setCreateOpen(true)}>建立第一本卡冊</Button>
         </div>
       ) : (
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-3 grid-cols-[repeat(auto-fill,minmax(120px,1fr))]">
           {binderList.map(binder => (
             <BinderCoverCard
               key={binder.id}

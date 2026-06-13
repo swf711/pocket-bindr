@@ -35,46 +35,58 @@ export function BinderCoverCard({ binder, onEdit, onDelete }: BinderCoverCardPro
   return (
     <div
       data-testid="binder-card"
-      className="rounded-lg overflow-hidden flex flex-col min-h-40 shadow-md"
-      style={{ backgroundColor: binder.coverColor, color: textColor }}
+      className="group flex aspect-2/3 shadow-md rounded-r-lg overflow-hidden cursor-pointer"
+      style={{ color: textColor }}
     >
-      <div className="flex-1 p-4 flex flex-col gap-1">
-        <span className="text-lg font-bold leading-tight">{binder.name}</span>
-        <span className="text-sm opacity-80">{GRID_SHORT_LABELS[binder.gridType as GridType]}</span>
-        <span className="text-sm opacity-70">{binder._count.slots} 張卡</span>
-      </div>
+      {/* 書脊 */}
       <div
-        className="flex gap-2 px-3 pb-3"
-        style={{ color: textColor }}
+        data-testid="binder-spine"
+        className="w-4 shrink-0"
+        style={{ backgroundColor: binder.coverColor, filter: 'brightness(0.72)' }}
+      />
+
+      {/* 封面主體：整體可點擊進入卡冊 */}
+      <div
+        data-testid="enter-binder-btn"
+        className="flex-1 flex flex-col rounded-r-lg overflow-hidden"
+        style={{ backgroundColor: binder.coverColor }}
+        onClick={() => router.push('/binders/' + binder.id)}
       >
-        <Button
-          variant="secondary"
-          size="sm"
-          data-testid="enter-binder-btn"
-          className="flex-1"
-          onClick={() => router.push('/binders/' + binder.id)}
-          style={{ backgroundColor: 'rgba(255,255,255,0.2)', color: textColor, borderColor: 'transparent' }}
+        <div className="flex-1 p-2 flex flex-col gap-1">
+          <span className="text-sm font-bold leading-tight">{binder.name}</span>
+          <span className="text-xs opacity-80">{GRID_SHORT_LABELS[binder.gridType as GridType]}</span>
+          <span className="text-xs opacity-70">{binder._count.slots} 張卡</span>
+          <span className="text-xs opacity-60">
+            {new Date(binder.createdAt).toLocaleDateString('zh-TW')}
+          </span>
+        </div>
+
+        {/* edit/delete 圖示：hover 才顯示 */}
+        <div
+          className="flex justify-end gap-1 px-2 pb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+          style={{ color: textColor }}
         >
-          進入卡冊
-        </Button>
-        <Button
-          variant="secondary"
-          size="icon"
-          data-testid="edit-binder-btn"
-          onClick={() => onEdit(binder)}
-          style={{ backgroundColor: 'rgba(255,255,255,0.2)', color: textColor, borderColor: 'transparent' }}
-        >
-          <Pencil className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="secondary"
-          size="icon"
-          data-testid="delete-binder-btn"
-          onClick={() => onDelete(binder)}
-          style={{ backgroundColor: 'rgba(255,255,255,0.2)', color: textColor, borderColor: 'transparent' }}
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
+          <Button
+            variant="secondary"
+            size="icon"
+            data-testid="edit-binder-btn"
+            className="h-6 w-6 shrink-0"
+            onClick={(e) => { e.stopPropagation(); onEdit(binder) }}
+            style={{ backgroundColor: 'rgba(255,255,255,0.2)', color: textColor, borderColor: 'transparent' }}
+          >
+            <Pencil className="h-3 w-3" />
+          </Button>
+          <Button
+            variant="secondary"
+            size="icon"
+            data-testid="delete-binder-btn"
+            className="h-6 w-6 shrink-0"
+            onClick={(e) => { e.stopPropagation(); onDelete(binder) }}
+            style={{ backgroundColor: 'rgba(255,255,255,0.2)', color: textColor, borderColor: 'transparent' }}
+          >
+            <Trash2 className="h-3 w-3" />
+          </Button>
+        </div>
       </div>
     </div>
   )

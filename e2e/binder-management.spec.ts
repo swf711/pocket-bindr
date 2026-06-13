@@ -39,7 +39,8 @@ test.describe('卡冊管理頁', () => {
     await page.getByTestId('binder-name-input').fill('原始名稱')
     await page.getByTestId('create-binder-submit').click()
     await expect(page.getByTestId('binder-card')).toBeVisible()
-    // 編輯
+    // 編輯（hover 後按鈕才顯示）
+    await page.getByTestId('binder-card').first().hover()
     await page.getByTestId('edit-binder-btn').first().click()
     await page.getByTestId('binder-name-input').clear()
     await page.getByTestId('binder-name-input').fill('更新後的名稱')
@@ -57,6 +58,7 @@ test.describe('卡冊管理頁', () => {
     await page.getByTestId('create-binder-submit').click()
     await expect(page.getByTestId('binder-card')).toBeVisible()
     const initialCount = await page.getByTestId('binder-card').count()
+    await page.getByTestId('binder-card').first().hover()
     await page.getByTestId('delete-binder-btn').first().click()
     await page.getByTestId('confirm-delete-binder').click()
     await expect(page.getByTestId('binder-card')).toHaveCount(initialCount - 1)
@@ -74,6 +76,7 @@ test.describe('卡冊管理頁', () => {
     await expect(page.getByTestId('binder-card')).toBeVisible()
     await expect(page.getByText('4×3')).toBeVisible()
     // 進入卡冊內頁，第一頁應為 4 欄 × 12 格
+    await page.getByTestId('binder-card').first().hover()
     await page.getByTestId('enter-binder-btn').first().click()
     await expect(page).toHaveURL(/\/binders\/[a-z0-9-]+/)
     const grid = page.locator('div.grid[style*="repeat(4"]').first()
@@ -99,7 +102,35 @@ test.describe('卡冊管理頁', () => {
     await page.getByTestId('binder-name-input').fill('導向測試冊')
     await page.getByTestId('create-binder-submit').click()
     await expect(page.getByTestId('binder-card')).toBeVisible()
+    await page.getByTestId('binder-card').first().hover()
     await page.getByTestId('enter-binder-btn').first().click()
     await expect(page).toHaveURL(/\/binders\/[a-z0-9-]+/)
+  })
+
+  test('header 顯示卡冊總數', async ({ page }) => {
+    await clearUserBindersByEmail(USER.email)
+    await loginAs(page, USER)
+    await page.goto('/binders')
+    await expect(page.getByText(/共 0 本/)).toBeVisible()
+    // 建立一本後計數更新
+    await page.getByTestId('create-binder-btn').click()
+    await page.getByTestId('binder-name-input').fill('計數測試冊')
+    await page.getByTestId('create-binder-submit').click()
+    await expect(page.getByTestId('binder-card')).toBeVisible()
+    await expect(page.getByText(/共 1 本/)).toBeVisible()
+  })
+
+  test('hover 後操作按鈕顯示', async ({ page }) => {
+    await clearUserBindersByEmail(USER.email)
+    await loginAs(page, USER)
+    await page.goto('/binders')
+    await page.getByTestId('create-binder-btn').click()
+    await page.getByTestId('binder-name-input').fill('Hover 測試冊')
+    await page.getByTestId('create-binder-submit').click()
+    await expect(page.getByTestId('binder-card')).toBeVisible()
+    // hover 後按鈕的 opacity 應為 1
+    await page.getByTestId('binder-card').first().hover()
+    const enterBtn = page.getByTestId('enter-binder-btn').first()
+    await expect(enterBtn).toHaveCSS('opacity', '1')
   })
 })
