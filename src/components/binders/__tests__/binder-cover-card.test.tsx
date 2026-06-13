@@ -81,6 +81,14 @@ describe('BinderCoverCard', () => {
     expect(spine.style.backgroundColor).toBe('rgb(255, 87, 51)')
   })
 
+  it('封面套用 aspect-2.5/3.5（與卡片搜尋一致）', () => {
+    const { container } = render(
+      <BinderCoverCard binder={makeBinder()} onEdit={() => {}} onDelete={() => {}} />,
+    )
+    const root = container.querySelector('[data-testid="binder-card"]') as HTMLElement
+    expect(root.className).toContain('aspect-2.5/3.5')
+  })
+
   it('顯示建立日期', () => {
     render(
       <BinderCoverCard

@@ -35,7 +35,7 @@ export function BinderCoverCard({ binder, onEdit, onDelete }: BinderCoverCardPro
   return (
     <div
       data-testid="binder-card"
-      className="group flex aspect-2/3 shadow-md rounded-r-lg overflow-hidden cursor-pointer"
+      className="group flex aspect-2.5/3.5 shadow-md rounded-r-lg overflow-hidden cursor-pointer"
       style={{ color: textColor }}
     >
       {/* 書脊 */}

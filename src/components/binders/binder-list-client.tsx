@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { BinderSummary } from '@/types/binder'
+import { cardGridClassName } from '@/components/cards/card-grid'
 import { BinderCoverCard } from './binder-cover-card'
 import { CreateBinderDialog } from './create-binder-dialog'
 import { EditBinderDialog } from './edit-binder-dialog'
@@ -66,7 +67,7 @@ export function BinderListClient({ initialBinders }: BinderListClientProps) {
           <Button onClick={() => setCreateOpen(true)}>建立第一本卡冊</Button>
         </div>
       ) : (
-        <div className="grid gap-3 grid-cols-[repeat(auto-fill,minmax(120px,1fr))]">
+        <div className={cardGridClassName}>
           {binderList.map(binder => (
             <BinderCoverCard
               key={binder.id}

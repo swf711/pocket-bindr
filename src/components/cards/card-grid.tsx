@@ -10,13 +10,13 @@ interface CardGridProps {
   loading?: boolean
 }
 
-const gridClassName =
+export const cardGridClassName =
   'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4'
 
 export function CardGrid({ cards, onCardClick, loading = false }: CardGridProps) {
   if (loading) {
     return (
-      <div data-testid="card-grid-loading" className={gridClassName}>
+      <div data-testid="card-grid-loading" className={cardGridClassName}>
         {Array.from({ length: 20 }).map((_, i) => (
           <div key={i}>
             <Skeleton className="aspect-2.5/3.5 w-full rounded-lg" />
@@ -31,7 +31,7 @@ export function CardGrid({ cards, onCardClick, loading = false }: CardGridProps)
   }
 
   return (
-    <div data-testid="card-grid" className={gridClassName}>
+    <div data-testid="card-grid" className={cardGridClassName}>
       {cards.map(card => (
         <CardItem key={card.id} card={card} onClick={onCardClick} />
       ))}
