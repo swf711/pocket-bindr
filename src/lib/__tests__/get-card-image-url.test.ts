@@ -47,4 +47,9 @@ describe('getCardImageUrl', () => {
   it('returns original string for malformed URL', () => {
     expect(getCardImageUrl('not-a-url')).toBe('not-a-url')
   })
+
+  it('returns self-hosted Supabase Storage URL as-is (not proxied)', () => {
+    const input = 'https://abcdefgh.supabase.co/storage/v1/object/public/card-images/ja/neo1/001.webp'
+    expect(getCardImageUrl(input)).toBe(input)
+  })
 })

@@ -55,6 +55,10 @@ scripts/scrape-*.ts
 scripts/scrape-*/
 scripts/sync-*.ts
 scripts/lib/
+# 補圖／稽核等本機資料工具（依賴 scripts/lib/，不進版控）
+scripts/backfill-*.ts
+scripts/audit-*.ts
 
 # 腳本產出的暫存檔
 /tmp/
+.cache/
