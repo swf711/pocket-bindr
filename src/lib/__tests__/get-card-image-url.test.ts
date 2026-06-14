@@ -12,6 +12,11 @@ describe('getCardImageUrl', () => {
     expect(getCardImageUrl(input)).toBe(`/api/proxy-image?url=${encodeURIComponent(input)}`)
   })
 
+  it('returns proxy URL for OPCG EN source', () => {
+    const input = 'https://en.onepiece-cardgame.com/images/cardlist/card/OP16-001.png'
+    expect(getCardImageUrl(input)).toBe(`/api/proxy-image?url=${encodeURIComponent(input)}`)
+  })
+
   it('returns proxy URL for PTCG ZH_TW source', () => {
     const input = 'https://asia.pokemon-card.com/images/card/en/card_SWSH1_001_en.jpg'
     expect(getCardImageUrl(input)).toBe(`/api/proxy-image?url=${encodeURIComponent(input)}`)
