@@ -62,7 +62,7 @@ test.describe('Scenario 2b: 選擇語言', () => {
     await page.keyboard.press('Escape')
   })
 
-  test('切換至日本語：卡片圖片 src 含 /low.webp 且圖片實際載入成功', async ({ page }) => {
+  test('切換至日本語：卡片圖片 src 為 /api/proxy-image 代理 URL 且圖片實際載入成功', async ({ page }) => {
     await page.goto('/cards?game=PTCG')
     await page.getByTestId('card-grid').waitFor({ timeout: 10000 })
 
@@ -78,7 +78,11 @@ test.describe('Scenario 2b: 選擇語言', () => {
 
     const firstImg = page.getByTestId('card-item').locator('img').first()
     await firstImg.waitFor({ timeout: 10000 })
-    await expect(firstImg).toHaveAttribute('src', /\/low\.webp/)
+    // JA 圖片來自 www.pokemon-card.com，經 /api/proxy-image 代理（見 src/lib/get-card-image-url.ts）
+    const src = await firstImg.getAttribute('src')
+    expect(src).toMatch(/\/api\/proxy-image/)
+    const proxiedUrl = new URL(src!, page.url()).searchParams.get('url')
+    expect(new URL(proxiedUrl!).hostname).toBe('www.pokemon-card.com')
 
     // 圖片為 lazy loading，捲動至可視範圍後確認實際載入成功
     await firstImg.scrollIntoViewIfNeeded()
