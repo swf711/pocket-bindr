@@ -4,7 +4,9 @@ import { NextRequest } from 'next/server'
 vi.mock('@/lib/prisma', () => ({
   prisma: {
     card: { findMany: vi.fn(), count: vi.fn() },
+    cardSet: { findMany: vi.fn() },
     userCard: { findMany: vi.fn() },
+    $queryRaw: vi.fn(),
   },
 }))
 
@@ -16,8 +18,24 @@ vi.mock('@/lib/auth', () => ({
 import { GET } from '../route'
 import { prisma } from '@/lib/prisma'
 
+// 無 setId 路徑：route 會先 cardSet.findMany 取得排序，再 $queryRaw 取分頁卡 id，最後 card.findMany(byIds)。
+// 預設讓這條鏈回傳空，個別測試需要資料時再覆寫 $queryRaw + card.findMany。
+function resetDefaults() {
+  vi.mocked(prisma.cardSet.findMany).mockResolvedValue([] as never)
+  vi.mocked(prisma.$queryRaw).mockResolvedValue([] as never)
+  vi.mocked(prisma.card.findMany).mockResolvedValue([] as never)
+  vi.mocked(prisma.card.count).mockResolvedValue(0)
+}
+
+// 設定「無 setId」路徑回傳單張卡
+function mockSingleCard(card: { id: string } & Record<string, unknown>) {
+  vi.mocked(prisma.$queryRaw).mockResolvedValue([{ id: card.id }] as never)
+  vi.mocked(prisma.card.findMany).mockResolvedValue([card] as never)
+  vi.mocked(prisma.card.count).mockResolvedValue(1)
+}
+
 describe('GET /api/cards', () => {
-  beforeEach(() => vi.clearAllMocks())
+  beforeEach(() => { vi.clearAllMocks(); resetDefaults() })
 
   it('game 未傳入時回傳 400', async () => {
     const req = new NextRequest('http://localhost/api/cards')
@@ -33,8 +51,6 @@ describe('GET /api/cards', () => {
 
   it('game=PTCG 時正確呼叫 prisma 並回傳分頁資料', async () => {
     mockAuth.mockResolvedValue(null)
-    vi.mocked(prisma.card.findMany).mockResolvedValue([])
-    vi.mocked(prisma.card.count).mockResolvedValue(0)
     const req = new NextRequest('http://localhost/api/cards?game=PTCG')
     const res = await GET(req)
     expect(res.status).toBe(200)
@@ -53,42 +69,29 @@ describe('GET /api/cards', () => {
     expect(data.error).toBe('language must be one of EN, JA, ZH_TW')
   })
 
-  it('language=JA 時 where 條件包含 language: JA', async () => {
+  it('language=JA 時 count 的 where 條件包含 language: JA', async () => {
     mockAuth.mockResolvedValue(null)
-    vi.mocked(prisma.card.findMany).mockResolvedValue([])
-    vi.mocked(prisma.card.count).mockResolvedValue(0)
     const req = new NextRequest('http://localhost/api/cards?game=PTCG&language=JA')
     const res = await GET(req)
     expect(res.status).toBe(200)
-    expect(prisma.card.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: expect.objectContaining({ game: 'PTCG', language: 'JA' }),
-      })
-    )
     expect(prisma.card.count).toHaveBeenCalledWith({
-      where: expect.objectContaining({ language: 'JA' }),
+      where: expect.objectContaining({ game: 'PTCG', language: 'JA' }),
     })
   })
 
   it('未傳 language 時 where 條件預設為 EN', async () => {
     mockAuth.mockResolvedValue(null)
-    vi.mocked(prisma.card.findMany).mockResolvedValue([])
-    vi.mocked(prisma.card.count).mockResolvedValue(0)
     const req = new NextRequest('http://localhost/api/cards?game=PTCG')
     const res = await GET(req)
     expect(res.status).toBe(200)
-    expect(prisma.card.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: expect.objectContaining({ language: 'EN' }),
-      })
-    )
+    expect(prisma.card.count).toHaveBeenCalledWith({
+      where: expect.objectContaining({ language: 'EN' }),
+    })
   })
 
   it('未登入時每張卡的 collectionStatus 均為 { owned: null, wanted: null }', async () => {
     mockAuth.mockResolvedValue(null)
-    const mockCard = { id: 'card1', name: 'Pikachu', imageSmall: '', rarity: null, cardNumber: '001', set: { name: 'Base' } }
-    vi.mocked(prisma.card.findMany).mockResolvedValue([mockCard] as never)
-    vi.mocked(prisma.card.count).mockResolvedValue(1)
+    mockSingleCard({ id: 'card1', name: 'Pikachu', imageSmall: '', rarity: null, cardNumber: '001', set: { name: 'Base' } })
     const req = new NextRequest('http://localhost/api/cards?game=PTCG')
     const res = await GET(req)
     expect(res.status).toBe(200)
@@ -99,9 +102,7 @@ describe('GET /api/cards', () => {
 
   it('登入用戶有 owned 記錄時 collectionStatus.owned 為 quantity 值', async () => {
     mockAuth.mockResolvedValue({ user: { id: 'u1' } })
-    const mockCard = { id: 'card1', name: 'Pikachu', imageSmall: '', rarity: null, cardNumber: '001', set: { name: 'Base' } }
-    vi.mocked(prisma.card.findMany).mockResolvedValue([mockCard] as never)
-    vi.mocked(prisma.card.count).mockResolvedValue(1)
+    mockSingleCard({ id: 'card1', name: 'Pikachu', imageSmall: '', rarity: null, cardNumber: '001', set: { name: 'Base' } })
     vi.mocked(prisma.userCard.findMany).mockResolvedValue([
       { cardId: 'card1', status: 'owned', quantity: 2 },
     ] as never)
@@ -114,9 +115,7 @@ describe('GET /api/cards', () => {
 
   it('登入用戶有 wanted 記錄時 collectionStatus.wanted 為 quantity 值', async () => {
     mockAuth.mockResolvedValue({ user: { id: 'u1' } })
-    const mockCard = { id: 'card1', name: 'Pikachu', imageSmall: '', rarity: null, cardNumber: '001', set: { name: 'Base' } }
-    vi.mocked(prisma.card.findMany).mockResolvedValue([mockCard] as never)
-    vi.mocked(prisma.card.count).mockResolvedValue(1)
+    mockSingleCard({ id: 'card1', name: 'Pikachu', imageSmall: '', rarity: null, cardNumber: '001', set: { name: 'Base' } })
     vi.mocked(prisma.userCard.findMany).mockResolvedValue([
       { cardId: 'card1', status: 'wanted', quantity: 1 },
     ] as never)
@@ -129,9 +128,7 @@ describe('GET /api/cards', () => {
 
   it('同一張卡同時有 owned 和 wanted 記錄時兩者均回傳 quantity', async () => {
     mockAuth.mockResolvedValue({ user: { id: 'u1' } })
-    const mockCard = { id: 'card1', name: 'Pikachu', imageSmall: '', rarity: null, cardNumber: '001', set: { name: 'Base' } }
-    vi.mocked(prisma.card.findMany).mockResolvedValue([mockCard] as never)
-    vi.mocked(prisma.card.count).mockResolvedValue(1)
+    mockSingleCard({ id: 'card1', name: 'Pikachu', imageSmall: '', rarity: null, cardNumber: '001', set: { name: 'Base' } })
     vi.mocked(prisma.userCard.findMany).mockResolvedValue([
       { cardId: 'card1', status: 'owned', quantity: 3 },
       { cardId: 'card1', status: 'wanted', quantity: 1 },
@@ -145,9 +142,7 @@ describe('GET /api/cards', () => {
 
   it('登入用戶無任何收藏記錄的卡片 collectionStatus 均為 null', async () => {
     mockAuth.mockResolvedValue({ user: { id: 'u1' } })
-    const mockCard = { id: 'card1', name: 'Pikachu', imageSmall: '', rarity: null, cardNumber: '001', set: { name: 'Base' } }
-    vi.mocked(prisma.card.findMany).mockResolvedValue([mockCard] as never)
-    vi.mocked(prisma.card.count).mockResolvedValue(1)
+    mockSingleCard({ id: 'card1', name: 'Pikachu', imageSmall: '', rarity: null, cardNumber: '001', set: { name: 'Base' } })
     vi.mocked(prisma.userCard.findMany).mockResolvedValue([] as never)
     const req = new NextRequest('http://localhost/api/cards?game=PTCG')
     const res = await GET(req)
@@ -158,22 +153,14 @@ describe('GET /api/cards', () => {
 })
 
 describe('GET /api/cards - OPCG ZH_TW alias canonicalization', () => {
-  beforeEach(() => vi.clearAllMocks())
+  beforeEach(() => { vi.clearAllMocks(); resetDefaults() })
 
   it('OPCG+ZH_TW alias 卡：collectionStatus 查 canonicalCardId 而非 alias id', async () => {
     mockAuth.mockResolvedValue({ user: { id: 'u1' } })
-    const aliasCard = {
-      id: 'zhtw-c1',
-      name: '魯夫',
-      imageSmall: '',
-      rarity: null,
-      cardNumber: 'OP01-001',
-      isCollectible: false,
-      canonicalCardId: 'ja-c1',
-      set: { name: 'OP-01' },
-    }
-    vi.mocked(prisma.card.findMany).mockResolvedValue([aliasCard] as never)
-    vi.mocked(prisma.card.count).mockResolvedValue(1)
+    mockSingleCard({
+      id: 'zhtw-c1', name: '魯夫', imageSmall: '', rarity: null, cardNumber: 'OP01-001',
+      isCollectible: false, canonicalCardId: 'ja-c1', set: { name: 'OP-01' },
+    })
     vi.mocked(prisma.userCard.findMany).mockResolvedValue([
       { cardId: 'ja-c1', status: 'owned', quantity: 3 },
     ] as never)
@@ -186,18 +173,10 @@ describe('GET /api/cards - OPCG ZH_TW alias canonicalization', () => {
 
   it('OPCG+ZH_TW：collectible 卡（台灣限定）使用自身 id 查 collectionStatus', async () => {
     mockAuth.mockResolvedValue({ user: { id: 'u1' } })
-    const twLimitedCard = {
-      id: 'tw-limited-c1',
-      name: '台灣限定卡',
-      imageSmall: '',
-      rarity: null,
-      cardNumber: 'P-136',
-      isCollectible: true,
-      canonicalCardId: null,
-      set: { name: 'ZH-TW Limited' },
-    }
-    vi.mocked(prisma.card.findMany).mockResolvedValue([twLimitedCard] as never)
-    vi.mocked(prisma.card.count).mockResolvedValue(1)
+    mockSingleCard({
+      id: 'tw-limited-c1', name: '台灣限定卡', imageSmall: '', rarity: null, cardNumber: 'P-136',
+      isCollectible: true, canonicalCardId: null, set: { name: 'ZH-TW Limited' },
+    })
     vi.mocked(prisma.userCard.findMany).mockResolvedValue([
       { cardId: 'tw-limited-c1', status: 'owned', quantity: 1 },
     ] as never)
@@ -210,8 +189,6 @@ describe('GET /api/cards - OPCG ZH_TW alias canonicalization', () => {
 
   it('OPCG+JA：response 不包含 canonicalCard include', async () => {
     mockAuth.mockResolvedValue(null)
-    vi.mocked(prisma.card.findMany).mockResolvedValue([])
-    vi.mocked(prisma.card.count).mockResolvedValue(0)
     const req = new NextRequest('http://localhost/api/cards?game=OPCG&language=JA')
     const res = await GET(req)
     expect(res.status).toBe(200)
@@ -224,8 +201,6 @@ describe('GET /api/cards - OPCG ZH_TW alias canonicalization', () => {
 
   it('PTCG+ZH_TW：不受影響（無 canonicalCard include）', async () => {
     mockAuth.mockResolvedValue(null)
-    vi.mocked(prisma.card.findMany).mockResolvedValue([])
-    vi.mocked(prisma.card.count).mockResolvedValue(0)
     const req = new NextRequest('http://localhost/api/cards?game=PTCG&language=ZH_TW')
     const res = await GET(req)
     expect(res.status).toBe(200)
@@ -238,11 +213,11 @@ describe('GET /api/cards - OPCG ZH_TW alias canonicalization', () => {
 })
 
 describe('GET /api/cards - error handling', () => {
-  beforeEach(() => vi.clearAllMocks())
+  beforeEach(() => { vi.clearAllMocks(); resetDefaults() })
 
   it('Prisma 拋出錯誤時回傳 500 JSON', async () => {
     mockAuth.mockResolvedValue(null)
-    vi.mocked(prisma.card.findMany).mockRejectedValue(new Error('DB connection failed'))
+    vi.mocked(prisma.card.count).mockRejectedValue(new Error('DB connection failed'))
     const req = new NextRequest('http://localhost/api/cards?game=OPCG&language=ZH_TW')
     const res = await GET(req)
     expect(res.status).toBe(500)
@@ -252,63 +227,51 @@ describe('GET /api/cards - error handling', () => {
 })
 
 describe('GET /api/cards - externalId prefix search', () => {
-  beforeEach(() => vi.clearAllMocks())
+  beforeEach(() => { vi.clearAllMocks(); resetDefaults() })
 
-  it('有關鍵字時 where 條件包含 name contains 和 externalId startsWith 的 OR', async () => {
+  it('有關鍵字時 count 的 where 條件包含 name contains 和 externalId startsWith 的 OR', async () => {
     mockAuth.mockResolvedValue(null)
-    vi.mocked(prisma.card.findMany).mockResolvedValue([])
-    vi.mocked(prisma.card.count).mockResolvedValue(0)
     const req = new NextRequest('http://localhost/api/cards?game=PTCG&q=pikachu')
     const res = await GET(req)
     expect(res.status).toBe(200)
-    expect(prisma.card.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: expect.objectContaining({
-          OR: [
-            { name: { contains: 'pikachu', mode: 'insensitive' } },
-            { externalId: { startsWith: 'pikachu', mode: 'insensitive' } },
-          ],
-        }),
-      })
-    )
+    expect(prisma.card.count).toHaveBeenCalledWith({
+      where: expect.objectContaining({
+        OR: [
+          { name: { contains: 'pikachu', mode: 'insensitive' } },
+          { externalId: { startsWith: 'pikachu', mode: 'insensitive' } },
+        ],
+      }),
+    })
   })
 
   it('q=OP15 時 externalId startsWith 條件被帶入', async () => {
     mockAuth.mockResolvedValue(null)
-    vi.mocked(prisma.card.findMany).mockResolvedValue([])
-    vi.mocked(prisma.card.count).mockResolvedValue(0)
     const req = new NextRequest('http://localhost/api/cards?game=OPCG&q=OP15')
     const res = await GET(req)
     expect(res.status).toBe(200)
-    expect(prisma.card.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: expect.objectContaining({
-          OR: [
-            { name: { contains: 'OP15', mode: 'insensitive' } },
-            { externalId: { startsWith: 'OP15', mode: 'insensitive' } },
-          ],
-        }),
-      })
-    )
+    expect(prisma.card.count).toHaveBeenCalledWith({
+      where: expect.objectContaining({
+        OR: [
+          { name: { contains: 'OP15', mode: 'insensitive' } },
+          { externalId: { startsWith: 'OP15', mode: 'insensitive' } },
+        ],
+      }),
+    })
   })
 
   it('未傳 q 時 where 條件不包含 OR', async () => {
     mockAuth.mockResolvedValue(null)
-    vi.mocked(prisma.card.findMany).mockResolvedValue([])
-    vi.mocked(prisma.card.count).mockResolvedValue(0)
     const req = new NextRequest('http://localhost/api/cards?game=PTCG')
     const res = await GET(req)
     expect(res.status).toBe(200)
-    expect(prisma.card.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: expect.not.objectContaining({ OR: expect.anything() }),
-      })
-    )
+    expect(prisma.card.count).toHaveBeenCalledWith({
+      where: expect.not.objectContaining({ OR: expect.anything() }),
+    })
   })
 
-  it('keyword + language + setId 組合篩選時所有條件都被帶入 where', async () => {
+  it('keyword + language + setId 組合篩選時所有條件都被帶入 where（單一系列走 card.findMany）', async () => {
     mockAuth.mockResolvedValue(null)
-    vi.mocked(prisma.card.findMany).mockResolvedValue([])
+    vi.mocked(prisma.card.findMany).mockResolvedValue([] as never)
     vi.mocked(prisma.card.count).mockResolvedValue(0)
     const req = new NextRequest('http://localhost/api/cards?game=PTCG&q=eevee&language=EN&setId=set123')
     const res = await GET(req)

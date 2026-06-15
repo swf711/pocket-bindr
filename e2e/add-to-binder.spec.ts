@@ -46,7 +46,7 @@ test.describe('加入卡冊功能', () => {
     if (await ownedToggle.isVisible()) {
       await ownedToggle.click()
     }
-    await expect(page.getByTestId('modal-qty-value')).toHaveText('1')
+    await expect(page.getByTestId('modal-qty-value')).toHaveValue('1')
     await page.getByTestId('modal-add-btn').click()
 
     // Assert owned count incremented

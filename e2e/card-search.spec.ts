@@ -15,7 +15,7 @@ test.describe('卡片搜尋頁', () => {
     await page.goto('/cards')
     await page.getByTestId('game-btn-ptcg').click()
     await expect(page.getByTestId('card-grid')).toBeVisible({ timeout: 10000 })
-    await expect(page.getByTestId('set-filter')).toBeVisible()
+    await expect(page.getByTestId('set-combobox')).toBeVisible()
     expect(page.url()).toContain('game=PTCG')
   })
 
@@ -49,14 +49,16 @@ test.describe('卡片搜尋頁', () => {
     await expect(page.getByTestId('modal-owned-count')).toBeVisible()
   })
 
-  test('Modal 顯示卡牌資訊', async ({ page }) => {
+  test('Drawer 顯示卡牌資訊', async ({ page }) => {
     await page.goto('/cards?game=PTCG')
     await page.getByTestId('card-grid').waitFor({ timeout: 10000 })
     await page.getByTestId('card-item').first().click()
-    const dialog = page.getByRole('dialog')
-    await expect(dialog.getByRole('img')).toBeVisible()
-    await expect(dialog.getByTestId('modal-owned-count')).toBeVisible()
-    await expect(dialog.getByTestId('modal-wanted-count')).toBeVisible()
+    const drawer = page.getByTestId('card-detail-drawer')
+    await expect(drawer).toBeVisible()
+    // 卡圖與收藏狀態在桌面為左側 overlay 區（drawer 外的 portal），以 page 層 testid 取得
+    await expect(page.getByTestId('card-detail-image')).toBeVisible()
+    await expect(page.getByTestId('modal-owned-count')).toBeVisible()
+    await expect(page.getByTestId('modal-wanted-count')).toBeVisible()
   })
 })
 
@@ -97,13 +99,13 @@ test.describe('登入使用者 Modal 操作', () => {
     // 等 binders fetch 完成（binder select 出現）再操作，避免 re-render 造成 element detached
     await expect(page.getByTestId('modal-binder-select')).toBeVisible({ timeout: 8000 })
     const qtyValue = page.getByTestId('modal-qty-value')
-    await expect(qtyValue).toHaveText('1')
+    await expect(qtyValue).toHaveValue('1')
     await page.getByTestId('modal-qty-plus').click()
-    await expect(qtyValue).toHaveText('2')
+    await expect(qtyValue).toHaveValue('2')
     await page.getByTestId('modal-qty-minus').click()
-    await expect(qtyValue).toHaveText('1')
+    await expect(qtyValue).toHaveValue('1')
     // 不能低於 1
     await page.getByTestId('modal-qty-minus').click()
-    await expect(qtyValue).toHaveText('1')
+    await expect(qtyValue).toHaveValue('1')
   })
 })

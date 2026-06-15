@@ -1,5 +1,4 @@
 'use client'
-import { Badge } from '@/components/ui/badge'
 import { CardWithCollectionStatus } from '@/types/card'
 import { getCardImageUrl } from '@/lib/get-card-image-url'
 
@@ -36,28 +35,6 @@ export function CardItem({ card, onClick }: CardItemProps) {
         >
           <span className="text-xs">{card.name}</span>
           <span className="text-xs">無圖片</span>
-        </div>
-      )}
-      {(card.collectionStatus.owned || card.collectionStatus.wanted) && (
-        <div className="absolute right-1 top-1 flex gap-0.5">
-          {card.collectionStatus.owned && (
-            <Badge
-              variant="default"
-              className="h-4 px-1 text-[9px]"
-              data-testid="owned-badge"
-            >
-              ✓{card.collectionStatus.owned}
-            </Badge>
-          )}
-          {card.collectionStatus.wanted && (
-            <Badge
-              variant="secondary"
-              className="h-4 px-1 text-[9px]"
-              data-testid="wanted-badge"
-            >
-              ♡{card.collectionStatus.wanted}
-            </Badge>
-          )}
         </div>
       )}
     </button>

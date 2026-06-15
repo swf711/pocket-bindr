@@ -35,13 +35,12 @@ test.describe('OPCG ZH_TW alias card canonicalization', () => {
     await page.goto('/cards?game=OPCG&language=ZH_TW')
     await expect(page.getByTestId('card-grid')).toBeVisible({ timeout: 10000 })
 
-    // 點擊第一張卡開啟 Modal
+    // 點擊第一張卡開啟 Drawer
     await page.getByTestId('card-item').first().click()
-    const dialog = page.getByRole('dialog')
-    await expect(dialog).toBeVisible()
+    await expect(page.getByTestId('card-detail-drawer')).toBeVisible()
 
     // 圖片 src 應來自 JA 官網（www.onepiece-cardgame.com）
-    const cardImg = dialog.locator('img').first()
+    const cardImg = page.getByTestId('card-detail-image')
     await expect(cardImg).toBeVisible()
     const src = await cardImg.getAttribute('src')
     expect(src).toBeTruthy()

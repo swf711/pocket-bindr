@@ -31,17 +31,21 @@ export interface CardWithCollectionStatus {
   name: string
   imageSmall: string
   imageLarge: string
+  supertype: string
   rarity: string | null
   hp: number | null
   types: string[]
   cardNumber: string
   isCollectible: boolean
+  attributes: Record<string, unknown> | null
   canonicalCard?: CanonicalCardRef | null
   collectionStatus: CollectionStatus
   set: {
     id: string
     name: string
     series: string
+    externalId: string
+    releaseDate: string | null
   }
 }
 

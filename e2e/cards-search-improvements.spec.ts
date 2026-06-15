@@ -12,8 +12,8 @@ test.describe('系列篩選顯示 externalId', () => {
     await page.goto('/cards?game=PTCG')
     await page.getByTestId('card-grid').waitFor({ timeout: 10000 })
 
-    // Open the set/series filter dropdown
-    await page.getByTestId('set-filter').click()
+    // Open the set/series filter combobox
+    await page.getByTestId('set-combobox').click()
 
     // Wait for options to appear — at least one option beyond "所有系列"
     const options = page.getByRole('option')
@@ -34,20 +34,24 @@ test.describe('系列篩選顯示 externalId', () => {
     expect(found).toBe(true)
   })
 
-  test('系列下拉項目排列在 2 欄格線容器內', async ({ page }) => {
+  test('系列 ComboBox 項目排列在 2 欄格線容器內', async ({ page }) => {
     await page.goto('/cards?game=PTCG')
     await page.getByTestId('card-grid').waitFor({ timeout: 10000 })
 
-    await page.getByTestId('set-filter').click()
+    await page.getByTestId('set-combobox').click()
 
-    // Wait for SelectContent to appear in DOM
-    const selectContent = page.locator('[data-slot="select-content"]')
-    await selectContent.waitFor({ timeout: 5000 })
+    // 等選項出現（第一群組為 series group，其 cmdk-group-items 套用 grid sm:grid-cols-2）
+    await page.getByRole('option').nth(1).waitFor({ timeout: 5000 })
 
-    // The TwoColumnSelectGroup renders a SelectGroup with grid-cols-2 class.
-    // Multiple series groups render, so check that at least one is present.
-    const gridGroups = selectContent.locator('.sm\\:grid-cols-2')
-    await expect(gridGroups.first()).toBeVisible({ timeout: 5000 })
+    // 桌面視窗（>=sm）下，series group 的項目容器 computed display 應為 grid
+    const groupItems = page.locator('[cmdk-group-items]')
+    const gridCount = await groupItems.count()
+    let hasGrid = false
+    for (let i = 0; i < gridCount; i++) {
+      const display = await groupItems.nth(i).evaluate(el => getComputedStyle(el).display)
+      if (display === 'grid') { hasGrid = true; break }
+    }
+    expect(hasGrid).toBe(true)
   })
 })
 

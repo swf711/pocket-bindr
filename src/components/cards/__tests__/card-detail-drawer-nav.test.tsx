@@ -16,22 +16,25 @@ vi.mock('@/components/auth/login-modal', () => ({
 // renders a simple "login" button — navigation buttons are outside that section).
 global.fetch = vi.fn().mockResolvedValue({ status: 401, ok: false })
 
-import { CardDetailModal } from '../card-detail-modal'
+import { CardDetailDrawer } from '../card-detail-drawer'
 import { CardWithCollectionStatus } from '@/types/card'
 
-function makeCard(id: string, name: string): CardWithCollectionStatus {
+function makeCard(id: string, name: string, overrides: Partial<CardWithCollectionStatus> = {}): CardWithCollectionStatus {
   return {
     id,
     name,
     imageSmall: '',
     imageLarge: '',
+    supertype: 'Pokémon',
     rarity: null,
     hp: null,
     types: [],
     cardNumber: `00${id}`,
     isCollectible: true,
+    attributes: null,
     collectionStatus: { owned: null, wanted: null },
-    set: { id: 'set1', name: 'Test Set', series: 'Test Series' },
+    set: { id: 'set1', name: 'Test Set', series: 'Scarlet & Violet', externalId: 'SV1', releaseDate: '2024-01-26T00:00:00.000Z' },
+    ...overrides,
   }
 }
 
@@ -40,7 +43,42 @@ const cardB = makeCard('2', 'Card B')
 const cardC = makeCard('3', 'Card C')
 const cards = [cardA, cardB, cardC]
 
-describe('CardDetailModal navigation', () => {
+describe('CardDetailDrawer — 資訊欄位', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    ;(global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({ status: 401, ok: false })
+  })
+
+  function renderSingle(overrides: Partial<CardWithCollectionStatus> = {}) {
+    const card = makeCard('x', 'Test Card', overrides)
+    render(<CardDetailDrawer card={card} open={true} onClose={vi.fn()} />)
+    return card
+  }
+
+  it('系列顯示 set.name 與 set.externalId', () => {
+    renderSingle()
+    expect(screen.getByText('Test Set')).toBeInTheDocument()
+    expect(screen.getByText('SV1')).toBeInTheDocument()
+  })
+
+  it('不顯示類型 / 世代列（已移除）', () => {
+    renderSingle({ supertype: 'Trainer' })
+    expect(screen.queryByText('類型')).not.toBeInTheDocument()
+    expect(screen.queryByText('世代')).not.toBeInTheDocument()
+  })
+
+  it('顯示 set.releaseDate 格式化為 YYYY-MM-DD', () => {
+    renderSingle()
+    expect(screen.getByText('2024-01-26')).toBeInTheDocument()
+  })
+
+  it('set.releaseDate 為 null 時不顯示發售日列', () => {
+    renderSingle({ set: { id: 'set1', name: 'Test Set', series: 'S&V', externalId: 'SV1', releaseDate: null } })
+    expect(screen.queryByText('發售日')).not.toBeInTheDocument()
+  })
+})
+
+describe('CardDetailDrawer navigation', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     ;(global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({ status: 401, ok: false })
@@ -50,7 +88,7 @@ describe('CardDetailModal navigation', () => {
     return {
       onNavigate,
       ...render(
-        <CardDetailModal
+        <CardDetailDrawer
           card={cards[currentIndex]}
           open={true}
           onClose={vi.fn()}

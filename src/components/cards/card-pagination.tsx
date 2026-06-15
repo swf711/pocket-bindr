@@ -14,9 +14,11 @@ interface PaginationProps {
   currentPage: number
   totalPages: number
   onPageChange: (page: number) => void
+  className?: string
+  'data-testid'?: string
 }
 
-export function CardPagination({ currentPage, totalPages, onPageChange }: PaginationProps) {
+export function CardPagination({ currentPage, totalPages, onPageChange, className, ...props }: PaginationProps) {
   if (totalPages <= 1) return null
 
   const getPageNumbers = () => {
@@ -29,7 +31,7 @@ export function CardPagination({ currentPage, totalPages, onPageChange }: Pagina
   }
 
   return (
-    <Pagination>
+    <Pagination data-testid={props['data-testid']} className={className}>
       <PaginationContent>
         <PaginationItem>
           <PaginationPrevious href="#" onClick={() => onPageChange(currentPage - 1)} />

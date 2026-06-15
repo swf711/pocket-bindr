@@ -2,7 +2,8 @@ import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/lib/auth'
 import { parseLanguage } from '@/lib/language'
-import { Game } from '@prisma/client'
+import { Game, Prisma } from '@prisma/client'
+import { groupAndSortSets } from '@/lib/sort-card-sets'
 
 export async function GET(req: NextRequest) {
   try {
@@ -43,27 +44,56 @@ async function handleGet(req: NextRequest) {
   }
 
   const includeCanonical = game === 'OPCG' && language === 'ZH_TW'
-
-  const [cards, total] = await Promise.all([
-    prisma.card.findMany({
-      where,
-      include: {
-        set: true,
-        ...(includeCanonical && {
-          canonicalCard: {
-            select: { id: true, imageSmall: true, imageLarge: true, language: true },
-          },
-        }),
+  const include = {
+    set: true,
+    ...(includeCanonical && {
+      canonicalCard: {
+        select: { id: true, imageSmall: true, imageLarge: true, language: true },
       },
-      skip: (pageNum - 1) * pageSizeNum,
-      take: pageSizeNum,
-      orderBy: [
-        { set: { releaseDate: 'desc' } },
-        { cardNumber: 'asc' },
-      ],
     }),
-    prisma.card.count({ where }),
-  ])
+  }
+  const skip = (pageNum - 1) * pageSizeNum
+
+  let cards
+  let total: number
+  if (setId) {
+    // 已選單一系列：依卡號排序即可
+    ;[cards, total] = await Promise.all([
+      prisma.card.findMany({ where, include, skip, take: pageSizeNum, orderBy: [{ cardNumber: 'asc' }] }),
+      prisma.card.count({ where }),
+    ])
+  } else {
+    // 所有系列：卡片依「系列篩選選項」相同的 CardSet 排序（series 分組、組內 releaseDate desc／externalId 遞補）
+    const setRows = await prisma.cardSet.findMany({
+      where: { game: game as Game, language },
+      select: { id: true, name: true, series: true, externalId: true, releaseDate: true },
+    })
+    const orderedSetIds = groupAndSortSets(setRows).flatMap(g => g.sets.map(s => s.id))
+
+    const conds: Prisma.Sql[] = [
+      Prisma.sql`"game"::text = ${game}`,
+      Prisma.sql`"language"::text = ${language}`,
+    ]
+    if (q) {
+      conds.push(Prisma.sql`("name" ILIKE ${'%' + q + '%'} OR "externalId" ILIKE ${q + '%'})`)
+    }
+    const whereSql = Prisma.join(conds, ' AND ')
+
+    const [idRows, count] = await Promise.all([
+      prisma.$queryRaw<{ id: string }[]>(Prisma.sql`
+        SELECT "id" FROM "Card"
+        WHERE ${whereSql}
+        ORDER BY array_position(${orderedSetIds}::text[], "setId") NULLS LAST, "cardNumber" ASC
+        LIMIT ${pageSizeNum} OFFSET ${skip}
+      `),
+      prisma.card.count({ where }),
+    ])
+    total = count
+    const pageIds = idRows.map(r => r.id)
+    const fetched = await prisma.card.findMany({ where: { id: { in: pageIds } }, include })
+    const byId = new Map(fetched.map(c => [c.id, c]))
+    cards = pageIds.map(id => byId.get(id)).filter((c): c is NonNullable<typeof c> => Boolean(c))
+  }
 
   const session = await auth()
   type CollectionEntry = { owned: number | null; wanted: number | null }

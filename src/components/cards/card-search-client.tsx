@@ -4,10 +4,11 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { CardStatus } from '@prisma/client'
 import { GameSelector } from './game-selector'
+import { LanguageTabs } from './language-tabs'
 import { CardFilters } from './card-filters'
 import { CardGrid } from './card-grid'
 import { CardPagination } from './card-pagination'
-import { CardDetailModal } from './card-detail-modal'
+import { CardDetailDrawer } from './card-detail-drawer'
 import { CardWithCollectionStatus, SetGroup } from '@/types/card'
 import { AddToBinderResult } from '@/types/binder'
 
@@ -40,6 +41,7 @@ export function CardSearchClient({ initialParams }: CardSearchClientProps) {
 
   const [cards, setCards] = useState<CardWithCollectionStatus[]>([])
   const [groups, setGroups] = useState<SetGroup[]>([])
+  const [total, setTotal] = useState(0)
   const [totalPages, setTotalPages] = useState(0)
   const [loading, setLoading] = useState(false)
   const [fetchError, setFetchError] = useState<string | null>(null)
@@ -69,6 +71,7 @@ export function CardSearchClient({ initialParams }: CardSearchClientProps) {
       if (res.ok) {
         const data = await res.json()
         setCards(data.cards)
+        setTotal(data.total ?? data.cards.length)
         setTotalPages(data.totalPages)
         setFetchError(null)
       } else {
@@ -188,19 +191,25 @@ export function CardSearchClient({ initialParams }: CardSearchClientProps) {
       <h1 className="text-2xl font-bold mb-6">卡牌搜尋</h1>
 
       <div className="space-y-6">
-        <GameSelector selected={game} onSelect={handleGameChange} />
+        {!game && <GameSelector selected={game} onSelect={handleGameChange} />}
 
         {game && (
           <>
-            <CardFilters
-              query={query}
-              onQueryChange={handleQueryChange}
-              language={language}
-              onLanguageChange={handleLanguageChange}
-              groups={groups}
-              selectedSetId={setId}
-              onSetChange={handleSetChange}
-            />
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+              <div className="flex flex-wrap items-center gap-3">
+                <GameSelector selected={game} onSelect={handleGameChange} />
+                <LanguageTabs language={language} onLanguageChange={handleLanguageChange} />
+              </div>
+
+              <CardFilters
+                className="lg:flex-1"
+                query={query}
+                onQueryChange={handleQueryChange}
+                groups={groups}
+                selectedSetId={setId}
+                onSetChange={handleSetChange}
+              />
+            </div>
 
             {loading ? (
               <CardGrid cards={[]} onCardClick={() => {}} loading />
@@ -208,6 +217,18 @@ export function CardSearchClient({ initialParams }: CardSearchClientProps) {
               <div className="text-center py-12 text-destructive">{fetchError}</div>
             ) : (
               <>
+                <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                  <p data-testid="result-total" className="text-center">
+                    搜尋結果 <span className="md:text-2xl font-bold">{total}</span> 張
+                  </p>
+                  <CardPagination
+                    data-testid="card-pagination-top"
+                    className="md:mx-0 md:w-auto md:justify-end"
+                    currentPage={page}
+                    totalPages={totalPages}
+                    onPageChange={handlePageChange}
+                  />
+                </div>
                 <CardGrid cards={cards} onCardClick={(card) => setSelectedIndex(cards.indexOf(card))} />
                 <CardPagination currentPage={page} totalPages={totalPages} onPageChange={handlePageChange} />
               </>
@@ -216,7 +237,7 @@ export function CardSearchClient({ initialParams }: CardSearchClientProps) {
         )}
       </div>
 
-      <CardDetailModal
+      <CardDetailDrawer
         card={selectedCard}
         open={!!selectedCard}
         onClose={() => setSelectedIndex(null)}
