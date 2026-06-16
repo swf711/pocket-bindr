@@ -63,9 +63,15 @@ export async function createBinderWithSlots(
   userId: string,
   gridType: string,
   slotData: Array<{ cardId: string; status: 'owned' | 'wanted'; pageNumber: number; slotIndex: number }>,
+  options: { totalPages?: number } = {},
 ): Promise<{ binder: { id: string }; slots: Array<{ id: string }> }> {
   const binder = await prisma.binder.create({
-    data: { userId, name: 'E2E Test Binder', gridType: gridType as never },
+    data: {
+      userId,
+      name: 'E2E Test Binder',
+      gridType: gridType as never,
+      ...(options.totalPages ? { settings: { totalPages: options.totalPages } } : {}),
+    },
   })
   const slots = await Promise.all(
     slotData.map((s) =>

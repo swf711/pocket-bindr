@@ -8,6 +8,8 @@ const games = [
   { id: 'OPCG', label: 'One Piece TCG', image: '/placeholder-card-back.svg' },
 ]
 
+const comingSoonGame = { label: '更多 TCG 即將推出', image: '/placeholder-card-back.svg' }
+
 interface GameSelectorProps {
   selected: string | null
   onSelect: (game: string) => void
@@ -41,7 +43,7 @@ export function GameSelector({ selected, onSelect }: GameSelectorProps) {
   return (
     <div
       data-testid="game-selector"
-      className="grid grid-cols-1 gap-4 sm:grid-cols-2"
+      className="grid grid-cols-1 gap-4 sm:grid-cols-3"
     >
       {games.map(g => (
         <button
@@ -61,6 +63,21 @@ export function GameSelector({ selected, onSelect }: GameSelectorProps) {
           <span className="text-lg font-semibold">{g.label}</span>
         </button>
       ))}
+      <button
+        type="button"
+        disabled
+        data-testid="game-btn-coming-soon"
+        className="flex cursor-not-allowed flex-col items-center gap-3 rounded-lg border border-input bg-card p-6 text-card-foreground opacity-60 shadow-xs"
+      >
+        <Image
+          src={comingSoonGame.image}
+          alt={comingSoonGame.label}
+          width={120}
+          height={168}
+          className="rounded-md"
+        />
+        <span className="text-lg font-semibold">{comingSoonGame.label}</span>
+      </button>
     </div>
   )
 }

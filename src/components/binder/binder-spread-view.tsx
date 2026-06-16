@@ -32,7 +32,9 @@ interface BinderSpreadViewProps {
   onToggleStatus: (slotId: string) => void
   onSwap: (slotAId: string, slotBId: string) => void
   onMove: (slotId: string, pageNumber: number, slotIndex: number) => void
+  onView?: (cardId: string) => void
   onAddCard?: (pageNumber: number, slotIndex: number) => void
+  highlightedSlotId?: string | null
 }
 
 function SpreadPanelContent({
@@ -41,16 +43,20 @@ function SpreadPanelContent({
   gridType,
   onDelete,
   onToggleStatus,
+  onView,
   isDragging,
   onAddCard,
+  highlightedSlotId,
 }: {
   content: SpreadPageContent
   coverColor: string
   gridType: GridType
   onDelete: (slotId: string) => void
   onToggleStatus: (slotId: string) => void
+  onView?: (cardId: string) => void
   isDragging: boolean
   onAddCard?: (pageNumber: number, slotIndex: number) => void
+  highlightedSlotId?: string | null
 }) {
   if (content.type === 'cover') {
     return <BinderCoverPanel coverColor={coverColor} />
@@ -66,8 +72,10 @@ function SpreadPanelContent({
         gridType={gridType}
         onDelete={onDelete}
         onToggleStatus={onToggleStatus}
+        onView={onView}
         isDragging={isDragging}
         onAddCard={onAddCard}
+        highlightedSlotId={highlightedSlotId}
       />
     </div>
   )
@@ -84,7 +92,9 @@ export function BinderSpreadView({
   onToggleStatus,
   onSwap,
   onMove,
+  onView,
   onAddCard,
+  highlightedSlotId,
 }: BinderSpreadViewProps) {
   const spread = spreads[spreadIndex]
   const containerRef = useRef<HTMLDivElement>(null)
@@ -168,8 +178,10 @@ export function BinderSpreadView({
                 gridType={gridType}
                 onDelete={onDelete}
                 onToggleStatus={onToggleStatus}
+                onView={onView}
                 isDragging={isDragging}
                 onAddCard={onAddCard}
+                highlightedSlotId={highlightedSlotId}
               />
             </div>
             <div
@@ -182,8 +194,10 @@ export function BinderSpreadView({
                 gridType={gridType}
                 onDelete={onDelete}
                 onToggleStatus={onToggleStatus}
+                onView={onView}
                 isDragging={isDragging}
                 onAddCard={onAddCard}
+                highlightedSlotId={highlightedSlotId}
               />
             </div>
           </div>

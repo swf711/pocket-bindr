@@ -25,6 +25,11 @@ export function CardFilters({
 }: CardFiltersProps) {
   return (
     <div className={cn('flex flex-col sm:flex-row gap-3', className)}>
+      <SeriesCombobox
+        groups={groups}
+        selectedSetId={selectedSetId}
+        onSetChange={onSetChange}
+      />
       <InputGroup className="flex-1">
         <InputGroupAddon>
           <Search />
@@ -37,11 +42,6 @@ export function CardFilters({
           onChange={(e) => onQueryChange(e.target.value)}
         />
       </InputGroup>
-      <SeriesCombobox
-        groups={groups}
-        selectedSetId={selectedSetId}
-        onSetChange={onSetChange}
-      />
     </div>
   )
 }

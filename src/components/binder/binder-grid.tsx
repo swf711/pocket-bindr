@@ -29,8 +29,10 @@ interface BinderGridSlotsProps {
   gridType: GridType
   onDelete: (slotId: string) => void
   onToggleStatus: (slotId: string) => void
+  onView?: (cardId: string) => void
   isDragging?: boolean
   onAddCard?: (pageNumber: number, slotIndex: number) => void
+  highlightedSlotId?: string | null
 }
 
 /** Pure slot grid rendering — no DndContext. Use inside a parent DndContext. */
@@ -39,8 +41,10 @@ export function BinderGridSlots({
   gridType,
   onDelete,
   onToggleStatus,
+  onView,
   isDragging = false,
   onAddCard,
+  highlightedSlotId,
 }: BinderGridSlotsProps) {
   const cols = GRID_COLS[gridType]
   return (
@@ -63,6 +67,8 @@ export function BinderGridSlots({
             slot={slot as SlotWithCard}
             onDelete={onDelete}
             onToggleStatus={onToggleStatus}
+            onView={onView}
+            isHighlighted={highlightedSlotId === slot.id}
           />
         ),
       )}
@@ -77,10 +83,12 @@ interface BinderGridProps {
   onToggleStatus: (slotId: string) => void
   onSwap: (slotAId: string, slotBId: string) => void
   onMove: (slotId: string, pageNumber: number, slotIndex: number) => void
+  onView?: (cardId: string) => void
   onAddCard?: (pageNumber: number, slotIndex: number) => void
+  highlightedSlotId?: string | null
 }
 
-export function BinderGrid({ slots, gridType, onDelete, onToggleStatus, onSwap, onMove, onAddCard }: BinderGridProps) {
+export function BinderGrid({ slots, gridType, onDelete, onToggleStatus, onSwap, onMove, onView, onAddCard, highlightedSlotId }: BinderGridProps) {
   const [activeSlot, setActiveSlot] = useState<SlotWithCard | null>(null)
   const [isDragging, setIsDragging] = useState(false)
 
@@ -125,8 +133,10 @@ export function BinderGrid({ slots, gridType, onDelete, onToggleStatus, onSwap, 
         gridType={gridType}
         onDelete={onDelete}
         onToggleStatus={onToggleStatus}
+        onView={onView}
         isDragging={isDragging}
         onAddCard={onAddCard}
+        highlightedSlotId={highlightedSlotId}
       />
       <DragOverlay>
         {activeSlot ? (

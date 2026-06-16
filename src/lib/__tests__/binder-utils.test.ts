@@ -6,6 +6,7 @@ import {
   buildMobilePages,
   computeSlotMigration,
   decrementUserCardsForSlots,
+  pageNumberToSpreadIndex,
 } from '../binder-utils'
 import type { SlotWithCard } from '@/types/binder'
 import type { GridPage } from '../binder-utils'
@@ -233,5 +234,21 @@ describe('decrementUserCardsForSlots', () => {
     ])
     expect(tx.userCard.updateMany).not.toHaveBeenCalled()
     expect(tx.userCard.deleteMany).not.toHaveBeenCalled()
+  })
+})
+
+describe('pageNumberToSpreadIndex', () => {
+  it('page 1 對應 spreadIndex 0', () => {
+    expect(pageNumberToSpreadIndex(1)).toBe(0)
+  })
+
+  it('page 2/3 對應 spreadIndex 1', () => {
+    expect(pageNumberToSpreadIndex(2)).toBe(1)
+    expect(pageNumberToSpreadIndex(3)).toBe(1)
+  })
+
+  it('page 4/5 對應 spreadIndex 2', () => {
+    expect(pageNumberToSpreadIndex(4)).toBe(2)
+    expect(pageNumberToSpreadIndex(5)).toBe(2)
   })
 })

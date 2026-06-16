@@ -35,9 +35,10 @@ interface CardDetailDrawerProps {
   cards?: CardWithCollectionStatus[]
   currentIndex?: number
   onNavigate?: (index: number) => void
+  hideAddToBinder?: boolean
 }
 
-export function CardDetailDrawer({ card, open, onClose, onAddToBinder, onLoginSuccess, cards, currentIndex, onNavigate }: CardDetailDrawerProps) {
+export function CardDetailDrawer({ card, open, onClose, onAddToBinder, onLoginSuccess, cards, currentIndex, onNavigate, hideAddToBinder = false }: CardDetailDrawerProps) {
   const isMobile = useIsMobile()
   const { containerRef: tiltRef, transformerStyle, shineStyle, handlers: tiltHandlers } = useCardTilt({
     maxRotateDeg: 15,
@@ -220,16 +221,27 @@ export function CardDetailDrawer({ card, open, onClose, onAddToBinder, onLoginSu
           )}
         </DrawerHeader>
         {isMobile ? (
-          <div className="no-scrollbar grid grid-cols-2 items-start gap-4 overflow-y-auto px-4 pb-6">
+          <div
+            className={cn(
+              'no-scrollbar overflow-y-auto px-4 pb-6',
+              hideAddToBinder ? 'flex flex-col gap-4' : 'grid grid-cols-2 items-start gap-4',
+            )}
+          >
             {/* 左欄：卡牌資訊；右欄：加入卡冊操作（收藏狀態移至卡圖下方 overlay） */}
             {infoBlock}
-            <AddToBinderSection card={card} onAddToBinder={onAddToBinder} onLoginSuccess={onLoginSuccess} />
+            {!hideAddToBinder && (
+              <AddToBinderSection card={card} onAddToBinder={onAddToBinder} onLoginSuccess={onLoginSuccess} />
+            )}
           </div>
         ) : (
           <div className="no-scrollbar flex flex-col gap-4 overflow-y-auto px-4 pb-6">
             {infoBlock}
-            <Separator />
-            <AddToBinderSection card={card} onAddToBinder={onAddToBinder} onLoginSuccess={onLoginSuccess} />
+            {!hideAddToBinder && (
+              <>
+                <Separator />
+                <AddToBinderSection card={card} onAddToBinder={onAddToBinder} onLoginSuccess={onLoginSuccess} />
+              </>
+            )}
           </div>
         )}
       </CardDetailDrawerContent>

@@ -4,6 +4,7 @@ import { auth } from '@/lib/auth'
 import { parseLanguage } from '@/lib/language'
 import { Game, Prisma } from '@prisma/client'
 import { groupAndSortSets } from '@/lib/sort-card-sets'
+import { getCollectionStatusMap, resolveCollectionLookupId } from '@/lib/card-collection-status'
 
 export async function GET(req: NextRequest) {
   try {
@@ -96,36 +97,11 @@ async function handleGet(req: NextRequest) {
   }
 
   const session = await auth()
-  type CollectionEntry = { owned: number | null; wanted: number | null }
-  let collectionMap: Record<string, CollectionEntry> = {}
-  if (session?.user?.id) {
-    const cardIds = cards.map(c => c.id)
-    const canonicalIds = includeCanonical
-      ? cards.flatMap(c => (c as { canonicalCardId?: string | null }).canonicalCardId ? [(c as { canonicalCardId: string }).canonicalCardId] : [])
-      : []
-    const allIds = [...new Set([...cardIds, ...canonicalIds])]
-    if (allIds.length > 0) {
-      const userCards = await prisma.userCard.findMany({
-        where: { userId: session.user.id, cardId: { in: allIds } },
-        select: { cardId: true, status: true, quantity: true },
-      })
-      for (const uc of userCards) {
-        if (!collectionMap[uc.cardId]) {
-          collectionMap[uc.cardId] = { owned: null, wanted: null }
-        }
-        if (uc.status === 'owned') {
-          collectionMap[uc.cardId].owned = uc.quantity
-        } else if (uc.status === 'wanted') {
-          collectionMap[uc.cardId].wanted = uc.quantity
-        }
-      }
-    }
-  }
+  const collectionMap = await getCollectionStatusMap(cards, session?.user?.id, includeCanonical)
 
   return Response.json({
     cards: cards.map(card => {
-      const canonicalCardId = (card as { canonicalCardId?: string | null }).canonicalCardId
-      const lookupId = !card.isCollectible && canonicalCardId ? canonicalCardId : card.id
+      const lookupId = resolveCollectionLookupId(card)
       return {
         ...card,
         collectionStatus: collectionMap[lookupId] ?? { owned: null, wanted: null },

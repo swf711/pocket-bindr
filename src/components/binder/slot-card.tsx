@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Eye, EyeOff, Trash2 } from 'lucide-react'
+import { Eye, EyeOff, Maximize2, Trash2 } from 'lucide-react'
 import { useDraggable, useDroppable } from '@dnd-kit/core'
 import { Button } from '@/components/ui/button'
 import {
@@ -22,10 +22,19 @@ interface SlotCardProps {
   slot: SlotWithCard
   onDelete: (slotId: string) => void
   onToggleStatus: (slotId: string) => void
+  onView?: (cardId: string) => void
   isDragOverlay?: boolean
+  isHighlighted?: boolean
 }
 
-export function SlotCard({ slot, onDelete, onToggleStatus, isDragOverlay = false }: SlotCardProps) {
+export function SlotCard({
+  slot,
+  onDelete,
+  onToggleStatus,
+  onView,
+  isDragOverlay = false,
+  isHighlighted = false,
+}: SlotCardProps) {
   const [open, setOpen] = useState(false)
 
   const {
@@ -53,7 +62,9 @@ export function SlotCard({ slot, onDelete, onToggleStatus, isDragOverlay = false
       data-testid={isDragOverlay ? 'drag-overlay-card' : `slot-card-${slot.id}`}
       className={`relative group aspect-5/7 w-full overflow-hidden rounded-md border border-border bg-card cursor-grab active:cursor-grabbing transition-opacity ${
         isDragging ? 'opacity-40' : 'opacity-100'
-      } ${isOver && !isDragOverlay ? 'ring-2 ring-primary' : ''}`}
+      } ${isOver && !isDragOverlay ? 'ring-2 ring-primary' : ''} ${
+        isHighlighted ? 'ring-2 ring-primary animate-pulse' : ''
+      }`}
     >
       {imageUrl ? (
         <img
@@ -81,6 +92,19 @@ export function SlotCard({ slot, onDelete, onToggleStatus, isDragOverlay = false
           >
             {slot.status === 'owned' ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
           </Button>
+          {onView && (
+            <Button
+              variant="secondary"
+              size="icon"
+              className="h-6 w-6 pointer-events-auto"
+              onPointerDown={(e) => e.stopPropagation()}
+              onClick={() => onView(slot.cardId)}
+              title="查看卡牌詳情"
+              data-testid={`slot-view-btn-${slot.id}`}
+            >
+              <Maximize2 className="h-3 w-3" />
+            </Button>
+          )}
           <AlertDialog open={open} onOpenChange={setOpen}>
             <AlertDialogTrigger asChild>
               <Button

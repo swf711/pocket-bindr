@@ -154,3 +154,21 @@ describe('CardDetailDrawer navigation', () => {
     expect(onNavigate).not.toHaveBeenCalled()
   })
 })
+
+describe('CardDetailDrawer hideAddToBinder', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    ;(global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({ status: 401, ok: false })
+  })
+
+  it('預設顯示加入卡冊區塊', async () => {
+    render(<CardDetailDrawer card={cardA} open={true} onClose={vi.fn()} />)
+    expect(await screen.findByText('請先登入以加入卡冊')).toBeInTheDocument()
+  })
+
+  it('hideAddToBinder=true 時不顯示加入卡冊區塊', async () => {
+    render(<CardDetailDrawer card={cardA} open={true} onClose={vi.fn()} hideAddToBinder />)
+    await new Promise((r) => setTimeout(r, 0))
+    expect(screen.queryByText('請先登入以加入卡冊')).not.toBeInTheDocument()
+  })
+})

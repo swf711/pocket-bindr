@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { GridType } from '@prisma/client'
 import { toast } from 'sonner'
-import { Settings, Trash2, GripVertical } from 'lucide-react'
+import { Settings, Trash2, GripVertical, Search } from 'lucide-react'
 import {
   DndContext,
   DragEndEvent,
@@ -44,7 +44,9 @@ import {
 } from '@/components/ui/alert-dialog'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { Separator } from '@/components/ui/separator'
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group'
 import { CoverColorPicker } from '@/components/binders/cover-color-picker'
+import { getCardImageUrl } from '@/lib/get-card-image-url'
 import { GRID_TYPE_LABELS, type SlotWithCard, type BinderSettings } from '@/types/binder'
 
 const GRID_TYPE_SHORT: Record<GridType, string> = {
@@ -71,6 +73,8 @@ interface BinderSettingsDrawerProps {
   onPageDelete: (pageNumber: number, newSlots: SlotWithCard[]) => void
   onPageReorder: (newSlots: SlotWithCard[]) => void
   onTotalPagesChange: (n: number) => void
+  slots: SlotWithCard[]
+  onJumpToSlot: (slot: SlotWithCard) => void
 }
 
 function SortablePageRow({
@@ -157,6 +161,8 @@ export function BinderSettingsDrawer({
   onPageDelete,
   onPageReorder,
   onTotalPagesChange,
+  slots,
+  onJumpToSlot,
 }: BinderSettingsDrawerProps) {
   const [open, setOpen] = useState(false)
   const [name, setName] = useState(binderName)
@@ -167,6 +173,19 @@ export function BinderSettingsDrawer({
   const [pageOrder, setPageOrder] = useState<number[]>(() =>
     Array.from({ length: totalPages }, (_, i) => i + 1),
   )
+  const [cardSearchQuery, setCardSearchQuery] = useState('')
+
+  const cardSearchResults = cardSearchQuery.trim()
+    ? slots.filter((slot) =>
+        slot.card.name.toLowerCase().includes(cardSearchQuery.trim().toLowerCase()),
+      )
+    : []
+
+  function handleJumpToSlotClick(slot: SlotWithCard) {
+    onJumpToSlot(slot)
+    setCardSearchQuery('')
+    setOpen(false)
+  }
 
   useEffect(() => {
     setPageOrder(Array.from({ length: totalPages }, (_, i) => i + 1))
@@ -322,6 +341,50 @@ export function BinderSettingsDrawer({
             >
               {savingSettings ? '儲存中…' : '儲存設定'}
             </Button>
+          </div>
+
+          <Separator />
+
+          {/* 搜尋卡冊內卡牌 */}
+          <div className="flex flex-col gap-2">
+            <p className="text-sm font-medium">搜尋卡冊內卡牌</p>
+            <InputGroup>
+              <InputGroupAddon>
+                <Search />
+              </InputGroupAddon>
+              <InputGroupInput
+                data-testid="drawer-card-search-input"
+                type="text"
+                placeholder="輸入卡牌名稱..."
+                value={cardSearchQuery}
+                onChange={(e) => setCardSearchQuery(e.target.value)}
+              />
+            </InputGroup>
+            {cardSearchQuery.trim() && (
+              <div className="flex flex-col gap-1 max-h-48 overflow-y-auto" data-testid="drawer-card-search-results">
+                {cardSearchResults.length === 0 ? (
+                  <p className="text-xs text-muted-foreground px-1">查無符合的卡牌</p>
+                ) : (
+                  cardSearchResults.map((slot) => (
+                    <button
+                      key={slot.id}
+                      type="button"
+                      onClick={() => handleJumpToSlotClick(slot)}
+                      className="flex items-center gap-2 rounded-md border px-2 py-1.5 text-left hover:bg-accent"
+                      data-testid={`drawer-card-search-result-${slot.id}`}
+                    >
+                      <img
+                        src={getCardImageUrl(slot.card.imageSmall) ?? ''}
+                        alt={slot.card.name}
+                        className="h-10 w-7 rounded-xs object-cover"
+                      />
+                      <span className="text-sm truncate">{slot.card.name}</span>
+                      <span className="text-xs text-muted-foreground ml-auto shrink-0">第 {slot.pageNumber} 頁</span>
+                    </button>
+                  ))
+                )}
+              </div>
+            )}
           </div>
 
           <Separator />

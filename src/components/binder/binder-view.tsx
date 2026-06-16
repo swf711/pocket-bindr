@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import Link from 'next/link'
 import { GridType, CardStatus } from '@prisma/client'
 import { ChevronLeft } from 'lucide-react'
@@ -10,8 +10,11 @@ import { BinderSpreadView } from './binder-spread-view'
 import { BinderMobileView } from './binder-mobile-view'
 import { BinderSettingsDrawer } from './binder-settings-drawer'
 import { SlotCardPickerDialog } from './slot-card-picker-dialog'
+import { CardDetailDrawer } from '@/components/cards/card-detail-drawer'
 import type { BinderDetailResponse, SlotWithCard, SlotCardResult } from '@/types/binder'
-import { buildGridPages, buildSpreads, buildMobilePages } from '@/lib/binder-utils'
+import type { CardWithCollectionStatus } from '@/types/card'
+import { buildGridPages, buildSpreads, buildMobilePages, pageNumberToSpreadIndex } from '@/lib/binder-utils'
+import { useIsMobile } from '@/hooks/use-is-mobile'
 
 export function BinderView({ binder }: { binder: BinderDetailResponse }) {
   const [slots, setSlots] = useState<SlotWithCard[]>(binder.slots)
@@ -22,6 +25,10 @@ export function BinderView({ binder }: { binder: BinderDetailResponse }) {
   const [binderGridType, setBInderGridType] = useState<GridType>(binder.gridType as GridType)
   const [binderCoverColor, setBinderCoverColor] = useState(binder.coverColor)
   const [pickerTarget, setPickerTarget] = useState<{ pageNumber: number; slotIndex: number } | null>(null)
+  const [viewCard, setViewCard] = useState<CardWithCollectionStatus | null>(null)
+  const [highlightedSlotId, setHighlightedSlotId] = useState<string | null>(null)
+  const highlightTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const isMobile = useIsMobile()
 
   const gridType = binderGridType
   const pages = buildGridPages(slots, gridType, totalPages)
@@ -166,12 +173,41 @@ export function BinderView({ binder }: { binder: BinderDetailResponse }) {
     toast.success('已加入卡片')
   }
 
+  const handleViewCard = async (cardId: string) => {
+    const res = await fetch(`/api/cards/${cardId}`)
+    if (!res.ok) {
+      toast.error('讀取卡牌資料失敗')
+      return
+    }
+    setViewCard(await res.json())
+  }
+
+  const handleJumpToSlot = (slot: SlotWithCard) => {
+    if (isMobile) {
+      setMobilePageIndex(slot.pageNumber)
+    } else {
+      setSpreadIndex(pageNumberToSpreadIndex(slot.pageNumber))
+    }
+
+    if (highlightTimeoutRef.current) clearTimeout(highlightTimeoutRef.current)
+    setHighlightedSlotId(slot.id)
+    highlightTimeoutRef.current = setTimeout(() => setHighlightedSlotId(null), 2000)
+
+    requestAnimationFrame(() => {
+      document
+        .querySelector(`[data-testid="slot-card-${slot.id}"]`)
+        ?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    })
+  }
+
   const sharedHandlers = {
     onDelete: handleDelete,
     onSwap: handleSwap,
     onToggleStatus: handleToggleStatus,
     onMove: handleMove,
     onAddCard: handleAddCard,
+    onView: handleViewCard,
+    highlightedSlotId,
   }
 
   return (
@@ -195,6 +231,8 @@ export function BinderView({ binder }: { binder: BinderDetailResponse }) {
           onPageDelete={handlePageDelete}
           onPageReorder={handlePageReorder}
           onTotalPagesChange={setTotalPages}
+          slots={slots}
+          onJumpToSlot={handleJumpToSlot}
         />
       </div>
       <BinderSpreadView
@@ -219,6 +257,12 @@ export function BinderView({ binder }: { binder: BinderDetailResponse }) {
         open={pickerTarget !== null}
         onClose={() => setPickerTarget(null)}
         onConfirm={handleConfirmAddCard}
+      />
+      <CardDetailDrawer
+        card={viewCard}
+        open={viewCard !== null}
+        onClose={() => setViewCard(null)}
+        hideAddToBinder
       />
     </div>
   )
