@@ -3,8 +3,9 @@ import { useState, useEffect } from 'react'
 import { CardStatus } from '@prisma/client'
 import { toast } from 'sonner'
 import {
-  Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerPortal
+  Drawer, DrawerHeader, DrawerTitle, DrawerPortal
 } from '@/components/ui/drawer'
+import { CardDetailDrawerContent } from '@/components/cards/card-detail-drawer-content'
 import { Button } from '@/components/ui/button'
 import { ButtonGroup } from '@/components/ui/button-group'
 import { Input } from '@/components/ui/input'
@@ -201,7 +202,7 @@ export function CardDetailDrawer({ card, open, onClose, onAddToBinder, onLoginSu
       onOpenChange={(o) => { if (!o) onClose() }}
       direction={isMobile ? 'bottom' : 'right'}
     >
-      <DrawerContent
+      <CardDetailDrawerContent
         data-testid="card-detail-drawer"
         className="data-[vaul-drawer-direction=right]:w-full data-[vaul-drawer-direction=right]:sm:max-w-xs data-[vaul-drawer-direction=right]:justify-center"
       >
@@ -231,7 +232,7 @@ export function CardDetailDrawer({ card, open, onClose, onAddToBinder, onLoginSu
             <AddToBinderSection card={card} onAddToBinder={onAddToBinder} onLoginSuccess={onLoginSuccess} />
           </div>
         )}
-      </DrawerContent>
+      </CardDetailDrawerContent>
 
       {open && (!isMobile || overlayReady) && (
         <DrawerPortal>
