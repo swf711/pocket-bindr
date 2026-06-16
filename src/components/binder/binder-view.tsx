@@ -2,13 +2,15 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { GridType } from '@prisma/client'
+import { GridType, CardStatus } from '@prisma/client'
 import { ChevronLeft } from 'lucide-react'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { BinderSpreadView } from './binder-spread-view'
 import { BinderMobileView } from './binder-mobile-view'
 import { BinderSettingsDrawer } from './binder-settings-drawer'
-import type { BinderDetailResponse, SlotWithCard } from '@/types/binder'
+import { SlotCardPickerDialog } from './slot-card-picker-dialog'
+import type { BinderDetailResponse, SlotWithCard, SlotCardResult } from '@/types/binder'
 import { buildGridPages, buildSpreads, buildMobilePages } from '@/lib/binder-utils'
 
 export function BinderView({ binder }: { binder: BinderDetailResponse }) {
@@ -19,6 +21,7 @@ export function BinderView({ binder }: { binder: BinderDetailResponse }) {
   const [binderName, setBinderName] = useState(binder.name)
   const [binderGridType, setBInderGridType] = useState<GridType>(binder.gridType as GridType)
   const [binderCoverColor, setBinderCoverColor] = useState(binder.coverColor)
+  const [pickerTarget, setPickerTarget] = useState<{ pageNumber: number; slotIndex: number } | null>(null)
 
   const gridType = binderGridType
   const pages = buildGridPages(slots, gridType, totalPages)
@@ -130,11 +133,45 @@ export function BinderView({ binder }: { binder: BinderDetailResponse }) {
     if (updated.newTotalPages !== undefined) setTotalPages(updated.newTotalPages)
   }
 
+  const handleAddCard = (pageNumber: number, slotIndex: number) => {
+    setPickerTarget({ pageNumber, slotIndex })
+  }
+
+  const handleConfirmAddCard = async (cardId: string, status: CardStatus) => {
+    if (!pickerTarget) return
+    const res = await fetch(`/api/binders/${binder.id}/slots`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...pickerTarget, cardId, status }),
+    })
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}))
+      toast.error(err?.error ?? '加入失敗，請重試')
+      return
+    }
+    const result: SlotCardResult = await res.json()
+    setSlots((prev) => [
+      ...prev,
+      {
+        id: result.slot.id,
+        binderId: binder.id,
+        cardId: result.userCard.cardId,
+        pageNumber: result.slot.pageNumber,
+        slotIndex: result.slot.slotIndex,
+        status: result.slot.status,
+        card: result.slot.card,
+      },
+    ])
+    setPickerTarget(null)
+    toast.success('已加入卡片')
+  }
+
   const sharedHandlers = {
     onDelete: handleDelete,
     onSwap: handleSwap,
     onToggleStatus: handleToggleStatus,
     onMove: handleMove,
+    onAddCard: handleAddCard,
   }
 
   return (
@@ -177,6 +214,11 @@ export function BinderView({ binder }: { binder: BinderDetailResponse }) {
         gridType={gridType}
         onAddPage={handleAddPage}
         {...sharedHandlers}
+      />
+      <SlotCardPickerDialog
+        open={pickerTarget !== null}
+        onClose={() => setPickerTarget(null)}
+        onConfirm={handleConfirmAddCard}
       />
     </div>
   )

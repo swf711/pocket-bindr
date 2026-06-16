@@ -1,0 +1,97 @@
+// Requires running server and test database
+import { test, expect } from '@playwright/test'
+import { getTestUser, loginAs } from './helpers/auth'
+import {
+  clearUserBindersByEmail,
+  clearUserCardsByEmail,
+  createMultiPageBinder,
+  getUserIdByEmail,
+} from './helpers/db'
+import { startDrag } from './helpers/drag'
+
+const USER = getTestUser('slotdrivenadd')
+
+test.describe('格位驅動加入卡片', () => {
+  test.beforeEach(async ({ page }) => {
+    await clearUserCardsByEmail(USER.email)
+    await clearUserBindersByEmail(USER.email)
+    await loginAs(page, USER)
+  })
+
+  test.afterAll(async () => {
+    await clearUserCardsByEmail(USER.email)
+    await clearUserBindersByEmail(USER.email)
+  })
+
+  test('空格位 hover 顯示加入操作，拖拉中不顯示', async ({ page }) => {
+    const userId = await getUserIdByEmail(USER.email)
+    const { binder } = await createMultiPageBinder(userId, { pageCount: 1 })
+
+    await page.goto(`/binders/${binder.id}`)
+    await page.getByTestId('binder-spread-view').waitFor()
+
+    const addBtn = page.getByTestId('empty-slot-add-1-1')
+    await addBtn.hover()
+    await expect(addBtn).toBeVisible()
+
+    // 拖拉中（filled slot at pageNumber=1, slotIndex=0）按鈕不應顯示
+    const filledSlot = page.locator('[data-testid^="slot-card-"]').first()
+    await startDrag(page, filledSlot)
+    await expect(addBtn).toBeHidden()
+    await page.mouse.up()
+  })
+
+  test('從空格位加入卡片（owned）', async ({ page }) => {
+    const userId = await getUserIdByEmail(USER.email)
+    const { binder } = await createMultiPageBinder(userId, { pageCount: 1 })
+
+    await page.goto(`/binders/${binder.id}`)
+    await page.getByTestId('binder-spread-view').waitFor()
+
+    await page.getByTestId('empty-slot-add-1-1').hover()
+    await page.getByTestId('empty-slot-add-1-1').click()
+
+    await expect(page.getByTestId('slot-card-picker-dialog')).toBeVisible()
+    await page.getByTestId('game-btn-ptcg').click()
+    await page.getByTestId('card-grid').waitFor({ timeout: 10000 })
+    await page.getByTestId('card-item').first().click()
+
+    await page.getByTestId('picker-status-owned').click()
+    await page.getByTestId('slot-card-picker-confirm').click()
+
+    await expect(page.getByTestId('slot-card-picker-dialog')).toBeHidden()
+    await expect(page.getByText(/已加入/)).toBeVisible({ timeout: 5000 })
+    await expect(page.locator('[data-page="1"][data-index="1"]')).toHaveCount(0)
+  })
+
+  test('從空格位加入卡片（wanted）顯示黑白圖片', async ({ page }) => {
+    const userId = await getUserIdByEmail(USER.email)
+    const { binder } = await createMultiPageBinder(userId, { pageCount: 1 })
+
+    await page.goto(`/binders/${binder.id}`)
+    await page.getByTestId('binder-spread-view').waitFor()
+
+    await page.getByTestId('empty-slot-add-1-1').click()
+    await page.getByTestId('game-btn-ptcg').click()
+    await page.getByTestId('card-grid').waitFor({ timeout: 10000 })
+    await page.getByTestId('card-item').first().click()
+
+    await page.getByTestId('picker-status-wanted').click()
+    await page.getByTestId('slot-card-picker-confirm').click()
+
+    await expect(page.getByTestId('slot-card-picker-dialog')).toBeHidden()
+
+    const newSlot = page.getByTestId('binder-spread-view').locator('img.grayscale')
+    await expect(newSlot).toBeVisible({ timeout: 8000 })
+  })
+
+  test('已有卡片的格位不開啟加入卡片 Dialog', async ({ page }) => {
+    const userId = await getUserIdByEmail(USER.email)
+    const { binder } = await createMultiPageBinder(userId, { pageCount: 1 })
+
+    await page.goto(`/binders/${binder.id}`)
+    const filledSlot = page.locator('[data-testid^="slot-card-"]').first()
+    await filledSlot.click()
+    await expect(page.getByTestId('slot-card-picker-dialog')).not.toBeVisible()
+  })
+})

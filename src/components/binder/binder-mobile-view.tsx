@@ -19,6 +19,7 @@ interface BinderMobileViewProps {
   onToggleStatus: (slotId: string) => void
   onSwap: (slotAId: string, slotBId: string) => void
   onMove: (slotId: string, pageNumber: number, slotIndex: number) => void
+  onAddCard?: (pageNumber: number, slotIndex: number) => void
 }
 
 export function BinderMobileView({
@@ -32,6 +33,7 @@ export function BinderMobileView({
   onToggleStatus,
   onSwap,
   onMove,
+  onAddCard,
 }: BinderMobileViewProps) {
   const touchStartX = useRef<number | null>(null)
   const content = mobilePages[pageIndex]
@@ -74,6 +76,7 @@ export function BinderMobileView({
               onToggleStatus={onToggleStatus}
               onSwap={onSwap}
               onMove={onMove}
+              onAddCard={onAddCard}
             />
           </div>
         )}

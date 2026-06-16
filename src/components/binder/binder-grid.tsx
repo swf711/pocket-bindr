@@ -29,10 +29,19 @@ interface BinderGridSlotsProps {
   gridType: GridType
   onDelete: (slotId: string) => void
   onToggleStatus: (slotId: string) => void
+  isDragging?: boolean
+  onAddCard?: (pageNumber: number, slotIndex: number) => void
 }
 
 /** Pure slot grid rendering — no DndContext. Use inside a parent DndContext. */
-export function BinderGridSlots({ slots, gridType, onDelete, onToggleStatus }: BinderGridSlotsProps) {
+export function BinderGridSlots({
+  slots,
+  gridType,
+  onDelete,
+  onToggleStatus,
+  isDragging = false,
+  onAddCard,
+}: BinderGridSlotsProps) {
   const cols = GRID_COLS[gridType]
   return (
     <div
@@ -45,6 +54,8 @@ export function BinderGridSlots({ slots, gridType, onDelete, onToggleStatus }: B
             key={`empty-${slot.pageNumber}-${slot.slotIndex}`}
             pageNumber={slot.pageNumber}
             slotIndex={slot.slotIndex}
+            isDragging={isDragging}
+            onAddCard={onAddCard}
           />
         ) : (
           <SlotCard
@@ -66,10 +77,12 @@ interface BinderGridProps {
   onToggleStatus: (slotId: string) => void
   onSwap: (slotAId: string, slotBId: string) => void
   onMove: (slotId: string, pageNumber: number, slotIndex: number) => void
+  onAddCard?: (pageNumber: number, slotIndex: number) => void
 }
 
-export function BinderGrid({ slots, gridType, onDelete, onToggleStatus, onSwap, onMove }: BinderGridProps) {
+export function BinderGrid({ slots, gridType, onDelete, onToggleStatus, onSwap, onMove, onAddCard }: BinderGridProps) {
   const [activeSlot, setActiveSlot] = useState<SlotWithCard | null>(null)
+  const [isDragging, setIsDragging] = useState(false)
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -80,10 +93,12 @@ export function BinderGrid({ slots, gridType, onDelete, onToggleStatus, onSwap, 
     const slotId = (event.active.id as string).replace('slot-', '')
     const slot = slots.find((s): s is SlotWithCard => s.id === slotId)
     setActiveSlot(slot ?? null)
+    setIsDragging(true)
   }
 
   function handleDragEnd(event: DragEndEvent) {
     setActiveSlot(null)
+    setIsDragging(false)
     const { active, over } = event
     if (!over) return
 
@@ -105,7 +120,14 @@ export function BinderGrid({ slots, gridType, onDelete, onToggleStatus, onSwap, 
 
   return (
     <DndContext id="binder-dnd" sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-      <BinderGridSlots slots={slots} gridType={gridType} onDelete={onDelete} onToggleStatus={onToggleStatus} />
+      <BinderGridSlots
+        slots={slots}
+        gridType={gridType}
+        onDelete={onDelete}
+        onToggleStatus={onToggleStatus}
+        isDragging={isDragging}
+        onAddCard={onAddCard}
+      />
       <DragOverlay>
         {activeSlot ? (
           <SlotCard slot={activeSlot} onDelete={() => {}} onToggleStatus={() => {}} isDragOverlay />

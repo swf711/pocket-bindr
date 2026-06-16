@@ -32,6 +32,7 @@ interface BinderSpreadViewProps {
   onToggleStatus: (slotId: string) => void
   onSwap: (slotAId: string, slotBId: string) => void
   onMove: (slotId: string, pageNumber: number, slotIndex: number) => void
+  onAddCard?: (pageNumber: number, slotIndex: number) => void
 }
 
 function SpreadPanelContent({
@@ -40,12 +41,16 @@ function SpreadPanelContent({
   gridType,
   onDelete,
   onToggleStatus,
+  isDragging,
+  onAddCard,
 }: {
   content: SpreadPageContent
   coverColor: string
   gridType: GridType
   onDelete: (slotId: string) => void
   onToggleStatus: (slotId: string) => void
+  isDragging: boolean
+  onAddCard?: (pageNumber: number, slotIndex: number) => void
 }) {
   if (content.type === 'cover') {
     return <BinderCoverPanel coverColor={coverColor} />
@@ -61,6 +66,8 @@ function SpreadPanelContent({
         gridType={gridType}
         onDelete={onDelete}
         onToggleStatus={onToggleStatus}
+        isDragging={isDragging}
+        onAddCard={onAddCard}
       />
     </div>
   )
@@ -77,6 +84,7 @@ export function BinderSpreadView({
   onToggleStatus,
   onSwap,
   onMove,
+  onAddCard,
 }: BinderSpreadViewProps) {
   const spread = spreads[spreadIndex]
   const containerRef = useRef<HTMLDivElement>(null)
@@ -160,6 +168,8 @@ export function BinderSpreadView({
                 gridType={gridType}
                 onDelete={onDelete}
                 onToggleStatus={onToggleStatus}
+                isDragging={isDragging}
+                onAddCard={onAddCard}
               />
             </div>
             <div
@@ -172,6 +182,8 @@ export function BinderSpreadView({
                 gridType={gridType}
                 onDelete={onDelete}
                 onToggleStatus={onToggleStatus}
+                isDragging={isDragging}
+                onAddCard={onAddCard}
               />
             </div>
           </div>

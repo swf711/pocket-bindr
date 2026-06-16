@@ -117,6 +117,29 @@ export interface CardCollectionSummary {
   wantedCount: number
 }
 
+export interface SlotCardPayload {
+  pageNumber: number
+  slotIndex: number
+  cardId: string
+  status: 'owned' | 'wanted'
+}
+
+export interface SlotCardResult {
+  slot: {
+    id: string
+    pageNumber: number
+    slotIndex: number
+    status: 'owned' | 'wanted'
+    card: SlotWithCard['card']
+  }
+  userCard: {
+    id: string
+    cardId: string
+    status: 'owned' | 'wanted'
+    quantity: number
+  }
+}
+
 export interface PatchBinderResponse {
   id: string
   name: string
