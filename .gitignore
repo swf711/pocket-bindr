@@ -62,4 +62,5 @@ scripts/verify-*.ts
 
 # 腳本產出的暫存檔
 /tmp/
+scripts/.snapshots/
 .cache/
