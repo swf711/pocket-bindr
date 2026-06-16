@@ -219,7 +219,7 @@ export function CardDetailDrawer({ card, open, onClose, onAddToBinder, cards, cu
         </DrawerHeader>
         {isMobile ? (
           <div className="no-scrollbar grid grid-cols-2 items-start gap-4 overflow-y-auto px-4 pb-6">
-            {/* 左欄：卡片資訊；右欄：加入卡冊操作（收藏狀態移至卡圖下方 overlay） */}
+            {/* 左欄：卡牌資訊；右欄：加入卡冊操作（收藏狀態移至卡圖下方 overlay） */}
             {infoBlock}
             <AddToBinderSection card={card} onAddToBinder={onAddToBinder} />
           </div>

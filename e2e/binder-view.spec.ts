@@ -7,7 +7,7 @@ import { dragSlotTo } from './helpers/drag'
 const USER = getTestUser('binderview')
 
 async function getAnyCardId(): Promise<string> {
-  // 需要有圖片的卡片，否則 SlotCard 會渲染文字 fallback 而非 <img>
+  // 需要有圖片的卡牌，否則 SlotCard 會渲染文字 fallback 而非 <img>
   const card = await prisma.card.findFirstOrThrow({ where: { imageSmall: { not: '' } } })
   return card.id
 }

@@ -94,7 +94,7 @@ export function SlotCard({ slot, onDelete, onToggleStatus, isDragOverlay = false
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>移除卡片</AlertDialogTitle>
+                <AlertDialogTitle>移除卡牌</AlertDialogTitle>
                 <AlertDialogDescription>
                   確定要從卡冊移除 {slot.card.name} 嗎？
                 </AlertDialogDescription>

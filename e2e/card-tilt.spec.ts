@@ -1,6 +1,6 @@
 import { test, expect, type Page } from '@playwright/test'
 
-// 此 spec 不需 auth（卡片搜尋頁為公開），不需 DB cleanup
+// 此 spec 不需 auth（卡牌搜尋頁為公開），不需 DB cleanup
 
 async function openFirstCardDrawer(page: Page) {
   const firstCard = page.getByTestId('card-grid').locator('button').first()
@@ -8,7 +8,7 @@ async function openFirstCardDrawer(page: Page) {
   await expect(page.getByTestId('card-detail-drawer')).toBeVisible({ timeout: 8000 })
 }
 
-test.describe('卡片 3D 傾斜效果（桌面 Drawer）', () => {
+test.describe('卡牌 3D 傾斜效果（桌面 Drawer）', () => {
   test.beforeEach(async ({ page }) => {
     // 桌面 viewport（預設），確保不觸發行動裝置邏輯
     await page.setViewportSize({ width: 1280, height: 800 })

@@ -47,7 +47,7 @@ test.describe('gridType migration — SettingsDrawer', () => {
       await page.getByTestId('drawer-save-settings-btn').click()
 
       // 確認 toast 顯示搬移訊息
-      await expect(page.getByText(/格式已更新.+張卡片已搬移/)).toBeVisible({ timeout: 8000 })
+      await expect(page.getByText(/格式已更新.+張卡牌已搬移/)).toBeVisible({ timeout: 8000 })
 
       // DB poll：確認 slotIndex 2, 3 已搬移到 pageNumber > 1
       await expect.poll(async () => {
@@ -159,7 +159,7 @@ test.describe('gridType migration — EditBinderDialog', () => {
       await page.getByTestId('edit-binder-submit').click()
 
       // 確認搬移 toast
-      await expect(page.getByText(/格式已更新.+張卡片已搬移/)).toBeVisible({ timeout: 8000 })
+      await expect(page.getByText(/格式已更新.+張卡牌已搬移/)).toBeVisible({ timeout: 8000 })
 
       // DB poll：slotIndex 4, 5 已搬移到 pageNumber > 1
       await expect.poll(async () => {

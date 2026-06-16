@@ -1,7 +1,7 @@
 import { test, expect, type Page } from '@playwright/test'
 
 /**
- * 對應 docs/BDD.md 卡片搜尋頁 Scenario 2b: 選擇語言
+ * 對應 docs/BDD.md 卡牌搜尋頁 Scenario 2b: 選擇語言
  * 語言選擇器為 Tabs；系列選擇器為 ComboBox（按鈕開 popover，選項為 role=option）。
  */
 
@@ -47,7 +47,7 @@ test.describe('Scenario 2b: 選擇語言', () => {
     await page.getByTestId('search-input').fill('皮卡丘')
     await expect(page).toHaveURL(/q=/, { timeout: 10000 })
     await page.getByTestId('card-grid').waitFor({ timeout: 10000 })
-    // 卡片名稱僅存在於 img alt（無文字節點），需以 img name 比對
+    // 卡牌名稱僅存在於 img alt（無文字節點），需以 img name 比對
     await expect(
       page
         .getByTestId('card-item')
@@ -67,7 +67,7 @@ test.describe('Scenario 2b: 選擇語言', () => {
     await page.keyboard.press('Escape')
   })
 
-  test('切換至日本語：卡片圖片 src 為 /api/proxy-image 代理 URL 且圖片實際載入成功', async ({ page }) => {
+  test('切換至日本語：卡牌圖片 src 為 /api/proxy-image 代理 URL 且圖片實際載入成功', async ({ page }) => {
     await page.goto('/cards?game=PTCG')
     await page.getByTestId('card-grid').waitFor({ timeout: 10000 })
 
@@ -76,7 +76,7 @@ test.describe('Scenario 2b: 選擇語言', () => {
     await page.getByTestId('card-grid').waitFor({ timeout: 10000 })
 
     // 部分 JA 卡牌無圖片（顯示 fallback），搜尋「ピカチュウ」確保結果含有圖片的卡，
-    // 並鎖定第一個有 img 的卡片
+    // 並鎖定第一個有 img 的卡牌
     await page.getByTestId('search-input').fill('ピカチュウ')
     await expect(page).toHaveURL(/q=/, { timeout: 10000 })
     await page.getByTestId('card-grid').waitFor({ timeout: 10000 })

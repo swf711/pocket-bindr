@@ -136,7 +136,7 @@ test.describe('Modal 導航 - 邊界', () => {
     await expect(prevBtn).toBeDisabled()
   })
 
-  test('最後一張可見卡片的 next 按鈕為 disabled', async ({ page }) => {
+  test('最後一張可見卡牌的 next 按鈕為 disabled', async ({ page }) => {
     await page.goto('/cards?game=PTCG')
     await page.getByTestId('card-grid').waitFor({ timeout: 10000 })
 

@@ -63,7 +63,7 @@ async function handleGet(req: NextRequest) {
       prisma.card.count({ where }),
     ])
   } else {
-    // 所有系列：卡片依「系列篩選選項」相同的 CardSet 排序（series 分組、組內 releaseDate desc／externalId 遞補）
+    // 所有系列：卡牌依「系列篩選選項」相同的 CardSet 排序（series 分組、組內 releaseDate desc／externalId 遞補）
     const setRows = await prisma.cardSet.findMany({
       where: { game: game as Game, language },
       select: { id: true, name: true, series: true, externalId: true, releaseDate: true },

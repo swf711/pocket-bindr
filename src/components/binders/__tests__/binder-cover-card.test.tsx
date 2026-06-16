@@ -49,7 +49,7 @@ describe('BinderCoverCard', () => {
     expect(root.style.color).toBe('rgb(26, 32, 44)')  // #1A202C
   })
 
-  it('顯示卡冊名稱、格式與卡片數量', () => {
+  it('顯示卡冊名稱、格式與卡牌數量', () => {
     render(
       <BinderCoverCard
         binder={makeBinder({ name: 'My Binder', gridType: 'grid_4x3', _count: { slots: 12 } })}
@@ -81,7 +81,7 @@ describe('BinderCoverCard', () => {
     expect(spine.style.backgroundColor).toBe('rgb(255, 87, 51)')
   })
 
-  it('封面套用 aspect-2.5/3.5（與卡片搜尋一致）', () => {
+  it('封面套用 aspect-2.5/3.5（與卡牌搜尋一致）', () => {
     const { container } = render(
       <BinderCoverCard binder={makeBinder()} onEdit={() => {}} onDelete={() => {}} />,
     )

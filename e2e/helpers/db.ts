@@ -78,7 +78,7 @@ export async function createBinderWithSlots(
 }
 
 /**
- * 取得兩張不同且有圖片的卡片 id，供 DnD E2E 測試使用。
+ * 取得兩張不同且有圖片的卡牌 id，供 DnD E2E 測試使用。
  */
 export async function getTwoCardIds(): Promise<[string, string]> {
   const cards = await prisma.card.findMany({
@@ -86,7 +86,7 @@ export async function getTwoCardIds(): Promise<[string, string]> {
     take: 2,
   })
   if (cards.length < 2) {
-    throw new Error('getTwoCardIds: 資料庫中不足兩張有圖片的卡片')
+    throw new Error('getTwoCardIds: 資料庫中不足兩張有圖片的卡牌')
   }
   return [cards[0].id, cards[1].id]
 }

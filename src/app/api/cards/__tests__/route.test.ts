@@ -140,7 +140,7 @@ describe('GET /api/cards', () => {
     expect(data.cards[0].collectionStatus).toEqual({ owned: 3, wanted: 1 })
   })
 
-  it('登入用戶無任何收藏記錄的卡片 collectionStatus 均為 null', async () => {
+  it('登入用戶無任何收藏記錄的卡牌 collectionStatus 均為 null', async () => {
     mockAuth.mockResolvedValue({ user: { id: 'u1' } })
     mockSingleCard({ id: 'card1', name: 'Pikachu', imageSmall: '', rarity: null, cardNumber: '001', set: { name: 'Base' } })
     vi.mocked(prisma.userCard.findMany).mockResolvedValue([] as never)

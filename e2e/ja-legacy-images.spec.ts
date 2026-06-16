@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
 
 /**
- * 對應 docs/BDD.md 卡片瀏覽：PTCG JA 舊世代補圖（pcg-search → Supabase Storage 自存）。
+ * 對應 docs/BDD.md 卡牌瀏覽：PTCG JA 舊世代補圖（pcg-search → Supabase Storage 自存）。
  *
  * 此 spec 需 DB 已由 scripts/backfill-ja-legacy-images.ts --apply 補圖
  *（依賴 SUPABASE_URL / SERVICE_ROLE_KEY）。若該 set 尚未補圖，第一張卡會顯示

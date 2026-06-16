@@ -31,7 +31,7 @@ export function MobileNav({ isLoggedIn }: MobileNavProps) {
         <DropdownMenuContent align="start" className="w-40">
           <DropdownMenuItem asChild>
             <Link href="/cards" data-testid="mobile-nav-cards">
-              卡片搜尋
+              卡牌搜尋
             </Link>
           </DropdownMenuItem>
           {isLoggedIn && (

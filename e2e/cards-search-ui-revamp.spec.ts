@@ -8,14 +8,14 @@ import { test, expect } from '@playwright/test'
  *  4. 系列 ComboBox 可搜尋過濾、兩欄分組、選擇更新 URL
  *  5. grid 上下雙 pagination
  *  6. 顯示「搜尋結果 N 張」
- *  7. 點卡片開右側 Drawer + 上一張/下一張
+ *  7. 點卡牌開右側 Drawer + 上一張/下一張
  */
 
 test.describe('GameSelector 大按鈕 ↔ Tabs', () => {
   test('未選遊戲顯示大按鈕，點 PTCG 後變 Tabs 且語言 Tabs 同時出現', async ({ page }) => {
     await page.goto('/cards')
 
-    // 未選遊戲：尚無卡片 grid，但有遊戲選擇器（大按鈕）
+    // 未選遊戲：尚無卡牌 grid，但有遊戲選擇器（大按鈕）
     await expect(page.getByTestId('game-selector')).toBeVisible()
     await expect(page.getByTestId('card-grid')).not.toBeVisible()
     // 尚未選遊戲時語言 Tabs 不顯示
@@ -93,7 +93,7 @@ test.describe('結果統計與雙 pagination', () => {
   })
 })
 
-test.describe('卡片詳情 Drawer — 資訊欄位', () => {
+test.describe('卡牌詳情 Drawer — 資訊欄位', () => {
   test('Drawer 顯示系列(含 externalId)、發售日；不顯示類型/世代', async ({ page }) => {
     await page.goto('/cards?game=PTCG')
     await page.getByTestId('card-grid').waitFor({ timeout: 10000 })
@@ -115,8 +115,8 @@ test.describe('卡片詳情 Drawer — 資訊欄位', () => {
   })
 })
 
-test.describe('卡片詳情 Drawer', () => {
-  test('點卡片開 Drawer，上一張/下一張可切換', async ({ page }) => {
+test.describe('卡牌詳情 Drawer', () => {
+  test('點卡牌開 Drawer，上一張/下一張可切換', async ({ page }) => {
     await page.goto('/cards?game=PTCG')
     await page.getByTestId('card-grid').waitFor({ timeout: 10000 })
 

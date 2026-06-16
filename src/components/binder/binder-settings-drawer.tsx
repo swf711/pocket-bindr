@@ -204,7 +204,7 @@ export function BinderSettingsDrawer({
           newSlots: refreshData.slots,
           newTotalPages,
         })
-        toast(`格式已更新，${affectedSlotsCount} 張卡片已搬移至第 ${totalPages + 1}～${newTotalPages} 頁`)
+        toast(`格式已更新，${affectedSlotsCount} 張卡牌已搬移至第 ${totalPages + 1}～${newTotalPages} 頁`)
       } else {
         onSettingsUpdate({ name, gridType: localGridType, coverColor: localCoverColor })
         toast('設定已儲存')

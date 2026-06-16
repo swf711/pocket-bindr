@@ -28,7 +28,7 @@ export async function Header() {
               data-testid="nav-cards"
               className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
             >
-              卡片搜尋
+              卡牌搜尋
             </Link>
             {isLoggedIn && (
               <Link

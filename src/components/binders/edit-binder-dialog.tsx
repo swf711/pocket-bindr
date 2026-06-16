@@ -65,7 +65,7 @@ export function EditBinderDialog({
       }
       const data: PatchBinderResponse = await res.json()
       if (data.affectedSlotsCount && data.affectedSlotsCount > 0) {
-        toast(`格式已更新，${data.affectedSlotsCount} 張卡片已搬移至新頁`)
+        toast(`格式已更新，${data.affectedSlotsCount} 張卡牌已搬移至新頁`)
       }
       onUpdated(data as unknown as BinderSummary)
       onOpenChange(false)

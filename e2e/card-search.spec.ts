@@ -4,7 +4,7 @@ import { clearUserCardsByEmail, clearUserBindersByEmail } from './helpers/db'
 
 const USER = getTestUser('cardsearch')
 
-test.describe('卡片搜尋頁', () => {
+test.describe('卡牌搜尋頁', () => {
   test('未選遊戲時不顯示卡牌', async ({ page }) => {
     await page.goto('/cards')
     await expect(page.getByTestId('card-grid')).not.toBeVisible()
