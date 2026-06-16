@@ -1,5 +1,6 @@
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { decrementUserCardsForSlots } from '@/lib/binder-utils'
 
 type RouteContext = { params: Promise<{ id: string; slotId: string }> }
 
@@ -30,24 +31,7 @@ export async function DELETE(_request: Request, context: RouteContext) {
 
   await prisma.$transaction(async (tx) => {
     await tx.binderSlot.delete({ where: { id: slotId } })
-    if (slot!.cardId && slot!.status) {
-      const userCard = await tx.userCard.findUnique({
-        where: {
-          userId_cardId_status: {
-            userId,
-            cardId: slot!.cardId,
-            status: slot!.status,
-          },
-        },
-      })
-      if (userCard) {
-        if (userCard.quantity <= 1) {
-          await tx.userCard.delete({ where: { id: userCard.id } })
-        } else {
-          await tx.userCard.update({ where: { id: userCard.id }, data: { quantity: { decrement: 1 } } })
-        }
-      }
-    }
+    await decrementUserCardsForSlots(tx, userId, [slot!])
   })
 
   return Response.json({ deleted: true })

@@ -78,6 +78,41 @@ export async function createBinderWithSlots(
 }
 
 /**
+ * 取得一張指定遊戲、有圖片的卡牌，供「已存在收藏狀態」相關 E2E 測試使用。
+ */
+export async function getCardWithImage(
+  game: 'PTCG' | 'OPCG',
+  language: 'EN' | 'JA' | 'ZH_TW' = 'ZH_TW',
+): Promise<{ id: string; name: string; language: string; externalId: string; imageSmall: string }> {
+  const card = await prisma.card.findFirstOrThrow({
+    where: { game, language, imageSmall: { not: '' } },
+  })
+  return {
+    id: card.id,
+    name: card.name,
+    language: card.language,
+    externalId: card.externalId,
+    imageSmall: card.imageSmall,
+  }
+}
+
+/**
+ * 直接於 DB 建立/更新指定使用者對某卡牌的收藏紀錄（略過 UI/API），
+ * 供測試「登入前 DB 已有收藏狀態」的情境快速建立資料。
+ */
+export async function upsertOwnedUserCard(
+  userId: string,
+  cardId: string,
+  quantity: number,
+): Promise<void> {
+  await prisma.userCard.upsert({
+    where: { userId_cardId_status: { userId, cardId, status: 'owned' } },
+    create: { userId, cardId, status: 'owned', quantity },
+    update: { quantity },
+  })
+}
+
+/**
  * 取得兩張不同且有圖片的卡牌 id，供 DnD E2E 測試使用。
  */
 export async function getTwoCardIds(): Promise<[string, string]> {

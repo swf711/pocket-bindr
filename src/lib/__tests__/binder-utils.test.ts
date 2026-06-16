@@ -1,6 +1,12 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { GridType } from '@prisma/client'
-import { buildGridPages, buildSpreads, buildMobilePages, computeSlotMigration } from '../binder-utils'
+import {
+  buildGridPages,
+  buildSpreads,
+  buildMobilePages,
+  computeSlotMigration,
+  decrementUserCardsForSlots,
+} from '../binder-utils'
 import type { SlotWithCard } from '@/types/binder'
 import type { GridPage } from '../binder-utils'
 
@@ -170,5 +176,62 @@ describe('computeSlotMigration', () => {
     const slots = Array.from({ length: 10 }, (_, i) => makeOverflow(`s${i}`, 1, i + 3))
     const result = computeSlotMigration(slots, 3, 1)
     expect(result.every((m) => m.newSlotIndex < 3)).toBe(true)
+  })
+})
+
+describe('decrementUserCardsForSlots', () => {
+  function makeTx() {
+    return {
+      userCard: {
+        updateMany: vi.fn(),
+        deleteMany: vi.fn(),
+      },
+    }
+  }
+
+  it('單一格位：對應 UserCard decrement 1', async () => {
+    const tx = makeTx()
+    await decrementUserCardsForSlots(tx as never, 'u1', [{ cardId: 'c1', status: 'owned' }])
+    expect(tx.userCard.updateMany).toHaveBeenCalledWith({
+      where: { userId: 'u1', cardId: 'c1', status: 'owned' },
+      data: { quantity: { decrement: 1 } },
+    })
+    expect(tx.userCard.deleteMany).toHaveBeenCalledWith({
+      where: { userId: 'u1', cardId: 'c1', status: 'owned', quantity: { lte: 0 } },
+    })
+  })
+
+  it('同一張卡同一狀態出現在多個格位：一次性加總 decrement', async () => {
+    const tx = makeTx()
+    await decrementUserCardsForSlots(tx as never, 'u1', [
+      { cardId: 'c1', status: 'owned' },
+      { cardId: 'c1', status: 'owned' },
+      { cardId: 'c1', status: 'owned' },
+    ])
+    expect(tx.userCard.updateMany).toHaveBeenCalledTimes(1)
+    expect(tx.userCard.updateMany).toHaveBeenCalledWith({
+      where: { userId: 'u1', cardId: 'c1', status: 'owned' },
+      data: { quantity: { decrement: 3 } },
+    })
+  })
+
+  it('不同卡或不同狀態分別處理', async () => {
+    const tx = makeTx()
+    await decrementUserCardsForSlots(tx as never, 'u1', [
+      { cardId: 'c1', status: 'owned' },
+      { cardId: 'c1', status: 'wanted' },
+      { cardId: 'c2', status: 'owned' },
+    ])
+    expect(tx.userCard.updateMany).toHaveBeenCalledTimes(3)
+  })
+
+  it('cardId 或 status 為 null 的空格位忽略不處理', async () => {
+    const tx = makeTx()
+    await decrementUserCardsForSlots(tx as never, 'u1', [
+      { cardId: null, status: null },
+      { cardId: 'c1', status: null },
+    ])
+    expect(tx.userCard.updateMany).not.toHaveBeenCalled()
+    expect(tx.userCard.deleteMany).not.toHaveBeenCalled()
   })
 })

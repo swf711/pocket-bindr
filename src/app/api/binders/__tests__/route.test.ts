@@ -10,6 +10,7 @@ vi.mock('@/lib/prisma', () => ({
       update: vi.fn(),
       delete: vi.fn(),
     },
+    $transaction: vi.fn(),
   },
 }))
 
@@ -202,15 +203,39 @@ describe('DELETE /api/binders/[id]', () => {
     expect(res.status).toBe(403)
   })
 
-  it('成功刪除並回傳 204', async () => {
+  it('成功刪除並回傳 204，且連動扣減格位卡牌對應的 UserCard', async () => {
     mockAuth.mockResolvedValue({ user: { id: 'user-1' } })
     vi.mocked(prisma.binder.findUnique).mockResolvedValue(mockBinder as never)
-    vi.mocked(prisma.binder.delete).mockResolvedValue(mockBinder as never)
+
+    const findManyMock = vi.fn().mockResolvedValue([
+      { cardId: 'c1', status: 'owned' },
+      { cardId: 'c1', status: 'owned' },
+    ])
+    const updateManyMock = vi.fn()
+    const deleteManyMock = vi.fn()
+    const binderDeleteMock = vi.fn()
+    vi.mocked(prisma.$transaction).mockImplementation(async (fn) =>
+      fn({
+        binderSlot: { findMany: findManyMock },
+        userCard: { updateMany: updateManyMock, deleteMany: deleteManyMock },
+        binder: { delete: binderDeleteMock },
+      } as never),
+    )
+
     const req = new NextRequest('http://localhost/api/binders/binder-1', {
       method: 'DELETE',
     })
     const res = await DELETE(req, { params: Promise.resolve({ id: 'binder-1' }) })
     expect(res.status).toBe(204)
+    expect(findManyMock).toHaveBeenCalledWith({
+      where: { binderId: 'binder-1', cardId: { not: null } },
+      select: { cardId: true, status: true },
+    })
+    expect(updateManyMock).toHaveBeenCalledWith({
+      where: { userId: 'user-1', cardId: 'c1', status: 'owned' },
+      data: { quantity: { decrement: 2 } },
+    })
+    expect(binderDeleteMock).toHaveBeenCalledWith({ where: { id: 'binder-1' } })
   })
 })
 

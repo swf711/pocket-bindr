@@ -4,7 +4,7 @@ vi.mock('@/lib/prisma', () => ({
   prisma: {
     binder: { findUnique: vi.fn() },
     binderSlot: { findUnique: vi.fn(), update: vi.fn() },
-    userCard: { findUnique: vi.fn(), update: vi.fn(), delete: vi.fn() },
+    userCard: { updateMany: vi.fn(), deleteMany: vi.fn() },
     $transaction: vi.fn(),
   },
 }))
@@ -48,46 +48,29 @@ describe('DELETE /api/binders/[id]/slots/[slotId]', () => {
     expect(res.status).toBe(404)
   })
 
-  it('正確刪除 slot 並 quantity -1', async () => {
+  it('正確刪除 slot 並連動扣減對應 UserCard.quantity', async () => {
     mockAuth.mockResolvedValue({ user: { id: 'u1' } })
     vi.mocked(prisma.binder.findUnique).mockResolvedValue(mockBinder as never)
     vi.mocked(prisma.binderSlot.findUnique).mockResolvedValue(mockSlot as never)
-    const mockUserCard = { id: 'uc1', quantity: 3 }
+    const updateManyMock = vi.fn()
+    const deleteManyMock = vi.fn()
     vi.mocked(prisma.$transaction).mockImplementation(async (fn) => {
       await fn({
         binderSlot: { delete: vi.fn() },
-        userCard: {
-          findUnique: vi.fn().mockResolvedValue(mockUserCard),
-          update: vi.fn(),
-          delete: vi.fn(),
-        },
+        userCard: { updateMany: updateManyMock, deleteMany: deleteManyMock },
       } as never)
     })
     const res = await DELETE(new Request('http://localhost'), makeContext('b1', 's1'))
     expect(res.status).toBe(200)
     const data = await res.json()
     expect(data.deleted).toBe(true)
-  })
-
-  it('quantity 歸 0 時刪除 UserCard', async () => {
-    mockAuth.mockResolvedValue({ user: { id: 'u1' } })
-    vi.mocked(prisma.binder.findUnique).mockResolvedValue(mockBinder as never)
-    vi.mocked(prisma.binderSlot.findUnique).mockResolvedValue(mockSlot as never)
-    const deleteMock = vi.fn()
-    const updateMock = vi.fn()
-    vi.mocked(prisma.$transaction).mockImplementation(async (fn) => {
-      await fn({
-        binderSlot: { delete: vi.fn() },
-        userCard: {
-          findUnique: vi.fn().mockResolvedValue({ id: 'uc1', quantity: 1 }),
-          update: updateMock,
-          delete: deleteMock,
-        },
-      } as never)
+    expect(updateManyMock).toHaveBeenCalledWith({
+      where: { userId: 'u1', cardId: 'c1', status: 'owned' },
+      data: { quantity: { decrement: 1 } },
     })
-    await DELETE(new Request('http://localhost'), makeContext('b1', 's1'))
-    expect(deleteMock).toHaveBeenCalledWith({ where: { id: 'uc1' } })
-    expect(updateMock).not.toHaveBeenCalled()
+    expect(deleteManyMock).toHaveBeenCalledWith({
+      where: { userId: 'u1', cardId: 'c1', status: 'owned', quantity: { lte: 0 } },
+    })
   })
 })
 

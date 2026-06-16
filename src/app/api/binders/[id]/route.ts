@@ -1,7 +1,7 @@
 import { GridType } from '@prisma/client'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { computeSlotMigration } from '@/lib/binder-utils'
+import { computeSlotMigration, decrementUserCardsForSlots } from '@/lib/binder-utils'
 import { GRID_TYPE_SLOTS } from '@/types/binder'
 
 const HEX_COLOR_RE = /^#[0-9A-Fa-f]{6}$/
@@ -190,7 +190,14 @@ export async function DELETE(_request: Request, context: RouteContext) {
   const { error } = await getBinderOrError(id, userId)
   if (error) return error
 
-  await prisma.binder.delete({ where: { id } })
+  await prisma.$transaction(async (tx) => {
+    const slots = await tx.binderSlot.findMany({
+      where: { binderId: id, cardId: { not: null } },
+      select: { cardId: true, status: true },
+    })
+    await decrementUserCardsForSlots(tx, userId, slots)
+    await tx.binder.delete({ where: { id } })
+  })
 
   return new Response(null, { status: 204 })
 }

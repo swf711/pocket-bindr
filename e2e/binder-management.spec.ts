@@ -1,6 +1,14 @@
 import { test, expect } from '@playwright/test'
 import { getTestUser, loginAs } from './helpers/auth'
-import { clearUserBindersByEmail } from './helpers/db'
+import {
+  clearUserBindersByEmail,
+  clearUserCardsByEmail,
+  createBinderWithSlots,
+  getCardWithImage,
+  getUserIdByEmail,
+  upsertOwnedUserCard,
+} from './helpers/db'
+import { prisma } from '../src/lib/prisma'
 
 const USER = getTestUser('bindermgmt')
 
@@ -62,6 +70,30 @@ test.describe('卡冊管理頁', () => {
     await page.getByTestId('delete-binder-btn').first().click()
     await page.getByTestId('confirm-delete-binder').click()
     await expect(page.getByTestId('binder-card')).toHaveCount(initialCount - 1)
+  })
+
+  test('刪除卡冊後，連動扣減格位卡牌對應的 UserCard 收藏數量', async ({ page }) => {
+    await clearUserCardsByEmail(USER.email)
+    await clearUserBindersByEmail(USER.email)
+    await loginAs(page, USER)
+    const userId = await getUserIdByEmail(USER.email)
+    const card = await getCardWithImage('PTCG')
+    await upsertOwnedUserCard(userId, card.id, 1)
+    await createBinderWithSlots(userId, 'grid_3x3', [
+      { cardId: card.id, status: 'owned', pageNumber: 1, slotIndex: 0 },
+    ])
+
+    await page.goto('/binders')
+    await expect(page.getByTestId('binder-card')).toBeVisible()
+    await page.getByTestId('binder-card').first().hover()
+    await page.getByTestId('delete-binder-btn').first().click()
+    await page.getByTestId('confirm-delete-binder').click()
+    await expect(page.getByTestId('binder-card')).toHaveCount(0)
+
+    const remaining = await prisma.userCard.findUnique({
+      where: { userId_cardId_status: { userId, cardId: card.id, status: 'owned' } },
+    })
+    expect(remaining).toBeNull()
   })
 
   test('建立 4x3 卡冊並以 4 欄 12 格顯示', async ({ page }) => {

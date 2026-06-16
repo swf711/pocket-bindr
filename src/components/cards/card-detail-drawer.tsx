@@ -20,6 +20,7 @@ import { CardWithCollectionStatus } from '@/types/card'
 import { getCardImageUrl } from '@/lib/get-card-image-url'
 import { BinderSummary } from '@/types/binder'
 import { LoginModal } from '@/components/auth/login-modal'
+import { CreateBinderDialog } from '@/components/binders/create-binder-dialog'
 import { useIsMobile } from '@/hooks/use-is-mobile'
 import { useCardTilt } from '@/hooks/use-card-tilt'
 import { cn } from '@/lib/utils'
@@ -29,13 +30,13 @@ interface CardDetailDrawerProps {
   open: boolean
   onClose: () => void
   onAddToBinder?: (binderId: string, status: CardStatus, quantity: number) => Promise<void>
-  onCollectionUpdate?: (cardId: string, newStatus: { owned: number | null; wanted: number | null }) => void
+  onLoginSuccess?: () => void
   cards?: CardWithCollectionStatus[]
   currentIndex?: number
   onNavigate?: (index: number) => void
 }
 
-export function CardDetailDrawer({ card, open, onClose, onAddToBinder, cards, currentIndex, onNavigate }: CardDetailDrawerProps) {
+export function CardDetailDrawer({ card, open, onClose, onAddToBinder, onLoginSuccess, cards, currentIndex, onNavigate }: CardDetailDrawerProps) {
   const isMobile = useIsMobile()
   const { containerRef: tiltRef, transformerStyle, shineStyle, handlers: tiltHandlers } = useCardTilt({
     maxRotateDeg: 15,
@@ -221,13 +222,13 @@ export function CardDetailDrawer({ card, open, onClose, onAddToBinder, cards, cu
           <div className="no-scrollbar grid grid-cols-2 items-start gap-4 overflow-y-auto px-4 pb-6">
             {/* 左欄：卡牌資訊；右欄：加入卡冊操作（收藏狀態移至卡圖下方 overlay） */}
             {infoBlock}
-            <AddToBinderSection card={card} onAddToBinder={onAddToBinder} />
+            <AddToBinderSection card={card} onAddToBinder={onAddToBinder} onLoginSuccess={onLoginSuccess} />
           </div>
         ) : (
           <div className="no-scrollbar flex flex-col gap-4 overflow-y-auto px-4 pb-6">
             {infoBlock}
             <Separator />
-            <AddToBinderSection card={card} onAddToBinder={onAddToBinder} />
+            <AddToBinderSection card={card} onAddToBinder={onAddToBinder} onLoginSuccess={onLoginSuccess} />
           </div>
         )}
       </DrawerContent>
@@ -292,9 +293,11 @@ export function CardDetailDrawer({ card, open, onClose, onAddToBinder, cards, cu
 function AddToBinderSection({
   card,
   onAddToBinder,
+  onLoginSuccess,
 }: {
   card: CardWithCollectionStatus
   onAddToBinder?: CardDetailDrawerProps['onAddToBinder']
+  onLoginSuccess?: CardDetailDrawerProps['onLoginSuccess']
 }) {
   const [binders, setBinders] = useState<BinderSummary[]>([])
   const [isGuest, setIsGuest] = useState(false)
@@ -304,6 +307,7 @@ function AddToBinderSection({
   const [quantity, setQuantity] = useState(1)
   const [qtyDraft, setQtyDraft] = useState<string | null>(null) // 編輯中暫存（null = 未編輯，顯示 quantity）
   const [loading, setLoading] = useState(false)
+  const [createOpen, setCreateOpen] = useState(false)
 
   useEffect(() => {
     fetch('/api/binders')
@@ -347,6 +351,8 @@ function AddToBinderSection({
                 else setSelectedBinderId(list[0].id)
               }
             })
+            console.log('[DEBUG] calling onLoginSuccess', typeof onLoginSuccess)
+            onLoginSuccess?.()
           }}
         />
       </div>
@@ -355,9 +361,19 @@ function AddToBinderSection({
 
   if (noBinders) {
     return (
-      <p className="text-sm text-muted-foreground">
-        尚無卡冊，<a href="/binders" className="underline">前往建立</a>
-      </p>
+      <div className="flex flex-col gap-3">
+        <p className="text-sm text-muted-foreground">尚無卡冊</p>
+        <Button onClick={() => setCreateOpen(true)}>建立卡冊</Button>
+        <CreateBinderDialog
+          open={createOpen}
+          onOpenChange={setCreateOpen}
+          onCreated={(binder: BinderSummary) => {
+            setBinders(prev => [binder, ...prev])
+            setSelectedBinderId(binder.id)
+            setNoBinders(false)
+          }}
+        />
+      </div>
     )
   }
 

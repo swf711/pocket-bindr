@@ -1,5 +1,6 @@
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { decrementUserCardsForSlots } from '@/lib/binder-utils'
 
 type RouteContext = { params: Promise<{ id: string; pageNumber: string }> }
 
@@ -56,15 +57,7 @@ export async function DELETE(_request: Request, context: RouteContext) {
       where: { binderId: id, pageNumber, cardId: { not: null } },
     })
 
-    for (const slot of slotsOnPage) {
-      await tx.userCard.updateMany({
-        where: { userId, cardId: slot.cardId!, status: slot.status! },
-        data: { quantity: { decrement: 1 } },
-      })
-      await tx.userCard.deleteMany({
-        where: { userId, cardId: slot.cardId!, status: slot.status!, quantity: { lte: 0 } },
-      })
-    }
+    await decrementUserCardsForSlots(tx, userId, slotsOnPage)
 
     // Delete all slots on the target page (both filled and empty)
     await tx.binderSlot.deleteMany({ where: { binderId: id, pageNumber } })

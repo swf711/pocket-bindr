@@ -241,8 +241,8 @@ export function CardSearchClient({ initialParams }: CardSearchClientProps) {
         card={selectedCard}
         open={!!selectedCard}
         onClose={() => setSelectedIndex(null)}
-        onCollectionUpdate={handleCollectionUpdate}
         onAddToBinder={handleAddToBinder}
+        onLoginSuccess={() => { if (game) fetchCards(game, query, setId, page, language) }}
         cards={cards}
         currentIndex={selectedIndex ?? 0}
         onNavigate={setSelectedIndex}
