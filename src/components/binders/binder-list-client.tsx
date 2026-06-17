@@ -4,8 +4,8 @@ import { useState } from 'react'
 import { BookOpen } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
+import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty'
 import { BinderSummary } from '@/types/binder'
 import { cardGridClassName } from '@/components/cards/card-grid'
 import { MAX_BINDERS_PER_USER } from '@/lib/binder-limits'
@@ -69,17 +69,18 @@ export function BinderListClient({ initialBinders }: BinderListClientProps) {
       </div>
 
       {binderList.length === 0 ? (
-        <Card
-          className="flex flex-col items-center justify-center py-16 gap-4 border-dashed"
-          data-testid="empty-binder-state"
-        >
-          <BookOpen className="w-12 h-12 text-muted-foreground" />
-          <div className="text-center">
-            <p className="font-medium">還沒有卡冊</p>
-            <p className="text-sm text-muted-foreground">建立你的第一本卡冊來整理收藏</p>
-          </div>
-          <Button onClick={() => setCreateOpen(true)}>建立第一本卡冊</Button>
-        </Card>
+        <Empty data-testid="empty-binder-state">
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <BookOpen />
+            </EmptyMedia>
+            <EmptyTitle>還沒有卡冊</EmptyTitle>
+            <EmptyDescription>建立你的第一本卡冊來整理收藏</EmptyDescription>
+          </EmptyHeader>
+          <EmptyContent>
+            <Button onClick={() => setCreateOpen(true)}>建立第一本卡冊</Button>
+          </EmptyContent>
+        </Empty>
       ) : (
         <div className={cardGridClassName}>
           {binderList.map(binder => (
