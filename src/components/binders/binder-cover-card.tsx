@@ -1,6 +1,6 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { Pencil, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { BinderSummary } from '@/types/binder'
@@ -29,14 +29,13 @@ interface BinderCoverCardProps {
 }
 
 export function BinderCoverCard({ binder, onEdit, onDelete }: BinderCoverCardProps) {
-  const router = useRouter()
   const textColor = getTextColor(binder.coverColor)
 
   return (
     <div
       data-testid="binder-card"
-      className="group flex aspect-2.5/3.5 shadow-md rounded-r-lg overflow-hidden cursor-pointer"
-      style={{ color: textColor }}
+      className="group relative flex aspect-2.5/3.5 shadow-md rounded-r-lg overflow-hidden cursor-pointer"
+      style={{ color: textColor, backgroundColor: binder.coverColor }}
     >
       {/* 書脊 */}
       <div
@@ -45,48 +44,46 @@ export function BinderCoverCard({ binder, onEdit, onDelete }: BinderCoverCardPro
         style={{ backgroundColor: binder.coverColor, filter: 'brightness(0.72)' }}
       />
 
-      {/* 封面主體：整體可點擊進入卡冊 */}
-      <div
+      {/* 封面主體：Link 不含 action buttons（避免 button-in-anchor 非法 HTML） */}
+      <Link
         data-testid="enter-binder-btn"
-        className="flex-1 flex flex-col rounded-r-lg overflow-hidden"
+        href={`/binders/${binder.id}`}
+        className="flex-1 p-2 flex flex-col gap-1"
         style={{ backgroundColor: binder.coverColor }}
-        onClick={() => router.push('/binders/' + binder.id)}
       >
-        <div className="flex-1 p-2 flex flex-col gap-1">
-          <span className="text-sm font-bold leading-tight">{binder.name}</span>
-          <span className="text-xs opacity-80">{GRID_SHORT_LABELS[binder.gridType as GridType]}</span>
-          <span className="text-xs opacity-70">{binder._count.slots} 張卡</span>
-          <span className="text-xs opacity-60">
-            {new Date(binder.createdAt).toLocaleDateString('zh-TW')}
-          </span>
-        </div>
+        <span className="text-sm font-bold leading-tight">{binder.name}</span>
+        <span className="text-xs opacity-80">{GRID_SHORT_LABELS[binder.gridType as GridType]}</span>
+        <span className="text-xs opacity-70">{binder._count.slots} 張卡</span>
+        <span className="text-xs opacity-60">
+          {new Date(binder.createdAt).toLocaleDateString('zh-TW')}
+        </span>
+      </Link>
 
-        {/* edit/delete 圖示：hover 才顯示 */}
-        <div
-          className="flex justify-end gap-1 px-2 pb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-          style={{ color: textColor }}
+      {/* edit/delete 圖示：absolute 定位在 Link 之外，hover 才顯示 */}
+      <div
+        className="absolute bottom-2 right-2 flex gap-1 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+        style={{ color: textColor }}
+      >
+        <Button
+          variant="secondary"
+          size="icon"
+          data-testid="edit-binder-btn"
+          className="h-6 w-6 shrink-0"
+          onClick={() => onEdit(binder)}
+          style={{ backgroundColor: 'rgba(255,255,255,0.2)', color: textColor, borderColor: 'transparent' }}
         >
-          <Button
-            variant="secondary"
-            size="icon"
-            data-testid="edit-binder-btn"
-            className="h-6 w-6 shrink-0"
-            onClick={(e) => { e.stopPropagation(); onEdit(binder) }}
-            style={{ backgroundColor: 'rgba(255,255,255,0.2)', color: textColor, borderColor: 'transparent' }}
-          >
-            <Pencil className="h-3 w-3" />
-          </Button>
-          <Button
-            variant="secondary"
-            size="icon"
-            data-testid="delete-binder-btn"
-            className="h-6 w-6 shrink-0"
-            onClick={(e) => { e.stopPropagation(); onDelete(binder) }}
-            style={{ backgroundColor: 'rgba(255,255,255,0.2)', color: textColor, borderColor: 'transparent' }}
-          >
-            <Trash2 className="h-3 w-3" />
-          </Button>
-        </div>
+          <Pencil className="h-3 w-3" />
+        </Button>
+        <Button
+          variant="secondary"
+          size="icon"
+          data-testid="delete-binder-btn"
+          className="h-6 w-6 shrink-0"
+          onClick={() => onDelete(binder)}
+          style={{ backgroundColor: 'rgba(255,255,255,0.2)', color: textColor, borderColor: 'transparent' }}
+        >
+          <Trash2 className="h-3 w-3" />
+        </Button>
       </div>
     </div>
   )
