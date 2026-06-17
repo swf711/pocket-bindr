@@ -1,11 +1,15 @@
 'use client'
 
 import { useState } from 'react'
+import { BookOpen } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
 import { BinderSummary } from '@/types/binder'
 import { cardGridClassName } from '@/components/cards/card-grid'
+import { MAX_BINDERS_PER_USER } from '@/lib/binder-limits'
 import { BinderCoverCard } from './binder-cover-card'
+import { AddBinderSlot } from './add-binder-slot'
 import { CreateBinderDialog } from './create-binder-dialog'
 import { EditBinderDialog } from './edit-binder-dialog'
 import { DeleteBinderDialog } from './delete-binder-dialog'
@@ -46,26 +50,29 @@ export function BinderListClient({ initialBinders }: BinderListClientProps) {
     setDeleteOpen(true)
   }
 
+  const canAddMore = binderList.length < MAX_BINDERS_PER_USER
+
   return (
-    <div className="p-6">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold">我的卡冊</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">共 {binderList.length} 本</p>
-        </div>
-        <Button onClick={() => setCreateOpen(true)} data-testid="create-binder-btn">
-          新增卡冊
-        </Button>
+    <div className="p-6 space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold">我的卡冊</h1>
+        <p className="text-sm text-muted-foreground mt-1">
+          {binderList.length} / {MAX_BINDERS_PER_USER} 本
+        </p>
       </div>
 
       {binderList.length === 0 ? (
-        <div
-          className="flex flex-col items-center justify-center py-20 gap-4"
+        <Card
+          className="flex flex-col items-center justify-center py-16 gap-4 border-dashed"
           data-testid="empty-binder-state"
         >
-          <p className="text-muted-foreground">還沒有卡冊，快來建立第一本吧！</p>
+          <BookOpen className="w-12 h-12 text-muted-foreground" />
+          <div className="text-center">
+            <p className="font-medium">還沒有卡冊</p>
+            <p className="text-sm text-muted-foreground">建立你的第一本卡冊來整理收藏</p>
+          </div>
           <Button onClick={() => setCreateOpen(true)}>建立第一本卡冊</Button>
-        </div>
+        </Card>
       ) : (
         <div className={cardGridClassName}>
           {binderList.map(binder => (
@@ -76,6 +83,7 @@ export function BinderListClient({ initialBinders }: BinderListClientProps) {
               onDelete={openDelete}
             />
           ))}
+          {canAddMore && <AddBinderSlot onClick={() => setCreateOpen(true)} />}
         </div>
       )}
 

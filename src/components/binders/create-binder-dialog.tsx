@@ -50,6 +50,10 @@ export function CreateBinderDialog({
       })
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
+        if (res.status === 409 && err?.error === 'binderLimitReached') {
+          toast.error(`已達卡冊上限（${err.max} 本）`)
+          return
+        }
         throw new Error(err?.error ?? '建立失敗')
       }
       const data: BinderSummary = await res.json()

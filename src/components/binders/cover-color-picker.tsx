@@ -30,7 +30,7 @@ export function CoverColorPicker({ value, onChange }: CoverColorPickerProps) {
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-3">
-        <div className="grid grid-cols-4 gap-2">
+        <div className="grid grid-cols-6 gap-2">
           {COVER_COLOR_PRESETS.map(color => (
             <button
               key={color}

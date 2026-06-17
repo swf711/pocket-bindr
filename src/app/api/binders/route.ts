@@ -2,6 +2,7 @@ import { GridType } from '@prisma/client'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { DEFAULT_COVER_COLOR } from '@/lib/cover-colors'
+import { MAX_BINDERS_PER_USER } from '@/lib/binder-limits'
 
 const VALID_GRID_TYPES = new Set<GridType>([
   'grid_1x2',
@@ -56,6 +57,14 @@ export async function POST(request: Request) {
     return Response.json(
       { error: `gridType must be one of: ${[...VALID_GRID_TYPES].join(', ')}` },
       { status: 400 },
+    )
+  }
+
+  const count = await prisma.binder.count({ where: { userId } })
+  if (count >= MAX_BINDERS_PER_USER) {
+    return Response.json(
+      { error: 'binderLimitReached', max: MAX_BINDERS_PER_USER },
+      { status: 409 },
     )
   }
 

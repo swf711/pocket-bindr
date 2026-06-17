@@ -29,7 +29,8 @@ test.describe('卡冊管理頁', () => {
     await clearUserBindersByEmail(USER.email)
     await loginAs(page, USER)
     await page.goto('/binders')
-    await page.getByTestId('create-binder-btn').click()
+    // 無卡冊時從空狀態按鈕開啟 Dialog
+    await page.getByText('建立第一本卡冊').click()
     await page.getByTestId('binder-name-input').fill('我的第一本冊')
     await page.getByTestId('binder-grid-select').click()
     await page.getByRole('option', { name: /3 × 3/ }).click()
@@ -42,8 +43,8 @@ test.describe('卡冊管理頁', () => {
     await clearUserBindersByEmail(USER.email)
     await loginAs(page, USER)
     await page.goto('/binders')
-    // 先建立一本
-    await page.getByTestId('create-binder-btn').click()
+    // 先從空狀態建立一本
+    await page.getByText('建立第一本卡冊').click()
     await page.getByTestId('binder-name-input').fill('原始名稱')
     await page.getByTestId('create-binder-submit').click()
     await expect(page.getByTestId('binder-card')).toBeVisible()
@@ -60,8 +61,8 @@ test.describe('卡冊管理頁', () => {
     await clearUserBindersByEmail(USER.email)
     await loginAs(page, USER)
     await page.goto('/binders')
-    // 先建立一本
-    await page.getByTestId('create-binder-btn').click()
+    // 先從空狀態建立一本
+    await page.getByText('建立第一本卡冊').click()
     await page.getByTestId('binder-name-input').fill('待刪卡冊')
     await page.getByTestId('create-binder-submit').click()
     await expect(page.getByTestId('binder-card')).toBeVisible()
@@ -100,7 +101,7 @@ test.describe('卡冊管理頁', () => {
     await clearUserBindersByEmail(USER.email)
     await loginAs(page, USER)
     await page.goto('/binders')
-    await page.getByTestId('create-binder-btn').click()
+    await page.getByText('建立第一本卡冊').click()
     await page.getByTestId('binder-name-input').fill('4x3 測試冊')
     await page.getByTestId('binder-grid-select').click()
     await page.getByRole('option', { name: /4 × 3/ }).click()
@@ -117,9 +118,10 @@ test.describe('卡冊管理頁', () => {
   })
 
   test('規格選單包含 4 × 3、不包含 3 × 4', async ({ page }) => {
+    await clearUserBindersByEmail(USER.email)
     await loginAs(page, USER)
     await page.goto('/binders')
-    await page.getByTestId('create-binder-btn').click()
+    await page.getByText('建立第一本卡冊').click()
     await page.getByTestId('binder-grid-select').click()
     await expect(page.getByRole('option', { name: /4 × 3/ })).toBeVisible()
     await expect(page.getByRole('option', { name: /3 × 4/ })).toHaveCount(0)
@@ -129,8 +131,8 @@ test.describe('卡冊管理頁', () => {
     await clearUserBindersByEmail(USER.email)
     await loginAs(page, USER)
     await page.goto('/binders')
-    // 先建立一本
-    await page.getByTestId('create-binder-btn').click()
+    // 先從空狀態建立一本
+    await page.getByText('建立第一本卡冊').click()
     await page.getByTestId('binder-name-input').fill('導向測試冊')
     await page.getByTestId('create-binder-submit').click()
     await expect(page.getByTestId('binder-card')).toBeVisible()
@@ -139,24 +141,24 @@ test.describe('卡冊管理頁', () => {
     await expect(page).toHaveURL(/\/binders\/[a-z0-9-]+/)
   })
 
-  test('header 顯示卡冊總數', async ({ page }) => {
+  test('header 顯示卡冊統計 N / 3 本', async ({ page }) => {
     await clearUserBindersByEmail(USER.email)
     await loginAs(page, USER)
     await page.goto('/binders')
-    await expect(page.getByText(/共 0 本/)).toBeVisible()
+    await expect(page.getByText('0 / 3 本')).toBeVisible()
     // 建立一本後計數更新
-    await page.getByTestId('create-binder-btn').click()
+    await page.getByText('建立第一本卡冊').click()
     await page.getByTestId('binder-name-input').fill('計數測試冊')
     await page.getByTestId('create-binder-submit').click()
     await expect(page.getByTestId('binder-card')).toBeVisible()
-    await expect(page.getByText(/共 1 本/)).toBeVisible()
+    await expect(page.getByText('1 / 3 本')).toBeVisible()
   })
 
   test('hover 後操作按鈕顯示', async ({ page }) => {
     await clearUserBindersByEmail(USER.email)
     await loginAs(page, USER)
     await page.goto('/binders')
-    await page.getByTestId('create-binder-btn').click()
+    await page.getByText('建立第一本卡冊').click()
     await page.getByTestId('binder-name-input').fill('Hover 測試冊')
     await page.getByTestId('create-binder-submit').click()
     await expect(page.getByTestId('binder-card')).toBeVisible()

@@ -9,6 +9,7 @@ vi.mock('@/lib/prisma', () => ({
       create: vi.fn(),
       update: vi.fn(),
       delete: vi.fn(),
+      count: vi.fn(),
     },
     $transaction: vi.fn(),
   },
@@ -70,6 +71,7 @@ describe('POST /api/binders', () => {
 
   it('成功建立卡冊', async () => {
     mockAuth.mockResolvedValue({ user: { id: 'user-1' } })
+    vi.mocked(prisma.binder.count).mockResolvedValue(0)
     vi.mocked(prisma.binder.create).mockResolvedValue(mockBinder as never)
     const req = new NextRequest('http://localhost/api/binders', {
       method: 'POST',
@@ -130,6 +132,32 @@ describe('POST /api/binders', () => {
     })
     const res = await POST(req)
     expect(res.status).toBe(400)
+  })
+
+  it('已有 3 本卡冊時回傳 409 binderLimitReached', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'user-1' } })
+    vi.mocked(prisma.binder.count).mockResolvedValue(3)
+    const req = new NextRequest('http://localhost/api/binders', {
+      method: 'POST',
+      body: JSON.stringify({ name: '第四本', gridType: 'grid_3x3' }),
+    })
+    const res = await POST(req)
+    expect(res.status).toBe(409)
+    const data = await res.json()
+    expect(data.error).toBe('binderLimitReached')
+    expect(data.max).toBe(3)
+  })
+
+  it('已有 2 本卡冊時可正常建立，回傳 201', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'user-1' } })
+    vi.mocked(prisma.binder.count).mockResolvedValue(2)
+    vi.mocked(prisma.binder.create).mockResolvedValue(mockBinder as never)
+    const req = new NextRequest('http://localhost/api/binders', {
+      method: 'POST',
+      body: JSON.stringify({ name: '第三本', gridType: 'grid_3x3' }),
+    })
+    const res = await POST(req)
+    expect(res.status).toBe(201)
   })
 })
 
