@@ -63,6 +63,7 @@ export interface BinderSummary {
   gridType: GridType
   coverColor: string
   settings: Record<string, unknown> | null
+  sortOrder: number
   createdAt: string
   _count: { slots: number }
 }

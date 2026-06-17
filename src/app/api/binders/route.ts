@@ -24,7 +24,7 @@ export async function GET() {
   const binders = await prisma.binder.findMany({
     where: { userId },
     include: { _count: { select: { slots: true } } },
-    orderBy: { createdAt: 'desc' },
+    orderBy: { sortOrder: 'asc' },
   })
 
   return Response.json(binders)
@@ -73,8 +73,20 @@ export async function POST(request: Request) {
     return Response.json({ error: 'coverColor must be a valid hex color (e.g. #4A5568)' }, { status: 400 })
   }
 
+  const maxOrder = await prisma.binder.aggregate({
+    where: { userId },
+    _max: { sortOrder: true },
+  })
+  const nextSortOrder = (maxOrder._max.sortOrder ?? -1) + 1
+
   const binder = await prisma.binder.create({
-    data: { userId, name: name.trim(), gridType: gridType as GridType, coverColor: resolvedColor },
+    data: {
+      userId,
+      name: name.trim(),
+      gridType: gridType as GridType,
+      coverColor: resolvedColor,
+      sortOrder: nextSortOrder,
+    },
     include: { _count: { select: { slots: true } } },
   })
 

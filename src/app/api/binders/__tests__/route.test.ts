@@ -10,6 +10,7 @@ vi.mock('@/lib/prisma', () => ({
       update: vi.fn(),
       delete: vi.fn(),
       count: vi.fn(),
+      aggregate: vi.fn(),
     },
     $transaction: vi.fn(),
   },
@@ -57,7 +58,10 @@ describe('GET /api/binders', () => {
 })
 
 describe('POST /api/binders', () => {
-  beforeEach(() => vi.clearAllMocks())
+  beforeEach(() => {
+    vi.clearAllMocks()
+    vi.mocked(prisma.binder.aggregate).mockResolvedValue({ _max: { sortOrder: 0 } } as never)
+  })
 
   it('未登入回傳 401', async () => {
     mockAuth.mockResolvedValue(null)
@@ -268,7 +272,10 @@ describe('DELETE /api/binders/[id]', () => {
 })
 
 describe('POST /api/binders - coverColor 驗證', () => {
-  beforeEach(() => vi.clearAllMocks())
+  beforeEach(() => {
+    vi.clearAllMocks()
+    vi.mocked(prisma.binder.aggregate).mockResolvedValue({ _max: { sortOrder: 0 } } as never)
+  })
 
   it('合法 hex 色碼，建立成功', async () => {
     mockAuth.mockResolvedValue({ user: { id: 'user-1' } })

@@ -3,13 +3,22 @@
 import { useState } from 'react'
 import { BookOpen } from 'lucide-react'
 import { toast } from 'sonner'
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core'
+import { SortableContext, arrayMove, rectSortingStrategy } from '@dnd-kit/sortable'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty'
 import { BinderSummary } from '@/types/binder'
 import { cardGridClassName } from '@/components/cards/card-grid'
 import { MAX_BINDERS_PER_USER } from '@/lib/binder-limits'
-import { BinderCoverCard } from './binder-cover-card'
+import { SortableBinderCoverCard } from './sortable-binder-cover-card'
 import { AddBinderSlot } from './add-binder-slot'
 import { CreateBinderDialog } from './create-binder-dialog'
 import { EditBinderDialog } from './edit-binder-dialog'
@@ -26,8 +35,12 @@ export function BinderListClient({ initialBinders }: BinderListClientProps) {
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [selectedBinder, setSelectedBinder] = useState<BinderSummary | null>(null)
 
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
+  )
+
   function handleCreated(binder: BinderSummary) {
-    setBinderList(prev => [binder, ...prev])
+    setBinderList(prev => [...prev, binder])
     toast('卡冊已建立')
   }
 
@@ -49,6 +62,29 @@ export function BinderListClient({ initialBinders }: BinderListClientProps) {
   function openDelete(binder: BinderSummary) {
     setSelectedBinder(binder)
     setDeleteOpen(true)
+  }
+
+  async function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+
+    const oldIndex = binderList.findIndex(b => b.id === active.id)
+    const newIndex = binderList.findIndex(b => b.id === over.id)
+    const newList = arrayMove(binderList, oldIndex, newIndex)
+
+    setBinderList(newList)
+
+    try {
+      const res = await fetch('/api/binders/reorder', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderedIds: newList.map(b => b.id) }),
+      })
+      if (!res.ok) throw new Error('reorder failed')
+    } catch {
+      setBinderList(binderList)
+      toast.error('排序儲存失敗，請再試一次')
+    }
   }
 
   const canAddMore = binderList.length < MAX_BINDERS_PER_USER
@@ -83,17 +119,26 @@ export function BinderListClient({ initialBinders }: BinderListClientProps) {
           </EmptyContent>
         </Empty>
       ) : (
-        <div className={cardGridClassName}>
-          {binderList.map(binder => (
-            <BinderCoverCard
-              key={binder.id}
-              binder={binder}
-              onEdit={openEdit}
-              onDelete={openDelete}
-            />
-          ))}
-          {canAddMore && <AddBinderSlot onClick={() => setCreateOpen(true)} />}
-        </div>
+        <DndContext
+          id="binder-list-dnd"
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <div className={cardGridClassName}>
+            <SortableContext items={binderList.map(b => b.id)} strategy={rectSortingStrategy}>
+              {binderList.map(binder => (
+                <SortableBinderCoverCard
+                  key={binder.id}
+                  binder={binder}
+                  onEdit={openEdit}
+                  onDelete={openDelete}
+                />
+              ))}
+            </SortableContext>
+            {canAddMore && <AddBinderSlot onClick={() => setCreateOpen(true)} />}
+          </div>
+        </DndContext>
       )}
 
       <CreateBinderDialog

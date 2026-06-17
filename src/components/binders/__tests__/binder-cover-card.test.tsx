@@ -18,6 +18,7 @@ function makeBinder(overrides: Partial<BinderSummary> = {}): BinderSummary {
     gridType: 'grid_3x3',
     coverColor: '#4A5568',
     settings: null,
+    sortOrder: 0,
     createdAt: new Date().toISOString(),
     _count: { slots: 5 },
     ...overrides,
@@ -49,20 +50,22 @@ describe('BinderCoverCard', () => {
     expect(root.style.color).toBe('rgb(26, 32, 44)')  // #1A202C
   })
 
-  it('顯示卡冊名稱、格式與卡牌數量', () => {
+  it('卡冊名稱顯示於左下角（data-testid=binder-name）', () => {
     render(
       <BinderCoverCard
-        binder={makeBinder({ name: 'My Binder', gridType: 'grid_4x3', _count: { slots: 12 } })}
+        binder={makeBinder({ name: 'My Binder' })}
         onEdit={() => {}}
         onDelete={() => {}}
       />,
     )
-    expect(screen.getByText('My Binder')).toBeInTheDocument()
-    expect(screen.getByText('4×3')).toBeInTheDocument()
-    expect(screen.getByText('12 張卡')).toBeInTheDocument()
+    const nameEl = screen.getByTestId('binder-name')
+    expect(nameEl).toBeInTheDocument()
+    expect(nameEl).toHaveTextContent('My Binder')
+    expect(nameEl.className).toContain('bottom-2')
+    expect(nameEl.className).toContain('left-2')
   })
 
-  it('edit/delete 按鈕區預設有 opacity-0 class（hover 前不可見）', () => {
+  it('edit/delete 按鈕在右上角，預設 opacity-0', () => {
     const { container } = render(
       <BinderCoverCard binder={makeBinder()} onEdit={() => {}} onDelete={() => {}} />,
     )
@@ -70,6 +73,15 @@ describe('BinderCoverCard', () => {
     expect(buttonWrapper).toBeInTheDocument()
     expect(buttonWrapper).toContainElement(screen.getByTestId('edit-binder-btn'))
     expect(buttonWrapper).toContainElement(screen.getByTestId('delete-binder-btn'))
+    expect(buttonWrapper?.className).toContain('top-2')
+    expect(buttonWrapper?.className).toContain('right-2')
+  })
+
+  it('HoverCard info 按鈕存在', () => {
+    render(
+      <BinderCoverCard binder={makeBinder()} onEdit={() => {}} onDelete={() => {}} />,
+    )
+    expect(screen.getByTestId('binder-info-btn')).toBeInTheDocument()
   })
 
   it('書脊 div 存在並套用 coverColor', () => {
@@ -89,14 +101,10 @@ describe('BinderCoverCard', () => {
     expect(root.className).toContain('aspect-2.5/3.5')
   })
 
-  it('顯示建立日期', () => {
+  it('封面 Link 包含 aria-label（含卡冊名稱）', () => {
     render(
-      <BinderCoverCard
-        binder={makeBinder({ createdAt: '2024-03-15T00:00:00.000Z' })}
-        onEdit={() => {}}
-        onDelete={() => {}}
-      />,
+      <BinderCoverCard binder={makeBinder({ name: 'Aria Test' })} onEdit={() => {}} onDelete={() => {}} />,
     )
-    expect(screen.getByText(/2024/)).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /Aria Test/ })).toBeInTheDocument()
   })
 })
