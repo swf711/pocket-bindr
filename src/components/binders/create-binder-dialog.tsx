@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import {
   Select,
   SelectContent,
@@ -37,6 +38,7 @@ export function CreateBinderDialog({
   const [name, setName] = useState('')
   const [gridType, setGridType] = useState<GridType>('grid_3x3')
   const [coverColor, setCoverColor] = useState(DEFAULT_COVER_COLOR)
+  const [description, setDescription] = useState('')
   const [loading, setLoading] = useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
@@ -46,7 +48,7 @@ export function CreateBinderDialog({
       const res = await fetch('/api/binders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, gridType, coverColor }),
+        body: JSON.stringify({ name, gridType, coverColor, description: description || undefined }),
       })
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
@@ -61,6 +63,7 @@ export function CreateBinderDialog({
       setName('')
       setGridType('grid_3x3')
       setCoverColor(DEFAULT_COVER_COLOR)
+      setDescription('')
       onOpenChange(false)
     } catch (err) {
       toast((err as Error).message)
@@ -86,6 +89,18 @@ export function CreateBinderDialog({
               onChange={e => setName(e.target.value)}
               data-testid="binder-name-input"
               required
+            />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="binder-description">描述（選填）</Label>
+            <Textarea
+              id="binder-description"
+              placeholder="選填，最多 150 字"
+              maxLength={150}
+              rows={2}
+              value={description}
+              onChange={e => setDescription(e.target.value)}
+              data-testid="binder-description-input"
             />
           </div>
           <div className="flex flex-col gap-1.5">

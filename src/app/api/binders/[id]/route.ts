@@ -91,8 +91,8 @@ export async function PATCH(request: Request, context: RouteContext) {
     return Response.json({ error: 'Invalid JSON' }, { status: 400 })
   }
 
-  const { name, gridType, coverColor } = body as Record<string, unknown>
-  const updateData: { name?: string; gridType?: GridType; coverColor?: string } = {}
+  const { name, gridType, coverColor, description } = body as Record<string, unknown>
+  const updateData: { name?: string; gridType?: GridType; coverColor?: string; description?: string | null } = {}
 
   if (name !== undefined) {
     if (typeof name !== 'string' || name.trim().length === 0 || name.trim().length > 50) {
@@ -119,6 +119,16 @@ export async function PATCH(request: Request, context: RouteContext) {
       return Response.json({ error: 'coverColor must be a valid hex color (e.g. #4A5568)' }, { status: 400 })
     }
     updateData.coverColor = coverColor
+  }
+
+  if (description !== undefined) {
+    if (typeof description !== 'string' && description !== null) {
+      return Response.json({ error: 'description must be a string or null' }, { status: 400 })
+    }
+    if (typeof description === 'string' && description.trim().length > 150) {
+      return Response.json({ error: 'description must be at most 150 characters' }, { status: 400 })
+    }
+    updateData.description = typeof description === 'string' ? description.trim() || null : null
   }
 
   // When gridType shrinks, repack out-of-bounds slots onto new pages

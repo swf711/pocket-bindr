@@ -321,6 +321,86 @@ describe('POST /api/binders - coverColor 驗證', () => {
   })
 })
 
+describe('POST /api/binders - description 驗證', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    vi.mocked(prisma.binder.aggregate).mockResolvedValue({ _max: { sortOrder: 0 } } as never)
+  })
+
+  it('description 省略時建立成功', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'user-1' } })
+    vi.mocked(prisma.binder.count).mockResolvedValue(0)
+    vi.mocked(prisma.binder.create).mockResolvedValue({ ...mockBinder, description: null } as never)
+    const req = new NextRequest('http://localhost/api/binders', {
+      method: 'POST',
+      body: JSON.stringify({ name: '測試', gridType: 'grid_3x3' }),
+    })
+    const res = await POST(req)
+    expect(res.status).toBe(201)
+  })
+
+  it('description 為有效字串時建立成功', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'user-1' } })
+    vi.mocked(prisma.binder.count).mockResolvedValue(0)
+    vi.mocked(prisma.binder.create).mockResolvedValue({ ...mockBinder, description: '簡短描述' } as never)
+    const req = new NextRequest('http://localhost/api/binders', {
+      method: 'POST',
+      body: JSON.stringify({ name: '測試', gridType: 'grid_3x3', description: '簡短描述' }),
+    })
+    const res = await POST(req)
+    expect(res.status).toBe(201)
+  })
+
+  it('description 超過 150 字元回傳 400', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'user-1' } })
+    vi.mocked(prisma.binder.count).mockResolvedValue(0)
+    const req = new NextRequest('http://localhost/api/binders', {
+      method: 'POST',
+      body: JSON.stringify({ name: '測試', gridType: 'grid_3x3', description: 'a'.repeat(151) }),
+    })
+    const res = await POST(req)
+    expect(res.status).toBe(400)
+  })
+
+  it('description 為非字串類型回傳 400', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'user-1' } })
+    vi.mocked(prisma.binder.count).mockResolvedValue(0)
+    const req = new NextRequest('http://localhost/api/binders', {
+      method: 'POST',
+      body: JSON.stringify({ name: '測試', gridType: 'grid_3x3', description: 123 }),
+    })
+    const res = await POST(req)
+    expect(res.status).toBe(400)
+  })
+})
+
+describe('PATCH /api/binders/[id] - description 更新', () => {
+  beforeEach(() => vi.clearAllMocks())
+
+  it('description 更新為有效字串，成功回傳 200', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'user-1' } })
+    vi.mocked(prisma.binder.findUnique).mockResolvedValue(mockBinder as never)
+    vi.mocked(prisma.binder.update).mockResolvedValue({ ...mockBinder, description: '新描述' } as never)
+    const req = new NextRequest('http://localhost/api/binders/binder-1', {
+      method: 'PATCH',
+      body: JSON.stringify({ description: '新描述' }),
+    })
+    const res = await PATCH(req, { params: Promise.resolve({ id: 'binder-1' }) })
+    expect(res.status).toBe(200)
+  })
+
+  it('description 超過 150 字元回傳 400', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'user-1' } })
+    vi.mocked(prisma.binder.findUnique).mockResolvedValue(mockBinder as never)
+    const req = new NextRequest('http://localhost/api/binders/binder-1', {
+      method: 'PATCH',
+      body: JSON.stringify({ description: 'a'.repeat(151) }),
+    })
+    const res = await PATCH(req, { params: Promise.resolve({ id: 'binder-1' }) })
+    expect(res.status).toBe(400)
+  })
+})
+
 describe('PATCH /api/binders/[id] - coverColor 更新', () => {
   beforeEach(() => vi.clearAllMocks())
 

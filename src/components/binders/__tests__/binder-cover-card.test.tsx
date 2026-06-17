@@ -17,6 +17,7 @@ function makeBinder(overrides: Partial<BinderSummary> = {}): BinderSummary {
     name: 'Test Binder',
     gridType: 'grid_3x3',
     coverColor: '#4A5568',
+    description: null,
     settings: null,
     sortOrder: 0,
     createdAt: new Date().toISOString(),
@@ -50,7 +51,7 @@ describe('BinderCoverCard', () => {
     expect(root.style.color).toBe('rgb(26, 32, 44)')  // #1A202C
   })
 
-  it('卡冊名稱顯示於左下角（data-testid=binder-name）', () => {
+  it('卡冊名稱顯示在封面上方水印區（data-testid=binder-name）', () => {
     render(
       <BinderCoverCard
         binder={makeBinder({ name: 'My Binder' })}
@@ -61,8 +62,48 @@ describe('BinderCoverCard', () => {
     const nameEl = screen.getByTestId('binder-name')
     expect(nameEl).toBeInTheDocument()
     expect(nameEl).toHaveTextContent('My Binder')
-    expect(nameEl.className).toContain('bottom-2')
-    expect(nameEl.className).toContain('left-2')
+    expect(nameEl.className).toContain('top-10')
+    expect(nameEl.className).toContain('left-6')
+  })
+
+  it('格式與卡數顯示在左下角（data-testid=binder-info）', () => {
+    render(
+      <BinderCoverCard
+        binder={makeBinder({ gridType: 'grid_3x3', _count: { slots: 12 } })}
+        onEdit={() => {}}
+        onDelete={() => {}}
+      />,
+    )
+    const infoEl = screen.getByTestId('binder-info')
+    expect(infoEl).toBeInTheDocument()
+    expect(infoEl).toHaveTextContent('3×3')
+    expect(infoEl).toHaveTextContent('12 張卡')
+    expect(infoEl.className).toContain('bottom-8')
+    expect(infoEl.className).toContain('left-6')
+  })
+
+  it('有 description 時顯示在封面（data-testid=binder-description）', () => {
+    render(
+      <BinderCoverCard
+        binder={makeBinder({ description: '我的測試卡冊描述' })}
+        onEdit={() => {}}
+        onDelete={() => {}}
+      />,
+    )
+    const descEl = screen.getByTestId('binder-description')
+    expect(descEl).toBeInTheDocument()
+    expect(descEl).toHaveTextContent('我的測試卡冊描述')
+  })
+
+  it('無 description 時不顯示描述區塊', () => {
+    render(
+      <BinderCoverCard
+        binder={makeBinder({ description: null })}
+        onEdit={() => {}}
+        onDelete={() => {}}
+      />,
+    )
+    expect(screen.queryByTestId('binder-description')).not.toBeInTheDocument()
   })
 
   it('進入卡冊按鈕（ArrowRight）存在於右上角 action group 內', () => {

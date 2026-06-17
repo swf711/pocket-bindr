@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import {
   Select,
   SelectContent,
@@ -39,6 +40,7 @@ export function EditBinderDialog({
   const [name, setName] = useState('')
   const [gridType, setGridType] = useState<GridType>('grid_3x3')
   const [coverColor, setCoverColor] = useState(DEFAULT_COVER_COLOR)
+  const [description, setDescription] = useState('')
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
@@ -46,6 +48,7 @@ export function EditBinderDialog({
       setName(binder.name)
       setGridType(binder.gridType as GridType)
       setCoverColor(binder.coverColor ?? DEFAULT_COVER_COLOR)
+      setDescription(binder.description ?? '')
     }
   }, [binder])
 
@@ -57,7 +60,7 @@ export function EditBinderDialog({
       const res = await fetch(`/api/binders/${binder.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, gridType, coverColor }),
+        body: JSON.stringify({ name, gridType, coverColor, description: description || null }),
       })
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
@@ -93,6 +96,18 @@ export function EditBinderDialog({
               onChange={e => setName(e.target.value)}
               data-testid="binder-name-input"
               required
+            />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="edit-binder-description">描述（選填）</Label>
+            <Textarea
+              id="edit-binder-description"
+              placeholder="選填，最多 150 字"
+              maxLength={150}
+              rows={2}
+              value={description}
+              onChange={e => setDescription(e.target.value)}
+              data-testid="binder-description-input"
             />
           </div>
           <div className="flex flex-col gap-1.5">

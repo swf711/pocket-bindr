@@ -44,7 +44,7 @@ export async function POST(request: Request) {
     return Response.json({ error: 'Invalid JSON' }, { status: 400 })
   }
 
-  const { name, gridType, coverColor } = body as Record<string, unknown>
+  const { name, gridType, coverColor, description } = body as Record<string, unknown>
 
   if (typeof name !== 'string' || name.trim().length === 0 || name.trim().length > 50) {
     return Response.json(
@@ -73,6 +73,10 @@ export async function POST(request: Request) {
     return Response.json({ error: 'coverColor must be a valid hex color (e.g. #4A5568)' }, { status: 400 })
   }
 
+  if (description !== undefined && (typeof description !== 'string' || description.trim().length > 150)) {
+    return Response.json({ error: 'description must be a string of at most 150 characters' }, { status: 400 })
+  }
+
   const maxOrder = await prisma.binder.aggregate({
     where: { userId },
     _max: { sortOrder: true },
@@ -85,6 +89,7 @@ export async function POST(request: Request) {
       name: name.trim(),
       gridType: gridType as GridType,
       coverColor: resolvedColor,
+      description: typeof description === 'string' ? description.trim() || null : null,
       sortOrder: nextSortOrder,
     },
     include: { _count: { select: { slots: true } } },

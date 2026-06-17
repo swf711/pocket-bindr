@@ -62,6 +62,7 @@ export interface BinderSummary {
   name: string
   gridType: GridType
   coverColor: string
+  description: string | null
   settings: Record<string, unknown> | null
   sortOrder: number
   createdAt: string
@@ -78,6 +79,14 @@ export interface UpdateBinderInput {
   name?: string
   gridType?: GridType
   coverColor?: string
+}
+
+export const GRID_SHORT_LABELS: Record<GridType, string> = {
+  grid_1x2: '1×2',
+  grid_2x2: '2×2',
+  grid_3x3: '3×3',
+  grid_4x3: '4×3',
+  grid_4x4: '4×4',
 }
 
 export const GRID_TYPE_LABELS: Record<GridType, string> = {
