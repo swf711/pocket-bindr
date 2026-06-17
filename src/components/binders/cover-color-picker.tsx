@@ -61,7 +61,7 @@ export function CoverColorPicker({ value, onChange }: CoverColorPickerProps) {
               key={color}
               type="button"
               title={color}
-              className="w-7 h-7 rounded-sm border-2 transition-transform hover:scale-110"
+              className="w-7 h-7 rounded-sm border-2 transition-transform hover:scale-110 ring-1 ring-border"
               style={{
                 backgroundColor: color,
                 borderColor: color === value ? '#fff' : 'transparent',
