@@ -11,7 +11,7 @@ export default async function BindersPage() {
   const binders = await prisma.binder.findMany({
     where: { userId: session.user.id },
     include: { _count: { select: { slots: true } } },
-    orderBy: { createdAt: 'desc' },
+    orderBy: { sortOrder: 'asc' },
   })
 
   const binderSummaries: BinderSummary[] = binders.map(b => ({

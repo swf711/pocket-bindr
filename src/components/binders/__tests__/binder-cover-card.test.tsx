@@ -65,23 +65,26 @@ describe('BinderCoverCard', () => {
     expect(nameEl.className).toContain('left-2')
   })
 
-  it('edit/delete 按鈕在右上角，預設 opacity-0', () => {
+  it('進入卡冊按鈕（ArrowRight）存在於右上角 action group 內', () => {
     const { container } = render(
       <BinderCoverCard binder={makeBinder()} onEdit={() => {}} onDelete={() => {}} />,
     )
-    const buttonWrapper = container.querySelector('.opacity-0')
-    expect(buttonWrapper).toBeInTheDocument()
-    expect(buttonWrapper).toContainElement(screen.getByTestId('edit-binder-btn'))
-    expect(buttonWrapper).toContainElement(screen.getByTestId('delete-binder-btn'))
-    expect(buttonWrapper?.className).toContain('top-2')
-    expect(buttonWrapper?.className).toContain('right-2')
+    const actionGroup = container.querySelector('.opacity-0')
+    expect(actionGroup).toBeInTheDocument()
+    expect(actionGroup?.className).toContain('top-2')
+    expect(actionGroup?.className).toContain('right-2')
+    const enterBtn = screen.getByTestId('enter-binder-btn')
+    expect(enterBtn).toBeInTheDocument()
+    expect(actionGroup).toContainElement(enterBtn)
   })
 
-  it('HoverCard info 按鈕存在', () => {
-    render(
+  it('edit/delete 按鈕在右上角 action group 內', () => {
+    const { container } = render(
       <BinderCoverCard binder={makeBinder()} onEdit={() => {}} onDelete={() => {}} />,
     )
-    expect(screen.getByTestId('binder-info-btn')).toBeInTheDocument()
+    const actionGroup = container.querySelector('.opacity-0')
+    expect(actionGroup).toContainElement(screen.getByTestId('edit-binder-btn'))
+    expect(actionGroup).toContainElement(screen.getByTestId('delete-binder-btn'))
   })
 
   it('書脊 div 存在並套用 coverColor', () => {
@@ -99,12 +102,5 @@ describe('BinderCoverCard', () => {
     )
     const root = container.querySelector('[data-testid="binder-card"]') as HTMLElement
     expect(root.className).toContain('aspect-2.5/3.5')
-  })
-
-  it('封面 Link 包含 aria-label（含卡冊名稱）', () => {
-    render(
-      <BinderCoverCard binder={makeBinder({ name: 'Aria Test' })} onEdit={() => {}} onDelete={() => {}} />,
-    )
-    expect(screen.getByRole('link', { name: /Aria Test/ })).toBeInTheDocument()
   })
 })

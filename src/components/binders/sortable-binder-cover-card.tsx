@@ -2,8 +2,9 @@
 
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { GripVertical } from 'lucide-react'
-import { BinderSummary } from '@/types/binder'
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card'
+import { BinderSummary, GRID_TYPE_LABELS } from '@/types/binder'
+import { GridType } from '@prisma/client'
 import { BinderCoverCard } from './binder-cover-card'
 
 interface SortableBinderCoverCardProps {
@@ -24,20 +25,30 @@ export function SortableBinderCoverCard({ binder, onEdit, onDelete }: SortableBi
   }
 
   return (
-    <div ref={setNodeRef} style={style} className="group relative">
-      {/* 拖拉 handle：書脊右側頂部，hover 才顯示 */}
-      <button
-        {...attributes}
-        {...listeners}
-        className="absolute top-2 left-6 z-20 flex h-5 w-5 cursor-grab items-center justify-center rounded opacity-0 group-hover:opacity-60 hover:!opacity-100 transition-opacity touch-none"
-        style={{ backgroundColor: 'rgba(0,0,0,0.25)' }}
-        aria-label={`拖拉排序：${binder.name}`}
-        data-testid={`binder-drag-handle-${binder.id}`}
-      >
-        <GripVertical className="h-3 w-3 text-white" />
-      </button>
-
-      <BinderCoverCard binder={binder} onEdit={onEdit} onDelete={onDelete} />
-    </div>
+    <HoverCard openDelay={400} closeDelay={100} open={isDragging ? false : undefined}>
+      <HoverCardTrigger asChild>
+        <div
+          ref={setNodeRef}
+          style={style}
+          {...attributes}
+          {...listeners}
+          className="group relative cursor-grab active:cursor-grabbing"
+          aria-label={`卡冊：${binder.name}`}
+          data-testid={`binder-sortable-${binder.id}`}
+        >
+          <BinderCoverCard binder={binder} onEdit={onEdit} onDelete={onDelete} />
+        </div>
+      </HoverCardTrigger>
+      <HoverCardContent className="w-48 p-3 text-sm" side="right" align="end">
+        <div className="space-y-1">
+          <p className="font-semibold truncate">{binder.name}</p>
+          <p className="text-muted-foreground">{GRID_TYPE_LABELS[binder.gridType as GridType]}</p>
+          <p className="text-muted-foreground">{binder._count.slots} 張卡</p>
+          <p className="text-muted-foreground">
+            {new Date(binder.createdAt).toLocaleDateString('zh-TW')}
+          </p>
+        </div>
+      </HoverCardContent>
+    </HoverCard>
   )
 }
