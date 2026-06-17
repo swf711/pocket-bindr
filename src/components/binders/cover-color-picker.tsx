@@ -1,9 +1,13 @@
 'use client'
 
+import { useEffect, useState } from 'react'
+import { HexColorPicker } from 'react-colorful'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { COVER_COLOR_PRESETS } from '@/lib/cover-colors'
-import { useState } from 'react'
+
+const HEX_RE = /^#[0-9A-Fa-f]{6}$/
 
 interface CoverColorPickerProps {
   value: string
@@ -12,6 +16,19 @@ interface CoverColorPickerProps {
 
 export function CoverColorPicker({ value, onChange }: CoverColorPickerProps) {
   const [open, setOpen] = useState(false)
+  const [inputValue, setInputValue] = useState(value)
+
+  useEffect(() => {
+    setInputValue(value)
+  }, [value])
+
+  function handleInputChange(raw: string) {
+    const normalized = raw.startsWith('#') ? raw : `#${raw}`
+    setInputValue(raw)
+    if (HEX_RE.test(normalized)) {
+      onChange(normalized)
+    }
+  }
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -29,24 +46,29 @@ export function CoverColorPicker({ value, onChange }: CoverColorPickerProps) {
           封面顏色
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-3">
-        <div className="grid grid-cols-6 gap-2">
+      <PopoverContent className="w-auto p-3 space-y-3">
+        <HexColorPicker color={value} onChange={onChange} />
+        <Input
+          value={inputValue}
+          onChange={e => handleInputChange(e.target.value)}
+          placeholder="#4A5568"
+          className="h-8 font-mono text-sm"
+          maxLength={7}
+        />
+        <div className="grid grid-cols-6 gap-1.5">
           {COVER_COLOR_PRESETS.map(color => (
             <button
               key={color}
               type="button"
               title={color}
-              className="w-8 h-8 rounded-sm border-2 transition-transform hover:scale-110"
+              className="w-7 h-7 rounded-sm border-2 transition-transform hover:scale-110"
               style={{
                 backgroundColor: color,
                 borderColor: color === value ? '#fff' : 'transparent',
                 outline: color === value ? '2px solid #000' : 'none',
                 outlineOffset: '1px',
               }}
-              onClick={() => {
-                onChange(color)
-                setOpen(false)
-              }}
+              onClick={() => onChange(color)}
             />
           ))}
         </div>
