@@ -5,6 +5,7 @@ import { BookOpen } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import { Progress } from '@/components/ui/progress'
 import { BinderSummary } from '@/types/binder'
 import { cardGridClassName } from '@/components/cards/card-grid'
 import { MAX_BINDERS_PER_USER } from '@/lib/binder-limits'
@@ -53,12 +54,18 @@ export function BinderListClient({ initialBinders }: BinderListClientProps) {
   const canAddMore = binderList.length < MAX_BINDERS_PER_USER
 
   return (
-    <div className="p-6 space-y-6">
-      <div>
+    <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
+      <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">我的卡冊</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          {binderList.length} / {MAX_BINDERS_PER_USER} 本
-        </p>
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-muted-foreground whitespace-nowrap">
+            {binderList.length} / {MAX_BINDERS_PER_USER} 本
+          </span>
+          <Progress
+            value={(binderList.length / MAX_BINDERS_PER_USER) * 100}
+            className="w-24 h-2"
+          />
+        </div>
       </div>
 
       {binderList.length === 0 ? (
