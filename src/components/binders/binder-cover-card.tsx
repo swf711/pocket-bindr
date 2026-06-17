@@ -88,7 +88,7 @@ export function BinderCoverCard({ binder, onEdit, onDelete }: BinderCoverCardPro
       {/* 卡冊名稱：水印大字 */}
       <div
         data-testid="binder-name"
-        className="absolute top-10 left-6 right-2 text-center text-2xl font-bold truncate z-10 pointer-events-none opacity-20"
+        className="absolute top-20 left-6 right-2 text-center text-xl font-bold truncate z-10 pointer-events-none opacity-80"
       >
         {binder.name}
       </div>
@@ -97,7 +97,7 @@ export function BinderCoverCard({ binder, onEdit, onDelete }: BinderCoverCardPro
       {binder.description && (
         <div
           data-testid="binder-description"
-          className="absolute top-20 left-6 right-3 text-xs font-medium line-clamp-2 z-10 pointer-events-none opacity-50"
+          className="absolute top-27 left-6 right-3 text-center text-xs font-medium line-clamp-2 z-10 pointer-events-none opacity-80"
         >
           {binder.description}
         </div>
@@ -106,7 +106,7 @@ export function BinderCoverCard({ binder, onEdit, onDelete }: BinderCoverCardPro
       {/* 格式 + 卡數：左下角 */}
       <div
         data-testid="binder-info"
-        className="absolute bottom-8 left-6 z-10 pointer-events-none opacity-50 text-xs font-medium"
+        className="absolute bottom-5 left-6 z-10 pointer-events-none opacity-50 text-xs font-medium"
       >
         {gridLabel} · {slotCount} 張卡
       </div>
@@ -114,7 +114,7 @@ export function BinderCoverCard({ binder, onEdit, onDelete }: BinderCoverCardPro
       {/* 建立日期 */}
       <div
         data-testid="binder-date"
-        className="absolute bottom-5 left-6 z-10 pointer-events-none opacity-40 text-[10px]"
+        className="absolute bottom-2 left-6 z-10 pointer-events-none opacity-40 text-[10px]"
       >
         {dateStr}
       </div>
