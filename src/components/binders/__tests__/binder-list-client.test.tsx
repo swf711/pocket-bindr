@@ -54,14 +54,16 @@ describe('BinderListClient', () => {
     expect(screen.queryByTestId('add-binder-slot')).not.toBeInTheDocument()
   })
 
-  it('統計顯示「N / 3 本」格式', () => {
+  it('統計顯示目前卡冊數量', () => {
     render(<BinderListClient initialBinders={[makeBinder()]} />)
-    expect(screen.getByText('1 / 3 本')).toBeInTheDocument()
+    expect(screen.getByText('1')).toBeInTheDocument()
+    expect(screen.getByText(/\/ 3 本/)).toBeInTheDocument()
   })
 
-  it('空狀態時統計顯示「0 / 3 本」', () => {
+  it('空狀態時統計顯示 0', () => {
     render(<BinderListClient initialBinders={[]} />)
-    expect(screen.getByText('0 / 3 本')).toBeInTheDocument()
+    expect(screen.getByText('0')).toBeInTheDocument()
+    expect(screen.getByText(/\/ 3 本/)).toBeInTheDocument()
   })
 
   it('點擊 add-binder-slot 開啟 CreateBinderDialog', () => {
