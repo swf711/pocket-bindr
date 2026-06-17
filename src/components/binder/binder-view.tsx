@@ -15,6 +15,7 @@ import type { BinderDetailResponse, SlotWithCard, SlotCardResult } from '@/types
 import type { CardWithCollectionStatus } from '@/types/card'
 import { buildGridPages, buildSpreads, buildMobilePages, pageNumberToSpreadIndex } from '@/lib/binder-utils'
 import { useIsMobile } from '@/hooks/use-is-mobile'
+import { useSwapSlots } from '@/hooks/use-swap-slots'
 
 export function BinderView({ binder }: { binder: BinderDetailResponse }) {
   const [slots, setSlots] = useState<SlotWithCard[]>(binder.slots)
@@ -29,6 +30,7 @@ export function BinderView({ binder }: { binder: BinderDetailResponse }) {
   const [highlightedSlotId, setHighlightedSlotId] = useState<string | null>(null)
   const highlightTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const isMobile = useIsMobile()
+  const swapSlots = useSwapSlots()
 
   const gridType = binderGridType
   const pages = buildGridPages(slots, gridType, totalPages)
@@ -41,10 +43,12 @@ export function BinderView({ binder }: { binder: BinderDetailResponse }) {
     setSlots((prev) => prev.filter((s) => s.id !== slotId))
   }
 
-  const handleSwap = async (slotAId: string, slotBId: string) => {
+  const handleSwap = (slotAId: string, slotBId: string) => {
     const slotA = slots.find((s) => s.id === slotAId)
     const slotB = slots.find((s) => s.id === slotBId)
     if (!slotA || !slotB) return
+
+    // optimistic local update
     setSlots((prev) =>
       prev.map((s) => {
         if (s.id === slotAId) return { ...s, pageNumber: slotB.pageNumber, slotIndex: slotB.slotIndex }
@@ -52,20 +56,24 @@ export function BinderView({ binder }: { binder: BinderDetailResponse }) {
         return s
       }),
     )
-    const res = await fetch(`/api/binders/${binder.id}/slots/swap`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ slotAId, slotBId }),
-    })
-    if (!res.ok) {
-      setSlots((prev) =>
-        prev.map((s) => {
-          if (s.id === slotAId) return { ...s, pageNumber: slotA.pageNumber, slotIndex: slotA.slotIndex }
-          if (s.id === slotBId) return { ...s, pageNumber: slotB.pageNumber, slotIndex: slotB.slotIndex }
-          return s
-        }),
-      )
-    }
+
+    swapSlots.mutate(
+      { binderId: binder.id, slotAId, slotBId },
+      {
+        onError: () => {
+          // rollback local state
+          setSlots((prev) =>
+            prev.map((s) => {
+              if (s.id === slotAId)
+                return { ...s, pageNumber: slotA.pageNumber, slotIndex: slotA.slotIndex }
+              if (s.id === slotBId)
+                return { ...s, pageNumber: slotB.pageNumber, slotIndex: slotB.slotIndex }
+              return s
+            }),
+          )
+        },
+      },
+    )
   }
 
   const handleToggleStatus = async (slotId: string) => {

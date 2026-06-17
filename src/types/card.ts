@@ -37,6 +37,7 @@ export interface CardWithCollectionStatus {
   types: string[]
   cardNumber: string
   isCollectible: boolean
+  canonicalCardId: string | null
   attributes: Record<string, unknown> | null
   canonicalCard?: CanonicalCardRef | null
   collectionStatus: CollectionStatus

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { CardStatus } from '@prisma/client'
 import { GameSelector } from './game-selector'
@@ -9,8 +9,11 @@ import { CardFilters } from './card-filters'
 import { CardGrid } from './card-grid'
 import { CardPagination } from './card-pagination'
 import { CardDetailDrawer } from './card-detail-drawer'
-import { CardWithCollectionStatus, SetGroup } from '@/types/card'
-import { AddToBinderResult } from '@/types/binder'
+import { SetGroup } from '@/types/card'
+import { useQueryClient } from '@tanstack/react-query'
+import { useCardSearch } from '@/hooks/use-card-search'
+import { useAddToBinder } from '@/hooks/use-add-to-binder'
+import { queryKeys } from '@/lib/query-keys'
 
 const DEFAULT_LANGUAGE = 'ZH_TW'
 const VALID_LANGUAGES = ['EN', 'JA', 'ZH_TW']
@@ -38,50 +41,36 @@ export function CardSearchClient({ initialParams }: CardSearchClientProps) {
       ? initialParams.language
       : DEFAULT_LANGUAGE
   )
-
-  const [cards, setCards] = useState<CardWithCollectionStatus[]>([])
   const [groups, setGroups] = useState<SetGroup[]>([])
-  const [total, setTotal] = useState(0)
-  const [totalPages, setTotalPages] = useState(0)
-  const [loading, setLoading] = useState(false)
-  const [fetchError, setFetchError] = useState<string | null>(null)
-
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
-
-  const selectedCard = selectedIndex !== null ? cards[selectedIndex] ?? null : null
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const updateParams = useCallback((updates: Record<string, string | null>) => {
-    const params = new URLSearchParams(searchParams.toString())
-    Object.entries(updates).forEach(([key, value]) => {
-      if (value === null) params.delete(key)
-      else params.set(key, value)
-    })
-    router.push(`/cards?${params.toString()}`)
-  }, [router, searchParams])
+  const filters = game
+    ? { game, language, q: query || undefined, setId: setId ?? undefined, page }
+    : { game: '', language, page }
 
-  const fetchCards = useCallback(async (g: string, q: string, sid: string | null, p: number, lang: string) => {
-    setLoading(true)
-    const params = new URLSearchParams({ game: g, language: lang, page: String(p), pageSize: '20' })
-    if (q) params.set('q', q)
-    if (sid) params.set('setId', sid)
-    try {
-      const res = await fetch(`/api/cards?${params.toString()}`)
-      if (res.ok) {
-        const data = await res.json()
-        setCards(data.cards)
-        setTotal(data.total ?? data.cards.length)
-        setTotalPages(data.totalPages)
-        setFetchError(null)
-      } else {
-        const errData = await res.json().catch(() => ({}))
-        setFetchError((errData as { error?: string }).error ?? '載入失敗，請稍後再試')
-      }
-    } finally {
-      setLoading(false)
-    }
-  }, [])
+  const qc = useQueryClient()
+  const { data, isPending, isError, error } = useCardSearch(filters)
+  const addToBinder = useAddToBinder()
+
+  const cards = data?.cards ?? []
+  const total = data?.total ?? 0
+  const totalPages = data?.totalPages ?? 0
+
+  const selectedCard = selectedIndex !== null ? cards[selectedIndex] ?? null : null
+
+  const updateParams = useCallback(
+    (updates: Record<string, string | null>) => {
+      const params = new URLSearchParams(searchParams.toString())
+      Object.entries(updates).forEach(([key, value]) => {
+        if (value === null) params.delete(key)
+        else params.set(key, value)
+      })
+      router.push(`/cards?${params.toString()}`)
+    },
+    [router, searchParams],
+  )
 
   const fetchSets = useCallback(async (g: string, lang: string) => {
     try {
@@ -90,14 +79,14 @@ export function CardSearchClient({ initialParams }: CardSearchClientProps) {
         const data = await res.json()
         setGroups(data.groups ?? [])
       }
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }, [])
 
+  // URL に game パラメータがある状態で直接アクセスした場合の初回 sets ロード
   useEffect(() => {
-    if (game) {
-      fetchSets(game, language)
-      fetchCards(game, query, setId, page, language)
-    }
+    if (game) fetchSets(game, language)
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleGameChange = (g: string) => {
@@ -106,18 +95,14 @@ export function CardSearchClient({ initialParams }: CardSearchClientProps) {
     setSetId(null)
     setPage(1)
     setGroups([])
-    setCards([])
-    setFetchError(null)
     updateParams({ game: g, q: null, setId: null, page: null })
     fetchSets(g, language)
-    fetchCards(g, '', null, 1, language)
   }
 
   const handleLanguageChange = (lang: string) => {
     setLanguage(lang)
     setSetId(null)
     setPage(1)
-    setFetchError(null)
     updateParams({
       language: lang === DEFAULT_LANGUAGE ? null : lang,
       setId: null,
@@ -126,7 +111,6 @@ export function CardSearchClient({ initialParams }: CardSearchClientProps) {
     if (game) {
       setGroups([])
       fetchSets(game, lang)
-      fetchCards(game, query, null, 1, lang)
     }
   }
 
@@ -136,7 +120,6 @@ export function CardSearchClient({ initialParams }: CardSearchClientProps) {
     debounceRef.current = setTimeout(() => {
       setPage(1)
       updateParams({ q: q || null, page: null })
-      if (game) fetchCards(game, q, setId, 1, language)
     }, 300)
   }
 
@@ -144,46 +127,21 @@ export function CardSearchClient({ initialParams }: CardSearchClientProps) {
     setSetId(sid)
     setPage(1)
     updateParams({ setId: sid, page: null })
-    if (game) fetchCards(game, query, sid, 1, language)
   }
 
   const handlePageChange = (p: number) => {
     setPage(p)
     updateParams({ page: String(p) })
-    if (game) fetchCards(game, query, setId, p, language)
-  }
-
-  const handleCollectionUpdate = (
-    cardId: string,
-    newStatus: { owned: number | null; wanted: number | null }
-  ) => {
-    setCards(prev =>
-      prev.map(c => c.id === cardId ? { ...c, collectionStatus: newStatus } : c)
-    )
   }
 
   const handleAddToBinder = async (binderId: string, status: CardStatus, quantity: number) => {
     if (!selectedCard) return
-    const res = await fetch(`/api/binders/${binderId}/cards`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ cardId: selectedCard.id, status, quantity }),
+    await addToBinder.mutateAsync({
+      card: selectedCard,
+      binderId,
+      status,
+      quantity,
     })
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}))
-      throw new Error(err?.error ?? '加入失敗')
-    }
-    const result: AddToBinderResult = await res.json()
-    if (result.userCard) {
-      const current = selectedCard.collectionStatus
-      const newOwned = status === 'owned'
-        ? (current.owned ?? 0) + quantity
-        : (current.owned ?? null)
-      const newWanted = status === 'wanted'
-        ? (current.wanted ?? 0) + quantity
-        : (current.wanted ?? null)
-      handleCollectionUpdate(selectedCard.id, { owned: newOwned, wanted: newWanted })
-    }
   }
 
   return (
@@ -211,10 +169,12 @@ export function CardSearchClient({ initialParams }: CardSearchClientProps) {
               />
             </div>
 
-            {loading ? (
+            {isPending ? (
               <CardGrid cards={[]} onCardClick={() => {}} loading />
-            ) : fetchError ? (
-              <div className="text-center py-12 text-destructive">{fetchError}</div>
+            ) : isError ? (
+              <div className="text-center py-12 text-destructive">
+                {(error as Error)?.message ?? '載入失敗，請稍後再試'}
+              </div>
             ) : (
               <>
                 <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
@@ -229,8 +189,15 @@ export function CardSearchClient({ initialParams }: CardSearchClientProps) {
                     onPageChange={handlePageChange}
                   />
                 </div>
-                <CardGrid cards={cards} onCardClick={(card) => setSelectedIndex(cards.indexOf(card))} />
-                <CardPagination currentPage={page} totalPages={totalPages} onPageChange={handlePageChange} />
+                <CardGrid
+                  cards={cards}
+                  onCardClick={(card) => setSelectedIndex(cards.indexOf(card))}
+                />
+                <CardPagination
+                  currentPage={page}
+                  totalPages={totalPages}
+                  onPageChange={handlePageChange}
+                />
               </>
             )}
           </>
@@ -242,7 +209,10 @@ export function CardSearchClient({ initialParams }: CardSearchClientProps) {
         open={!!selectedCard}
         onClose={() => setSelectedIndex(null)}
         onAddToBinder={handleAddToBinder}
-        onLoginSuccess={() => { if (game) fetchCards(game, query, setId, page, language) }}
+        onLoginSuccess={() => {
+          // 登入後 collectionStatus 以 session 為依據，需強制重抓搜尋結果
+          qc.invalidateQueries({ queryKey: queryKeys.cards.all })
+        }}
         cards={cards}
         currentIndex={selectedIndex ?? 0}
         onNavigate={setSelectedIndex}

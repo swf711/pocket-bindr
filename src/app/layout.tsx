@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { SessionProvider } from "@/components/providers/session-provider";
+import { TanstackQueryProvider } from "@/components/providers/tanstack-query-provider";
 import { Header } from "@/components/layout/header";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
@@ -33,6 +34,7 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col">
+        <TanstackQueryProvider>
         <SessionProvider>
           <ThemeProvider
             attribute="class"
@@ -47,6 +49,7 @@ export default function RootLayout({
             <Toaster />
           </ThemeProvider>
         </SessionProvider>
+        </TanstackQueryProvider>
       </body>
     </html>
   );
