@@ -58,9 +58,10 @@ export function BinderListClient({ initialBinders }: BinderListClientProps) {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">我的卡冊</h1>
         <div className="flex items-center gap-3">
-          <span className="text-sm text-muted-foreground whitespace-nowrap">
-            {binderList.length} / {MAX_BINDERS_PER_USER} 本
-          </span>
+          <div className="whitespace-nowrap">
+            <span className="text-xl mr-1">{binderList.length}</span>
+            <span className="text-sm text-muted-foreground">/ {MAX_BINDERS_PER_USER} 本</span>
+          </div>
           <Progress
             value={(binderList.length / MAX_BINDERS_PER_USER) * 100}
             className="w-24 h-2"
