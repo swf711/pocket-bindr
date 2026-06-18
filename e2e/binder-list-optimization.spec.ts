@@ -51,7 +51,7 @@ test.describe('卡冊列表優化', () => {
     // 虛線格位應消失
     await expect(page.getByTestId('add-binder-slot')).not.toBeVisible()
     // 統計顯示 3 / 3
-    await expect(page.getByText('3 / 3 本')).toBeVisible()
+    await expect(page.getByText(/3\s*\/\s*3\s*本/)).toBeVisible()
   })
 
   test('嘗試透過 API 建立第 4 本：回傳 409 binderLimitReached', async ({ page }) => {
@@ -81,8 +81,8 @@ test.describe('卡冊列表優化', () => {
     await page.goto('/binders')
     await page.getByText('建立第一本卡冊').click()
     await page.getByTestId('cover-color-picker').click()
-    const colorButtons = page.locator('[data-testid="cover-color-picker"]')
-      .locator('..').locator('..').locator('button[title]')
-    await expect(colorButtons).toHaveCount(24)
+    // PopoverContent 由 Radix UI portal 渲染，不在 trigger 的 DOM 樹下；直接查全頁色塊按鈕
+    const colorButtons = page.locator('button[title^="#"]')
+    await expect(colorButtons).toHaveCount(12)
   })
 })

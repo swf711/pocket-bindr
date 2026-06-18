@@ -108,7 +108,7 @@ describe('BinderCoverCard', () => {
     expect(descEl).toHaveTextContent('')
   })
 
-  it('進入卡冊按鈕（ArrowRight）存在於右上角 action group 內', () => {
+  it('進入卡冊按鈕（ArrowRight）存在於底部中央 action group 內', () => {
     const { container } = render(
       <BinderCoverCard binder={makeBinder()} onEdit={() => {}} onDelete={() => {}} />,
     )
@@ -121,7 +121,7 @@ describe('BinderCoverCard', () => {
     expect(actionGroup).toContainElement(enterBtn)
   })
 
-  it('edit/delete 按鈕在右上角 action group 內', () => {
+  it('edit/delete 按鈕在底部中央 action group 內', () => {
     const { container } = render(
       <BinderCoverCard binder={makeBinder()} onEdit={() => {}} onDelete={() => {}} />,
     )
