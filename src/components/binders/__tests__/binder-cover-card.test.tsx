@@ -62,7 +62,7 @@ describe('BinderCoverCard', () => {
     const nameEl = screen.getByTestId('binder-name')
     expect(nameEl).toBeInTheDocument()
     expect(nameEl).toHaveTextContent('My Binder')
-    expect(nameEl.className).toContain('top-10')
+    expect(nameEl.className).toContain('top-20')
     expect(nameEl.className).toContain('left-6')
   })
 
@@ -78,7 +78,7 @@ describe('BinderCoverCard', () => {
     expect(infoEl).toBeInTheDocument()
     expect(infoEl).toHaveTextContent('3×3')
     expect(infoEl).toHaveTextContent('12 張卡')
-    expect(infoEl.className).toContain('bottom-8')
+    expect(infoEl.className).toContain('bottom-5')
     expect(infoEl.className).toContain('left-6')
   })
 

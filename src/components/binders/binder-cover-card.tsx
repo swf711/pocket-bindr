@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { ArrowRight, Pencil, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { ButtonGroup } from '@/components/ui/button-group'
 import { BinderSummary, GRID_SHORT_LABELS } from '@/types/binder'
 import { GridType } from '@prisma/client'
 
@@ -43,33 +44,33 @@ export function BinderCoverCard({ binder, onEdit, onDelete }: BinderCoverCardPro
       <div className="flex-1 relative" style={{ backgroundColor: binder.coverColor }} />
 
       {/* 操作按鈕：右上角，hover 才顯示 */}
-      <div
-        className="absolute top-2 right-2 flex gap-1 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+      <ButtonGroup
+        className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
         style={{ color: textColor }}
       >
         <Button
           asChild
           variant="secondary"
-          size="icon"
-          className="h-6 w-6 shrink-0"
-          style={{ backgroundColor: 'rgba(255,255,255,0.2)', borderColor: 'transparent' }}
+          size="sm"
+          className="h-7 shrink-0 text-xs"
+          style={{ backgroundColor: 'rgba(255,255,255,0.2)', borderColor: textColor + '30', color: textColor }}
         >
           <Link
             href={`/binders/${binder.id}`}
             data-testid="enter-binder-btn"
             aria-label={`進入卡冊：${binder.name}`}
-            style={{ color: textColor }}
           >
             <ArrowRight className="h-3 w-3" />
+            進入卡冊
           </Link>
         </Button>
         <Button
           variant="secondary"
           size="icon"
           data-testid="edit-binder-btn"
-          className="h-6 w-6 shrink-0"
+          className="h-7 w-7 shrink-0"
           onClick={() => onEdit(binder)}
-          style={{ backgroundColor: 'rgba(255,255,255,0.2)', color: textColor, borderColor: 'transparent' }}
+          style={{ backgroundColor: 'rgba(255,255,255,0.2)', color: textColor, borderColor: textColor + '30' }}
         >
           <Pencil className="h-3 w-3" />
         </Button>
@@ -77,13 +78,13 @@ export function BinderCoverCard({ binder, onEdit, onDelete }: BinderCoverCardPro
           variant="secondary"
           size="icon"
           data-testid="delete-binder-btn"
-          className="h-6 w-6 shrink-0"
+          className="h-7 w-7 shrink-0"
           onClick={() => onDelete(binder)}
-          style={{ backgroundColor: 'rgba(255,255,255,0.2)', color: textColor, borderColor: 'transparent' }}
+          style={{ backgroundColor: 'rgba(255,255,255,0.2)', color: textColor, borderColor: textColor + '30' }}
         >
           <Trash2 className="h-3 w-3" />
         </Button>
-      </div>
+      </ButtonGroup>
 
       {/* 卡冊名稱：水印大字 */}
       <div
