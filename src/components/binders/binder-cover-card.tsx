@@ -7,12 +7,15 @@ import { ButtonGroup } from '@/components/ui/button-group'
 import { BinderSummary, GRID_SHORT_LABELS } from '@/types/binder'
 import { GridType } from '@prisma/client'
 
-function getTextColor(hex: string): string {
+function isLightBackground(hex: string): boolean {
   const r = parseInt(hex.slice(1, 3), 16) / 255
   const g = parseInt(hex.slice(3, 5), 16) / 255
   const b = parseInt(hex.slice(5, 7), 16) / 255
-  const luminance = 0.299 * r + 0.587 * g + 0.114 * b
-  return luminance > 0.5 ? '#1A202C' : '#F7FAFC'
+  return 0.299 * r + 0.587 * g + 0.114 * b > 0.5
+}
+
+function getTextColor(hex: string): string {
+  return isLightBackground(hex) ? '#1A202C' : '#F7FAFC'
 }
 
 interface BinderCoverCardProps {
@@ -23,6 +26,7 @@ interface BinderCoverCardProps {
 
 export function BinderCoverCard({ binder, onEdit, onDelete }: BinderCoverCardProps) {
   const textColor = getTextColor(binder.coverColor)
+  const colorScheme = isLightBackground(binder.coverColor) ? 'light' : 'dark'
   const gridLabel = GRID_SHORT_LABELS[binder.gridType as GridType]
   const slotCount = binder._count.slots
   const dateStr = new Date(binder.createdAt).toLocaleDateString('zh-TW')
@@ -31,7 +35,7 @@ export function BinderCoverCard({ binder, onEdit, onDelete }: BinderCoverCardPro
     <div
       data-testid="binder-card"
       className="group relative flex aspect-2.5/3.5 rounded-r-lg overflow-hidden shadow-sm transition-all hover:scale-105 hover:shadow-lg border"
-      style={{ color: textColor, backgroundColor: binder.coverColor, borderColor: textColor + '20' }}
+      style={{ color: textColor, borderColor: textColor + '20' }}
     >
       {/* 書脊 */}
       <div
@@ -41,83 +45,84 @@ export function BinderCoverCard({ binder, onEdit, onDelete }: BinderCoverCardPro
       />
 
       {/* 封面主體 */}
-      <div className="flex-1 relative" style={{ backgroundColor: binder.coverColor }} />
-
-      {/* 操作按鈕：右上角，hover 才顯示 */}
-      <ButtonGroup
-        className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-        style={{ color: textColor }}
-      >
-        <Button
-          asChild
-          variant="secondary"
-          size="sm"
-          className="h-7 shrink-0 text-xs"
-          style={{ backgroundColor: 'rgba(255,255,255,0.2)', borderColor: textColor + '30', color: textColor }}
-        >
-          <Link
-            href={`/binders/${binder.id}`}
-            data-testid="enter-binder-btn"
-            aria-label={`進入卡冊：${binder.name}`}
+      <div className="flex-1 relative" style={{ backgroundColor: binder.coverColor }}>
+        <div className="absolute top-1/4 left-2 right-2 text-center z-10 opacity-80">
+          {/* 卡冊名稱：水印大字 */}
+          <div
+            data-testid="binder-name"
+            className="text-xl font-bold truncate pointer-events-none"
           >
-            <ArrowRight className="h-3 w-3" />
-            進入卡冊
-          </Link>
-        </Button>
-        <Button
-          variant="secondary"
-          size="icon"
-          data-testid="edit-binder-btn"
-          className="h-7 w-7 shrink-0"
-          onClick={() => onEdit(binder)}
-          style={{ backgroundColor: 'rgba(255,255,255,0.2)', color: textColor, borderColor: textColor + '30' }}
-        >
-          <Pencil className="h-3 w-3" />
-        </Button>
-        <Button
-          variant="secondary"
-          size="icon"
-          data-testid="delete-binder-btn"
-          className="h-7 w-7 shrink-0"
-          onClick={() => onDelete(binder)}
-          style={{ backgroundColor: 'rgba(255,255,255,0.2)', color: textColor, borderColor: textColor + '30' }}
-        >
-          <Trash2 className="h-3 w-3" />
-        </Button>
-      </ButtonGroup>
+            {binder.name}
+          </div>
 
-      {/* 卡冊名稱：水印大字 */}
-      <div
-        data-testid="binder-name"
-        className="absolute top-20 left-6 right-2 text-center text-xl font-bold truncate z-10 pointer-events-none opacity-80"
-      >
-        {binder.name}
-      </div>
+          {/* 描述 */}
+          <div
+            data-testid="binder-description"
+            className="text-center text-xs font-medium line-clamp-2 h-8 pointer-events-none"
+          >
+            {binder.description}
+          </div>
 
-      {/* 描述：若有，顯示在名稱下方 */}
-      {binder.description && (
-        <div
-          data-testid="binder-description"
-          className="absolute top-27 left-6 right-3 text-center text-xs font-medium line-clamp-2 z-10 pointer-events-none opacity-80"
-        >
-          {binder.description}
+          {/* 格式 + 卡數 */}
+          <div
+            data-testid="binder-info"
+            className="pointer-events-none opacity-60 text-sm font-medium"
+          >
+            {gridLabel} · {slotCount} 張卡
+          </div>
+
+          {/* 建立日期 */}
+          <div
+            data-testid="binder-date"
+            className="pointer-events-none opacity-60 text-xs"
+          >
+            {dateStr}
+          </div>
         </div>
-      )}
 
-      {/* 格式 + 卡數：左下角 */}
-      <div
-        data-testid="binder-info"
-        className="absolute bottom-5 left-6 z-10 pointer-events-none opacity-50 text-xs font-medium"
-      >
-        {gridLabel} · {slotCount} 張卡
-      </div>
+        {/* 操作按鈕：底部中間，hover 才顯示 */}
+        <div className="absolute w-full bottom-4 flex justify-center z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+          <ButtonGroup className={colorScheme}>
+            <Button
+              asChild
+              variant="outline"
+              size="sm"
+              className="h-7 shrink-0 text-xs active:not-aria-[haspopup]:translate-y-px"
+              style={{ color: textColor }}
+            >
+              <Link
+                href={`/binders/${binder.id}`}
+                data-testid="enter-binder-btn"
+                aria-label={`進入卡冊：${binder.name}`}
+              >
+                <ArrowRight className="h-3 w-3" />
+                進入卡冊
+              </Link>
+            </Button>
 
-      {/* 建立日期 */}
-      <div
-        data-testid="binder-date"
-        className="absolute bottom-2 left-6 z-10 pointer-events-none opacity-40 text-[10px]"
-      >
-        {dateStr}
+            <Button
+              variant="outline"
+              size="icon"
+              data-testid="edit-binder-btn"
+              className="h-7 w-7 shrink-0 active:not-aria-[haspopup]:translate-y-px"
+              onClick={() => onEdit(binder)}
+              style={{ color: textColor }}
+            >
+              <Pencil className="h-3 w-3" />
+            </Button>
+
+            <Button
+              variant="outline"
+              size="icon"
+              data-testid="delete-binder-btn"
+              className="h-7 w-7 shrink-0 active:not-aria-[haspopup]:translate-y-px"
+              onClick={() => onDelete(binder)}
+              style={{ color: textColor }}
+            >
+              <Trash2 className="h-3 w-3" />
+            </Button>
+          </ButtonGroup>
+        </div>
       </div>
     </div>
   )

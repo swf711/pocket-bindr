@@ -62,8 +62,8 @@ describe('BinderCoverCard', () => {
     const nameEl = screen.getByTestId('binder-name')
     expect(nameEl).toBeInTheDocument()
     expect(nameEl).toHaveTextContent('My Binder')
-    expect(nameEl.className).toContain('top-20')
-    expect(nameEl.className).toContain('left-6')
+    expect(nameEl.className).toContain('text-xl')
+    expect(nameEl.className).toContain('font-bold')
   })
 
   it('格式與卡數顯示在左下角（data-testid=binder-info）', () => {
@@ -78,8 +78,8 @@ describe('BinderCoverCard', () => {
     expect(infoEl).toBeInTheDocument()
     expect(infoEl).toHaveTextContent('3×3')
     expect(infoEl).toHaveTextContent('12 張卡')
-    expect(infoEl.className).toContain('bottom-5')
-    expect(infoEl.className).toContain('left-6')
+    expect(infoEl.className).toContain('text-sm')
+    expect(infoEl.className).toContain('font-medium')
   })
 
   it('有 description 時顯示在封面（data-testid=binder-description）', () => {
@@ -95,7 +95,7 @@ describe('BinderCoverCard', () => {
     expect(descEl).toHaveTextContent('我的測試卡冊描述')
   })
 
-  it('無 description 時不顯示描述區塊', () => {
+  it('無 description 時描述區塊為空', () => {
     render(
       <BinderCoverCard
         binder={makeBinder({ description: null })}
@@ -103,7 +103,9 @@ describe('BinderCoverCard', () => {
         onDelete={() => {}}
       />,
     )
-    expect(screen.queryByTestId('binder-description')).not.toBeInTheDocument()
+    const descEl = screen.getByTestId('binder-description')
+    expect(descEl).toBeInTheDocument()
+    expect(descEl).toHaveTextContent('')
   })
 
   it('進入卡冊按鈕（ArrowRight）存在於右上角 action group 內', () => {
@@ -112,8 +114,8 @@ describe('BinderCoverCard', () => {
     )
     const actionGroup = container.querySelector('.opacity-0')
     expect(actionGroup).toBeInTheDocument()
-    expect(actionGroup?.className).toContain('top-2')
-    expect(actionGroup?.className).toContain('right-2')
+    expect(actionGroup?.className).toContain('bottom-4')
+    expect(actionGroup?.className).toContain('justify-center')
     const enterBtn = screen.getByTestId('enter-binder-btn')
     expect(enterBtn).toBeInTheDocument()
     expect(actionGroup).toContainElement(enterBtn)
