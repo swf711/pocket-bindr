@@ -268,8 +268,8 @@ export function CardDetailDrawer({ card, open, onClose, onAddToBinder, onLoginSu
                 <div
                   className={cn(
                     isMobile
-                      ? 'flex min-h-0 max-w-[92vw] flex-1 items-center justify-center'
-                      : 'max-h-[85vh] w-auto max-w-[min(30rem,48vw)]'
+                      ? 'flex min-h-0 max-w-[92vw] flex-1 h-full items-center justify-center'
+                      : 'max-h-[85vh] w-[min(30rem,48vw)] max-w-[min(30rem,48vw)]'
                   )}
                 >
                   <div
