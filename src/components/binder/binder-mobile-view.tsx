@@ -11,7 +11,7 @@ import { useScaleFit } from '@/hooks/use-scale-fit'
 import type { SpreadPageContent } from '@/lib/binder-utils'
 import type { SlotWithCard } from '@/types/binder'
 
-const MOBILE_PAGE_NATURAL_WIDTH = 400 // 行動裝置單頁自然寬度（px），Snowglobe 縮放基準
+const MOBILE_PAGE_NATURAL_WIDTH = 767 // 行動裝置單頁自然寬度（px），Snowglobe 縮放基準
 
 interface BinderMobileViewProps {
   mobilePages: SpreadPageContent[]
@@ -59,6 +59,7 @@ export function BinderMobileView({
   const isLastMobilePage = pageIndex === mobilePages.length - 1
 
   const { outerRef, innerRef, scale, offsetX, offsetY } = useScaleFit(MOBILE_PAGE_NATURAL_WIDTH)
+  const counterScale = scale > 0 ? 1 / scale : 1
 
   function handleTouchStart(e: React.TouchEvent) {
     touchStartX.current = e.touches[0].clientX
@@ -166,7 +167,12 @@ export function BinderMobileView({
           )}
           {content.type === 'page' && (
             <div className="p-4 bg-black">
-              <p className="text-xs text-muted-foreground mb-1 text-center">第 {content.pageNumber} 頁</p>
+              <p
+                className="text-xs text-muted-foreground mb-1 text-center"
+                style={{ transform: `scale(${counterScale})`, transformOrigin: 'top center', display: 'block' }}
+              >
+                第 {content.pageNumber} 頁
+              </p>
               <BinderGrid
                 slots={content.page}
                 gridType={gridType}
@@ -177,6 +183,7 @@ export function BinderMobileView({
                 onView={onView}
                 onAddCard={onAddCard}
                 highlightedSlotId={highlightedSlotId}
+                counterScale={counterScale}
               />
             </div>
           )}

@@ -33,6 +33,7 @@ interface BinderGridSlotsProps {
   isDragging?: boolean
   onAddCard?: (pageNumber: number, slotIndex: number) => void
   highlightedSlotId?: string | null
+  counterScale?: number
 }
 
 /** Pure slot grid rendering — no DndContext. Use inside a parent DndContext. */
@@ -45,33 +46,38 @@ export function BinderGridSlots({
   isDragging = false,
   onAddCard,
   highlightedSlotId,
+  counterScale = 1,
 }: BinderGridSlotsProps) {
   const cols = GRID_COLS[gridType]
   return (
     <div
       style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
-      className="grid gap-2"
+      className="grid gap-1"
     >
-      {slots.map((slot) =>
-        slot.id === null ? (
-          <EmptySlotCard
-            key={`empty-${slot.pageNumber}-${slot.slotIndex}`}
-            pageNumber={slot.pageNumber}
-            slotIndex={slot.slotIndex}
-            isDragging={isDragging}
-            onAddCard={onAddCard}
-          />
-        ) : (
-          <SlotCard
-            key={slot.id}
-            slot={slot as SlotWithCard}
-            onDelete={onDelete}
-            onToggleStatus={onToggleStatus}
-            onView={onView}
-            isHighlighted={highlightedSlotId === slot.id}
-          />
-        ),
-      )}
+      {slots.map((slot) => (
+        <div
+          key={slot.id ?? `empty-${slot.pageNumber}-${slot.slotIndex}`}
+        >
+          {slot.id === null ? (
+            <EmptySlotCard
+              pageNumber={slot.pageNumber}
+              slotIndex={slot.slotIndex}
+              isDragging={isDragging}
+              onAddCard={onAddCard}
+              counterScale={counterScale}
+            />
+          ) : (
+            <SlotCard
+              slot={slot as SlotWithCard}
+              onDelete={onDelete}
+              onToggleStatus={onToggleStatus}
+              onView={onView}
+              isHighlighted={highlightedSlotId === slot.id}
+              counterScale={counterScale}
+            />
+          )}
+        </div>
+      ))}
     </div>
   )
 }
@@ -86,9 +92,10 @@ interface BinderGridProps {
   onView?: (cardId: string) => void
   onAddCard?: (pageNumber: number, slotIndex: number) => void
   highlightedSlotId?: string | null
+  counterScale?: number
 }
 
-export function BinderGrid({ slots, gridType, onDelete, onToggleStatus, onSwap, onMove, onView, onAddCard, highlightedSlotId }: BinderGridProps) {
+export function BinderGrid({ slots, gridType, onDelete, onToggleStatus, onSwap, onMove, onView, onAddCard, highlightedSlotId, counterScale = 1 }: BinderGridProps) {
   const [activeSlot, setActiveSlot] = useState<SlotWithCard | null>(null)
   const [isDragging, setIsDragging] = useState(false)
 
@@ -137,6 +144,7 @@ export function BinderGrid({ slots, gridType, onDelete, onToggleStatus, onSwap, 
         isDragging={isDragging}
         onAddCard={onAddCard}
         highlightedSlotId={highlightedSlotId}
+        counterScale={counterScale}
       />
       <DragOverlay>
         {activeSlot ? (

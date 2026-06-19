@@ -63,6 +63,7 @@ function SpreadPanelContent({
   onAddCard,
   onJumpToSlot,
   highlightedSlotId,
+  counterScale,
 }: {
   content: SpreadPageContent
   coverColor: string
@@ -77,6 +78,7 @@ function SpreadPanelContent({
   onAddCard?: (pageNumber: number, slotIndex: number) => void
   onJumpToSlot: (slot: SlotWithCard) => void
   highlightedSlotId?: string | null
+  counterScale: number
 }) {
   if (content.type === 'cover') {
     return (
@@ -94,7 +96,12 @@ function SpreadPanelContent({
   }
   return (
     <div className="w-full p-4 bg-black">
-      <p className="text-xs text-muted-foreground mb-1 text-center">第 {content.pageNumber} 頁</p>
+      <p
+        className="text-xs text-muted-foreground mb-1 text-center"
+        style={{ transform: `scale(${counterScale})`, transformOrigin: 'top center', display: 'block' }}
+      >
+        第 {content.pageNumber} 頁
+      </p>
       <BinderGridSlots
         slots={content.page}
         gridType={gridType}
@@ -104,6 +111,7 @@ function SpreadPanelContent({
         isDragging={isDragging}
         onAddCard={onAddCard}
         highlightedSlotId={highlightedSlotId}
+        counterScale={counterScale}
       />
     </div>
   )
@@ -146,7 +154,7 @@ export function BinderSpreadView({
     ...(spread?.right.type === 'page' ? spread.right.page : []),
   ]
 
-  const { outerRef, innerRef, scale, offsetX, offsetY } = useScaleFit(SPREAD_NATURAL_WIDTH)
+  const { outerRef, innerRef, scale, offsetX } = useScaleFit(SPREAD_NATURAL_WIDTH)
 
   const { handleDragMove, handleDragEnd: flipHandleDragEnd } = useEdgeHoverPageFlip({
     containerRef,
@@ -197,7 +205,7 @@ export function BinderSpreadView({
   const hasPrev = spreadIndex > 0
   const hasNext = spreadIndex < spreads.length - 1
 
-  // counter-scale factor：抵銷 innerRef 的 scale，使 header 視覺尺寸維持自然大小
+  // counter-scale factor：抵銷 innerRef 的 scale，使 UI 元素視覺尺寸維持自然大小
   const counterScale = scale > 0 ? 1 / scale : 1
   // header 在 innerRef 自然座標系中的寬度，使其視覺寬度 = SPREAD_NATURAL_WIDTH * scale（與 panels 一致）
   const headerNaturalWidth = scale > 0 ? SPREAD_NATURAL_WIDTH * scale : SPREAD_NATURAL_WIDTH
@@ -223,7 +231,7 @@ export function BinderSpreadView({
             style={{
               position: 'absolute',
               width: SPREAD_NATURAL_WIDTH,
-              top: offsetY,
+              top: 0,
               left: offsetX,
               transform: `scale(${scale})`,
               transformOrigin: 'top left',
@@ -314,6 +322,7 @@ export function BinderSpreadView({
                     onAddCard={onAddCard}
                     onJumpToSlot={onJumpToSlot}
                     highlightedSlotId={highlightedSlotId}
+                    counterScale={counterScale}
                   />
                 </div>
                 <div
@@ -334,6 +343,7 @@ export function BinderSpreadView({
                     onAddCard={onAddCard}
                     onJumpToSlot={onJumpToSlot}
                     highlightedSlotId={highlightedSlotId}
+                    counterScale={counterScale}
                   />
                 </div>
               </div>
@@ -344,8 +354,10 @@ export function BinderSpreadView({
                   className="absolute left-0 top-0 bottom-0 w-16 flex flex-col items-center justify-center gap-1 bg-primary/10 border-2 border-dashed border-primary/40 rounded-l-lg pointer-events-none"
                   data-testid="drag-hint-prev"
                 >
-                  <ChevronLeft className="h-5 w-5 text-primary/60" />
-                  <span className="text-[10px] text-primary/60 text-center leading-tight">拖到此處翻頁</span>
+                  <div style={{ transform: `scale(${counterScale})`, transformOrigin: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+                    <ChevronLeft className="h-5 w-5 text-primary/60" />
+                    <span className="text-[10px] text-primary/60 text-center leading-tight">拖到此處翻頁</span>
+                  </div>
                 </div>
               )}
               {isDragging && hasNext && (
@@ -353,8 +365,10 @@ export function BinderSpreadView({
                   className="absolute right-0 top-0 bottom-0 w-16 flex flex-col items-center justify-center gap-1 bg-primary/10 border-2 border-dashed border-primary/40 rounded-r-lg pointer-events-none"
                   data-testid="drag-hint-next"
                 >
-                  <ChevronRight className="h-5 w-5 text-primary/60" />
-                  <span className="text-[10px] text-primary/60 text-center leading-tight">拖到此處翻頁</span>
+                  <div style={{ transform: `scale(${counterScale})`, transformOrigin: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+                    <ChevronRight className="h-5 w-5 text-primary/60" />
+                    <span className="text-[10px] text-primary/60 text-center leading-tight">拖到此處翻頁</span>
+                  </div>
                 </div>
               )}
             </div>
