@@ -1,11 +1,8 @@
 'use client'
 
 import { useRef, useState } from 'react'
-import Link from 'next/link'
 import { GridType, CardStatus } from '@prisma/client'
-import { ChevronLeft } from 'lucide-react'
 import { toast } from 'sonner'
-import { Button } from '@/components/ui/button'
 import { BinderSpreadView } from './binder-spread-view'
 import { BinderMobileView } from './binder-mobile-view'
 import { BinderSettingsDrawer } from './binder-settings-drawer'
@@ -25,6 +22,7 @@ export function BinderView({ binder }: { binder: BinderDetailResponse }) {
   const [binderName, setBinderName] = useState(binder.name)
   const [binderGridType, setBInderGridType] = useState<GridType>(binder.gridType as GridType)
   const [binderCoverColor, setBinderCoverColor] = useState(binder.coverColor)
+  const [binderDescription] = useState(binder.description)
   const [pickerTarget, setPickerTarget] = useState<{ pageNumber: number; slotIndex: number } | null>(null)
   const [viewCard, setViewCard] = useState<CardWithCollectionStatus | null>(null)
   const [highlightedSlotId, setHighlightedSlotId] = useState<string | null>(null)
@@ -111,6 +109,10 @@ export function BinderView({ binder }: { binder: BinderDetailResponse }) {
 
   const handleAddPage = async () => {
     const res = await fetch(`/api/binders/${binder.id}/pages`, { method: 'POST' })
+    if (res.status === 409) {
+      toast.error('卡冊最多 100 頁')
+      return
+    }
     if (res.ok) {
       const data = await res.json()
       setTotalPages(data.totalPages)
@@ -218,38 +220,35 @@ export function BinderView({ binder }: { binder: BinderDetailResponse }) {
     highlightedSlotId,
   }
 
+  const settingsDrawer = (
+    <BinderSettingsDrawer
+      binderId={binder.id}
+      binderName={binderName}
+      binderDescription={binderDescription}
+      gridType={binderGridType}
+      coverColor={binderCoverColor}
+      totalPages={totalPages}
+      onSettingsUpdate={handleSettingsUpdate}
+      onPageDelete={handlePageDelete}
+      onPageReorder={handlePageReorder}
+      onTotalPagesChange={setTotalPages}
+    />
+  )
+
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-1">
-          <Button variant="ghost" size="icon" asChild>
-            <Link href="/binders" aria-label="返回卡冊列表" data-testid="back-to-binders">
-              <ChevronLeft className="h-5 w-5" />
-            </Link>
-          </Button>
-          <h1 className="text-2xl font-bold">{binderName}</h1>
-        </div>
-        <BinderSettingsDrawer
-          binderId={binder.id}
-          binderName={binderName}
-          gridType={binderGridType}
-          coverColor={binderCoverColor}
-          totalPages={totalPages}
-          onSettingsUpdate={handleSettingsUpdate}
-          onPageDelete={handlePageDelete}
-          onPageReorder={handlePageReorder}
-          onTotalPagesChange={setTotalPages}
-          slots={slots}
-          onJumpToSlot={handleJumpToSlot}
-        />
-      </div>
+    <div className="flex flex-col flex-1 min-h-0 h-[calc(100vh-57px)] p-4">
       <BinderSpreadView
         spreads={spreads}
         spreadIndex={spreadIndex}
         onSpreadChange={setSpreadIndex}
         coverColor={binderCoverColor}
+        binderName={binderName}
+        slots={slots}
+        totalPages={totalPages}
         gridType={gridType}
+        onJumpToSlot={handleJumpToSlot}
         onAddPage={handleAddPage}
+        settingsSlot={settingsDrawer}
         {...sharedHandlers}
       />
       <BinderMobileView
@@ -257,8 +256,13 @@ export function BinderView({ binder }: { binder: BinderDetailResponse }) {
         pageIndex={mobilePageIndex}
         onPageChange={setMobilePageIndex}
         coverColor={binderCoverColor}
+        binderName={binderName}
+        slots={slots}
+        totalPages={totalPages}
         gridType={gridType}
+        onJumpToSlot={handleJumpToSlot}
         onAddPage={handleAddPage}
+        settingsSlot={settingsDrawer}
         {...sharedHandlers}
       />
       <SlotCardPickerDialog
