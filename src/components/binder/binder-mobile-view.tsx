@@ -14,7 +14,7 @@ import {
   useSensor,
   useSensors,
 } from '@dnd-kit/core'
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, PlusCircle } from 'lucide-react'
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Plus, PlusCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Pagination,
@@ -32,7 +32,7 @@ import type { SlotWithCard } from '@/types/binder'
 const MOBILE_PAGE_NATURAL_WIDTH = 767 // 行動裝置單頁自然寬度（px），Snowglobe 縮放基準
 const PAGE_LABEL_HEIGHT = 20           // text-xs 行高約 16px + mb-1 4px，counter-scale 補償基準
 const EDGE_HINT_PX = 64               // 拖拉翻頁邊緣提示區寬度（px，與 w-16 一致）
-
+const HEADER_HEIGHT = 56
 interface BinderMobileViewProps {
   mobilePages: SpreadPageContent[]
   pageIndex: number
@@ -146,26 +146,17 @@ export function BinderMobileView({
   const hasPrev = pageIndex > 0
   const hasNext = !isLastMobilePage
 
+  // header 在 innerRef 自然座標系中的寬度，使其視覺寬度 = MOBILE_PAGE_NATURAL_WIDTH * scale（與 panels 一致）
+  const headerNaturalWidth = scale > 0 ? MOBILE_PAGE_NATURAL_WIDTH * scale : MOBILE_PAGE_NATURAL_WIDTH
+  // 補償 counter-scale 視覺溢出，確保 panels 緊接在 header 視覺底部下方
+  const dynamicSpacerHeight = scale > 0 && scale < 1 ? HEADER_HEIGHT * (1 / scale - 1) : 0
+
   return (
     <div
       data-testid="binder-mobile-view"
       className="md:hidden flex flex-col flex-1 min-h-0"
       onClick={() => { if (!isDragging) setTappedSlotId(null) }}
     >
-      {/* 行動裝置 header — shrink-0，不受 Snowglobe scale 影響 */}
-      <div className="shrink-0 flex items-center justify-between py-2">
-        <div className="flex items-center gap-1">
-          <Button variant="ghost" size="sm" asChild>
-            <Link href="/binders" aria-label="返回卡冊列表" data-testid="back-to-binders-mobile">
-              <ChevronLeft className="h-4 w-4" />
-              <span>返回</span>
-            </Link>
-          </Button>
-          <h1 className="text-xl font-bold">{binderName}</h1>
-        </div>
-        {settingsSlot}
-      </div>
-
       {/* DndContext wraps both the scaled area and DragOverlay so the overlay
           renders as a sibling — outside the CSS scale transform — letting
           position:fixed resolve against the viewport instead of the scaled ancestor */}
@@ -191,81 +182,117 @@ export function BinderMobileView({
               left: offsetX,
               transform: `scale(${scale})`,
               transformOrigin: 'top left',
-              border: `4px solid ${coverColor}`,
-              backgroundColor: coverColor
             }}
           >
-            {content.type === 'cover' && (
-              <div style={{ width: MOBILE_PAGE_NATURAL_WIDTH, aspectRatio: '5/7' }}>
-                <BinderCoverPanel
-                  binderName={binderName}
-                  description={description}
-                  slots={slots}
-                  gridType={gridType}
-                  totalPages={totalPages}
-                  onJumpToSlot={onJumpToSlot}
-                  counterScale={counterScale}
-                />
+            {/* 行動裝置 header — shrink-0，不受 Snowglobe scale 影響 */}
+            <div
+              className="shrink-0 flex items-center justify-between py-2"
+              style={{
+                transform: `scale(${counterScale})`,
+                transformOrigin: 'top left',
+                width: headerNaturalWidth,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                height: HEADER_HEIGHT,
+              }}
+            >
+              <div className="flex items-center gap-1">
+                <Button variant="outline" size="sm" className="mr-2" asChild>
+                  <Link href="/binders" aria-label="返回卡冊列表" data-testid="back-to-binders-mobile">
+                    <ChevronLeft className="h-4 w-4" />
+                    <span>返回</span>
+                  </Link>
+                </Button>
+                <h1 className="text-xl font-bold">{binderName}</h1>
               </div>
-            )}
-            {content.type === 'blank' && (
-              <div
-                className="rounded-lg"
-                style={{ width: MOBILE_PAGE_NATURAL_WIDTH, aspectRatio: '5/7', backgroundColor: coverColor }}
-              />
-            )}
-            {content.type === 'page' && (
-              <div className="p-4 bg-black">
-                {/* 固定佔位高度 = 文字自然高度 × counterScale，避免 transform 不影響 layout 導致視覺溢出 */}
-                <div style={{ height: PAGE_LABEL_HEIGHT * counterScale, overflow: 'visible' }}>
-                  <p
-                    className="text-xs text-muted-foreground text-center"
-                    style={{ transform: `scale(${counterScale})`, transformOrigin: 'top center', display: 'block' }}
-                  >
-                    第 {content.pageNumber} 頁
-                  </p>
+              {settingsSlot}
+            </div>
+
+            {/* 補償 counter-scale 視覺溢出，讓 panels 緊接在 header 視覺底部下方 */}
+            <div style={{ height: dynamicSpacerHeight }} />
+
+            <div
+              className="flex-1 rounded-lg overflow-hidden"
+              style={{
+                border: `4px solid ${coverColor}`,
+                backgroundColor: coverColor
+              }}>
+
+              {content.type === 'cover' && (
+                <div style={{ width: MOBILE_PAGE_NATURAL_WIDTH, aspectRatio: '5/7' }}>
+                  <BinderCoverPanel
+                    binderName={binderName}
+                    description={description}
+                    slots={slots}
+                    gridType={gridType}
+                    totalPages={totalPages}
+                    onJumpToSlot={onJumpToSlot}
+                    counterScale={counterScale}
+                  />
                 </div>
-                <BinderGridSlots
-                  slots={content.page}
-                  gridType={gridType}
-                  onDelete={onDelete}
-                  onToggleStatus={onToggleStatus}
-                  onView={onView}
-                  isDragging={isDragging}
-                  onAddCard={onAddCard}
-                  highlightedSlotId={highlightedSlotId}
-                  counterScale={counterScale}
-                  tappedSlotId={tappedSlotId}
-                  onTapSlot={handleTapSlot}
+              )}
+              {content.type === 'blank' && (
+                <div
+                  className="rounded-lg"
+                  style={{ width: MOBILE_PAGE_NATURAL_WIDTH, aspectRatio: '5/7', backgroundColor: coverColor }}
                 />
-              </div>
-            )}
+              )}
+              {content.type === 'page' && (
+                <div className="p-4 bg-black">
+                  {/* 固定佔位高度 = 文字自然高度 × counterScale，避免 transform 不影響 layout 導致視覺溢出 */}
+                  <div style={{ height: PAGE_LABEL_HEIGHT * counterScale, overflow: 'visible' }}>
+                    <p
+                      className="text-xs text-muted-foreground text-center"
+                      style={{ transform: `scale(${counterScale})`, transformOrigin: 'top center', display: 'block' }}
+                    >
+                      第 {content.pageNumber} 頁
+                    </p>
+                  </div>
+                  <BinderGridSlots
+                    slots={content.page}
+                    gridType={gridType}
+                    onDelete={onDelete}
+                    onToggleStatus={onToggleStatus}
+                    onView={onView}
+                    isDragging={isDragging}
+                    onAddCard={onAddCard}
+                    highlightedSlotId={highlightedSlotId}
+                    counterScale={counterScale}
+                    tappedSlotId={tappedSlotId}
+                    onTapSlot={handleTapSlot}
+                  />
+                </div>
+              )}
+            </div>
           </div>
 
-          {/* Mobile Left side nav button — 位於 outerRef 內，不受 innerRef scale 影響 */}
+          {/* Left side nav — 緊鄰 innerRef 左側，同桌面版樣式與末頁邏輯 */}
           {!isDragging && hasPrev && (
             <Button
-              variant="ghost"
+              variant="outline"
               size="icon"
-              className="absolute left-1 top-1/2 -translate-y-1/2 z-20 bg-background/40 hover:bg-background/80 backdrop-blur-sm"
+              style={{ position: 'absolute', left: Math.max(4, offsetX - 44), top: '50%', transform: 'translateY(-50%)' }}
+              className="z-20"
               onClick={() => onPageChange(pageIndex - 1)}
               aria-label="上一頁"
               data-testid="mobile-side-prev-btn"
             >
-              <ChevronLeft className="h-5 w-5" />
+              <ChevronLeft />
             </Button>
           )}
-          {/* Mobile Right side nav button — 最後一頁不顯示（底部 pagination 已有新增按鈕） */}
-          {!isDragging && !isLastMobilePage && (
+          {/* Right side nav — 末頁改為新增內頁（同 pagination 與桌面邏輯） */}
+          {!isDragging && (
             <Button
-              variant="ghost"
+              variant="outline"
               size="icon"
-              className="absolute right-1 top-1/2 -translate-y-1/2 z-20 bg-background/40 hover:bg-background/80 backdrop-blur-sm"
-              onClick={() => onPageChange(pageIndex + 1)}
-              aria-label="下一頁"
+              style={{ position: 'absolute', right: Math.max(4, offsetX - 44), top: '50%', transform: 'translateY(-50%)' }}
+              className="z-20"
+              onClick={isLastMobilePage ? onAddPage : () => onPageChange(pageIndex + 1)}
+              aria-label={isLastMobilePage ? '新增內頁' : '下一頁'}
               data-testid="mobile-side-next-btn"
             >
-              <ChevronRight className="h-5 w-5" />
+              {isLastMobilePage ? <Plus /> : <ChevronRight />}
             </Button>
           )}
 
@@ -303,7 +330,7 @@ export function BinderMobileView({
         {/* DragOverlay 在 innerRef 外，不受 CSS scale 影響，overlay 位置與手指對齊 */}
         <DragOverlay>
           {activeSlot ? (
-            <SlotCard slot={activeSlot} onDelete={() => {}} onToggleStatus={() => {}} isDragOverlay />
+            <SlotCard slot={activeSlot} onDelete={() => { }} onToggleStatus={() => { }} isDragOverlay />
           ) : null}
         </DragOverlay>
       </DndContext>
