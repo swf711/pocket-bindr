@@ -32,8 +32,7 @@ test.describe('卡冊管理頁', () => {
     // 無卡冊時從空狀態按鈕開啟 Dialog
     await page.getByText('建立第一本卡冊').click()
     await page.getByTestId('binder-name-input').fill('我的第一本冊')
-    await page.getByTestId('binder-grid-select').click()
-    await page.getByRole('option', { name: /3 × 3/ }).click()
+    // 3×3 為預設格式，不需額外點選
     await page.getByTestId('create-binder-submit').click()
     await expect(page.getByTestId('binder-card')).toBeVisible()
     await expect(page.getByText('我的第一本冊')).toBeVisible()
@@ -103,8 +102,8 @@ test.describe('卡冊管理頁', () => {
     await page.goto('/binders')
     await page.getByText('建立第一本卡冊').click()
     await page.getByTestId('binder-name-input').fill('4x3 測試冊')
-    await page.getByTestId('binder-grid-select').click()
-    await page.getByRole('option', { name: /4 × 3/ }).click()
+    // 格式選單改為 Tabs，點擊 4×3 tab
+    await page.getByTestId('binder-grid-tabs').getByText('4×3').click()
     await page.getByTestId('create-binder-submit').click()
     await expect(page.getByTestId('binder-card')).toBeVisible()
     await expect(page.getByText('4×3')).toBeVisible()
@@ -122,9 +121,10 @@ test.describe('卡冊管理頁', () => {
     await loginAs(page, USER)
     await page.goto('/binders')
     await page.getByText('建立第一本卡冊').click()
-    await page.getByTestId('binder-grid-select').click()
-    await expect(page.getByRole('option', { name: /4 × 3/ })).toBeVisible()
-    await expect(page.getByRole('option', { name: /3 × 4/ })).toHaveCount(0)
+    // 格式選單改為 Tabs
+    const gridTabs = page.getByTestId('binder-grid-tabs')
+    await expect(gridTabs.getByText('4×3')).toBeVisible()
+    await expect(gridTabs.getByText('3×4')).toHaveCount(0)
   })
 
   test('點擊進入卡冊導向正確 URL', async ({ page }) => {

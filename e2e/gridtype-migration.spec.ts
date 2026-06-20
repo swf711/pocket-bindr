@@ -37,11 +37,11 @@ test.describe('gridType migration — SettingsDrawer', () => {
       await page.waitForLoadState('networkidle')
 
       // 開啟 Settings Drawer
-      await page.getByTestId('binder-settings-btn').click()
-      await expect(page.getByTestId('drawer-grid-toggle')).toBeVisible()
+      await page.getByTestId('binder-settings-btn').first().click()
+      await expect(page.getByTestId('drawer-grid-tabs')).toBeVisible()
 
       // 選擇 grid_1x2（1×2）
-      await page.getByTestId('drawer-grid-toggle').getByText('1×2').click()
+      await page.getByTestId('drawer-grid-tabs').getByText('1×2').click()
 
       // 儲存設定
       await page.getByTestId('drawer-save-settings-btn').click()
@@ -75,10 +75,10 @@ test.describe('gridType migration — SettingsDrawer', () => {
       await page.goto(`/binders/${binder.id}`)
       await page.waitForLoadState('networkidle')
 
-      await page.getByTestId('binder-settings-btn').click()
-      await expect(page.getByTestId('drawer-grid-toggle')).toBeVisible()
+      await page.getByTestId('binder-settings-btn').first().click()
+      await expect(page.getByTestId('drawer-grid-tabs')).toBeVisible()
 
-      await page.getByTestId('drawer-grid-toggle').getByText('4×4').click()
+      await page.getByTestId('drawer-grid-tabs').getByText('4×4').click()
       await page.getByTestId('drawer-save-settings-btn').click()
 
       // 應顯示一般成功 toast，無搬移訊息
@@ -111,10 +111,10 @@ test.describe('gridType migration — SettingsDrawer', () => {
       await page.goto(`/binders/${binder.id}`)
       await page.waitForLoadState('networkidle')
 
-      await page.getByTestId('binder-settings-btn').click()
-      await expect(page.getByTestId('drawer-grid-toggle')).toBeVisible()
+      await page.getByTestId('binder-settings-btn').first().click()
+      await expect(page.getByTestId('drawer-grid-tabs')).toBeVisible()
 
-      await page.getByTestId('drawer-grid-toggle').getByText('2×2').click()
+      await page.getByTestId('drawer-grid-tabs').getByText('2×2').click()
       await page.getByTestId('drawer-save-settings-btn').click()
 
       await expect(page.getByText('設定已儲存')).toBeVisible({ timeout: 5000 })
@@ -152,9 +152,8 @@ test.describe('gridType migration — EditBinderDialog', () => {
 
       await expect(page.getByTestId('edit-binder-dialog')).toBeVisible()
 
-      // 開啟 Select 並選擇 grid_2x2
-      await page.getByTestId('binder-grid-select').click()
-      await page.getByRole('option', { name: /2 × 2/ }).click()
+      // 格式選單改為 Tabs，點擊 2×2
+      await page.getByTestId('binder-grid-tabs').getByText('2×2').click()
 
       await page.getByTestId('edit-binder-submit').click()
 

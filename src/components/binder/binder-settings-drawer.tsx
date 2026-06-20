@@ -266,7 +266,7 @@ export function BinderSettingsDrawer({
   return (
     <Drawer open={open} onOpenChange={setOpen} direction="right">
       <DrawerTrigger asChild>
-        <Button variant="ghost" size="icon" data-testid="binder-settings-btn" aria-label="卡冊設定">
+        <Button variant="outline" size="icon-sm" data-testid="binder-settings-btn" aria-label="卡冊設定">
           <Settings className="h-5 w-5" />
         </Button>
       </DrawerTrigger>
@@ -348,8 +348,8 @@ export function BinderSettingsDrawer({
               onDragEnd={handleDragEnd}
             >
               <SortableContext items={pageOrder} strategy={verticalListSortingStrategy}>
-                <ScrollArea className="max-h-64">
-                  <div className="flex flex-col gap-1" data-testid="page-manager-list">
+                <ScrollArea className="max-h-64 rounded-md px-2 border">
+                  <div className="flex flex-col py-2 gap-1" data-testid="page-manager-list">
                     {pageOrder.map((page) => (
                       <SortablePageRow
                         key={page}

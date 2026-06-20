@@ -63,48 +63,18 @@ test.describe('OPCG ZH_TW alias card canonicalization', () => {
     await loginAs(page, USER)
     const userId = await getUserIdByEmail(USER.email)
 
-    // 建立一個卡冊
-    await page.goto('/binders')
-    const createBtn = page.getByRole('button', { name: /新增|建立/ })
-    if (await createBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
-      await createBtn.click()
-      await page.getByRole('button', { name: '確認', exact: true }).click().catch(async () => {
-        await page.getByRole('button', { name: /create|新增|OK/i }).click()
-      })
-    }
+    // 直接 DB 建立卡冊（beforeEach 已清除，避免 UI 建立流程的 race condition）
+    const binder = await prisma.binder.create({
+      data: { userId, name: 'E2E Test Binder', gridType: 'grid_3x3' },
+    })
 
     // 直接透過 API 加入 ZH_TW alias 卡（更穩定，不依賴 UI 流程）
-    const binderId = await prisma.binder.findFirst({
-      where: { userId },
-      select: { id: true },
-    }).then(b => b?.id)
-
-    if (!binderId) {
-      // fallback: create binder directly
-      const binder = await prisma.binder.create({
-        data: { userId, name: 'E2E Test Binder', gridType: 'grid_3x3' },
-      })
-      const addRes = await page.request.post(`/api/binders/${binder.id}/cards`, {
-        data: { cardId: aliasData.zhTwCardId, status: 'owned', quantity: 1 },
-      })
-      expect(addRes.ok()).toBeTruthy()
-      const addData = await addRes.json()
-      // Response cardId should be JA card id (canonical), not ZH_TW alias id
-      expect(addData.userCard.cardId).toBe(aliasData.jaCardId)
-
-      // Verify DB directly
-      const userCard = await prisma.userCard.findFirst({
-        where: { userId, cardId: aliasData.jaCardId, status: 'owned' },
-      })
-      expect(userCard).not.toBeNull()
-      return
-    }
-
-    const addRes = await page.request.post(`/api/binders/${binderId}/cards`, {
+    const addRes = await page.request.post(`/api/binders/${binder.id}/cards`, {
       data: { cardId: aliasData.zhTwCardId, status: 'owned', quantity: 1 },
     })
     expect(addRes.ok()).toBeTruthy()
     const addData = await addRes.json()
+    // Response cardId should be JA card id (canonical), not ZH_TW alias id
     expect(addData.userCard.cardId).toBe(aliasData.jaCardId)
 
     // Verify DB directly

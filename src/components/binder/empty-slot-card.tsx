@@ -22,6 +22,7 @@ export function EmptySlotCard({
   return (
     <div
       ref={setNodeRef}
+      data-testid={`empty-slot-add-${pageNumber}-${slotIndex}`}
       data-page={pageNumber}
       data-index={slotIndex}
       onClick={(!isDragging && onAddCard) ? (e) => { e.stopPropagation(); onAddCard(pageNumber, slotIndex) } : undefined}

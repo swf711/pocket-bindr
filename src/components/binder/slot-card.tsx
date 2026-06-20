@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Eye, EyeOff, Maximize2, Trash2 } from 'lucide-react'
+import { BookCheck, Bookmark, Eye, Trash2 } from 'lucide-react'
 import { useDraggable, useDroppable } from '@dnd-kit/core'
 import { Button } from '@/components/ui/button'
 import { ButtonGroup } from '@/components/ui/button-group'
@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/alert-dialog'
 import { getCardImageUrl } from '@/lib/get-card-image-url'
 import type { SlotWithCard } from '@/types/binder'
+import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
 
 interface SlotCardProps {
   slot: SlotWithCard
@@ -68,11 +69,9 @@ export function SlotCard({
       {...listeners}
       data-testid={isDragOverlay ? 'drag-overlay-card' : `slot-card-${slot.id}`}
       onClick={!isDragOverlay && onTap ? (e) => { e.stopPropagation(); onTap() } : undefined}
-      className={`relative group w-full aspect-5/7 overflow-hidden rounded-md border border-border bg-card cursor-grab active:cursor-grabbing transition-opacity ${
-        isDragging ? 'opacity-40' : 'opacity-100'
-      } ${isOver && !isDragOverlay ? 'ring-2 ring-primary' : ''} ${
-        isHighlighted ? 'ring-2 ring-primary animate-pulse' : ''
-      }`}
+      className={`relative group w-full aspect-5/7 overflow-hidden rounded-md border border-border bg-card cursor-grab active:cursor-grabbing transition-opacity ${isDragging ? 'opacity-40' : 'opacity-100'
+        } ${isOver && !isDragOverlay ? 'ring-2 ring-primary' : ''} ${isHighlighted ? 'ring-2 ring-primary animate-pulse' : ''
+        }`}
     >
       {imageUrl ? (
         <img
@@ -96,33 +95,51 @@ export function SlotCard({
             onPointerDown={(e) => e.stopPropagation()}
           >
             <ButtonGroup>
-              <Button
-                variant="secondary"
-                size="icon"
-                className="h-7 w-7"
-                onClick={() => onToggleStatus(slot.id)}
-                title={slot.status === 'owned' ? '切換為想要' : '切換為擁有'}
-              >
-                {slot.status === 'owned' ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
-              </Button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="secondary"
+                    size="icon-sm"
+                    onClick={() => onToggleStatus(slot.id)}
+                    title={slot.status === 'owned' ? '切換為想要' : '切換為擁有'}
+                  >
+                    {slot.status === 'owned' ? <Bookmark /> : <BookCheck />}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{slot.status === 'owned' ? '切換為想要' : '切換為擁有'}</p>
+                </TooltipContent>
+              </Tooltip>
               {onView && (
-                <Button
-                  variant="secondary"
-                  size="icon"
-                  className="h-7 w-7"
-                  onClick={() => onView(slot.cardId)}
-                  title="查看卡牌詳情"
-                  data-testid={`slot-view-btn-${slot.id}`}
-                >
-                  <Maximize2 className="h-3 w-3" />
-                </Button>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="secondary"
+                      size="icon-sm"
+                      onClick={() => onView(slot.cardId)}
+                      data-testid={`slot-view-btn-${slot.id}`}
+                    >
+                      <Eye />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>查看卡牌</p>
+                  </TooltipContent>
+                </Tooltip>
               )}
               <AlertDialog open={open} onOpenChange={setOpen}>
-                <AlertDialogTrigger asChild>
-                  <Button variant="destructive" size="icon" className="h-7 w-7">
-                    <Trash2 className="h-3 w-3" />
-                  </Button>
-                </AlertDialogTrigger>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="secondary" size="icon-sm" data-variant="destructive">
+                        <Trash2 className="text-destructive" />
+                      </Button>
+                    </AlertDialogTrigger>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>移除卡牌</p>
+                  </TooltipContent>
+                </Tooltip>
                 <AlertDialogContent>
                   <AlertDialogHeader>
                     <AlertDialogTitle>移除卡牌</AlertDialogTitle>

@@ -28,6 +28,7 @@ import { useScaleFit } from '@/hooks/use-scale-fit'
 import { useEdgeHoverPageFlip } from '@/hooks/use-edge-hover-page-flip'
 import type { SpreadPageContent } from '@/lib/binder-utils'
 import type { SlotWithCard } from '@/types/binder'
+import { ButtonGroup } from '../ui/button-group'
 
 const MOBILE_PAGE_NATURAL_WIDTH = 767 // 行動裝置單頁自然寬度（px），Snowglobe 縮放基準
 const PAGE_LABEL_HEIGHT = 20           // text-xs 行高約 16px + mb-1 4px，counter-scale 補償基準
@@ -272,7 +273,7 @@ export function BinderMobileView({
             <Button
               variant="outline"
               size="icon"
-              style={{ position: 'absolute', left: Math.max(4, offsetX - 44), top: '50%', transform: 'translateY(-50%)' }}
+              style={{ position: 'absolute', left: offsetX - 44, top: '50%', transform: 'translateY(-50%)' }}
               className="z-20"
               onClick={() => onPageChange(pageIndex - 1)}
               aria-label="上一頁"
@@ -286,7 +287,7 @@ export function BinderMobileView({
             <Button
               variant="outline"
               size="icon"
-              style={{ position: 'absolute', right: Math.max(4, offsetX - 44), top: '50%', transform: 'translateY(-50%)' }}
+              style={{ position: 'absolute', right: offsetX - 44, top: '50%', transform: 'translateY(-50%)' }}
               className="z-20"
               onClick={isLastMobilePage ? onAddPage : () => onPageChange(pageIndex + 1)}
               aria-label={isLastMobilePage ? '新增內頁' : '下一頁'}
@@ -340,29 +341,28 @@ export function BinderMobileView({
         <Pagination className="w-auto mx-0">
           <PaginationContent>
             <PaginationItem>
-              <Button
-                variant="ghost"
-                size="icon"
-                data-testid="mobile-first-btn"
-                onClick={() => onPageChange(0)}
-                disabled={pageIndex === 0}
-                aria-label="第一頁"
-              >
-                <ChevronsLeft className="h-4 w-4" />
-              </Button>
-            </PaginationItem>
-            <PaginationItem>
-              <Button
-                variant="ghost"
-                size="sm"
-                data-testid="mobile-prev-btn"
-                onClick={() => onPageChange(pageIndex - 1)}
-                disabled={pageIndex === 0}
-                className="gap-1 px-2.5"
-              >
-                <ChevronLeft className="h-4 w-4" />
-                <span className="hidden sm:inline">上一頁</span>
-              </Button>
+              <ButtonGroup>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  data-testid="mobile-first-btn"
+                  onClick={() => onPageChange(0)}
+                  disabled={pageIndex === 0}
+                  aria-label="第一頁"
+                >
+                  <ChevronsLeft />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  data-testid="mobile-prev-btn"
+                  onClick={() => onPageChange(pageIndex - 1)}
+                  disabled={pageIndex === 0}
+                  className="gap-1 px-2.5"
+                >
+                  <ChevronLeft />
+                </Button>
+              </ButtonGroup>
             </PaginationItem>
             <PaginationItem>
               <span className="text-sm text-muted-foreground tabular-nums px-1">
@@ -370,40 +370,38 @@ export function BinderMobileView({
               </span>
             </PaginationItem>
             <PaginationItem>
-              {isLastMobilePage ? (
+              <ButtonGroup>
+                {isLastMobilePage ? (
+                  <Button
+                    variant="outline"
+                    data-testid="mobile-add-page-btn"
+                    onClick={onAddPage}
+                    aria-label="新增內頁"
+                  >
+                    <PlusCircle />
+                  </Button>
+                ) : (
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    data-testid="mobile-next-btn"
+                    onClick={() => onPageChange(pageIndex + 1)}
+                    className="gap-1 px-2.5"
+                  >
+                    <ChevronRight />
+                  </Button>
+                )}
                 <Button
-                  variant="ghost"
-                  size="sm"
-                  data-testid="mobile-add-page-btn"
-                  onClick={onAddPage}
-                  aria-label="新增內頁"
+                  variant="outline"
+                  size="icon"
+                  data-testid="mobile-last-btn"
+                  onClick={() => onPageChange(mobilePages.length - 1)}
+                  disabled={isLastMobilePage}
+                  aria-label="最後一頁"
                 >
-                  <PlusCircle className="h-4 w-4" />
+                  <ChevronsRight />
                 </Button>
-              ) : (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  data-testid="mobile-next-btn"
-                  onClick={() => onPageChange(pageIndex + 1)}
-                  className="gap-1 px-2.5"
-                >
-                  <span className="hidden sm:inline">下一頁</span>
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              )}
-            </PaginationItem>
-            <PaginationItem>
-              <Button
-                variant="ghost"
-                size="icon"
-                data-testid="mobile-last-btn"
-                onClick={() => onPageChange(mobilePages.length - 1)}
-                disabled={isLastMobilePage}
-                aria-label="最後一頁"
-              >
-                <ChevronsRight className="h-4 w-4" />
-              </Button>
+              </ButtonGroup>
             </PaginationItem>
           </PaginationContent>
         </Pagination>

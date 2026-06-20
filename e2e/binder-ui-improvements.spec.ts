@@ -60,7 +60,7 @@ test.describe('卡冊內頁 UI 改動', () => {
 
     const slot = page.locator('[data-testid^="slot-card-"]').first()
     await slot.hover()
-    await slot.getByTitle('查看卡牌詳情').click()
+    await slot.locator('[data-testid^="slot-view-btn-"]').click()
 
     await expect(page.getByTestId('card-detail-drawer')).toBeVisible()
     await expect(page.getByText(card.name)).toBeVisible()
@@ -68,7 +68,7 @@ test.describe('卡冊內頁 UI 改動', () => {
     await expect(page.getByTestId('modal-add-btn')).toHaveCount(0)
   })
 
-  test('Settings Drawer 搜尋卡冊內卡牌並跳頁＋highlight', async ({ page }) => {
+  test('封面面板搜尋卡冊內卡牌並跳頁＋highlight', async ({ page }) => {
     const userId = await getUserIdByEmail(USER.email)
     const fillerCard = await getCardWithImage('PTCG')
     const targetCard = await getCardWithImage('OPCG')
@@ -81,13 +81,17 @@ test.describe('卡冊內頁 UI 改動', () => {
     await page.getByTestId('binder-spread-view').waitFor()
     await expect(page.getByText('1 / 2')).toBeVisible()
 
-    await page.getByTestId('binder-settings-btn').click()
-    await page.getByTestId('drawer-card-search-input').fill(targetCard.name)
-    await expect(page.getByTestId('drawer-card-search-results')).toBeVisible()
-    await page.getByTestId('drawer-card-search-results').getByText(targetCard.name).click()
+    // 搜尋在封面面板（BinderCoverPanel），不在 settings drawer
+    // binder-spread-view 和 binder-mobile-view 各有一個 cover-slot-search，需縮限範圍
+    const spreadView = page.getByTestId('binder-spread-view')
+    await spreadView.getByTestId('cover-slot-search').fill(targetCard.name)
+    await expect(spreadView.getByTestId('cover-slot-search-results')).toBeVisible()
+    await spreadView.getByTestId('cover-slot-search-results').getByText(targetCard.name).click()
 
-    await expect(page.getByTestId('drawer-card-search-input')).toBeHidden()
-    await expect(page.getByText('2 / 2')).toBeVisible()
+    // 點擊後 query 清空，搜尋結果隱藏
+    await expect(spreadView.getByTestId('cover-slot-search-results')).toHaveCount(0)
+    // 翻頁後 spread counter 更新為 2/2（binder-spread-view 範圍內避免 strict mode 衝突）
+    await expect(spreadView.getByText('2 / 2')).toBeVisible()
 
     const targetSlot = page.locator('[data-testid^="slot-card-"]').filter({
       has: page.locator(`img[alt="${targetCard.name}"]`),

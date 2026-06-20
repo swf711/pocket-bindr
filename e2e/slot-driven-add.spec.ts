@@ -34,10 +34,10 @@ test.describe('格位驅動加入卡片', () => {
     await addBtn.hover()
     await expect(addBtn).toBeVisible()
 
-    // 拖拉中（filled slot at pageNumber=1, slotIndex=0）按鈕不應顯示
+    // 拖拉中，Plus icon 不顯示（isDragging=true 時條件渲染移除，整格仍可見）
     const filledSlot = page.locator('[data-testid^="slot-card-"]').first()
     await startDrag(page, filledSlot)
-    await expect(addBtn).toBeHidden()
+    await expect(addBtn.locator('svg')).toHaveCount(0)
     await page.mouse.up()
   })
 

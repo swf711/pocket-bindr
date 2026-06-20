@@ -1,28 +1,37 @@
 import { test, expect } from '@playwright/test'
 import { prisma } from '../src/lib/prisma'
 import { getTestUser, loginAs } from './helpers/auth'
-import { getUserIdByEmail, createMultiPageBinder, cleanupBinder } from './helpers/db'
+import { getUserIdByEmail, createMultiPageBinder, cleanupBinder, clearUserBindersByEmail } from './helpers/db'
 import { startDrag, dropOn } from './helpers/drag'
 
 const USER = getTestUser('binderspread')
 
 test.describe('Binder Spread Layout - 封面顏色', () => {
+  test.beforeEach(async () => {
+    await clearUserBindersByEmail(USER.email)
+  })
+
   test('建立卡冊時可選擇封面顏色，列表頁封面套用該顏色', async ({ page }) => {
     await loginAs(page, USER)
     await page.goto('/binders')
 
     const name = `顏色測試冊-${Date.now()}`
-    await page.getByTestId('create-binder-btn').click()
+    // 可能是空狀態按鈕或有卡冊時的 add-binder-slot
+    await page.getByTestId('add-binder-slot')
+      .or(page.getByRole('button', { name: '建立第一本卡冊' }))
+      .first()
+      .click()
     await page.getByTestId('binder-name-input').fill(name)
     await page.getByTestId('cover-color-picker').click()
-    await page.locator('[title="#2C5282"]').first().click()
+    await page.locator('[title="#2563EB"]').first().click()
     await page.getByTestId('create-binder-submit').click()
 
     const card = page.getByTestId('binder-card').filter({ hasText: name })
     await expect(card).toBeVisible()
-    const bgColor = await card.evaluate((el) => (el as HTMLElement).style.backgroundColor)
-    // #2C5282 = rgb(44, 82, 130)
-    expect(bgColor).toBe('rgb(44, 82, 130)')
+    // coverColor 套用在 binder-spine 子元素的 inline style 上
+    const bgColor = await card.getByTestId('binder-spine').evaluate((el) => (el as HTMLElement).style.backgroundColor)
+    // #2563EB = rgb(37, 99, 235)
+    expect(bgColor).toBe('rgb(37, 99, 235)')
 
     // cleanup
     await prisma.binder.deleteMany({ where: { name } })
@@ -33,7 +42,11 @@ test.describe('Binder Spread Layout - 封面顏色', () => {
     await page.goto('/binders')
 
     const name = `編輯顏色冊-${Date.now()}`
-    await page.getByTestId('create-binder-btn').click()
+    // 可能是空狀態按鈕或有卡冊時的 add-binder-slot
+    await page.getByTestId('add-binder-slot')
+      .or(page.getByRole('button', { name: '建立第一本卡冊' }))
+      .first()
+      .click()
     await page.getByTestId('binder-name-input').fill(name)
     await page.getByTestId('create-binder-submit').click()
 
@@ -42,14 +55,15 @@ test.describe('Binder Spread Layout - 封面顏色', () => {
 
     await card.getByTestId('edit-binder-btn').click()
     await page.getByTestId('cover-color-picker').click()
-    await page.locator('[title="#9B2C2C"]').first().click()
+    await page.locator('[title="#DC2626"]').first().click()
     await page.getByTestId('edit-binder-submit').click()
 
     // Color updates immediately in the list
     await expect(async () => {
-      const bgColor = await card.evaluate((el) => (el as HTMLElement).style.backgroundColor)
-      // #9B2C2C = rgb(155, 44, 44)
-      expect(bgColor).toBe('rgb(155, 44, 44)')
+      // coverColor 套用在 binder-spine 子元素的 inline style 上
+      const bgColor = await card.getByTestId('binder-spine').evaluate((el) => (el as HTMLElement).style.backgroundColor)
+      // #DC2626 = rgb(220, 38, 38)
+      expect(bgColor).toBe('rgb(220, 38, 38)')
     }).toPass({ timeout: 5000 })
 
     // cleanup
@@ -175,38 +189,5 @@ test.describe('Binder Spread Layout - 行動裝置', () => {
     }
   })
 
-  test('行動裝置：swipe 切換頁面', async ({ page }) => {
-    await loginAs(page, USER)
-    const userId = await getUserIdByEmail(USER.email)
-    const { binder } = await createMultiPageBinder(userId, { pageCount: 2 })
-    try {
-      await page.goto(`/binders/${binder.id}`)
-      const mobileView = page.getByTestId('binder-mobile-view')
-      await expect(mobileView).toBeVisible()
-      // Initially on cover
-      await expect(mobileView.getByTestId('binder-cover-panel')).toBeVisible()
-
-      // Swipe left (next page) via touchscreen
-      const box = await mobileView.boundingBox()
-      expect(box).not.toBeNull()
-      const startX = box!.x + box!.width * 0.8
-      const endX = box!.x + box!.width * 0.2
-      const y = box!.y + box!.height / 2
-      await page.touchscreen.tap(startX, y) // ensure touch context
-      // Dispatch swipe via touch events
-      await mobileView.dispatchEvent('touchstart', {
-        touches: [{ identifier: 0, clientX: startX, clientY: y }],
-        changedTouches: [{ identifier: 0, clientX: startX, clientY: y }],
-      })
-      await mobileView.dispatchEvent('touchend', {
-        touches: [],
-        changedTouches: [{ identifier: 0, clientX: endX, clientY: y }],
-      })
-
-      // Now should show page 1
-      await expect(mobileView.getByText('第 1 頁')).toBeVisible()
-    } finally {
-      await cleanupBinder(binder.id)
-    }
-  })
+  // 行動版 swipe 翻頁已移除（避免與 dnd-kit 拖拉衝突），改用側邊按鈕或 Pagination 翻頁
 })

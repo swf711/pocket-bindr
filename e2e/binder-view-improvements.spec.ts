@@ -29,8 +29,9 @@ test.describe('卡冊詳情頁改善', () => {
       await page.goto(`/binders/${binder.id}`)
       const spreadView = page.getByTestId('spread-drag-container')
       await expect(spreadView).toBeVisible()
-      const panel = spreadView.locator('> div').first()
-      const bg = await panel.evaluate((el) => getComputedStyle(el).backgroundColor)
+      // 內頁 panel 使用 bg-black class（外層 wrapper 套用 coverColor）
+      const pagePanel = spreadView.locator('.bg-black').first()
+      const bg = await pagePanel.evaluate((el) => getComputedStyle(el).backgroundColor)
       expect(bg).toBe('rgb(0, 0, 0)')
     } finally {
       await cleanupBinder(binder.id)
@@ -61,7 +62,7 @@ test.describe('卡冊詳情頁改善', () => {
     const { binder } = await createMultiPageBinder(userId, { pageCount: 2 })
     try {
       await page.goto(`/binders/${binder.id}`)
-      await page.getByTestId('binder-settings-btn').click()
+      await page.getByTestId('binder-settings-btn').first().click()
       const handle1 = page.getByTestId('page-drag-handle-1')
       const handle2 = page.getByTestId('page-drag-handle-2')
       await expect(handle1).toBeVisible()
@@ -77,8 +78,9 @@ test.describe('卡冊詳情頁改善', () => {
     const [cardId1, cardId2] = await getTwoCardIds()
 
     // 建立 2 頁 binder：card1 在 page1，card2 在 page2
+    // settings.totalPages 必須設定，否則 settings drawer 頁面列表為空
     const binder = await prisma.binder.create({
-      data: { userId, name: 'DnD Page Reorder Test', gridType: 'grid_3x3', coverColor: '#2C5282' },
+      data: { userId, name: 'DnD Page Reorder Test', gridType: 'grid_3x3', coverColor: '#2C5282', settings: { totalPages: 2 } },
     })
     await prisma.userCard.createMany({
       data: [
@@ -95,7 +97,7 @@ test.describe('卡冊詳情頁改善', () => {
 
     try {
       await page.goto(`/binders/${binder.id}`)
-      await page.getByTestId('binder-settings-btn').click()
+      await page.getByTestId('binder-settings-btn').first().click()
 
       const list = page.getByTestId('page-manager-list')
       await expect(list).toBeVisible()
@@ -107,18 +109,15 @@ test.describe('卡冊詳情頁改善', () => {
       await expect(row2).toBeVisible()
 
       const handle2 = page.getByTestId('page-drag-handle-2')
-      const row1Box = await row1.boundingBox()
-      const handle2Box = await handle2.boundingBox()
-      if (!row1Box || !handle2Box) throw new Error('no bounding box')
 
-      // drag handle2 up to row1 position
-      const hx = handle2Box.x + handle2Box.width / 2
-      const hy = handle2Box.y + handle2Box.height / 2
-      await page.mouse.move(hx, hy)
-      await page.mouse.down()
-      await page.mouse.move(hx, hy - 8, { steps: 3 })
-      await page.mouse.move(hx, row1Box.y + row1Box.height / 2, { steps: 15 })
-      await page.mouse.up()
+      // 用 KeyboardSensor 觸發排序（比滑鼠事件更穩定）：
+      // Space 拾起 → ArrowUp 移到 row1 → Space 放下
+      await handle2.focus()
+      await handle2.press('Space')
+      await page.waitForTimeout(100)
+      await handle2.press('ArrowUp')
+      await page.waitForTimeout(50)
+      await handle2.press('Space')
 
       // DB poll: slot2 (originally on page 2) should now be on page 1
       await expect
@@ -132,8 +131,15 @@ test.describe('卡冊詳情頁改善', () => {
         .toBe(1)
 
       // slot1 (originally on page 1) should now be on page 2
-      const s1 = await prisma.binderSlot.findUnique({ where: { id: slot1.id }, select: { pageNumber: true } })
-      expect(s1?.pageNumber).toBe(2)
+      await expect
+        .poll(
+          async () => {
+            const s = await prisma.binderSlot.findUnique({ where: { id: slot1.id }, select: { pageNumber: true } })
+            return s?.pageNumber
+          },
+          { timeout: 8000 },
+        )
+        .toBe(2)
     } finally {
       await prisma.binder.delete({ where: { id: binder.id } }).catch(() => {})
       await prisma.userCard.deleteMany({ where: { userId, cardId: { in: [cardId1, cardId2] } } })

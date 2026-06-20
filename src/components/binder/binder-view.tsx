@@ -243,6 +243,7 @@ export function BinderView({ binder }: { binder: BinderDetailResponse }) {
         onSpreadChange={setSpreadIndex}
         coverColor={binderCoverColor}
         binderName={binderName}
+        description={binderDescription}
         slots={slots}
         totalPages={totalPages}
         gridType={gridType}
@@ -257,6 +258,7 @@ export function BinderView({ binder }: { binder: BinderDetailResponse }) {
         onPageChange={setMobilePageIndex}
         coverColor={binderCoverColor}
         binderName={binderName}
+        description={binderDescription}
         slots={slots}
         totalPages={totalPages}
         gridType={gridType}
