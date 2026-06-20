@@ -1,4 +1,5 @@
 import 'dotenv/config'
+import bcrypt from 'bcryptjs'
 import { prisma } from '../../src/lib/prisma'
 import { TEST_USER } from './auth'
 
@@ -158,6 +159,27 @@ export async function getOpcgZhTwAliasCard(): Promise<{
  */
 export async function cleanupBinder(binderId: string): Promise<void> {
   await prisma.binder.delete({ where: { id: binderId } }).catch(() => {})
+}
+
+/**
+ * 重設指定帳號的密碼（供 settings E2E 在修改密碼後還原測試狀態）。
+ */
+export async function resetUserPassword(email: string, password: string): Promise<void> {
+  const hash = await bcrypt.hash(password, 12)
+  await prisma.user.update({
+    where: { email },
+    data: { passwordHash: hash },
+  })
+}
+
+/**
+ * 重設指定帳號的 username（供 settings E2E 在修改 username 後還原測試狀態）。
+ */
+export async function resetUserUsername(email: string, username: string | null): Promise<void> {
+  await prisma.user.update({
+    where: { email },
+    data: { username },
+  })
 }
 
 /**
