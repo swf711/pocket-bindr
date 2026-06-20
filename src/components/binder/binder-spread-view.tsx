@@ -405,64 +405,61 @@ export function BinderSpreadView({
               {/* Drag hint panels — shown only while dragging */}
               {isDragging && hasPrev && (
                 <div
-                  className="absolute left-0 top-0 bottom-0 w-16 flex flex-col items-center justify-center gap-1 bg-primary/10 border-2 border-dashed border-primary/40 rounded-l-lg pointer-events-none"
+                  className="absolute left-0 top-0 bottom-0 text-primary w-16 flex flex-col items-center justify-center gap-1 bg-primary/10 border-2 border-dashed border-primary/40 rounded-l-lg pointer-events-none"
                   data-testid="drag-hint-prev"
                 >
                   <div style={{ transform: `scale(${counterScale})`, transformOrigin: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-                    <ChevronLeft className="h-5 w-5 text-primary/60" />
-                    <span
-                      className="text-[10px] text-primary/60 leading-tight"
-                      style={{ writingMode: 'vertical-rl' }}
-                    >
+                    <ChevronLeft />
+                    <span style={{ writingMode: 'vertical-rl' }}>
                       拖到此處翻頁
                     </span>
+                    <ChevronLeft />
                   </div>
                 </div>
               )}
               {isDragging && hasNext && (
                 <div
-                  className="absolute right-0 top-0 bottom-0 w-16 flex flex-col items-center justify-center gap-1 bg-primary/10 border-2 border-dashed border-primary/40 rounded-r-lg pointer-events-none"
+                  className="absolute right-0 top-0 bottom-0 text-primary w-16 flex flex-col items-center justify-center gap-1 bg-primary/10 border-2 border-dashed border-primary/40 rounded-r-lg pointer-events-none"
                   data-testid="drag-hint-next"
                 >
                   <div style={{ transform: `scale(${counterScale})`, transformOrigin: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-                    <ChevronRight className="h-5 w-5 text-primary/60" />
-                    <span
-                      className="text-[10px] text-primary/60 leading-tight"
-                      style={{ writingMode: 'vertical-rl' }}
-                    >
+                    <ChevronRight />
+                    <span style={{ writingMode: 'vertical-rl' }}>
                       拖到此處翻頁
                     </span>
+                    <ChevronRight />
                   </div>
                 </div>
               )}
             </div>
           </div>
 
-          {/* Left side nav button — 位於 outerRef 內，不受 innerRef scale 影響 */}
+          {/* Left side nav — 緊鄰 innerRef 左側，offsetX 確保對齊縮放後的卡冊邊緣 */}
           {!isDragging && hasPrev && (
             <Button
-              variant="ghost"
+              variant="outline"
               size="icon"
-              className="absolute left-1 top-1/2 -translate-y-1/2 z-20 bg-background/40 hover:bg-background/80 backdrop-blur-sm"
+              style={{ position: 'absolute', left: offsetX - 44, top: '50%', transform: 'translateY(-50%)' }}
+              className="z-20"
               onClick={() => onSpreadChange(spreadIndex - 1)}
               aria-label="上一頁"
               data-testid="spread-side-prev-btn"
             >
-              <ChevronLeft className="h-5 w-5" />
+              <ChevronLeft />
             </Button>
           )}
-          {/* Right side nav button */}
+          {/* Right side nav — 末頁改為新增內頁（同 header pagination 邏輯） */}
           {!isDragging && (
             <Button
-              variant="ghost"
+              variant="outline"
               size="icon"
-              className="absolute right-1 top-1/2 -translate-y-1/2 z-20 bg-background/40 hover:bg-background/80 backdrop-blur-sm"
+              style={{ position: 'absolute', right: offsetX - 44, top: '50%', transform: 'translateY(-50%)' }}
+              className="z-20"
               onClick={isLastSpread ? onAddPage : () => onSpreadChange(spreadIndex + 1)}
-              disabled={isLastSpread}
-              aria-label={isLastSpread ? '已是最後一頁' : '下一頁'}
+              aria-label={isLastSpread ? '新增內頁' : '下一頁'}
               data-testid="spread-side-next-btn"
             >
-              <ChevronRight className="h-5 w-5" />
+              {isLastSpread ? <Plus /> : <ChevronRight />}
             </Button>
           )}
         </div>
