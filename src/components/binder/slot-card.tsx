@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Eye, EyeOff, Maximize2, Trash2 } from 'lucide-react'
 import { useDraggable, useDroppable } from '@dnd-kit/core'
 import { Button } from '@/components/ui/button'
+import { ButtonGroup } from '@/components/ui/button-group'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -87,66 +88,55 @@ export function SlotCard({
         </div>
       )}
 
-      {/* 操作按鈕 overlay — 三按鈕各自 counter-scale，保持自然視覺尺寸；桌面 hover 顯示，行動裝置 tap 顯示 */}
+      {/* 操作按鈕 overlay — ButtonGroup 底部中央，counter-scale 保持自然視覺尺寸；桌面 hover 顯示，行動裝置 tap 顯示 */}
       {!isDragOverlay && (
-        <div className={`absolute inset-0 transition-opacity pointer-events-none ${isTapped ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
-          {/* 左：切換狀態 */}
-          <div style={{ position: 'absolute', top: 4, left: 4, transform: `scale(${counterScale})`, transformOrigin: 'top left', pointerEvents: 'auto' }}>
-            <Button
-              variant="secondary"
-              size="icon"
-              className="h-6 w-6"
-              onPointerDown={(e) => e.stopPropagation()}
-              onClick={() => onToggleStatus(slot.id)}
-              title={slot.status === 'owned' ? '切換為想要' : '切換為擁有'}
-            >
-              {slot.status === 'owned' ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
-            </Button>
-          </div>
-
-          {/* 中：查看（可選） */}
-          {onView && (
-            <div style={{ position: 'absolute', top: 4, left: '50%', transform: `translateX(-50%) scale(${counterScale})`, transformOrigin: 'top center', pointerEvents: 'auto' }}>
+        <div className={`absolute inset-0 flex items-end justify-center pb-2 transition-opacity pointer-events-none ${isTapped ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+          <div
+            style={{ transform: `scale(${counterScale})`, transformOrigin: 'bottom center', pointerEvents: 'auto' }}
+            onPointerDown={(e) => e.stopPropagation()}
+          >
+            <ButtonGroup>
               <Button
                 variant="secondary"
                 size="icon"
-                className="h-6 w-6"
-                onPointerDown={(e) => e.stopPropagation()}
-                onClick={() => onView(slot.cardId)}
-                title="查看卡牌詳情"
-                data-testid={`slot-view-btn-${slot.id}`}
+                className="h-7 w-7"
+                onClick={() => onToggleStatus(slot.id)}
+                title={slot.status === 'owned' ? '切換為想要' : '切換為擁有'}
               >
-                <Maximize2 className="h-3 w-3" />
+                {slot.status === 'owned' ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
               </Button>
-            </div>
-          )}
-
-          {/* 右：刪除 */}
-          <div style={{ position: 'absolute', top: 4, right: 4, transform: `scale(${counterScale})`, transformOrigin: 'top right', pointerEvents: 'auto' }}>
-            <AlertDialog open={open} onOpenChange={setOpen}>
-              <AlertDialogTrigger asChild>
+              {onView && (
                 <Button
-                  variant="destructive"
+                  variant="secondary"
                   size="icon"
-                  className="h-6 w-6"
-                  onPointerDown={(e) => e.stopPropagation()}
+                  className="h-7 w-7"
+                  onClick={() => onView(slot.cardId)}
+                  title="查看卡牌詳情"
+                  data-testid={`slot-view-btn-${slot.id}`}
                 >
-                  <Trash2 className="h-3 w-3" />
+                  <Maximize2 className="h-3 w-3" />
                 </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>移除卡牌</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    確定要從卡冊移除 {slot.card.name} 嗎？
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>取消</AlertDialogCancel>
-                  <AlertDialogAction onClick={() => onDelete(slot.id)}>確認移除</AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+              )}
+              <AlertDialog open={open} onOpenChange={setOpen}>
+                <AlertDialogTrigger asChild>
+                  <Button variant="destructive" size="icon" className="h-7 w-7">
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>移除卡牌</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      確定要從卡冊移除 {slot.card.name} 嗎？
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>取消</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => onDelete(slot.id)}>確認移除</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </ButtonGroup>
           </div>
         </div>
       )}

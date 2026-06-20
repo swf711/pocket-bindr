@@ -69,8 +69,6 @@ export function BinderGridSlots({
                 isDragging={isDragging}
                 onAddCard={onAddCard}
                 counterScale={counterScale}
-                isTapped={tappedSlotId === emptyKey}
-                onTap={onTapSlot ? () => onTapSlot(emptyKey) : undefined}
               />
             ) : (
               <SlotCard

@@ -45,6 +45,7 @@ import {
 } from '@/components/ui/alert-dialog'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Separator } from '@/components/ui/separator'
+import { ScrollArea } from '@/components/ui/scroll-area'
 import { CoverColorPicker } from '@/components/binders/cover-color-picker'
 import { GRID_SHORT_LABELS, GRID_TYPE_LABELS, type SlotWithCard, type BinderSettings } from '@/types/binder'
 
@@ -347,17 +348,19 @@ export function BinderSettingsDrawer({
               onDragEnd={handleDragEnd}
             >
               <SortableContext items={pageOrder} strategy={verticalListSortingStrategy}>
-                <div className="flex flex-col gap-1" data-testid="page-manager-list">
-                  {pageOrder.map((page) => (
-                    <SortablePageRow
-                      key={page}
-                      page={page}
-                      totalPages={totalPages}
-                      deletingPage={deletingPage}
-                      onDelete={handleDeletePage}
-                    />
-                  ))}
-                </div>
+                <ScrollArea className="max-h-64">
+                  <div className="flex flex-col gap-1" data-testid="page-manager-list">
+                    {pageOrder.map((page) => (
+                      <SortablePageRow
+                        key={page}
+                        page={page}
+                        totalPages={totalPages}
+                        deletingPage={deletingPage}
+                        onDelete={handleDeletePage}
+                      />
+                    ))}
+                  </div>
+                </ScrollArea>
               </SortableContext>
             </DndContext>
           </div>

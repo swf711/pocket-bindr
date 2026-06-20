@@ -39,6 +39,7 @@ interface BinderMobileViewProps {
   onPageChange: (index: number) => void
   coverColor: string
   binderName: string
+  description?: string | null
   slots: SlotWithCard[]
   totalPages: number
   gridType: GridType
@@ -60,6 +61,7 @@ export function BinderMobileView({
   onPageChange,
   coverColor,
   binderName,
+  description,
   slots,
   totalPages,
   gridType,
@@ -189,13 +191,15 @@ export function BinderMobileView({
               left: offsetX,
               transform: `scale(${scale})`,
               transformOrigin: 'top left',
-              border: `4px solid ${coverColor}`
+              border: `4px solid ${coverColor}`,
+              backgroundColor: coverColor
             }}
           >
             {content.type === 'cover' && (
               <div style={{ width: MOBILE_PAGE_NATURAL_WIDTH, aspectRatio: '5/7' }}>
                 <BinderCoverPanel
                   binderName={binderName}
+                  description={description}
                   slots={slots}
                   gridType={gridType}
                   totalPages={totalPages}
@@ -211,7 +215,7 @@ export function BinderMobileView({
               />
             )}
             {content.type === 'page' && (
-              <div style={{ backgroundColor: coverColor }} className="p-4">
+              <div className="p-4 bg-black">
                 {/* 固定佔位高度 = 文字自然高度 × counterScale，避免 transform 不影響 layout 導致視覺溢出 */}
                 <div style={{ height: PAGE_LABEL_HEIGHT * counterScale, overflow: 'visible' }}>
                   <p
@@ -238,6 +242,33 @@ export function BinderMobileView({
             )}
           </div>
 
+          {/* Mobile Left side nav button — 位於 outerRef 內，不受 innerRef scale 影響 */}
+          {!isDragging && hasPrev && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute left-1 top-1/2 -translate-y-1/2 z-20 bg-background/40 hover:bg-background/80 backdrop-blur-sm"
+              onClick={() => onPageChange(pageIndex - 1)}
+              aria-label="上一頁"
+              data-testid="mobile-side-prev-btn"
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </Button>
+          )}
+          {/* Mobile Right side nav button — 最後一頁不顯示（底部 pagination 已有新增按鈕） */}
+          {!isDragging && !isLastMobilePage && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute right-1 top-1/2 -translate-y-1/2 z-20 bg-background/40 hover:bg-background/80 backdrop-blur-sm"
+              onClick={() => onPageChange(pageIndex + 1)}
+              aria-label="下一頁"
+              data-testid="mobile-side-next-btn"
+            >
+              <ChevronRight className="h-5 w-5" />
+            </Button>
+          )}
+
           {/* 拖拉邊緣翻頁提示 — 位於 outerRef 內（不受 scale 影響） */}
           {isDragging && hasPrev && (
             <div
@@ -245,7 +276,12 @@ export function BinderMobileView({
               data-testid="mobile-drag-hint-prev"
             >
               <ChevronLeft className="h-5 w-5 text-primary/60" />
-              <span className="text-[10px] text-primary/60 text-center leading-tight">拖到此處翻頁</span>
+              <span
+                className="text-[10px] text-primary/60 leading-tight"
+                style={{ writingMode: 'vertical-rl' }}
+              >
+                拖到此處翻頁
+              </span>
             </div>
           )}
           {isDragging && hasNext && (
@@ -254,7 +290,12 @@ export function BinderMobileView({
               data-testid="mobile-drag-hint-next"
             >
               <ChevronRight className="h-5 w-5 text-primary/60" />
-              <span className="text-[10px] text-primary/60 text-center leading-tight">拖到此處翻頁</span>
+              <span
+                className="text-[10px] text-primary/60 leading-tight"
+                style={{ writingMode: 'vertical-rl' }}
+              >
+                拖到此處翻頁
+              </span>
             </div>
           )}
         </div>

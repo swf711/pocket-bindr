@@ -13,7 +13,7 @@ import {
   useSensor,
   useSensors,
 } from '@dnd-kit/core'
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, PlusCircle } from 'lucide-react'
+import { ArrowLeft, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Pagination,
@@ -27,6 +27,7 @@ import { useEdgeHoverPageFlip } from '@/hooks/use-edge-hover-page-flip'
 import { useScaleFit } from '@/hooks/use-scale-fit'
 import type { Spread, SpreadPageContent } from '@/lib/binder-utils'
 import type { SlotWithCard } from '@/types/binder'
+import { ButtonGroup } from '../ui/button-group'
 
 const SPREAD_NATURAL_WIDTH = 1200 // 2 × 542px panels + 16px gap; tune this to taste
 const EDGE_HINT_PX = 64          // matches w-16 (Tailwind) — natural-coordinate width of drag-hint panels
@@ -39,6 +40,7 @@ interface BinderSpreadViewProps {
   onSpreadChange: (index: number) => void
   coverColor: string
   binderName: string
+  description?: string | null
   slots: SlotWithCard[]
   totalPages: number
   gridType: GridType
@@ -59,6 +61,7 @@ function SpreadPanelContent({
   content,
   coverColor,
   binderName,
+  description,
   slots,
   totalPages,
   gridType,
@@ -74,6 +77,7 @@ function SpreadPanelContent({
   content: SpreadPageContent
   coverColor: string
   binderName: string
+  description?: string | null
   slots: SlotWithCard[]
   totalPages: number
   gridType: GridType
@@ -90,6 +94,7 @@ function SpreadPanelContent({
     return (
       <BinderCoverPanel
         binderName={binderName}
+        description={description}
         slots={slots}
         gridType={gridType}
         totalPages={totalPages}
@@ -102,7 +107,7 @@ function SpreadPanelContent({
     return <div className="w-full h-full rounded-lg" style={{ backgroundColor: coverColor }} />
   }
   return (
-    <div className="w-full p-4 bg-black">
+    <div className="w-full p-4 dark bg-black">
       {/* 固定佔位高度 = 文字自然高度 × counterScale，避免 transform 不影響 layout 導致視覺溢出 */}
       <div style={{ height: PAGE_LABEL_HEIGHT * counterScale, overflow: 'visible' }}>
         <p
@@ -133,6 +138,7 @@ export function BinderSpreadView({
   onSpreadChange,
   coverColor,
   binderName,
+  description,
   slots,
   totalPages,
   gridType,
@@ -217,100 +223,13 @@ export function BinderSpreadView({
 
   // counter-scale factor：抵銷 innerRef 的 scale，使頁面標籤與格位操作按鈕維持自然視覺尺寸
   const counterScale = scale > 0 ? 1 / scale : 1
+  // header 在 innerRef 自然座標系中的寬度，使其視覺寬度 = SPREAD_NATURAL_WIDTH * scale（與 panels 一致）
+  const headerNaturalWidth = scale > 0 ? SPREAD_NATURAL_WIDTH * scale : SPREAD_NATURAL_WIDTH
+  // 補償 counter-scale 視覺溢出，確保 panels 緊接在 header 視覺底部下方
+  const dynamicSpacerHeight = scale > 0 && scale < 1 ? HEADER_HEIGHT * (1 / scale - 1) : 0
 
   return (
     <div data-testid="binder-spread-view" className="hidden md:flex flex-col flex-1 min-h-0">
-      {/* Header — shrink-0，固定高度，不進 DndContext，不受 Snowglobe scale 影響 */}
-      <div
-        className="shrink-0 flex items-center justify-between py-2 px-1"
-        style={{ height: HEADER_HEIGHT }}
-      >
-        <div className="flex items-center gap-1">
-          <Button variant="ghost" size="sm" asChild>
-            <Link href="/binders" aria-label="返回卡冊列表" data-testid="back-to-binders">
-              <ChevronLeft className="h-4 w-4" />
-              <span>返回</span>
-            </Link>
-          </Button>
-          <h1 className="text-2xl font-bold">{binderName}</h1>
-        </div>
-        <div className="flex items-center gap-2">
-          <Pagination className="w-auto mx-0">
-            <PaginationContent>
-              <PaginationItem>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  data-testid="spread-first-btn"
-                  onClick={() => onSpreadChange(0)}
-                  disabled={spreadIndex === 0 || isDragging}
-                  aria-label="第一頁"
-                >
-                  <ChevronsLeft className="h-4 w-4" />
-                </Button>
-              </PaginationItem>
-              <PaginationItem>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  data-testid="spread-prev-btn"
-                  onClick={() => onSpreadChange(spreadIndex - 1)}
-                  disabled={spreadIndex === 0 || isDragging}
-                  className="gap-1 px-2.5"
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                  <span>上一頁</span>
-                </Button>
-              </PaginationItem>
-              <PaginationItem>
-                <span className="text-sm text-muted-foreground tabular-nums px-2">
-                  {spreadIndex + 1} / {spreads.length}
-                </span>
-              </PaginationItem>
-              <PaginationItem>
-                {isLastSpread ? (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    data-testid="spread-add-page-btn"
-                    onClick={onAddPage}
-                    disabled={isDragging}
-                    aria-label="新增內頁"
-                  >
-                    <PlusCircle className="h-4 w-4" />
-                  </Button>
-                ) : (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    data-testid="spread-next-btn"
-                    onClick={() => onSpreadChange(spreadIndex + 1)}
-                    disabled={isDragging}
-                    className="gap-1 px-2.5"
-                  >
-                    <span>下一頁</span>
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
-                )}
-              </PaginationItem>
-              <PaginationItem>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  data-testid="spread-last-btn"
-                  onClick={() => onSpreadChange(spreads.length - 1)}
-                  disabled={isLastSpread || isDragging}
-                  aria-label="最後一頁"
-                >
-                  <ChevronsRight className="h-4 w-4" />
-                </Button>
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
-          {settingsSlot}
-        </div>
-      </div>
-
       {/* DndContext wraps both the scaled area and DragOverlay so the overlay
           renders as a sibling — outside the CSS scale transform — letting
           position:fixed resolve against the viewport instead of the scaled ancestor */}
@@ -334,6 +253,107 @@ export function BinderSpreadView({
               transformOrigin: 'top left',
             }}
           >
+            {/* Header — counter-scale 確保按鈕與文字不因 innerRef scale 縮小 */}
+            <div
+              className="shrink-0 flex items-center justify-between py-2"
+              style={{
+                transform: `scale(${counterScale})`,
+                transformOrigin: 'top left',
+                width: headerNaturalWidth,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                height: HEADER_HEIGHT,
+              }}
+            >
+              <div className="flex items-center gap-1">
+                <Button variant="outline" size="sm" className="mr-2" asChild>
+                  <Link href="/binders" aria-label="返回卡冊列表" data-testid="back-to-binders">
+                    <ArrowLeft />
+                    <span>返回</span>
+                  </Link>
+                </Button>
+                <h1 className="text-2xl font-bold">{binderName}</h1>
+              </div>
+              <div className="flex items-center gap-2">
+                <Pagination className="w-auto mx-0">
+                  <PaginationContent>
+                    <PaginationItem>
+                      <ButtonGroup>
+                        <Button
+                          variant="outline"
+                          size="icon-sm"
+                          data-testid="spread-first-btn"
+                          onClick={() => onSpreadChange(0)}
+                          disabled={spreadIndex === 0 || isDragging}
+                          aria-label="第一頁"
+                        >
+                          <ChevronsLeft />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="icon-sm"
+                          data-testid="spread-prev-btn"
+                          onClick={() => onSpreadChange(spreadIndex - 1)}
+                          disabled={spreadIndex === 0 || isDragging}
+                          className="gap-1 px-2.5"
+                        >
+                          <ChevronLeft />
+                        </Button>
+                      </ButtonGroup>
+                    </PaginationItem>
+                    <PaginationItem>
+                      <span className="text-sm text-muted-foreground tabular-nums px-2">
+                        {spreadIndex + 1} / {spreads.length}
+                      </span>
+                    </PaginationItem>
+                    <PaginationItem>
+                      <ButtonGroup>
+                        {isLastSpread ? (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            data-testid="spread-add-page-btn"
+                            onClick={onAddPage}
+                            disabled={isDragging}
+                            aria-label="新增內頁"
+                          >
+                            <Plus />
+                            <span>新增內頁</span>
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="outline"
+                            size="icon-sm"
+                            data-testid="spread-next-btn"
+                            onClick={() => onSpreadChange(spreadIndex + 1)}
+                            disabled={isDragging}
+                            className="gap-1 px-2.5"
+                          >
+                            <ChevronRight />
+                          </Button>
+                        )}
+                        <Button
+                          variant="outline"
+                          size="icon-sm"
+                          data-testid="spread-last-btn"
+                          onClick={() => onSpreadChange(spreads.length - 1)}
+                          disabled={isLastSpread || isDragging}
+                          aria-label="最後一頁"
+                        >
+                          <ChevronsRight />
+                        </Button>
+                      </ButtonGroup>
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
+                {settingsSlot}
+              </div>
+            </div>
+
+            {/* 補償 counter-scale 視覺溢出，讓 panels 緊接在 header 視覺底部下方 */}
+            <div style={{ height: dynamicSpacerHeight }} />
+
             <div className="relative">
               <div ref={containerRef} data-testid="spread-drag-container" className="flex gap-4">
                 <div
@@ -344,6 +364,7 @@ export function BinderSpreadView({
                     content={spread.left}
                     coverColor={coverColor}
                     binderName={binderName}
+                    description={description}
                     slots={slots}
                     totalPages={totalPages}
                     gridType={gridType}
@@ -365,6 +386,7 @@ export function BinderSpreadView({
                     content={spread.right}
                     coverColor={coverColor}
                     binderName={binderName}
+                    description={description}
                     slots={slots}
                     totalPages={totalPages}
                     gridType={gridType}
@@ -388,7 +410,12 @@ export function BinderSpreadView({
                 >
                   <div style={{ transform: `scale(${counterScale})`, transformOrigin: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
                     <ChevronLeft className="h-5 w-5 text-primary/60" />
-                    <span className="text-[10px] text-primary/60 text-center leading-tight">拖到此處翻頁</span>
+                    <span
+                      className="text-[10px] text-primary/60 leading-tight"
+                      style={{ writingMode: 'vertical-rl' }}
+                    >
+                      拖到此處翻頁
+                    </span>
                   </div>
                 </div>
               )}
@@ -399,17 +426,50 @@ export function BinderSpreadView({
                 >
                   <div style={{ transform: `scale(${counterScale})`, transformOrigin: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
                     <ChevronRight className="h-5 w-5 text-primary/60" />
-                    <span className="text-[10px] text-primary/60 text-center leading-tight">拖到此處翻頁</span>
+                    <span
+                      className="text-[10px] text-primary/60 leading-tight"
+                      style={{ writingMode: 'vertical-rl' }}
+                    >
+                      拖到此處翻頁
+                    </span>
                   </div>
                 </div>
               )}
             </div>
           </div>
+
+          {/* Left side nav button — 位於 outerRef 內，不受 innerRef scale 影響 */}
+          {!isDragging && hasPrev && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute left-1 top-1/2 -translate-y-1/2 z-20 bg-background/40 hover:bg-background/80 backdrop-blur-sm"
+              onClick={() => onSpreadChange(spreadIndex - 1)}
+              aria-label="上一頁"
+              data-testid="spread-side-prev-btn"
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </Button>
+          )}
+          {/* Right side nav button */}
+          {!isDragging && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute right-1 top-1/2 -translate-y-1/2 z-20 bg-background/40 hover:bg-background/80 backdrop-blur-sm"
+              onClick={isLastSpread ? onAddPage : () => onSpreadChange(spreadIndex + 1)}
+              disabled={isLastSpread}
+              aria-label={isLastSpread ? '已是最後一頁' : '下一頁'}
+              data-testid="spread-side-next-btn"
+            >
+              <ChevronRight className="h-5 w-5" />
+            </Button>
+          )}
         </div>
 
         <DragOverlay>
           {activeSlot ? (
-            <SlotCard slot={activeSlot} onDelete={() => {}} onToggleStatus={() => {}} isDragOverlay />
+            <SlotCard slot={activeSlot} onDelete={() => { }} onToggleStatus={() => { }} isDragOverlay />
           ) : null}
         </DragOverlay>
       </DndContext>
