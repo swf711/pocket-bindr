@@ -12,10 +12,19 @@ interface UseEdgeHoverPageFlipOptions {
   holdDuration?: number // ms pointer must stay in zone before flip
 }
 
+function getActivatorClientX(nativeEvent: Event): number | null {
+  if (nativeEvent instanceof PointerEvent) return nativeEvent.clientX
+  if (typeof TouchEvent !== 'undefined' && nativeEvent instanceof TouchEvent) {
+    const touch = nativeEvent.changedTouches[0] ?? nativeEvent.touches[0]
+    return touch?.clientX ?? null
+  }
+  return null
+}
+
 /**
- * Monitors pointer position during dnd-kit drag and flips the spread when
+ * Monitors pointer/touch position during dnd-kit drag and flips the page when
  * the pointer hovers near the left/right edge of the container for holdDuration ms.
- * Only desktop — mobile drag is not supported (see BDD pending items).
+ * Supports both desktop (PointerSensor) and mobile (TouchSensor).
  */
 export function useEdgeHoverPageFlip({
   containerRef,
@@ -41,10 +50,12 @@ export function useEdgeHoverPageFlip({
       if (!container) return
 
       // Current pointer position = drag start position + accumulated delta
-      const nativeEvent = event.activatorEvent as PointerEvent | null
+      const nativeEvent = event.activatorEvent as Event | null
       if (!nativeEvent) return
 
-      const currentX = nativeEvent.clientX + event.delta.x
+      const startX = getActivatorClientX(nativeEvent)
+      if (startX === null) return
+      const currentX = startX + event.delta.x
       const rect = container.getBoundingClientRect()
       const relX = currentX - rect.left
 

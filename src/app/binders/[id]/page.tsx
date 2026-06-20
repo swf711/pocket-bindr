@@ -50,13 +50,10 @@ export default async function BinderDetailPage({ params }: { params: Promise<{ i
     name: binder.name,
     gridType: binder.gridType as BinderDetailResponse['gridType'],
     coverColor: binder.coverColor,
+    description: binder.description ?? null,
     settings,
     slots,
   }
 
-  return (
-    <main className="container py-6">
-      <BinderView binder={binderData} />
-    </main>
-  )
+  return <BinderView binder={binderData} />
 }

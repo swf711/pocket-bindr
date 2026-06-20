@@ -57,4 +57,35 @@ describe('SlotCard', () => {
     )
     expect(getByTestId('slot-card-slot1').className).not.toContain('animate-pulse')
   })
+
+  it('isTapped=true 時 overlay 顯示（opacity-100）', () => {
+    const { container } = render(
+      <SlotCard slot={makeSlot()} onDelete={() => {}} onToggleStatus={() => {}} isTapped />,
+    )
+    const overlay = container.querySelector('.absolute.inset-0')
+    expect(overlay?.className).toContain('opacity-100')
+    expect(overlay?.className).not.toContain('opacity-0')
+  })
+
+  it('isTapped=false 時 overlay 預設隱藏（opacity-0 group-hover:opacity-100）', () => {
+    const { container } = render(
+      <SlotCard slot={makeSlot()} onDelete={() => {}} onToggleStatus={() => {}} isTapped={false} />,
+    )
+    const overlay = container.querySelector('.absolute.inset-0')
+    expect(overlay?.className).toContain('opacity-0')
+    expect(overlay?.className).toContain('group-hover:opacity-100')
+  })
+
+  it('點擊卡片呼叫 onTap，且事件不向上傳播', () => {
+    const onTap = vi.fn()
+    const outerClick = vi.fn()
+    const { getByTestId } = render(
+      <div onClick={outerClick}>
+        <SlotCard slot={makeSlot()} onDelete={() => {}} onToggleStatus={() => {}} onTap={onTap} />
+      </div>,
+    )
+    fireEvent.click(getByTestId('slot-card-slot1'))
+    expect(onTap).toHaveBeenCalledTimes(1)
+    expect(outerClick).not.toHaveBeenCalled()
+  })
 })

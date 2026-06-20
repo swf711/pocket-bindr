@@ -27,6 +27,7 @@ function makeBinder(slots: SlotWithCard[]): BinderDetailResponse {
     name: 'Test Binder',
     gridType: 'grid_3x3',
     coverColor: '#ffffff',
+    description: null,
     settings: { totalPages: 1 },
     slots,
   }

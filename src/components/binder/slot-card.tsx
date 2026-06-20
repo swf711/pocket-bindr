@@ -26,6 +26,8 @@ interface SlotCardProps {
   isDragOverlay?: boolean
   isHighlighted?: boolean
   counterScale?: number
+  isTapped?: boolean
+  onTap?: () => void
 }
 
 export function SlotCard({
@@ -36,6 +38,8 @@ export function SlotCard({
   isDragOverlay = false,
   isHighlighted = false,
   counterScale = 1,
+  isTapped = false,
+  onTap,
 }: SlotCardProps) {
   const [open, setOpen] = useState(false)
 
@@ -62,6 +66,7 @@ export function SlotCard({
       {...attributes}
       {...listeners}
       data-testid={isDragOverlay ? 'drag-overlay-card' : `slot-card-${slot.id}`}
+      onClick={!isDragOverlay && onTap ? (e) => { e.stopPropagation(); onTap() } : undefined}
       className={`relative group w-full aspect-5/7 overflow-hidden rounded-md border border-border bg-card cursor-grab active:cursor-grabbing transition-opacity ${
         isDragging ? 'opacity-40' : 'opacity-100'
       } ${isOver && !isDragOverlay ? 'ring-2 ring-primary' : ''} ${
@@ -82,9 +87,9 @@ export function SlotCard({
         </div>
       )}
 
-      {/* 操作按鈕 overlay — 三按鈕各自 counter-scale，保持自然視覺尺寸 */}
+      {/* 操作按鈕 overlay — 三按鈕各自 counter-scale，保持自然視覺尺寸；桌面 hover 顯示，行動裝置 tap 顯示 */}
       {!isDragOverlay && (
-        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+        <div className={`absolute inset-0 transition-opacity pointer-events-none ${isTapped ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
           {/* 左：切換狀態 */}
           <div style={{ position: 'absolute', top: 4, left: 4, transform: `scale(${counterScale})`, transformOrigin: 'top left', pointerEvents: 'auto' }}>
             <Button

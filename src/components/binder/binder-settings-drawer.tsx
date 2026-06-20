@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { GridType } from '@prisma/client'
 import { toast } from 'sonner'
-import { Settings, Trash2, GripVertical, Search } from 'lucide-react'
+import { Settings, Trash2, GripVertical } from 'lucide-react'
 import {
   DndContext,
   DragEndEvent,
@@ -24,6 +24,7 @@ import { CSS } from '@dnd-kit/utilities'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import {
   Drawer,
   DrawerContent,
@@ -42,24 +43,15 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Separator } from '@/components/ui/separator'
-import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group'
 import { CoverColorPicker } from '@/components/binders/cover-color-picker'
-import { getCardImageUrl } from '@/lib/get-card-image-url'
-import { GRID_TYPE_LABELS, type SlotWithCard, type BinderSettings } from '@/types/binder'
-
-const GRID_TYPE_SHORT: Record<GridType, string> = {
-  grid_1x2: '1×2',
-  grid_2x2: '2×2',
-  grid_3x3: '3×3',
-  grid_4x3: '4×3',
-  grid_4x4: '4×4',
-}
+import { GRID_SHORT_LABELS, GRID_TYPE_LABELS, type SlotWithCard, type BinderSettings } from '@/types/binder'
 
 interface BinderSettingsDrawerProps {
   binderId: string
   binderName: string
+  binderDescription: string | null
   gridType: GridType
   coverColor: string
   totalPages: number
@@ -73,8 +65,6 @@ interface BinderSettingsDrawerProps {
   onPageDelete: (pageNumber: number, newSlots: SlotWithCard[]) => void
   onPageReorder: (newSlots: SlotWithCard[]) => void
   onTotalPagesChange: (n: number) => void
-  slots: SlotWithCard[]
-  onJumpToSlot: (slot: SlotWithCard) => void
 }
 
 function SortablePageRow({
@@ -154,6 +144,7 @@ function SortablePageRow({
 export function BinderSettingsDrawer({
   binderId,
   binderName,
+  binderDescription,
   gridType,
   coverColor,
   totalPages,
@@ -161,11 +152,10 @@ export function BinderSettingsDrawer({
   onPageDelete,
   onPageReorder,
   onTotalPagesChange,
-  slots,
-  onJumpToSlot,
 }: BinderSettingsDrawerProps) {
   const [open, setOpen] = useState(false)
   const [name, setName] = useState(binderName)
+  const [description, setDescription] = useState(binderDescription ?? '')
   const [localGridType, setLocalGridType] = useState<GridType>(gridType)
   const [localCoverColor, setLocalCoverColor] = useState(coverColor)
   const [savingSettings, setSavingSettings] = useState(false)
@@ -173,19 +163,6 @@ export function BinderSettingsDrawer({
   const [pageOrder, setPageOrder] = useState<number[]>(() =>
     Array.from({ length: totalPages }, (_, i) => i + 1),
   )
-  const [cardSearchQuery, setCardSearchQuery] = useState('')
-
-  const cardSearchResults = cardSearchQuery.trim()
-    ? slots.filter((slot) =>
-        slot.card.name.toLowerCase().includes(cardSearchQuery.trim().toLowerCase()),
-      )
-    : []
-
-  function handleJumpToSlotClick(slot: SlotWithCard) {
-    onJumpToSlot(slot)
-    setCardSearchQuery('')
-    setOpen(false)
-  }
 
   useEffect(() => {
     setPageOrder(Array.from({ length: totalPages }, (_, i) => i + 1))
@@ -202,7 +179,12 @@ export function BinderSettingsDrawer({
       const res = await fetch(`/api/binders/${binderId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, gridType: localGridType, coverColor: localCoverColor }),
+        body: JSON.stringify({
+          name,
+          gridType: localGridType,
+          coverColor: localCoverColor,
+          description: description || null,
+        }),
       })
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
@@ -212,7 +194,6 @@ export function BinderSettingsDrawer({
       const affectedSlotsCount: number = data.affectedSlotsCount ?? 0
 
       if (affectedSlotsCount > 0) {
-        // PATCH response already has updated settings; re-fetch only for migrated slot positions
         const newTotalPages = (data.settings as BinderSettings | null)?.totalPages ?? totalPages
         const refreshRes = await fetch(`/api/binders/${binderId}`)
         const refreshData = await refreshRes.json()
@@ -253,7 +234,6 @@ export function BinderSettingsDrawer({
       if (!res.ok) throw new Error('重排失敗')
       const data = await res.json()
       onPageReorder(data.slots)
-      // reset to sequential order since server renumbered content
       setPageOrder(Array.from({ length: totalPages }, (_, i) => i + 1))
     } catch (err) {
       toast((err as Error).message)
@@ -308,25 +288,38 @@ export function BinderSettingsDrawer({
             </div>
 
             <div className="flex flex-col gap-1.5">
+              <Label htmlFor="drawer-binder-description">描述（選填）</Label>
+              <Textarea
+                id="drawer-binder-description"
+                placeholder="選填，最多 150 字"
+                maxLength={150}
+                rows={2}
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                data-testid="drawer-binder-description-input"
+              />
+            </div>
+
+            <div className="flex flex-col gap-1.5">
               <Label>格式</Label>
-              <ToggleGroup
-                type="single"
+              <Tabs
                 value={localGridType}
-                onValueChange={(v) => v && setLocalGridType(v as GridType)}
-                className="flex flex-wrap gap-1 justify-start"
-                data-testid="drawer-grid-toggle"
+                onValueChange={(v) => setLocalGridType(v as GridType)}
+                data-testid="drawer-grid-tabs"
               >
-                {(Object.keys(GRID_TYPE_SHORT) as GridType[]).map((gt) => (
-                  <ToggleGroupItem
-                    key={gt}
-                    value={gt}
-                    aria-label={GRID_TYPE_LABELS[gt]}
-                    className="text-xs px-2"
-                  >
-                    {GRID_TYPE_SHORT[gt]}
-                  </ToggleGroupItem>
-                ))}
-              </ToggleGroup>
+                <TabsList className="flex flex-wrap h-auto gap-1">
+                  {(Object.keys(GRID_SHORT_LABELS) as GridType[]).map((gt) => (
+                    <TabsTrigger
+                      key={gt}
+                      value={gt}
+                      aria-label={GRID_TYPE_LABELS[gt]}
+                      className="text-xs px-3"
+                    >
+                      {GRID_SHORT_LABELS[gt]}
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+              </Tabs>
             </div>
 
             <div className="flex flex-col gap-1.5">
@@ -341,50 +334,6 @@ export function BinderSettingsDrawer({
             >
               {savingSettings ? '儲存中…' : '儲存設定'}
             </Button>
-          </div>
-
-          <Separator />
-
-          {/* 搜尋卡冊內卡牌 */}
-          <div className="flex flex-col gap-2">
-            <p className="text-sm font-medium">搜尋卡冊內卡牌</p>
-            <InputGroup>
-              <InputGroupAddon>
-                <Search />
-              </InputGroupAddon>
-              <InputGroupInput
-                data-testid="drawer-card-search-input"
-                type="text"
-                placeholder="輸入卡牌名稱..."
-                value={cardSearchQuery}
-                onChange={(e) => setCardSearchQuery(e.target.value)}
-              />
-            </InputGroup>
-            {cardSearchQuery.trim() && (
-              <div className="flex flex-col gap-1 max-h-48 overflow-y-auto" data-testid="drawer-card-search-results">
-                {cardSearchResults.length === 0 ? (
-                  <p className="text-xs text-muted-foreground px-1">查無符合的卡牌</p>
-                ) : (
-                  cardSearchResults.map((slot) => (
-                    <button
-                      key={slot.id}
-                      type="button"
-                      onClick={() => handleJumpToSlotClick(slot)}
-                      className="flex items-center gap-2 rounded-md border px-2 py-1.5 text-left hover:bg-accent"
-                      data-testid={`drawer-card-search-result-${slot.id}`}
-                    >
-                      <img
-                        src={getCardImageUrl(slot.card.imageSmall) ?? ''}
-                        alt={slot.card.name}
-                        className="h-10 w-7 rounded-xs object-cover"
-                      />
-                      <span className="text-sm truncate">{slot.card.name}</span>
-                      <span className="text-xs text-muted-foreground ml-auto shrink-0">第 {slot.pageNumber} 頁</span>
-                    </button>
-                  ))
-                )}
-              </div>
-            )}
           </div>
 
           <Separator />

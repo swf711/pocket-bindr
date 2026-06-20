@@ -1,5 +1,6 @@
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { MAX_PAGES_PER_BINDER } from '@/lib/binder-limits'
 
 type RouteContext = { params: Promise<{ id: string }> }
 
@@ -31,6 +32,13 @@ export async function POST(_request: Request, context: RouteContext) {
       orderBy: { pageNumber: 'desc' },
     })
     currentTotalPages = lastSlot?.pageNumber ?? 1
+  }
+
+  if (currentTotalPages >= MAX_PAGES_PER_BINDER) {
+    return Response.json(
+      { error: 'pageLimitReached', max: MAX_PAGES_PER_BINDER },
+      { status: 409 },
+    )
   }
 
   const newTotalPages = currentTotalPages + 1

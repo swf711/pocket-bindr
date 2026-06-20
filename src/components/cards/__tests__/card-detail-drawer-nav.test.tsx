@@ -31,6 +31,7 @@ function makeCard(id: string, name: string, overrides: Partial<CardWithCollectio
     types: [],
     cardNumber: `00${id}`,
     isCollectible: true,
+    canonicalCardId: null,
     attributes: null,
     collectionStatus: { owned: null, wanted: null },
     set: { id: 'set1', name: 'Test Set', series: 'Scarlet & Violet', externalId: 'SV1', releaseDate: '2024-01-26T00:00:00.000Z' },

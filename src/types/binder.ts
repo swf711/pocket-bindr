@@ -36,6 +36,7 @@ export type BinderDetailResponse = {
   name: string
   gridType: 'grid_1x2' | 'grid_2x2' | 'grid_3x3' | 'grid_4x3' | 'grid_4x4'
   coverColor: string
+  description: string | null
   settings: BinderSettings | null
   slots: SlotWithCard[]
 }

@@ -1,4 +1,5 @@
 import { CardSearchClient } from '@/components/cards/card-search-client'
+import { PageContainer } from '@/components/layout/page-container'
 
 interface PageProps {
   searchParams: Promise<{
@@ -12,5 +13,5 @@ interface PageProps {
 
 export default async function CardsPage({ searchParams }: PageProps) {
   const params = await searchParams
-  return <CardSearchClient initialParams={params} />
+  return <PageContainer><CardSearchClient initialParams={params} /></PageContainer>
 }

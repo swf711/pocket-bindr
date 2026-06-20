@@ -34,6 +34,8 @@ interface BinderGridSlotsProps {
   onAddCard?: (pageNumber: number, slotIndex: number) => void
   highlightedSlotId?: string | null
   counterScale?: number
+  tappedSlotId?: string | null
+  onTapSlot?: (key: string) => void
 }
 
 /** Pure slot grid rendering — no DndContext. Use inside a parent DndContext. */
@@ -47,6 +49,8 @@ export function BinderGridSlots({
   onAddCard,
   highlightedSlotId,
   counterScale = 1,
+  tappedSlotId,
+  onTapSlot,
 }: BinderGridSlotsProps) {
   const cols = GRID_COLS[gridType]
   return (
@@ -54,30 +58,35 @@ export function BinderGridSlots({
       style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
       className="grid gap-1"
     >
-      {slots.map((slot) => (
-        <div
-          key={slot.id ?? `empty-${slot.pageNumber}-${slot.slotIndex}`}
-        >
-          {slot.id === null ? (
-            <EmptySlotCard
-              pageNumber={slot.pageNumber}
-              slotIndex={slot.slotIndex}
-              isDragging={isDragging}
-              onAddCard={onAddCard}
-              counterScale={counterScale}
-            />
-          ) : (
-            <SlotCard
-              slot={slot as SlotWithCard}
-              onDelete={onDelete}
-              onToggleStatus={onToggleStatus}
-              onView={onView}
-              isHighlighted={highlightedSlotId === slot.id}
-              counterScale={counterScale}
-            />
-          )}
-        </div>
-      ))}
+      {slots.map((slot) => {
+        const emptyKey = `empty-${slot.pageNumber}-${slot.slotIndex}`
+        return (
+          <div key={slot.id ?? emptyKey}>
+            {slot.id === null ? (
+              <EmptySlotCard
+                pageNumber={slot.pageNumber}
+                slotIndex={slot.slotIndex}
+                isDragging={isDragging}
+                onAddCard={onAddCard}
+                counterScale={counterScale}
+                isTapped={tappedSlotId === emptyKey}
+                onTap={onTapSlot ? () => onTapSlot(emptyKey) : undefined}
+              />
+            ) : (
+              <SlotCard
+                slot={slot as SlotWithCard}
+                onDelete={onDelete}
+                onToggleStatus={onToggleStatus}
+                onView={onView}
+                isHighlighted={highlightedSlotId === slot.id}
+                counterScale={counterScale}
+                isTapped={tappedSlotId === slot.id}
+                onTap={onTapSlot ? () => onTapSlot(slot.id!) : undefined}
+              />
+            )}
+          </div>
+        )
+      })}
     </div>
   )
 }

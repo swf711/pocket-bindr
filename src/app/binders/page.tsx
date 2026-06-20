@@ -1,4 +1,5 @@
 import { auth } from '@/lib/auth'
+import { PageContainer } from '@/components/layout/page-container'
 import { prisma } from '@/lib/prisma'
 import { BinderListClient } from '@/components/binders/binder-list-client'
 import { redirect } from 'next/navigation'
@@ -21,5 +22,5 @@ export default async function BindersPage() {
     coverColor: b.coverColor,
   }))
 
-  return <BinderListClient initialBinders={binderSummaries} />
+  return <PageContainer><BinderListClient initialBinders={binderSummaries} /></PageContainer>
 }

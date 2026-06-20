@@ -13,14 +13,8 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { BinderSummary, GRID_TYPE_LABELS } from '@/types/binder'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { BinderSummary, GRID_SHORT_LABELS, GRID_TYPE_LABELS } from '@/types/binder'
 import { DEFAULT_COVER_COLOR } from '@/lib/cover-colors'
 import { CoverColorPicker } from './cover-color-picker'
 
@@ -104,24 +98,25 @@ export function CreateBinderDialog({
             />
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="binder-grid">格式</Label>
-            <Select
+            <Label>格式</Label>
+            <Tabs
               value={gridType}
               onValueChange={v => setGridType(v as GridType)}
+              data-testid="binder-grid-tabs"
             >
-              <SelectTrigger id="binder-grid" data-testid="binder-grid-select">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {(Object.entries(GRID_TYPE_LABELS) as [GridType, string][]).map(
-                  ([value, label]) => (
-                    <SelectItem key={value} value={value}>
-                      {label}
-                    </SelectItem>
-                  )
-                )}
-              </SelectContent>
-            </Select>
+              <TabsList className="flex flex-wrap h-auto gap-1">
+                {(Object.keys(GRID_SHORT_LABELS) as GridType[]).map((gt) => (
+                  <TabsTrigger
+                    key={gt}
+                    value={gt}
+                    aria-label={GRID_TYPE_LABELS[gt]}
+                    className="text-xs px-3"
+                  >
+                    {GRID_SHORT_LABELS[gt]}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </Tabs>
           </div>
           <div className="flex flex-col gap-1.5">
             <Label>封面顏色</Label>

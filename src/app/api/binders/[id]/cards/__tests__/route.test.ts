@@ -41,7 +41,9 @@ const mockBinder = {
   name: 'Test Binder',
   gridType: 'grid_3x3' as const,
   coverColor: '#4A5568',
+  description: null,
   settings: null,
+  sortOrder: 0,
   createdAt: new Date(),
   updatedAt: new Date(),
 }
