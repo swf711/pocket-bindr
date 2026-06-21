@@ -18,6 +18,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     Discord({
       clientId: process.env.DISCORD_CLIENT_ID!,
       clientSecret: process.env.DISCORD_CLIENT_SECRET!,
+      authorization: { params: { prompt: 'none' } },
     }),
     Credentials({
       credentials: {
