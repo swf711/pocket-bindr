@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -16,6 +17,7 @@ const PROVIDERS: { id: string; label: string }[] = [
 
 export function OAuthProvidersSection({ linkedProviders, hasPassword }: OAuthProvidersSectionProps) {
   const router = useRouter()
+  const [linkingProvider, setLinkingProvider] = useState<string | null>(null)
 
   function isLastMethod(provider: string) {
     return (
@@ -36,6 +38,27 @@ export function OAuthProvidersSection({ linkedProviders, hasPassword }: OAuthPro
           ? '無法解綁：這是您唯一的登入方式'
           : '解除連結失敗，請再試一次'
       toast.error(msg)
+    }
+  }
+
+  async function handleLink(provider: string) {
+    setLinkingProvider(provider)
+    try {
+      const res = await fetch(`/api/auth/link/${provider}/initiate`, { method: 'POST' })
+      if (!res.ok) {
+        const data = await res.json() as { error?: string }
+        toast.error(
+          data.error === 'ALREADY_LINKED' ? '此帳號已連結此社群帳號' : '連結失敗，請再試一次'
+        )
+        setLinkingProvider(null)
+        return
+      }
+      const { authUrl } = await res.json() as { authUrl: string }
+      window.location.href = authUrl
+      // 不 reset：頁面即將導離，維持 loading 狀態
+    } catch {
+      toast.error('連結失敗，請再試一次')
+      setLinkingProvider(null)
     }
   }
 
@@ -67,12 +90,15 @@ export function OAuthProvidersSection({ linkedProviders, hasPassword }: OAuthPro
                 </Button>
               </div>
             ) : (
-              <span
-                data-testid={`${id}-not-linked`}
-                className="text-sm text-muted-foreground"
+              <Button
+                variant="outline"
+                size="sm"
+                data-testid={`${id}-link-btn`}
+                disabled={linkingProvider !== null}
+                onClick={() => handleLink(id)}
               >
-                未綁定
-              </span>
+                {linkingProvider === id ? '連結中...' : '連結'}
+              </Button>
             )}
           </div>
         )
