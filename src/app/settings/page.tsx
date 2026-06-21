@@ -26,7 +26,7 @@ export default async function SettingsPage() {
         username={user.username}
         email={user.email}
         hasPassword={user.passwordHash !== null}
-        isGoogleLinked={user.accounts.some((a) => a.provider === 'google')}
+        linkedProviders={user.accounts.map((a) => a.provider)}
       />
     </PageContainer>
   )

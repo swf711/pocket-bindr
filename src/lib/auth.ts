@@ -1,6 +1,7 @@
 import NextAuth from 'next-auth'
 import { PrismaAdapter } from '@auth/prisma-adapter'
 import Credentials from 'next-auth/providers/credentials'
+import Discord from 'next-auth/providers/discord'
 import Google from 'next-auth/providers/google'
 import { prisma } from '@/lib/prisma'
 import { verifyCredentials } from '@/lib/auth-utils'
@@ -13,7 +14,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-      allowDangerousEmailAccountLinking: true,
+    }),
+    Discord({
+      clientId: process.env.DISCORD_CLIENT_ID!,
+      clientSecret: process.env.DISCORD_CLIENT_SECRET!,
     }),
     Credentials({
       credentials: {

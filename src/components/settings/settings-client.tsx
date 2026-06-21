@@ -9,14 +9,15 @@ import {
 } from '@/components/ui/card'
 import { UsernameForm } from './username-form'
 import { PasswordForm } from './password-form'
-import { GoogleLinkSection } from './google-link-section'
+import { OAuthProvidersSection } from './oauth-providers-section'
+import { DeleteAccountSection } from './delete-account-section'
 import type { UserSettingsData } from '@/types/user'
 
 export function SettingsClient({
   username,
   email,
   hasPassword,
-  isGoogleLinked,
+  linkedProviders,
 }: UserSettingsData) {
   return (
     <div className="max-w-lg space-y-6">
@@ -25,7 +26,7 @@ export function SettingsClient({
       <Card>
         <CardHeader>
           <CardTitle>用戶名稱</CardTitle>
-          <CardDescription>目前 Email：{email}</CardDescription>
+          <CardDescription>目前 Email：{email ?? '（未設定）'}</CardDescription>
         </CardHeader>
         <CardContent>
           <UsernameForm username={username} />
@@ -45,13 +46,21 @@ export function SettingsClient({
 
       <Card>
         <CardHeader>
-          <CardTitle>Google 帳號</CardTitle>
-          <CardDescription>
-            連結後可使用 Google 登入同一帳號
-          </CardDescription>
+          <CardTitle>社群帳號</CardTitle>
+          <CardDescription>綁定後可使用對應社群帳號登入</CardDescription>
         </CardHeader>
         <CardContent>
-          <GoogleLinkSection isGoogleLinked={isGoogleLinked} />
+          <OAuthProvidersSection linkedProviders={linkedProviders} hasPassword={hasPassword} />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>危險區域</CardTitle>
+          <CardDescription>刪除帳號後，所有資料將永久消失且無法復原</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <DeleteAccountSection />
         </CardContent>
       </Card>
     </div>

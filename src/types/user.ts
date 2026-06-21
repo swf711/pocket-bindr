@@ -1,8 +1,10 @@
+export type SupportedOAuthProvider = 'google' | 'discord'
+
 export interface UserSettingsData {
   username: string | null
-  email: string
+  email: string | null
   hasPassword: boolean
-  isGoogleLinked: boolean
+  linkedProviders: string[]
 }
 
 export interface UpdateUsernameBody {

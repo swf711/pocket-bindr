@@ -79,9 +79,8 @@ test.describe('設定頁', () => {
     await resetUserPassword(USER.email, INITIAL_PASSWORD)
   })
 
-  // Scenario 3: Google OAuth linking requires OAuth mock infrastructure
-  test.skip('點擊「連結 Google 帳號」觸發 OAuth（需 OAuth mock）', async ({ page }) => {
-    await page.getByTestId('google-link-btn').click()
-    // Would redirect to Google OAuth
+  // Settings 不提供主動連結；OAuth provider UI 改至 e2e/settings-providers.spec.ts
+  test.skip('OAuth provider 連結 UI（已移至 settings-providers.spec.ts）', async ({ page: _p }) => {
+    // 此 spec 不測 OAuth 連結；改見 settings-providers.spec.ts
   })
 })
