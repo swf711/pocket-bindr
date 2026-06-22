@@ -25,6 +25,18 @@ describe('Footer', () => {
     expect(container.firstChild).toBeNull()
   })
 
+  it('/login → return null', () => {
+    vi.mocked(usePathname).mockReturnValue('/login')
+    const { container } = render(<Footer />)
+    expect(container.firstChild).toBeNull()
+  })
+
+  it('/register → return null', () => {
+    vi.mocked(usePathname).mockReturnValue('/register')
+    const { container } = render(<Footer />)
+    expect(container.firstChild).toBeNull()
+  })
+
   it('/binders（列表頁）→ 正常渲染', () => {
     vi.mocked(usePathname).mockReturnValue('/binders')
     render(<Footer />)
