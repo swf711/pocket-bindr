@@ -64,3 +64,6 @@ scripts/verify-*.ts
 /tmp/
 scripts/.snapshots/
 .cache/
+
+# Scripts 腳本說明文件
+docs/SCRIPTS.md
