@@ -80,7 +80,9 @@ export function BinderMobileView({
   const content = mobilePages[pageIndex]
   const isLastMobilePage = pageIndex === mobilePages.length - 1
 
-  const { outerRef, innerRef, scale, offsetX } = useScaleFit(MOBILE_PAGE_NATURAL_WIDTH)
+  const { outerRef, innerRef, scale, offsetX, innerH } = useScaleFit(MOBILE_PAGE_NATURAL_WIDTH)
+  // hint panel 高度：卡冊視覺高度扣除 header（HEADER_HEIGHT，固定 56px，不隨 scale 縮放）
+  const hintHeight = innerH > 0 ? Math.max(0, innerH * scale - HEADER_HEIGHT) : undefined
   const counterScale = scale > 0 ? 1 / scale : 1
 
   const [activeSlot, setActiveSlot] = useState<SlotWithCard | null>(null)
@@ -99,6 +101,7 @@ export function BinderMobileView({
       totalSpreads: mobilePages.length,
       onSpreadChange: onPageChange,
       edgeWidth: EDGE_HINT_PX,
+      canFlipPrev: pageIndex > 1, // 封面後第一頁左側不可翻（封面無卡牌 slot）
     })
 
   function handleDragStart(event: DragStartEvent) {
@@ -117,6 +120,7 @@ export function BinderMobileView({
     flipHandleDragEnd()
     setActiveSlot(null)
     setIsDragging(false)
+    setTappedSlotId(null)
     const { active, over } = event
     if (!over) return
 
@@ -240,7 +244,7 @@ export function BinderMobileView({
                 />
               )}
               {content.type === 'page' && (
-                <div className="p-4 bg-black">
+                <div className="p-4 dark bg-black">
                   {/* 固定佔位高度 = 文字自然高度 × counterScale，避免 transform 不影響 layout 導致視覺溢出 */}
                   <div style={{ height: PAGE_LABEL_HEIGHT * counterScale, overflow: 'visible' }}>
                     <p
@@ -297,33 +301,35 @@ export function BinderMobileView({
             </Button>
           )}
 
-          {/* 拖拉邊緣翻頁提示 — 位於 outerRef 內（不受 scale 影響） */}
-          {isDragging && hasPrev && (
+          {/* 拖拉邊緣翻頁提示 — 位於 outerRef 內（不受 scale 影響）；高度限制在卡冊視覺高度內 */}
+          {isDragging && pageIndex > 1 && (
             <div
-              className="absolute left-0 top-0 bottom-0 w-16 flex flex-col items-center justify-center gap-1 bg-primary/10 border-2 border-dashed border-primary/40 rounded-l-lg pointer-events-none z-10"
+              style={{ top: HEADER_HEIGHT, height: hintHeight ?? '100%' }}
+              className="dark absolute left-0 w-12 text-primary/80 flex flex-col items-center justify-center gap-1 bg-black/50 border-2 border-dashed border-primary/80 rounded-l-lg pointer-events-none z-10"
               data-testid="mobile-drag-hint-prev"
             >
-              <ChevronLeft className="h-5 w-5 text-primary/60" />
+              <ChevronLeft />
               <span
-                className="text-[10px] text-primary/60 leading-tight"
                 style={{ writingMode: 'vertical-rl' }}
               >
                 拖到此處翻頁
               </span>
+              <ChevronLeft />
             </div>
           )}
           {isDragging && hasNext && (
             <div
-              className="absolute right-0 top-0 bottom-0 w-16 flex flex-col items-center justify-center gap-1 bg-primary/10 border-2 border-dashed border-primary/40 rounded-r-lg pointer-events-none z-10"
+              style={{ top: HEADER_HEIGHT, height: hintHeight ?? '100%' }}
+              className="dark absolute right-0 w-12 text-primary/80 flex flex-col items-center justify-center gap-1 bg-black/50 border-2 border-dashed border-primary/80 rounded-r-lg pointer-events-none z-10"
               data-testid="mobile-drag-hint-next"
             >
-              <ChevronRight className="h-5 w-5 text-primary/60" />
+              <ChevronRight />
               <span
-                className="text-[10px] text-primary/60 leading-tight"
                 style={{ writingMode: 'vertical-rl' }}
               >
                 拖到此處翻頁
               </span>
+              <ChevronRight />
             </div>
           )}
         </div>

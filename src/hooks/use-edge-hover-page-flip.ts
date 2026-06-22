@@ -8,8 +8,9 @@ interface UseEdgeHoverPageFlipOptions {
   spreadIndex: number
   totalSpreads: number
   onSpreadChange: (index: number) => void
-  edgeWidth?: number   // px from edge that triggers flip zone
+  edgeWidth?: number    // px from edge that triggers flip zone
   holdDuration?: number // ms pointer must stay in zone before flip
+  canFlipPrev?: boolean // set false to disable left-edge flip (e.g. cover page is prev)
 }
 
 function getActivatorClientX(nativeEvent: Event): number | null {
@@ -33,6 +34,7 @@ export function useEdgeHoverPageFlip({
   onSpreadChange,
   edgeWidth = 40,
   holdDuration = 600,
+  canFlipPrev = true,
 }: UseEdgeHoverPageFlipOptions) {
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const lastZoneRef = useRef<'left' | 'right' | null>(null)
@@ -60,7 +62,7 @@ export function useEdgeHoverPageFlip({
       const relX = currentX - rect.left
 
       let zone: 'left' | 'right' | null = null
-      if (relX <= edgeWidth && spreadIndex > 0) zone = 'left'
+      if (relX <= edgeWidth && spreadIndex > 0 && canFlipPrev) zone = 'left'
       else if (relX >= rect.width - edgeWidth && spreadIndex < totalSpreads - 1) zone = 'right'
 
       if (zone !== lastZoneRef.current) {
@@ -75,7 +77,7 @@ export function useEdgeHoverPageFlip({
         }
       }
     },
-    [containerRef, spreadIndex, totalSpreads, onSpreadChange, edgeWidth, holdDuration, clearTimer],
+    [containerRef, spreadIndex, totalSpreads, onSpreadChange, edgeWidth, holdDuration, canFlipPrev, clearTimer],
   )
 
   const handleDragEnd = useCallback(() => {

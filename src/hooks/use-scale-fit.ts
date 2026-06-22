@@ -8,6 +8,7 @@ interface ScaleFitResult {
   scale: number
   offsetX: number
   offsetY: number
+  innerH: number
 }
 
 export function computeScaleFit(
@@ -29,7 +30,7 @@ export function computeScaleFit(
 export function useScaleFit(naturalWidth: number): ScaleFitResult {
   const outerRef = useRef<HTMLDivElement>(null)
   const innerRef = useRef<HTMLDivElement>(null)
-  const [state, setState] = useState({ scale: 1, offsetX: 0, offsetY: 0 })
+  const [state, setState] = useState({ scale: 1, offsetX: 0, offsetY: 0, innerH: 0 })
 
   useLayoutEffect(() => {
     const outer = outerRef.current
@@ -41,7 +42,7 @@ export function useScaleFit(naturalWidth: number): ScaleFitResult {
       const outerH = outer.clientHeight
       const innerH = inner.offsetHeight // layout height — unaffected by CSS scale transform
       if (innerH === 0 || outerW === 0) return
-      setState(computeScaleFit(outerW, outerH, naturalWidth, innerH))
+      setState({ ...computeScaleFit(outerW, outerH, naturalWidth, innerH), innerH })
     }
 
     const outerObs = new ResizeObserver(update)

@@ -7,6 +7,7 @@ import {
   DndContext,
   closestCenter,
   PointerSensor,
+  TouchSensor,
   useSensor,
   useSensors,
   type DragEndEvent,
@@ -34,9 +35,11 @@ export function BinderListClient({ initialBinders }: BinderListClientProps) {
   const [editOpen, setEditOpen] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [selectedBinder, setSelectedBinder] = useState<BinderSummary | null>(null)
+  const [tappedBinderId, setTappedBinderId] = useState<string | null>(null)
 
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } }),
   )
 
   function handleCreated(binder: BinderSummary) {
@@ -119,26 +122,30 @@ export function BinderListClient({ initialBinders }: BinderListClientProps) {
           </EmptyContent>
         </Empty>
       ) : (
-        <DndContext
-          id="binder-list-dnd"
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragEnd={handleDragEnd}
-        >
-          <div className={cardGridClassName}>
-            <SortableContext items={binderList.map(b => b.id)} strategy={rectSortingStrategy}>
-              {binderList.map(binder => (
-                <SortableBinderCoverCard
-                  key={binder.id}
-                  binder={binder}
-                  onEdit={openEdit}
-                  onDelete={openDelete}
-                />
-              ))}
-            </SortableContext>
-            {canAddMore && <AddBinderSlot onClick={() => setCreateOpen(true)} />}
-          </div>
-        </DndContext>
+        <div onClick={() => setTappedBinderId(null)}>
+          <DndContext
+            id="binder-list-dnd"
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <div className={cardGridClassName}>
+              <SortableContext items={binderList.map(b => b.id)} strategy={rectSortingStrategy}>
+                {binderList.map(binder => (
+                  <SortableBinderCoverCard
+                    key={binder.id}
+                    binder={binder}
+                    onEdit={openEdit}
+                    onDelete={openDelete}
+                    isTapped={tappedBinderId === binder.id}
+                    onTap={() => setTappedBinderId(prev => prev === binder.id ? null : binder.id)}
+                  />
+                ))}
+              </SortableContext>
+              {canAddMore && <AddBinderSlot onClick={() => setCreateOpen(true)} />}
+            </div>
+          </DndContext>
+        </div>
       )}
 
       <CreateBinderDialog

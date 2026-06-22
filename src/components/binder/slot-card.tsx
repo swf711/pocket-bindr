@@ -69,6 +69,7 @@ export function SlotCard({
       {...listeners}
       data-testid={isDragOverlay ? 'drag-overlay-card' : `slot-card-${slot.id}`}
       onClick={!isDragOverlay && onTap ? (e) => { e.stopPropagation(); onTap() } : undefined}
+      style={{ touchAction: 'none' }}
       className={`relative group w-full aspect-5/7 overflow-hidden rounded-md border border-border bg-card cursor-grab active:cursor-grabbing transition-opacity ${isDragging ? 'opacity-40' : 'opacity-100'
         } ${isOver && !isDragOverlay ? 'ring-2 ring-primary' : ''} ${isHighlighted ? 'ring-2 ring-primary animate-pulse' : ''
         }`}
@@ -91,8 +92,10 @@ export function SlotCard({
       {!isDragOverlay && (
         <div className={`absolute inset-0 flex items-end justify-center pb-2 transition-opacity pointer-events-none ${isTapped ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
           <div
-            style={{ transform: `scale(${counterScale})`, transformOrigin: 'bottom center', pointerEvents: 'auto' }}
+            style={{ transform: `scale(${counterScale})`, transformOrigin: 'bottom center' }}
+            className={isTapped ? 'pointer-events-auto' : 'pointer-events-none group-hover:pointer-events-auto'}
             onPointerDown={(e) => e.stopPropagation()}
+            onClick={(e) => e.stopPropagation()}
           >
             <ButtonGroup>
               <Tooltip>

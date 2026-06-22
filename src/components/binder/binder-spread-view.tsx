@@ -405,7 +405,7 @@ export function BinderSpreadView({
               {/* Drag hint panels — shown only while dragging */}
               {isDragging && hasPrev && (
                 <div
-                  className="absolute left-0 top-0 bottom-0 text-primary w-16 flex flex-col items-center justify-center gap-1 bg-primary/10 border-2 border-dashed border-primary/40 rounded-l-lg pointer-events-none"
+                  className="dark absolute left-0 top-0 bottom-0 text-primary/80 w-16 flex flex-col items-center justify-center gap-1 bg-black/50 border-2 border-dashed border-primary/80 rounded-l-lg pointer-events-none"
                   data-testid="drag-hint-prev"
                 >
                   <div style={{ transform: `scale(${counterScale})`, transformOrigin: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
@@ -419,7 +419,7 @@ export function BinderSpreadView({
               )}
               {isDragging && hasNext && (
                 <div
-                  className="absolute right-0 top-0 bottom-0 text-primary w-16 flex flex-col items-center justify-center gap-1 bg-primary/10 border-2 border-dashed border-primary/40 rounded-r-lg pointer-events-none"
+                  className="dark absolute right-0 top-0 bottom-0 text-primary/80 w-16 flex flex-col items-center justify-center gap-1 bg-black/50 border-2 border-dashed border-primary/80 rounded-r-lg pointer-events-none"
                   data-testid="drag-hint-next"
                 >
                   <div style={{ transform: `scale(${counterScale})`, transformOrigin: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>

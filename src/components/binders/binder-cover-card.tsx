@@ -22,9 +22,10 @@ interface BinderCoverCardProps {
   binder: BinderSummary
   onEdit: (binder: BinderSummary) => void
   onDelete: (binder: BinderSummary) => void
+  isTapped?: boolean
 }
 
-export function BinderCoverCard({ binder, onEdit, onDelete }: BinderCoverCardProps) {
+export function BinderCoverCard({ binder, onEdit, onDelete, isTapped }: BinderCoverCardProps) {
   const textColor = getTextColor(binder.coverColor)
   const colorScheme = isLightBackground(binder.coverColor) ? 'light' : 'dark'
   const gridLabel = GRID_SHORT_LABELS[binder.gridType as GridType]
@@ -80,9 +81,18 @@ export function BinderCoverCard({ binder, onEdit, onDelete }: BinderCoverCardPro
           </div>
         </div>
 
-        {/* 操作按鈕：底部中間，hover 才顯示 */}
-        <div className="absolute w-full bottom-4 flex justify-center z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-          <ButtonGroup className={colorScheme}>
+        {/* 操作按鈕：桌面 hover 顯示，行動裝置 tap 顯示；未顯示時 pointer-events-none 防止誤觸 */}
+        <div
+          className={`absolute w-full bottom-4 flex justify-center z-10 transition-opacity duration-200
+            ${isTapped
+              ? 'opacity-100 pointer-events-auto'
+              : 'opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto'
+            }`}
+        >
+          <ButtonGroup
+            className={colorScheme}
+            onClick={(e: React.MouseEvent) => e.stopPropagation()}
+          >
             <Button
               asChild
               variant="outline"
