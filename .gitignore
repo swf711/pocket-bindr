@@ -59,10 +59,12 @@ scripts/lib/
 scripts/backfill-*.ts
 scripts/audit-*.ts
 scripts/verify-*.ts
+scripts/import-*.ts
 
-# 腳本產出的暫存檔
+# 腳本產出的暫存檔 / seed 資料
 /tmp/
 scripts/.snapshots/
+scripts/data/
 .cache/
 
 # Scripts 腳本說明文件
