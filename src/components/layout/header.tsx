@@ -18,7 +18,6 @@ export async function Header() {
     >
       <div className="container mx-auto flex h-14 items-center justify-between px-4">
         <div className="flex items-center gap-6">
-          <MobileNav isLoggedIn={isLoggedIn} />
           <Link href="/" className="text-lg font-bold tracking-tight">
             TCG Binder
           </Link>
@@ -43,21 +42,28 @@ export async function Header() {
         </div>
 
         <div className="flex items-center gap-2">
-          {isLoggedIn ? (
-            <UserMenu username={username} image={session?.user?.image ?? null} />
-          ) : (
-            <>
-              <Button variant="ghost" asChild>
-                <Link href="/login" data-testid="nav-login">
-                  登入
-                </Link>
-              </Button>
-              <Button variant="default" asChild>
-                <Link href="/register">註冊</Link>
-              </Button>
-            </>
-          )}
+          <div className="hidden md:flex md:items-center md:gap-2">
+            {isLoggedIn ? (
+              <UserMenu username={username} image={session?.user?.image ?? null} />
+            ) : (
+              <>
+                <Button variant="ghost" asChild>
+                  <Link href="/login" data-testid="nav-login">
+                    登入
+                  </Link>
+                </Button>
+                <Button variant="default" asChild>
+                  <Link href="/register">註冊</Link>
+                </Button>
+              </>
+            )}
+          </div>
           <ModeToggle />
+          <MobileNav
+            isLoggedIn={isLoggedIn}
+            username={username}
+            image={session?.user?.image ?? null}
+          />
         </div>
       </div>
     </header>
