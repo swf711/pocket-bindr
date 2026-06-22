@@ -43,10 +43,10 @@ describe('Footer', () => {
     expect(screen.getByTestId('site-footer')).toBeInTheDocument()
   })
 
-  it('/ → 正常渲染', () => {
+  it('/ → return null（首頁使用 inline footer）', () => {
     vi.mocked(usePathname).mockReturnValue('/')
-    render(<Footer />)
-    expect(screen.getByTestId('site-footer')).toBeInTheDocument()
+    const { container } = render(<Footer />)
+    expect(container.firstChild).toBeNull()
   })
 
   it('/cards → 正常渲染', () => {
@@ -62,13 +62,13 @@ describe('Footer', () => {
   })
 
   it('包含版權文字', () => {
-    vi.mocked(usePathname).mockReturnValue('/')
+    vi.mocked(usePathname).mockReturnValue('/cards')
     render(<Footer />)
     expect(screen.getByTestId('site-footer')).toHaveTextContent('© 2026 TCG Binder')
   })
 
   it('包含免責聲明', () => {
-    vi.mocked(usePathname).mockReturnValue('/')
+    vi.mocked(usePathname).mockReturnValue('/cards')
     render(<Footer />)
     expect(screen.getByTestId('site-footer')).toHaveTextContent('Nintendo')
     expect(screen.getByTestId('site-footer')).toHaveTextContent('Pokémon')

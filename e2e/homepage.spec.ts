@@ -8,10 +8,10 @@ test.describe('首頁', () => {
   test('Scenario 1: 訪客瀏覽首頁 — 顯示主要區塊與 CTA', async ({ page }) => {
     await page.goto('/')
 
-    await expect(page.getByTestId('game-tabs-section')).toBeVisible()
-    await expect(page.getByTestId('most-wanted-section')).toBeVisible()
-    await expect(page.getByTestId('feature-intro-section')).toBeVisible()
-    await expect(page.getByTestId('promo-cta-section')).toBeVisible()
+    await expect(page.getByTestId('hero-section')).toBeVisible()
+    await expect(page.getByTestId('stats-carousel-section')).toBeVisible()
+    await expect(page.getByTestId('podium-section')).toBeVisible()
+    await expect(page.getByTestId('why-section')).toBeVisible()
 
     const hero = page.getByTestId('hero-section')
     const searchLink = hero.getByRole('link', { name: /開始搜尋/ })
@@ -33,29 +33,26 @@ test.describe('首頁', () => {
     await expect(hero.getByRole('link', { name: /開始搜尋/ })).toBeVisible()
   })
 
-  test('Scenario 3: PTCG / OPCG Tab 切換', async ({ page }) => {
+  test('Scenario 3: 頒獎台 PTCG / OPCG Tab 切換', async ({ page }) => {
     await page.goto('/')
 
-    const section = page.getByTestId('game-tabs-section')
-    await expect(section).toBeVisible()
+    const podium = page.getByTestId('podium-section')
+    await expect(podium).toBeVisible()
 
     // 預設 PTCG tab 啟用
-    const ptcgTab = section.getByRole('tab', { name: 'Pokémon' }).first()
+    const ptcgTab = podium.getByRole('tab', { name: 'Pokémon' }).first()
     await expect(ptcgTab).toHaveAttribute('data-state', 'active')
 
     // 點擊 OPCG tab
-    await section.getByRole('tab', { name: 'One Piece' }).first().click()
-
-    // most-wanted-section 的 tab 也應同步切換
-    const wantedSection = page.getByTestId('most-wanted-section')
-    await expect(wantedSection.getByRole('tab', { name: 'One Piece' }).first()).toHaveAttribute('data-state', 'active')
+    await podium.getByRole('tab', { name: 'One Piece' }).first().click()
+    await expect(podium.getByRole('tab', { name: 'One Piece' }).first()).toHaveAttribute('data-state', 'active')
   })
 
-  test('Scenario 4: 點擊跑馬燈卡牌開啟 Drawer（不含加入卡冊）', async ({ page }) => {
+  test('Scenario 4: 點擊 Carousel 卡牌開啟 Drawer（不含加入卡冊）', async ({ page }) => {
     await page.goto('/')
 
-    const section = page.getByTestId('game-tabs-section')
-    const firstCard = section.locator('button').first()
+    const carouselSection = page.getByTestId('stats-carousel-section')
+    const firstCard = carouselSection.getByTestId('carousel-card').first()
     await firstCard.click()
 
     // Drawer 應開啟
@@ -66,10 +63,48 @@ test.describe('首頁', () => {
     await expect(drawer.getByText(/加入卡冊/)).not.toBeVisible()
   })
 
-  test('Scenario 5: Footer 顯示於首頁', async ({ page }) => {
+  test('Scenario 5: Hero 互動卡冊渲染 9 張卡牌', async ({ page }) => {
     await page.goto('/')
 
-    await expect(page.getByTestId('site-footer')).toBeVisible()
-    await expect(page.getByTestId('site-footer')).toContainText('TCG Binder')
+    const heroBinder = page.getByTestId('hero-binder')
+    await expect(heroBinder).toBeVisible()
+
+    const cards = heroBinder.locator('[data-testid^="hero-binder-card-"]')
+    await expect(cards).toHaveCount(9)
+  })
+
+  test('Scenario 6: Stats Carousel 顯示 12 張卡牌', async ({ page }) => {
+    await page.goto('/')
+
+    const carouselCards = page.getByTestId('carousel-card')
+    await expect(carouselCards).toHaveCount(12)
+  })
+
+  test('Scenario 7: 頒獎台顯示前三名', async ({ page }) => {
+    await page.goto('/')
+
+    const podium = page.getByTestId('podium-section')
+    // 有資料時顯示 3 個 podium-card，無資料時顯示 fallback
+    const podiumCards = podium.locator('[data-testid="podium-card"]')
+    const count = await podiumCards.count()
+    // 若有想要資料則 3 張，否則可能 0 張
+    expect(count === 0 || count === 3).toBe(true)
+  })
+
+  test('Scenario 8: 全站 Footer 在首頁隱藏，改由 inline footer 呈現', async ({ page }) => {
+    await page.goto('/')
+
+    // 全站 site-footer 不出現（首頁隱藏）
+    await expect(page.getByTestId('site-footer')).not.toBeVisible()
+
+    // 首頁第四區塊的 inline footer 出現
+    await expect(page.getByTestId('inline-footer')).toBeVisible()
+    await expect(page.getByTestId('inline-footer')).toContainText('TCG Binder')
+  })
+
+  test('Scenario 9: 「即將推出：分享你的卡冊」預告出現', async ({ page }) => {
+    await page.goto('/')
+
+    await expect(page.getByText(/即將推出：分享你的卡冊/)).toBeVisible()
   })
 })

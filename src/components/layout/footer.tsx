@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation'
 export function Footer() {
   const pathname = usePathname()
 
-  const HIDDEN_PATHS = ['/login', '/register']
+  const HIDDEN_PATHS = ['/login', '/register', '/']
   if (
     (pathname.startsWith('/binders/') && pathname !== '/binders') ||
     HIDDEN_PATHS.includes(pathname)

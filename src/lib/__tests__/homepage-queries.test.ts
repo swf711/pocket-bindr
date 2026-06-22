@@ -2,8 +2,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 vi.mock('@/lib/prisma', () => ({
   prisma: {
-    card: { findMany: vi.fn() },
-    cardSet: { findMany: vi.fn() },
+    card: { findMany: vi.fn(), count: vi.fn() },
+    cardSet: { findMany: vi.fn(), findFirst: vi.fn() },
     userCard: { groupBy: vi.fn() },
   },
 }))
@@ -19,7 +19,9 @@ vi.mock('next/cache', () => ({
 import {
   getShowcaseCards,
   getLatestSetsByGame,
+  getLatestSeriesCards,
   getMostWantedCards,
+  getTotalCardCount,
 } from '@/lib/homepage-queries'
 import { prisma } from '@/lib/prisma'
 import { getCardImageUrl } from '@/lib/get-card-image-url'
@@ -252,5 +254,82 @@ describe('getMostWantedCards', () => {
 
     expect(result[0].zhName).toBe('蒙其·D·魯夫')
     expect(result[0].zhSetName).toBe('起始甲板！草帽海賊團')
+  })
+})
+
+describe('getTotalCardCount', () => {
+  beforeEach(() => vi.clearAllMocks())
+
+  it('回傳 isCollectible=true 的卡牌數', async () => {
+    vi.mocked(prisma.card.count).mockResolvedValue(68000 as never)
+
+    const result = await getTotalCardCount()
+
+    expect(prisma.card.count).toHaveBeenCalledWith({ where: { isCollectible: true } })
+    expect(result).toBe(68000)
+  })
+
+  it('DB 回傳 0 時正確傳遞', async () => {
+    vi.mocked(prisma.card.count).mockResolvedValue(0 as never)
+    const result = await getTotalCardCount()
+    expect(result).toBe(0)
+  })
+})
+
+describe('getLatestSeriesCards', () => {
+  beforeEach(() => vi.clearAllMocks())
+
+  const mockLatestSet = { id: 'set-latest' }
+
+  it('找到最新系列並回傳指定數量的卡牌', async () => {
+    vi.mocked(prisma.cardSet.findFirst).mockResolvedValue(mockLatestSet as never)
+    vi.mocked(prisma.card.findMany).mockResolvedValue([mockPrismaCard] as never)
+
+    const result = await getLatestSeriesCards('PTCG', 'ZH_TW', 2)
+
+    expect(prisma.cardSet.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ game: 'PTCG', language: 'ZH_TW', releaseDate: { not: null } }),
+        orderBy: { releaseDate: 'desc' },
+      })
+    )
+    expect(prisma.card.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ setId: 'set-latest', isCollectible: true }),
+        take: 2,
+      })
+    )
+    expect(result).toHaveLength(1)
+  })
+
+  it('無符合系列時回傳空陣列', async () => {
+    vi.mocked(prisma.cardSet.findFirst).mockResolvedValue(null as never)
+
+    const result = await getLatestSeriesCards('PTCG', 'EN', 2)
+
+    expect(result).toEqual([])
+    expect(prisma.card.findMany).not.toHaveBeenCalled()
+  })
+
+  it('回傳的卡牌 imageSmall 不為空（where 條件）', async () => {
+    vi.mocked(prisma.cardSet.findFirst).mockResolvedValue(mockLatestSet as never)
+    vi.mocked(prisma.card.findMany).mockResolvedValue([])
+
+    await getLatestSeriesCards('PTCG', 'ZH_TW', 2)
+
+    expect(prisma.card.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ imageSmall: { not: '' } }),
+      })
+    )
+  })
+
+  it('OPCG JA 卡牌含 zhName（有 alias 的情況）', async () => {
+    vi.mocked(prisma.cardSet.findFirst).mockResolvedValue(mockLatestSet as never)
+    vi.mocked(prisma.card.findMany).mockResolvedValue([mockOpcgCard] as never)
+
+    const result = await getLatestSeriesCards('OPCG', 'JA', 4)
+
+    expect(result[0].zhName).toBe('蒙其·D·魯夫')
   })
 })
