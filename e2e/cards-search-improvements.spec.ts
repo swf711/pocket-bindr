@@ -220,6 +220,30 @@ test.describe('PTCG set code + 卡號搜尋', () => {
     ).toBeVisible({ timeout: 10000 })
   })
 
+  test('PTCG 輸入 sv8（純 set code，set-only）不出現錯誤', async ({ page }) => {
+    await page.goto('/cards?game=PTCG&language=JA')
+    await page.getByTestId('card-grid').waitFor({ timeout: 10000 })
+
+    await page.getByTestId('search-input').fill('sv8b')
+    await expect(page).toHaveURL(/q=sv8b/, { timeout: 10000 })
+
+    await expect(
+      page.getByTestId('card-grid').or(page.getByText('沒有找到卡牌'))
+    ).toBeVisible({ timeout: 10000 })
+  })
+
+  test('PTCG 輸入 sv8-00（前綴卡號）不出現錯誤', async ({ page }) => {
+    await page.goto('/cards?game=PTCG&language=JA')
+    await page.getByTestId('card-grid').waitFor({ timeout: 10000 })
+
+    await page.getByTestId('search-input').fill('sv8b-00')
+    await expect(page).toHaveURL(/q=sv8b-00/, { timeout: 10000 })
+
+    await expect(
+      page.getByTestId('card-grid').or(page.getByText('沒有找到卡牌'))
+    ).toBeVisible({ timeout: 10000 })
+  })
+
   test('PTCG 輸入 pikachu 仍正常搜尋（name 搜尋回歸）', async ({ page }) => {
     await page.goto('/cards?game=PTCG')
     await page.getByTestId('card-grid').waitFor({ timeout: 10000 })

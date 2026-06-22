@@ -244,17 +244,17 @@ describe('GET /api/cards - externalId prefix search', () => {
     })
   })
 
-  it('q=OP15 時 externalId startsWith 條件被帶入', async () => {
+  it('q=OP15 時 externalId startsWith 條件被帶入（OP15 也觸發 set-only pattern，OR 有 3 個條件）', async () => {
     mockAuth.mockResolvedValue(null)
     const req = new NextRequest('http://localhost/api/cards?game=OPCG&q=OP15')
     const res = await GET(req)
     expect(res.status).toBe(200)
     expect(prisma.card.count).toHaveBeenCalledWith({
       where: expect.objectContaining({
-        OR: [
+        OR: expect.arrayContaining([
           { name: { contains: 'OP15', mode: 'insensitive' } },
           { externalId: { startsWith: 'OP15', mode: 'insensitive' } },
-        ],
+        ]),
       }),
     })
   })
@@ -360,7 +360,7 @@ describe('GET /api/cards - set code + 卡號格式搜尋（PTCG）', () => {
     expect(call.where.OR).toHaveLength(2)
   })
 
-  it('q=sv8（無 num）不觸發 set code pattern，OR 只有兩個條件', async () => {
+  it('q=sv8（set-only）有 setId 時，findMany where.OR 包含第三個純 set filter 條件（無 OR 子條件）', async () => {
     mockAuth.mockResolvedValue(null)
     vi.mocked(prisma.card.findMany).mockResolvedValue([] as never)
     vi.mocked(prisma.card.count).mockResolvedValue(0)
@@ -368,7 +368,28 @@ describe('GET /api/cards - set code + 卡號格式搜尋（PTCG）', () => {
     const res = await GET(req)
     expect(res.status).toBe(200)
     const call = vi.mocked(prisma.card.findMany).mock.calls[0][0] as { where: { OR: unknown[] } }
-    expect(call.where.OR).toHaveLength(2)
+    // sv8 觸發 set-only pattern → OR 有 3 個條件（name + externalId + set filter）
+    expect(call.where.OR).toHaveLength(3)
+    // 第三個條件只有 set filter，無 OR 子條件
+    const thirdCondition = call.where.OR[2] as Record<string, unknown>
+    expect(thirdCondition).toHaveProperty('set')
+    expect(thirdCondition).not.toHaveProperty('OR')
+  })
+
+  it('q=sv8（set-only）無 setId 時，card.count where.OR 包含 set-only 條件', async () => {
+    mockAuth.mockResolvedValue(null)
+    const req = new NextRequest('http://localhost/api/cards?game=PTCG&q=sv8')
+    const res = await GET(req)
+    expect(res.status).toBe(200)
+    expect(prisma.card.count).toHaveBeenCalledWith({
+      where: expect.objectContaining({
+        OR: expect.arrayContaining([
+          { name: { contains: 'sv8', mode: 'insensitive' } },
+          { externalId: { startsWith: 'sv8', mode: 'insensitive' } },
+          { set: { externalId: { equals: 'sv8', mode: 'insensitive' } } },
+        ]),
+      }),
+    })
   })
 
   it('q 為空時 where 不包含 OR（回歸）', async () => {
