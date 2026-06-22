@@ -182,3 +182,65 @@ test.describe('externalId 前綴搜尋', () => {
     ).toBeVisible({ timeout: 10000 })
   })
 })
+
+test.describe('PTCG set code + 卡號搜尋', () => {
+  test('PTCG EN 輸入 sv8-001（補零格式）不出現錯誤', async ({ page }) => {
+    await page.goto('/cards?game=PTCG&language=EN')
+    await page.getByTestId('card-grid').waitFor({ timeout: 10000 })
+
+    await page.getByTestId('search-input').fill('sv8-001')
+    await expect(page).toHaveURL(/q=sv8-001/, { timeout: 10000 })
+
+    await expect(
+      page.getByTestId('card-grid').or(page.getByText('沒有找到卡牌'))
+    ).toBeVisible({ timeout: 10000 })
+  })
+
+  test('PTCG EN 輸入 sv8-1（非補零格式）不出現錯誤', async ({ page }) => {
+    await page.goto('/cards?game=PTCG&language=EN')
+    await page.getByTestId('card-grid').waitFor({ timeout: 10000 })
+
+    await page.getByTestId('search-input').fill('sv8-1')
+    await expect(page).toHaveURL(/q=sv8-1/, { timeout: 10000 })
+
+    await expect(
+      page.getByTestId('card-grid').or(page.getByText('沒有找到卡牌'))
+    ).toBeVisible({ timeout: 10000 })
+  })
+
+  test('PTCG JA 輸入 sv8b-001 不出現錯誤', async ({ page }) => {
+    await page.goto('/cards?game=PTCG&language=JA')
+    await page.getByTestId('card-grid').waitFor({ timeout: 10000 })
+
+    await page.getByTestId('search-input').fill('sv8b-001')
+    await expect(page).toHaveURL(/q=sv8b-001/, { timeout: 10000 })
+
+    await expect(
+      page.getByTestId('card-grid').or(page.getByText('沒有找到卡牌'))
+    ).toBeVisible({ timeout: 10000 })
+  })
+
+  test('PTCG 輸入 pikachu 仍正常搜尋（name 搜尋回歸）', async ({ page }) => {
+    await page.goto('/cards?game=PTCG')
+    await page.getByTestId('card-grid').waitFor({ timeout: 10000 })
+
+    await page.getByTestId('search-input').fill('pikachu')
+    await expect(page).toHaveURL(/q=pikachu/, { timeout: 10000 })
+
+    await expect(
+      page.getByTestId('card-grid').or(page.getByText('沒有找到卡牌'))
+    ).toBeVisible({ timeout: 10000 })
+  })
+
+  test('OPCG 輸入 OP16-002 仍命中（externalId 路徑回歸）', async ({ page }) => {
+    await page.goto('/cards?game=OPCG')
+    await page.getByTestId('card-grid').waitFor({ timeout: 10000 })
+
+    await page.getByTestId('search-input').fill('OP16-002')
+    await expect(page).toHaveURL(/q=OP16-002/, { timeout: 10000 })
+
+    await expect(
+      page.getByTestId('card-grid').or(page.getByText('沒有找到卡牌'))
+    ).toBeVisible({ timeout: 10000 })
+  })
+})

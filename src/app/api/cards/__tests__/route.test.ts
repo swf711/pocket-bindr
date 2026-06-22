@@ -291,3 +291,93 @@ describe('GET /api/cards - externalId prefix search', () => {
     )
   })
 })
+
+describe('GET /api/cards - set code + 卡號格式搜尋（PTCG）', () => {
+  beforeEach(() => { vi.clearAllMocks(); resetDefaults() })
+
+  it('q=sv8-001 有 setId 時，findMany where.OR 包含第三個 set externalId 條件', async () => {
+    mockAuth.mockResolvedValue(null)
+    vi.mocked(prisma.card.findMany).mockResolvedValue([] as never)
+    vi.mocked(prisma.card.count).mockResolvedValue(0)
+    const req = new NextRequest('http://localhost/api/cards?game=PTCG&q=sv8-001&setId=en-sv8')
+    const res = await GET(req)
+    expect(res.status).toBe(200)
+    expect(prisma.card.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          OR: expect.arrayContaining([
+            { name: { contains: 'sv8-001', mode: 'insensitive' } },
+            { externalId: { startsWith: 'sv8-001', mode: 'insensitive' } },
+            expect.objectContaining({
+              set: { externalId: { equals: 'sv8', mode: 'insensitive' } },
+            }),
+          ]),
+        }),
+      })
+    )
+    // OR 應有三個條件（name + externalId + set card pattern）
+    const call = vi.mocked(prisma.card.findMany).mock.calls[0][0] as { where: { OR: unknown[] } }
+    expect(call.where.OR).toHaveLength(3)
+  })
+
+  it('q=sv8-001 無 setId 時，card.count where.OR 也包含 set card pattern 條件', async () => {
+    mockAuth.mockResolvedValue(null)
+    const req = new NextRequest('http://localhost/api/cards?game=PTCG&q=sv8-001')
+    const res = await GET(req)
+    expect(res.status).toBe(200)
+    expect(prisma.card.count).toHaveBeenCalledWith({
+      where: expect.objectContaining({
+        OR: expect.arrayContaining([
+          { name: { contains: 'sv8-001', mode: 'insensitive' } },
+          { externalId: { startsWith: 'sv8-001', mode: 'insensitive' } },
+          expect.objectContaining({
+            set: { externalId: { equals: 'sv8', mode: 'insensitive' } },
+          }),
+        ]),
+      }),
+    })
+    const countCall = vi.mocked(prisma.card.count).mock.calls[0][0] as { where: { OR: unknown[] } }
+    expect(countCall.where.OR).toHaveLength(3)
+  })
+
+  it('q=sv8-001 無 setId 時，$queryRaw 被呼叫且 values 包含 setCode "sv8"', async () => {
+    mockAuth.mockResolvedValue(null)
+    const req = new NextRequest('http://localhost/api/cards?game=PTCG&q=sv8-001')
+    await GET(req)
+    expect(prisma.$queryRaw).toHaveBeenCalled()
+    const sqlArg = vi.mocked(prisma.$queryRaw).mock.calls[0][0] as { values: unknown[] }
+    expect(sqlArg.values).toEqual(expect.arrayContaining(['sv8']))
+  })
+
+  it('q=pikachu 不觸發 set code pattern，OR 只有原本兩個條件', async () => {
+    mockAuth.mockResolvedValue(null)
+    vi.mocked(prisma.card.findMany).mockResolvedValue([] as never)
+    vi.mocked(prisma.card.count).mockResolvedValue(0)
+    const req = new NextRequest('http://localhost/api/cards?game=PTCG&q=pikachu&setId=set1')
+    const res = await GET(req)
+    expect(res.status).toBe(200)
+    const call = vi.mocked(prisma.card.findMany).mock.calls[0][0] as { where: { OR: unknown[] } }
+    expect(call.where.OR).toHaveLength(2)
+  })
+
+  it('q=sv8（無 num）不觸發 set code pattern，OR 只有兩個條件', async () => {
+    mockAuth.mockResolvedValue(null)
+    vi.mocked(prisma.card.findMany).mockResolvedValue([] as never)
+    vi.mocked(prisma.card.count).mockResolvedValue(0)
+    const req = new NextRequest('http://localhost/api/cards?game=PTCG&q=sv8&setId=set1')
+    const res = await GET(req)
+    expect(res.status).toBe(200)
+    const call = vi.mocked(prisma.card.findMany).mock.calls[0][0] as { where: { OR: unknown[] } }
+    expect(call.where.OR).toHaveLength(2)
+  })
+
+  it('q 為空時 where 不包含 OR（回歸）', async () => {
+    mockAuth.mockResolvedValue(null)
+    const req = new NextRequest('http://localhost/api/cards?game=PTCG')
+    const res = await GET(req)
+    expect(res.status).toBe(200)
+    expect(prisma.card.count).toHaveBeenCalledWith({
+      where: expect.not.objectContaining({ OR: expect.anything() }),
+    })
+  })
+})

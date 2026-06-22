@@ -5,6 +5,7 @@ import { parseLanguage } from '@/lib/language'
 import { Game, Prisma } from '@prisma/client'
 import { groupAndSortSets } from '@/lib/sort-card-sets'
 import { getCollectionStatusMap, resolveCollectionLookupId } from '@/lib/card-collection-status'
+import { parseSetCardQuery, buildSetCardPrismaWhere, buildSetCardSql } from '@/lib/parse-set-card-query'
 
 export async function GET(req: NextRequest) {
   try {
@@ -32,6 +33,8 @@ async function handleGet(req: NextRequest) {
     return Response.json({ error: 'language must be one of EN, JA, ZH_TW' }, { status: 400 })
   }
 
+  const parsed = q ? parseSetCardQuery(q) : null
+
   const where = {
     game: game as Game,
     language,
@@ -39,6 +42,7 @@ async function handleGet(req: NextRequest) {
       OR: [
         { name: { contains: q, mode: 'insensitive' as const } },
         { externalId: { startsWith: q, mode: 'insensitive' as const } },
+        ...(parsed ? [buildSetCardPrismaWhere(parsed)] : []),
       ],
     }),
     ...(setId && { setId }),
@@ -76,7 +80,12 @@ async function handleGet(req: NextRequest) {
       Prisma.sql`"language"::text = ${language}`,
     ]
     if (q) {
-      conds.push(Prisma.sql`("name" ILIKE ${'%' + q + '%'} OR "externalId" ILIKE ${q + '%'})`)
+      const baseSql = Prisma.sql`("name" ILIKE ${'%' + q + '%'} OR "externalId" ILIKE ${q + '%'})`
+      if (parsed) {
+        conds.push(Prisma.sql`(${baseSql} OR ${buildSetCardSql(parsed)})`)
+      } else {
+        conds.push(baseSql)
+      }
     }
     const whereSql = Prisma.join(conds, ' AND ')
 
