@@ -1,6 +1,5 @@
 'use client'
 
-import Image from 'next/image'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import type { WantedRankCard } from '@/types/homepage'
@@ -40,12 +39,10 @@ export function MostWantedSection({ ptcgWanted, opcgWanted, selectedGame, onGame
                 {index + 1}
               </span>
               <div className="relative shrink-0 w-10 h-14 rounded overflow-hidden shadow-sm">
-                <Image
+                <img
                   src={card.imageSmall}
                   alt={card.zhName ?? card.name}
-                  fill
-                  sizes="40px"
-                  className="object-cover"
+                  className="w-full h-full object-cover"
                 />
               </div>
               <div className="min-w-0 flex-1">
