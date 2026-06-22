@@ -37,10 +37,17 @@ export const authConfig: NextAuthConfig = {
     },
     async session({ session, token }) {
       if (token.sub) session.user.id = token.sub
+      if (token.name) session.user.name = token.name
       return session
     },
     async jwt({ token, user }) {
-      if (user) token.sub = user.id
+      if (user) {
+        token.sub = user.id
+        // Prisma User uses 'username' not 'name'; map to token.name explicitly.
+        // For OAuth users without a username, fall back to provider-supplied token.name.
+        token.name =
+          (user as { username?: string | null }).username ?? token.name ?? null
+      }
       return token
     },
   },
