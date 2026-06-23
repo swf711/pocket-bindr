@@ -2,18 +2,22 @@
  * @vitest-environment jsdom
  */
 import '@testing-library/jest-dom/vitest'
-import { describe, it, expect, vi } from 'vitest'
+import { beforeAll, describe, it, expect } from 'vitest'
+
+beforeAll(() => {
+  Object.defineProperty(window, 'matchMedia', {
+    writable: true,
+    value: (query: string) => ({
+      matches: false,
+      media: query,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+    }),
+  })
+})
 import { render, screen } from '@testing-library/react'
 import { HeroBinder } from '../hero-binder'
 import type { ShowcaseCard } from '@/types/homepage'
-
-vi.mock('@dnd-kit/core', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@dnd-kit/core')>()
-  return {
-    ...actual,
-    DragOverlay: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-  }
-})
 
 function makeCard(id: string, name: string): ShowcaseCard {
   return {
@@ -62,5 +66,10 @@ describe('HeroBinder', () => {
     for (let i = 0; i < 9; i++) {
       expect(screen.getByTestId(`hero-binder-card-${i}`)).toBeInTheDocument()
     }
+  })
+
+  it('渲染拖拉提示文字', () => {
+    render(<HeroBinder cards={NINE_CARDS} />)
+    expect(screen.getByText('拖拉卡牌來重新排列')).toBeInTheDocument()
   })
 })

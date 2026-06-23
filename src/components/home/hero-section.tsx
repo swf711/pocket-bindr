@@ -11,18 +11,18 @@ interface HeroSectionProps {
 export function HeroSection({ isLoggedIn, cards }: HeroSectionProps) {
   return (
     <section
-      className="min-h-screen snap-start flex items-center"
+      className="h-screen snap-start flex items-start"
       data-testid="hero-section"
     >
-      <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+      <div className="container mx-auto px-16 pt-16 pb-12 overflow-visible">
+        <div className="grid grid-cols-1 lg:grid-cols-2 overflow-visible">
           {/* Left: Text + CTA */}
-          <div className="flex flex-col gap-6 text-center lg:text-left">
+          <div className="flex flex-col justify-center gap-6 text-center lg:text-left">
             <div>
               <h1 className="text-5xl font-bold tracking-tight sm:text-6xl mb-4">
                 TCG Binder
               </h1>
-              <p className="text-muted-foreground text-lg max-w-md mx-auto lg:mx-0">
+              <p className="text-muted-foreground text-lg mx-auto lg:mx-0">
                 搜尋、收藏、整理你的集換式卡牌。建立專屬卡冊，隨時掌握收藏進度。
               </p>
             </div>
@@ -41,13 +41,10 @@ export function HeroSection({ isLoggedIn, cards }: HeroSectionProps) {
             </p>
           </div>
 
-          {/* Right: Interactive mini binder */}
-          <div className="flex justify-center lg:justify-end">
-            <div className="w-full max-w-xs">
+          {/* Right: Interactive mini binder (tilt + drag handled inside HeroBinder) */}
+          <div className="flex justify-center lg:justify-start overflow-visible">
+            <div className="w-[85vw] lg:w-[40vw]">
               <HeroBinder cards={cards} />
-              <p className="text-xs text-center text-muted-foreground mt-2">
-                拖拉卡牌來重新排列 ↕
-              </p>
             </div>
           </div>
         </div>
