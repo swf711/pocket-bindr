@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   DndContext,
   PointerSensor,
@@ -13,7 +13,10 @@ import {
 import { SortableContext, arrayMove, rectSortingStrategy, useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { Move } from 'lucide-react'
+import { usePrefersReducedMotion } from '@/hooks/use-prefers-reduced-motion'
 import type { ShowcaseCard } from '@/types/homepage'
+
+const HERO_PARALLAX_FACTOR = 0.3
 
 // Tilt is rotation-only; position is handled by layout margin (see hero-section.tsx).
 // Flat state removes only the rotations — no translate means no position jump on press.
@@ -74,6 +77,9 @@ export function HeroBinder({ cards }: HeroBinderProps) {
   const [pressed, setPressed] = useState(false)
   // Tilt only on lg+ screens; default false so SSR/mobile hydrates without tilt.
   const [isDesktop, setIsDesktop] = useState(false)
+  const reducedMotion = usePrefersReducedMotion()
+  const parallaxRef = useRef<HTMLDivElement>(null)
+
   useEffect(() => {
     const mq = window.matchMedia('(min-width: 1024px)')
     setIsDesktop(mq.matches)
@@ -81,6 +87,29 @@ export function HeroBinder({ cards }: HeroBinderProps) {
     mq.addEventListener('change', handler)
     return () => mq.removeEventListener('change', handler)
   }, [])
+
+  // Parallax: binder scrolls faster than page (exits at 1.3×) — desktop + no reduced-motion only.
+  // Direct DOM mutation via rAF; same pattern as StatsCarouselSection sticky parallax.
+  useEffect(() => {
+    if (!isDesktop || reducedMotion) return
+    const el = parallaxRef.current
+    if (!el) return
+
+    let raf = 0
+    const update = () => {
+      raf = 0
+      el.style.transform = `translateY(${-window.scrollY * HERO_PARALLAX_FACTOR}px)`
+    }
+    const onScroll = () => { if (!raf) raf = requestAnimationFrame(update) }
+    window.addEventListener('scroll', onScroll, { passive: true, capture: true })
+    window.addEventListener('resize', onScroll, { passive: true })
+    update()
+    return () => {
+      window.removeEventListener('scroll', onScroll, { capture: true })
+      window.removeEventListener('resize', onScroll)
+      if (raf) cancelAnimationFrame(raf)
+    }
+  }, [isDesktop, reducedMotion])
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -116,6 +145,7 @@ export function HeroBinder({ cards }: HeroBinderProps) {
   const flat = pressed || activeId !== null
 
   return (
+    <div ref={parallaxRef} style={{ willChange: 'transform' }}>
     <div style={{ perspective: '1200px' }}>
       <div
         style={{
@@ -158,6 +188,7 @@ export function HeroBinder({ cards }: HeroBinderProps) {
           </div>
         </div>
       </div>
+    </div>
     </div>
   )
 }

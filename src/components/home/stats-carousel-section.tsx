@@ -9,26 +9,13 @@ import {
 } from '@/components/ui/carousel'
 import { CardDetailDrawer } from '@/components/cards/card-detail-drawer'
 import { useIsMobile } from '@/hooks/use-is-mobile'
+import { usePrefersReducedMotion } from '@/hooks/use-prefers-reduced-motion'
 import type { ShowcaseCard } from '@/types/homepage'
 import { Eye } from 'lucide-react'
 
 interface StatsCarouselSectionProps {
   totalCards: number
   carouselCards: ShowcaseCard[]
-}
-
-/** prefers-reduced-motion: reduce 偵測；SSR 期間回傳 false */
-function usePrefersReducedMotion() {
-  const [reduced, setReduced] = useState(false)
-  useEffect(() => {
-    if (typeof window.matchMedia !== 'function') return
-    const mql = window.matchMedia('(prefers-reduced-motion: reduce)')
-    const onChange = () => setReduced(mql.matches)
-    onChange()
-    mql.addEventListener('change', onChange)
-    return () => mql.removeEventListener('change', onChange)
-  }, [])
-  return reduced
 }
 
 export function StatsCarouselSection({ totalCards, carouselCards }: StatsCarouselSectionProps) {

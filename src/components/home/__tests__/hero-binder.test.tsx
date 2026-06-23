@@ -2,20 +2,30 @@
  * @vitest-environment jsdom
  */
 import '@testing-library/jest-dom/vitest'
-import { beforeAll, describe, it, expect } from 'vitest'
+import { beforeAll, beforeEach, describe, it, expect, vi } from 'vitest'
 
-beforeAll(() => {
+function setupMatchMedia(desktopMatches: boolean, reducedMotionMatches = false) {
   Object.defineProperty(window, 'matchMedia', {
     writable: true,
     value: (query: string) => ({
-      matches: false,
+      matches: query.includes('min-width') ? desktopMatches : reducedMotionMatches,
       media: query,
       addEventListener: () => {},
       removeEventListener: () => {},
     }),
   })
+}
+
+beforeAll(() => {
+  setupMatchMedia(false)
 })
-import { render, screen } from '@testing-library/react'
+
+beforeEach(() => {
+  vi.restoreAllMocks()
+  setupMatchMedia(false)
+})
+
+import { render, screen, act } from '@testing-library/react'
 import { HeroBinder } from '../hero-binder'
 import type { ShowcaseCard } from '@/types/homepage'
 
@@ -71,5 +81,65 @@ describe('HeroBinder', () => {
   it('渲染拖拉提示文字', () => {
     render(<HeroBinder cards={NINE_CARDS} />)
     expect(screen.getByText('拖拉卡牌來重新排列')).toBeInTheDocument()
+  })
+})
+
+describe('HeroBinder parallax', () => {
+  it('parallax wrapper 是最外層 div，有 willChange: transform 樣式', () => {
+    const { container } = render(<HeroBinder cards={NINE_CARDS} />)
+    const parallaxWrapper = container.firstElementChild as HTMLElement
+    expect(parallaxWrapper).toHaveStyle({ willChange: 'transform' })
+  })
+
+  it('桌面 + 無 reduced-motion：掛載後 scroll 監聽器已附加', async () => {
+    setupMatchMedia(true, false)
+    const addSpy = vi.spyOn(window, 'addEventListener')
+
+    await act(async () => {
+      render(<HeroBinder cards={NINE_CARDS} />)
+    })
+
+    const scrollCalls = addSpy.mock.calls.filter(([event]) => event === 'scroll')
+    expect(scrollCalls.length).toBeGreaterThan(0)
+  })
+
+  it('prefers-reduced-motion：scroll 監聽器不附加', async () => {
+    setupMatchMedia(true, true)
+    const addSpy = vi.spyOn(window, 'addEventListener')
+
+    await act(async () => {
+      render(<HeroBinder cards={NINE_CARDS} />)
+    })
+
+    const scrollCalls = addSpy.mock.calls.filter(([event]) => event === 'scroll')
+    expect(scrollCalls.length).toBe(0)
+  })
+
+  it('行動裝置（isDesktop=false）：scroll 監聽器不附加', async () => {
+    setupMatchMedia(false, false)
+    const addSpy = vi.spyOn(window, 'addEventListener')
+
+    await act(async () => {
+      render(<HeroBinder cards={NINE_CARDS} />)
+    })
+
+    const scrollCalls = addSpy.mock.calls.filter(([event]) => event === 'scroll')
+    expect(scrollCalls.length).toBe(0)
+  })
+
+  it('unmount 後 scroll 監聽器被移除', async () => {
+    setupMatchMedia(true, false)
+    const removeSpy = vi.spyOn(window, 'removeEventListener')
+
+    let unmount!: () => void
+    await act(async () => {
+      const result = render(<HeroBinder cards={NINE_CARDS} />)
+      unmount = result.unmount
+    })
+
+    await act(async () => { unmount() })
+
+    const scrollRemovals = removeSpy.mock.calls.filter(([event]) => event === 'scroll')
+    expect(scrollRemovals.length).toBeGreaterThan(0)
   })
 })
