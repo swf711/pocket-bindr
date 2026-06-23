@@ -56,7 +56,7 @@ function PagePanel({
   if (content.type === 'cover' || content.type === 'blank') {
     return (
       <div
-        className="flex-1 rounded-md border border-border min-h-48"
+        className="flex-1 rounded-md border border-border min-h-96"
         style={{ backgroundColor: coverColor }}
       />
     )
