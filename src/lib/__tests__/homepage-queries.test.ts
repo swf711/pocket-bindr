@@ -4,7 +4,6 @@ vi.mock('@/lib/prisma', () => ({
   prisma: {
     card: { findMany: vi.fn(), count: vi.fn() },
     cardSet: { findMany: vi.fn(), findFirst: vi.fn() },
-    userCard: { groupBy: vi.fn() },
   },
 }))
 
@@ -20,7 +19,6 @@ import {
   getShowcaseCards,
   getLatestSetsByGame,
   getLatestSeriesCards,
-  getMostWantedCards,
   getTotalCardCount,
 } from '@/lib/homepage-queries'
 import { prisma } from '@/lib/prisma'
@@ -184,76 +182,6 @@ describe('getLatestSetsByGame', () => {
     const result = await getLatestSetsByGame('PTCG', 'ZH_TW')
 
     expect(result).toEqual([])
-  })
-})
-
-describe('getMostWantedCards', () => {
-  beforeEach(() => vi.clearAllMocks())
-
-  it('無 wanted UserCard 時回傳空陣列', async () => {
-    vi.mocked(prisma.userCard.groupBy).mockResolvedValue([])
-
-    const result = await getMostWantedCards('PTCG', 'ZH_TW', 10)
-
-    expect(result).toEqual([])
-    expect(prisma.card.findMany).not.toHaveBeenCalled()
-  })
-
-  it('依 game + language + isCollectible 篩選 Card', async () => {
-    vi.mocked(prisma.userCard.groupBy).mockResolvedValue([
-      { cardId: 'c1', _count: { cardId: 5 } },
-    ] as never)
-    vi.mocked(prisma.card.findMany).mockResolvedValue([
-      { ...mockPrismaCard, id: 'c1', aliases: [] },
-    ] as never)
-
-    await getMostWantedCards('PTCG', 'ZH_TW', 10)
-
-    expect(prisma.card.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: expect.objectContaining({
-          game: 'PTCG',
-          language: 'ZH_TW',
-          isCollectible: true,
-        }),
-      })
-    )
-  })
-
-  it('wantedCount 依 groupBy count 正確排序', async () => {
-    vi.mocked(prisma.userCard.groupBy).mockResolvedValue([
-      { cardId: 'c1', _count: { cardId: 3 } },
-      { cardId: 'c2', _count: { cardId: 7 } },
-    ] as never)
-    vi.mocked(prisma.card.findMany).mockResolvedValue([
-      { ...mockPrismaCard, id: 'c1', name: 'Card A', aliases: [] },
-      { ...mockPrismaCard, id: 'c2', name: 'Card B', aliases: [] },
-    ] as never)
-
-    const result = await getMostWantedCards('PTCG', 'ZH_TW', 10)
-
-    expect(result[0].wantedCount).toBe(7)
-    expect(result[0].name).toBe('Card B')
-    expect(result[1].wantedCount).toBe(3)
-  })
-
-  it('OPCG 回傳結果帶入 alias zhName / zhSetName', async () => {
-    vi.mocked(prisma.userCard.groupBy).mockResolvedValue([
-      { cardId: 'opcg-1', _count: { cardId: 2 } },
-    ] as never)
-    vi.mocked(prisma.card.findMany).mockResolvedValue([
-      {
-        ...mockPrismaCard,
-        id: 'opcg-1',
-        name: 'モンキー・D・ルフィ',
-        aliases: [{ name: '蒙其·D·魯夫', set: { name: '起始甲板！草帽海賊團' } }],
-      },
-    ] as never)
-
-    const result = await getMostWantedCards('OPCG', 'JA', 10)
-
-    expect(result[0].zhName).toBe('蒙其·D·魯夫')
-    expect(result[0].zhSetName).toBe('起始甲板！草帽海賊團')
   })
 })
 

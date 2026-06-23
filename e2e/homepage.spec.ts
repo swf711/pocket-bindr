@@ -10,7 +10,7 @@ test.describe('首頁', () => {
 
     await expect(page.getByTestId('hero-section')).toBeVisible()
     await expect(page.getByTestId('stats-carousel-section')).toBeVisible()
-    await expect(page.getByTestId('podium-section')).toBeVisible()
+    await expect(page.getByTestId('feature-platform-section')).toBeVisible()
     await expect(page.getByTestId('why-section')).toBeVisible()
 
     const hero = page.getByTestId('hero-section')
@@ -33,19 +33,16 @@ test.describe('首頁', () => {
     await expect(hero.getByRole('link', { name: /開始搜尋/ })).toBeVisible()
   })
 
-  test('Scenario 3: 頒獎台 PTCG / OPCG Tab 切換', async ({ page }) => {
+  test('Scenario 3: 平台功能區塊顯示 6 個功能項目', async ({ page }) => {
     await page.goto('/')
 
-    const podium = page.getByTestId('podium-section')
-    await expect(podium).toBeVisible()
+    const featureSection = page.getByTestId('feature-platform-section')
+    await expect(featureSection).toBeVisible()
 
-    // 預設 PTCG tab 啟用
-    const ptcgTab = podium.getByRole('tab', { name: 'Pokémon' }).first()
-    await expect(ptcgTab).toHaveAttribute('data-state', 'active')
-
-    // 點擊 OPCG tab
-    await podium.getByRole('tab', { name: 'One Piece' }).first().click()
-    await expect(podium.getByRole('tab', { name: 'One Piece' }).first()).toHaveAttribute('data-state', 'active')
+    const featureTitles = ['搜尋卡牌', '建立卡冊', '管理收藏', '不限裝置同步整理', '分享你的卡冊', '更多功能即將推出']
+    for (const title of featureTitles) {
+      await expect(featureSection.getByText(title)).toBeVisible()
+    }
   })
 
   // 桌面 sticky parallax：把第二區塊捲到「卡冊覆蓋」停點，使大圖 carousel 進入可視
@@ -97,15 +94,15 @@ test.describe('首頁', () => {
     await expect(carouselCards).toHaveCount(12)
   })
 
-  test('Scenario 7: 頒獎台顯示前三名', async ({ page }) => {
+  test('Scenario 7: 開發者介紹區塊顯示聯絡連結', async ({ page }) => {
     await page.goto('/')
 
-    const podium = page.getByTestId('podium-section')
-    // 有資料時顯示 3 個 podium-card，無資料時顯示 fallback
-    const podiumCards = podium.locator('[data-testid="podium-card"]')
-    const count = await podiumCards.count()
-    // 若有想要資料則 3 張，否則可能 0 張
-    expect(count === 0 || count === 3).toBe(true)
+    const devSection = page.getByTestId('why-section')
+    await expect(devSection).toBeVisible()
+
+    await expect(devSection.getByRole('link', { name: /LinkedIn/ })).toBeVisible()
+    await expect(devSection.getByRole('link', { name: /GitHub/ })).toBeVisible()
+    await expect(devSection.getByRole('link', { name: /Email/ })).toBeVisible()
   })
 
   test('Scenario 8: 全站 Footer 在首頁隱藏，改由 inline footer 呈現', async ({ page }) => {
@@ -119,10 +116,11 @@ test.describe('首頁', () => {
     await expect(page.getByTestId('inline-footer')).toContainText('TCG Binder')
   })
 
-  test('Scenario 9: 「即將推出：分享你的卡冊」預告出現', async ({ page }) => {
+  test('Scenario 9: 平台功能區塊包含「分享」相關文字', async ({ page }) => {
     await page.goto('/')
 
-    await expect(page.getByText(/即將推出：分享你的卡冊/)).toBeVisible()
+    const featureSection = page.getByTestId('feature-platform-section')
+    await expect(featureSection.getByText(/分享你的卡冊/)).toBeVisible()
   })
 
   test('Scenario 10: 第二區塊 sticky parallax — 大圖 carousel 上滑覆蓋後進入第三區塊', async ({ page }) => {
@@ -140,8 +138,8 @@ test.describe('首頁', () => {
     await scrollToCarouselCover(page)
     await expect(firstCard).toBeInViewport()
 
-    // 繼續滑動進入第三區塊（頒獎台）
-    await page.getByTestId('podium-section').scrollIntoViewIfNeeded()
-    await expect(page.getByTestId('podium-section')).toBeInViewport()
+    // 繼續滑動進入第三區塊（平台功能）
+    await page.getByTestId('feature-platform-section').scrollIntoViewIfNeeded()
+    await expect(page.getByTestId('feature-platform-section')).toBeInViewport()
   })
 })

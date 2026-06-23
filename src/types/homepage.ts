@@ -38,17 +38,6 @@ export type ShowcaseCard = {
   zhSetName?: string
 }
 
-export type WantedRankCard = {
-  cardId: string
-  name: string
-  imageSmall: string
-  rarity: string | null
-  setName: string
-  wantedCount: number
-  zhName?: string
-  zhSetName?: string
-}
-
 export type GameTabData = {
   showcaseCards: ShowcaseCard[]
   latestSets: LatestSet[]

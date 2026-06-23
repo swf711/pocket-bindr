@@ -164,7 +164,7 @@ export function HeroBinder({ cards }: HeroBinderProps) {
 
         <div
           style={{ touchAction: 'none' }}
-          className="relative bg-muted/30 border-2 border-muted rounded-xl p-3 shadow-inner"
+          className="dark relative bg-black/80 border-2 border-muted rounded-xl p-3 shadow-inner"
           data-testid="hero-binder"
           onPointerDown={() => setPressed(true)}
         >

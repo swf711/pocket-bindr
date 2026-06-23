@@ -2,9 +2,9 @@ import type { Game, Language } from '@prisma/client'
 import { unstable_cache } from 'next/cache'
 import { prisma } from '@/lib/prisma'
 import { getCardImageUrl } from '@/lib/get-card-image-url'
-import type { LatestSet, ShowcaseCard, WantedRankCard } from '@/types/homepage'
+import type { LatestSet, ShowcaseCard } from '@/types/homepage'
 
-export type { LatestSet, ShowcaseCard, WantedRankCard, GameTabData } from '@/types/homepage'
+export type { LatestSet, ShowcaseCard, GameTabData } from '@/types/homepage'
 
 const _getTotalCardCount = async () =>
   prisma.card.count({ where: { isCollectible: true } })
@@ -163,61 +163,3 @@ export async function getLatestSetsByGame(
   return sets.map((s) => ({ ...s, releaseDate: s.releaseDate! }))
 }
 
-const _getMostWantedCards = async (
-  game: Game,
-  language: Language,
-  limit: number
-): Promise<WantedRankCard[]> => {
-  const topWanted = await prisma.userCard.groupBy({
-    by: ['cardId'],
-    where: { status: 'wanted' },
-    _count: { cardId: true },
-    orderBy: { _count: { cardId: 'desc' } },
-    take: limit * 10,
-  })
-
-  if (topWanted.length === 0) return []
-
-  const cardIds = topWanted.map((r) => r.cardId)
-  const cards = await prisma.card.findMany({
-    where: {
-      id: { in: cardIds },
-      game,
-      language,
-      isCollectible: true,
-      imageSmall: { not: '' },
-    },
-    select: {
-      id: true,
-      name: true,
-      imageSmall: true,
-      rarity: true,
-      set: { select: { name: true } },
-      aliases: {
-        where: { language: 'ZH_TW' },
-        select: { name: true, set: { select: { name: true } } },
-      },
-    },
-  })
-
-  const countMap = new Map(topWanted.map((r) => [r.cardId, r._count.cardId]))
-  return cards
-    .map((card) => ({
-      cardId: card.id,
-      name: card.name,
-      imageSmall: getCardImageUrl(card.imageSmall) ?? card.imageSmall,
-      rarity: card.rarity,
-      setName: card.set.name,
-      wantedCount: countMap.get(card.id) ?? 0,
-      zhName: card.aliases[0]?.name,
-      zhSetName: card.aliases[0]?.set.name,
-    }))
-    .sort((a, b) => b.wantedCount - a.wantedCount)
-    .slice(0, limit)
-}
-
-export const getMostWantedCards = unstable_cache(
-  _getMostWantedCards,
-  ['homepage-most-wanted'],
-  { revalidate: 600 }
-)

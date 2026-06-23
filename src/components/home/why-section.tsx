@@ -1,104 +1,77 @@
 import Link from 'next/link'
-import { BookOpen, Library, Search, Users, Sparkles } from 'lucide-react'
+import { Mail } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
-const FEATURES = [
-  {
-    icon: Search,
-    title: '搜尋卡牌',
-    description: '支援 PTCG、OPCG 多語言卡牌搜尋，依系列、稀有度快速找到目標卡牌。',
-  },
-  {
-    icon: Library,
-    title: '管理收藏',
-    description: '標記擁有或想要的卡牌，追蹤每個系列的收集進度。',
-  },
-  {
-    icon: BookOpen,
-    title: '建立卡冊',
-    description: '自訂格式與封面，將收藏整理成精美的虛擬卡冊，支援拖拉排序。',
-  },
-]
-
-const REASONS = [
-  {
-    icon: Users,
-    title: '一人獨立開發',
-    description: '由熱愛卡牌遊戲的獨立開發者打造，持續更新完善中。',
-  },
-  {
-    icon: Sparkles,
-    title: '完全免費使用',
-    description: '所有核心功能完全免費，無廣告、無付費牆。',
-  },
-  {
-    icon: BookOpen,
-    title: '加入會員解鎖收藏',
-    description: '登入即可標記擁有／想要的卡牌，建立專屬卡冊。',
-  },
-]
-
-interface WhySectionProps {
-  isLoggedIn: boolean
+function LinkedInIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
+    </svg>
+  )
 }
 
-export function WhySection({ isLoggedIn }: WhySectionProps) {
+function GitHubIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
+    </svg>
+  )
+}
+
+export function WhySection() {
   return (
     <section
       className="min-h-screen snap-start flex flex-col"
       data-testid="why-section"
     >
-      <div className="flex-1 flex flex-col justify-center gap-12 container mx-auto px-4 py-16">
-        {/* Platform features */}
-        <div>
-          <h2 className="text-2xl font-semibold text-center mb-6">平台功能</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {FEATURES.map(({ icon: Icon, title, description }) => (
-              <Card key={title}>
-                <CardHeader className="pb-2">
-                  <div className="flex items-center gap-2">
-                    <Icon className="h-5 w-5 text-primary" />
-                    <CardTitle className="text-base">{title}</CardTitle>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground">{description}</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+      <div className="flex-1 flex flex-col items-center justify-center gap-8 container mx-auto px-4 py-16 text-center">
+        <div className="space-y-4 max-w-xl">
+          <h2 className="text-3xl font-bold">關於</h2>
+          <p className="text-muted-foreground leading-relaxed">
+            TCG Binder 由我一人獨立開發，希望為卡牌玩家打造最直覺、好用的收藏管理工具。
+            如果你有任何建議或問題，歡迎透過以下方式聯絡我。
+          </p>
         </div>
 
-        {/* Why TCG Binder */}
-        <div>
-          <div className="text-center mb-6">
-            <h2 className="text-2xl font-semibold mb-1">為什麼選擇 TCG Binder？</h2>
-            <p className="text-muted-foreground text-sm">用最簡單的方式管理你的卡牌收藏</p>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-            {REASONS.map(({ icon: Icon, title, description }) => (
-              <Card key={title}>
-                <CardContent className="p-6 text-center">
-                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 mb-4">
-                    <Icon className="w-6 h-6 text-primary" />
-                  </div>
-                  <h3 className="font-semibold mb-2">{title}</h3>
-                  <p className="text-sm text-muted-foreground">{description}</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Button asChild size="lg">
-              <Link href="/cards">開始搜尋 →</Link>
-            </Button>
-            {isLoggedIn && (
-              <Button asChild variant="outline" size="lg">
-                <Link href="/binders">我的卡冊</Link>
-              </Button>
-            )}
-          </div>
+        <div className="flex flex-wrap gap-3 justify-center">
+          <Button asChild variant="outline" size="lg">
+            <Link
+              href="https://www.linkedin.com/in/swf711/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <LinkedInIcon className="mr-2 h-4 w-4" />
+              LinkedIn
+            </Link>
+          </Button>
+          <Button asChild variant="outline" size="lg">
+            <Link
+              href="https://github.com/swf711"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <GitHubIcon className="mr-2 h-4 w-4" />
+              GitHub
+            </Link>
+          </Button>
+          <Button asChild variant="outline" size="lg">
+            <Link href="mailto:your-email@example.com">
+              <Mail className="mr-2 h-4 w-4" />
+              Email
+            </Link>
+          </Button>
         </div>
       </div>
 
