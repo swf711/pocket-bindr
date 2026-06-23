@@ -53,6 +53,7 @@ export default async function BinderDetailPage({ params }: { params: Promise<{ i
     description: binder.description ?? null,
     settings,
     slots,
+    shareToken: binder.shareToken ?? null,
   }
 
   return <BinderView binder={binderData} />

@@ -114,6 +114,7 @@ model Binder {
   description String?
   settings    Json?
   sortOrder   Int          @default(0)
+  shareToken  String?      @unique
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
   slots       BinderSlot[]

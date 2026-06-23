@@ -173,6 +173,13 @@ export async function resetUserPassword(email: string, password: string): Promis
 }
 
 /**
+ * 清除指定 binderId 的 shareToken（撤銷分享），供分享 E2E 測試清理用。
+ */
+export async function clearBinderShareToken(binderId: string): Promise<void> {
+  await prisma.binder.update({ where: { id: binderId }, data: { shareToken: null } }).catch(() => {})
+}
+
+/**
  * 重設指定帳號的 username（供 settings E2E 在修改 username 後還原測試狀態）。
  */
 export async function resetUserUsername(email: string, username: string | null): Promise<void> {

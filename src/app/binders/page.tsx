@@ -20,6 +20,7 @@ export default async function BindersPage() {
     settings: b.settings as Record<string, unknown> | null,
     createdAt: b.createdAt.toISOString(),
     coverColor: b.coverColor,
+    shareToken: b.shareToken ?? null,
   }))
 
   return <PageContainer><BinderListClient initialBinders={binderSummaries} /></PageContainer>

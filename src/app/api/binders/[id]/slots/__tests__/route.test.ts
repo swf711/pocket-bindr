@@ -39,6 +39,7 @@ const mockBinder = {
   description: null,
   settings: null,
   sortOrder: 0,
+  shareToken: null,
   createdAt: new Date(),
   updatedAt: new Date(),
 }

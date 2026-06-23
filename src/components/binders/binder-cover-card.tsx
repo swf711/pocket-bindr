@@ -1,9 +1,16 @@
 'use client'
 
 import Link from 'next/link'
-import { ArrowRight, Pencil, Trash2 } from 'lucide-react'
+import { ArrowRight, EllipsisVertical, Pencil, Share2, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ButtonGroup } from '@/components/ui/button-group'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { BinderSummary, GRID_SHORT_LABELS } from '@/types/binder'
 import { GridType } from '@prisma/client'
 
@@ -22,10 +29,11 @@ interface BinderCoverCardProps {
   binder: BinderSummary
   onEdit: (binder: BinderSummary) => void
   onDelete: (binder: BinderSummary) => void
+  onShare: (binder: BinderSummary) => void
   isTapped?: boolean
 }
 
-export function BinderCoverCard({ binder, onEdit, onDelete, isTapped }: BinderCoverCardProps) {
+export function BinderCoverCard({ binder, onEdit, onDelete, onShare, isTapped }: BinderCoverCardProps) {
   const textColor = getTextColor(binder.coverColor)
   const colorScheme = isLightBackground(binder.coverColor) ? 'light' : 'dark'
   const gridLabel = GRID_SHORT_LABELS[binder.gridType as GridType]
@@ -93,6 +101,7 @@ export function BinderCoverCard({ binder, onEdit, onDelete, isTapped }: BinderCo
             className={colorScheme}
             onClick={(e: React.MouseEvent) => e.stopPropagation()}
           >
+            {/* 進入卡冊（保留文字） */}
             <Button
               asChild
               variant="outline"
@@ -110,27 +119,46 @@ export function BinderCoverCard({ binder, onEdit, onDelete, isTapped }: BinderCo
               </Link>
             </Button>
 
-            <Button
-              variant="outline"
-              size="icon"
-              data-testid="edit-binder-btn"
-              className="h-7 w-7 shrink-0 active:not-aria-[haspopup]:translate-y-px"
-              onClick={() => onEdit(binder)}
-              style={{ color: textColor }}
-            >
-              <Pencil className="h-3 w-3" />
-            </Button>
-
-            <Button
-              variant="outline"
-              size="icon"
-              data-testid="delete-binder-btn"
-              className="h-7 w-7 shrink-0 active:not-aria-[haspopup]:translate-y-px"
-              onClick={() => onDelete(binder)}
-              style={{ color: textColor }}
-            >
-              <Trash2 className="h-3 w-3" />
-            </Button>
+            {/* ⋮ DropdownMenu：編輯、分享、刪除 */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-7 w-7 shrink-0 active:not-aria-[haspopup]:translate-y-px"
+                  style={{ color: textColor }}
+                  data-testid="binder-more-btn"
+                  aria-label="更多操作"
+                >
+                  <EllipsisVertical className="h-3 w-3" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="min-w-[120px]">
+                <DropdownMenuItem
+                  onClick={() => onEdit(binder)}
+                  data-testid="edit-binder-btn"
+                >
+                  <Pencil className="h-3 w-3 mr-2" />
+                  編輯
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => onShare(binder)}
+                  data-testid="share-binder-btn"
+                >
+                  <Share2 className="h-3 w-3 mr-2" />
+                  分享
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={() => onDelete(binder)}
+                  data-testid="delete-binder-btn"
+                  className="text-destructive focus:text-destructive"
+                >
+                  <Trash2 className="h-3 w-3 mr-2" />
+                  刪除
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </ButtonGroup>
         </div>
       </div>

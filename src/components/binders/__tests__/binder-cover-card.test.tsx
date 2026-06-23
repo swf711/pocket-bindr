@@ -20,6 +20,7 @@ function makeBinder(overrides: Partial<BinderSummary> = {}): BinderSummary {
     description: null,
     settings: null,
     sortOrder: 0,
+    shareToken: null,
     createdAt: new Date().toISOString(),
     _count: { slots: 5 },
     ...overrides,
@@ -33,6 +34,7 @@ describe('BinderCoverCard', () => {
         binder={makeBinder({ coverColor: '#1A202C' })}
         onEdit={() => {}}
         onDelete={() => {}}
+        onShare={() => {}}
       />,
     )
     const root = container.querySelector('[data-testid="binder-card"]') as HTMLElement
@@ -45,6 +47,7 @@ describe('BinderCoverCard', () => {
         binder={makeBinder({ coverColor: '#FFFFFF' })}
         onEdit={() => {}}
         onDelete={() => {}}
+        onShare={() => {}}
       />,
     )
     const root = container.querySelector('[data-testid="binder-card"]') as HTMLElement
@@ -57,6 +60,7 @@ describe('BinderCoverCard', () => {
         binder={makeBinder({ name: 'My Binder' })}
         onEdit={() => {}}
         onDelete={() => {}}
+        onShare={() => {}}
       />,
     )
     const nameEl = screen.getByTestId('binder-name')
@@ -72,6 +76,7 @@ describe('BinderCoverCard', () => {
         binder={makeBinder({ gridType: 'grid_3x3', _count: { slots: 12 } })}
         onEdit={() => {}}
         onDelete={() => {}}
+        onShare={() => {}}
       />,
     )
     const infoEl = screen.getByTestId('binder-info')
@@ -88,6 +93,7 @@ describe('BinderCoverCard', () => {
         binder={makeBinder({ description: '我的測試卡冊描述' })}
         onEdit={() => {}}
         onDelete={() => {}}
+        onShare={() => {}}
       />,
     )
     const descEl = screen.getByTestId('binder-description')
@@ -101,6 +107,7 @@ describe('BinderCoverCard', () => {
         binder={makeBinder({ description: null })}
         onEdit={() => {}}
         onDelete={() => {}}
+        onShare={() => {}}
       />,
     )
     const descEl = screen.getByTestId('binder-description')
@@ -110,7 +117,7 @@ describe('BinderCoverCard', () => {
 
   it('進入卡冊按鈕（ArrowRight）存在於底部中央 action group 內', () => {
     const { container } = render(
-      <BinderCoverCard binder={makeBinder()} onEdit={() => {}} onDelete={() => {}} />,
+      <BinderCoverCard binder={makeBinder()} onEdit={() => {}} onDelete={() => {}} onShare={() => {}} />,
     )
     const actionGroup = container.querySelector('.opacity-0')
     expect(actionGroup).toBeInTheDocument()
@@ -123,16 +130,15 @@ describe('BinderCoverCard', () => {
 
   it('edit/delete 按鈕在底部中央 action group 內', () => {
     const { container } = render(
-      <BinderCoverCard binder={makeBinder()} onEdit={() => {}} onDelete={() => {}} />,
+      <BinderCoverCard binder={makeBinder()} onEdit={() => {}} onDelete={() => {}} onShare={() => {}} />,
     )
     const actionGroup = container.querySelector('.opacity-0')
-    expect(actionGroup).toContainElement(screen.getByTestId('edit-binder-btn'))
-    expect(actionGroup).toContainElement(screen.getByTestId('delete-binder-btn'))
+    expect(actionGroup).toContainElement(screen.getByTestId('binder-more-btn'))
   })
 
   it('書脊 div 存在並套用 coverColor', () => {
     const { container } = render(
-      <BinderCoverCard binder={makeBinder({ coverColor: '#FF5733' })} onEdit={() => {}} onDelete={() => {}} />,
+      <BinderCoverCard binder={makeBinder({ coverColor: '#FF5733' })} onEdit={() => {}} onDelete={() => {}} onShare={() => {}} />,
     )
     const spine = container.querySelector('[data-testid="binder-spine"]') as HTMLElement
     expect(spine).toBeInTheDocument()
@@ -141,7 +147,7 @@ describe('BinderCoverCard', () => {
 
   it('封面套用 aspect-2.5/3.5（與卡牌搜尋一致）', () => {
     const { container } = render(
-      <BinderCoverCard binder={makeBinder()} onEdit={() => {}} onDelete={() => {}} />,
+      <BinderCoverCard binder={makeBinder()} onEdit={() => {}} onDelete={() => {}} onShare={() => {}} />,
     )
     const root = container.querySelector('[data-testid="binder-card"]') as HTMLElement
     expect(root.className).toContain('aspect-2.5/3.5')

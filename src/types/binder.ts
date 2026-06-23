@@ -39,6 +39,23 @@ export type BinderDetailResponse = {
   description: string | null
   settings: BinderSettings | null
   slots: SlotWithCard[]
+  shareToken: string | null
+}
+
+export type BinderShareResponse = {
+  shareToken: string
+  shareUrl: string
+}
+
+export type BinderPublicData = {
+  id: string
+  name: string
+  gridType: 'grid_1x2' | 'grid_2x2' | 'grid_3x3' | 'grid_4x3' | 'grid_4x4'
+  coverColor: string
+  description: string | null
+  settings: BinderSettings | null
+  slots: SlotWithCard[]
+  ownerName: string
 }
 
 export type SwapSlotsBody = {
@@ -66,6 +83,7 @@ export interface BinderSummary {
   description: string | null
   settings: Record<string, unknown> | null
   sortOrder: number
+  shareToken: string | null
   createdAt: string
   _count: { slots: number }
 }

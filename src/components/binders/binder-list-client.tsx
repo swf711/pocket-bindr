@@ -24,6 +24,7 @@ import { AddBinderSlot } from './add-binder-slot'
 import { CreateBinderDialog } from './create-binder-dialog'
 import { EditBinderDialog } from './edit-binder-dialog'
 import { DeleteBinderDialog } from './delete-binder-dialog'
+import { ShareBinderDialog } from '@/components/binder/share-binder-dialog'
 
 interface BinderListClientProps {
   initialBinders: BinderSummary[]
@@ -34,6 +35,7 @@ export function BinderListClient({ initialBinders }: BinderListClientProps) {
   const [createOpen, setCreateOpen] = useState(false)
   const [editOpen, setEditOpen] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
+  const [shareOpen, setShareOpen] = useState(false)
   const [selectedBinder, setSelectedBinder] = useState<BinderSummary | null>(null)
   const [tappedBinderId, setTappedBinderId] = useState<string | null>(null)
 
@@ -65,6 +67,18 @@ export function BinderListClient({ initialBinders }: BinderListClientProps) {
   function openDelete(binder: BinderSummary) {
     setSelectedBinder(binder)
     setDeleteOpen(true)
+  }
+
+  function openShare(binder: BinderSummary) {
+    setSelectedBinder(binder)
+    setShareOpen(true)
+  }
+
+  function handleShareTokenChange(token: string | null) {
+    if (!selectedBinder) return
+    setBinderList(prev =>
+      prev.map(b => b.id === selectedBinder.id ? { ...b, shareToken: token } : b)
+    )
   }
 
   async function handleDragEnd(event: DragEndEvent) {
@@ -137,6 +151,7 @@ export function BinderListClient({ initialBinders }: BinderListClientProps) {
                     binder={binder}
                     onEdit={openEdit}
                     onDelete={openDelete}
+                    onShare={openShare}
                     isTapped={tappedBinderId === binder.id}
                     onTap={() => setTappedBinderId(prev => prev === binder.id ? null : binder.id)}
                   />
@@ -167,6 +182,16 @@ export function BinderListClient({ initialBinders }: BinderListClientProps) {
         binder={selectedBinder}
         onDeleted={handleDeleted}
       />
+
+      {selectedBinder && (
+        <ShareBinderDialog
+          binderId={selectedBinder.id}
+          initialToken={selectedBinder.shareToken}
+          open={shareOpen}
+          onOpenChange={setShareOpen}
+          onTokenChange={handleShareTokenChange}
+        />
+      )}
     </div>
   )
 }

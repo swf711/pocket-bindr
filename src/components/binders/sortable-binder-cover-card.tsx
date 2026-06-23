@@ -9,11 +9,12 @@ interface SortableBinderCoverCardProps {
   binder: BinderSummary
   onEdit: (binder: BinderSummary) => void
   onDelete: (binder: BinderSummary) => void
+  onShare: (binder: BinderSummary) => void
   isTapped?: boolean
   onTap?: () => void
 }
 
-export function SortableBinderCoverCard({ binder, onEdit, onDelete, isTapped, onTap }: SortableBinderCoverCardProps) {
+export function SortableBinderCoverCard({ binder, onEdit, onDelete, onShare, isTapped, onTap }: SortableBinderCoverCardProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: binder.id,
   })
@@ -42,6 +43,7 @@ export function SortableBinderCoverCard({ binder, onEdit, onDelete, isTapped, on
         binder={binder}
         onEdit={onEdit}
         onDelete={onDelete}
+        onShare={onShare}
         isTapped={isTapped}
       />
     </div>

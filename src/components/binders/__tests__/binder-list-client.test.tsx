@@ -24,6 +24,7 @@ function makeBinder(overrides: Partial<BinderSummary> = {}): BinderSummary {
     description: null,
     settings: null,
     sortOrder: 0,
+    shareToken: null,
     createdAt: new Date().toISOString(),
     _count: { slots: 0 },
     ...overrides,

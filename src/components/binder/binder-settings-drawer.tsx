@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { GridType } from '@prisma/client'
 import { toast } from 'sonner'
-import { Settings, Trash2, GripVertical } from 'lucide-react'
+import { Settings, Trash2, GripVertical, Copy, Share2 } from 'lucide-react'
 import {
   DndContext,
   DragEndEvent,
@@ -56,6 +56,7 @@ interface BinderSettingsDrawerProps {
   gridType: GridType
   coverColor: string
   totalPages: number
+  shareToken: string | null
   onSettingsUpdate: (updated: {
     name: string
     gridType: GridType
@@ -66,6 +67,7 @@ interface BinderSettingsDrawerProps {
   onPageDelete: (pageNumber: number, newSlots: SlotWithCard[]) => void
   onPageReorder: (newSlots: SlotWithCard[]) => void
   onTotalPagesChange: (n: number) => void
+  onShareTokenChange: (token: string | null) => void
 }
 
 function SortablePageRow({
@@ -149,10 +151,12 @@ export function BinderSettingsDrawer({
   gridType,
   coverColor,
   totalPages,
+  shareToken: initialShareToken,
   onSettingsUpdate,
   onPageDelete,
   onPageReorder,
   onTotalPagesChange,
+  onShareTokenChange,
 }: BinderSettingsDrawerProps) {
   const [open, setOpen] = useState(false)
   const [name, setName] = useState(binderName)
@@ -161,6 +165,8 @@ export function BinderSettingsDrawer({
   const [localCoverColor, setLocalCoverColor] = useState(coverColor)
   const [savingSettings, setSavingSettings] = useState(false)
   const [deletingPage, setDeletingPage] = useState<number | null>(null)
+  const [localShareToken, setLocalShareToken] = useState<string | null>(initialShareToken)
+  const [sharingLoading, setSharingLoading] = useState(false)
   const [pageOrder, setPageOrder] = useState<number[]>(() =>
     Array.from({ length: totalPages }, (_, i) => i + 1),
   )
@@ -215,6 +221,44 @@ export function BinderSettingsDrawer({
     } finally {
       setSavingSettings(false)
     }
+  }
+
+  async function handleEnableShare() {
+    setSharingLoading(true)
+    try {
+      const res = await fetch(`/api/binders/${binderId}/share`, { method: 'POST' })
+      if (!res.ok) throw new Error()
+      const data = await res.json()
+      setLocalShareToken(data.shareToken)
+      onShareTokenChange(data.shareToken)
+      toast('已啟用公開分享')
+    } catch {
+      toast.error('啟用失敗，請再試一次')
+    } finally {
+      setSharingLoading(false)
+    }
+  }
+
+  async function handleRevokeShare() {
+    setSharingLoading(true)
+    try {
+      const res = await fetch(`/api/binders/${binderId}/share`, { method: 'DELETE' })
+      if (!res.ok) throw new Error()
+      setLocalShareToken(null)
+      onShareTokenChange(null)
+      toast('已撤銷公開分享')
+    } catch {
+      toast.error('撤銷失敗，請再試一次')
+    } finally {
+      setSharingLoading(false)
+    }
+  }
+
+  async function handleCopyShareUrl() {
+    if (!localShareToken) return
+    const shareUrl = `${window.location.origin}/b/${localShareToken}`
+    await navigator.clipboard.writeText(shareUrl)
+    toast('已複製連結')
   }
 
   async function handleDragEnd(event: DragEndEvent) {
@@ -335,6 +379,61 @@ export function BinderSettingsDrawer({
             >
               {savingSettings ? '儲存中…' : '儲存設定'}
             </Button>
+          </div>
+
+          <Separator />
+
+          {/* 公開分享 */}
+          <div className="flex flex-col gap-3">
+            <p className="text-sm font-medium flex items-center gap-1.5">
+              <Share2 className="h-4 w-4" />
+              公開分享
+            </p>
+            {localShareToken ? (
+              <div className="flex flex-col gap-2">
+                <p className="text-xs text-muted-foreground">任何持有此連結的人皆可瀏覽（純唯讀）</p>
+                <div className="flex gap-2">
+                  <Input
+                    readOnly
+                    value={`${typeof window !== 'undefined' ? window.location.origin : ''}/b/${localShareToken}`}
+                    className="font-mono text-xs h-8"
+                    data-testid="drawer-share-url-input"
+                  />
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="h-8 w-8 shrink-0"
+                    onClick={handleCopyShareUrl}
+                    aria-label="複製連結"
+                    data-testid="drawer-copy-share-url-btn"
+                  >
+                    <Copy className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={handleRevokeShare}
+                  disabled={sharingLoading}
+                  data-testid="drawer-revoke-share-btn"
+                >
+                  撤銷分享
+                </Button>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-2">
+                <p className="text-xs text-muted-foreground">啟用後產生公開連結，任何人皆可瀏覽此卡冊</p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleEnableShare}
+                  disabled={sharingLoading}
+                  data-testid="drawer-enable-share-btn"
+                >
+                  啟用公開分享
+                </Button>
+              </div>
+            )}
           </div>
 
           <Separator />

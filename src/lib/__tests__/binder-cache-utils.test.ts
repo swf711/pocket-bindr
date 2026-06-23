@@ -30,6 +30,7 @@ function makeBinder(slots: SlotWithCard[]): BinderDetailResponse {
     description: null,
     settings: { totalPages: 1 },
     slots,
+    shareToken: null,
   }
 }
 

@@ -23,6 +23,7 @@ export function BinderView({ binder }: { binder: BinderDetailResponse }) {
   const [binderGridType, setBInderGridType] = useState<GridType>(binder.gridType as GridType)
   const [binderCoverColor, setBinderCoverColor] = useState(binder.coverColor)
   const [binderDescription] = useState(binder.description)
+  const [shareToken, setShareToken] = useState<string | null>(binder.shareToken)
   const [pickerTarget, setPickerTarget] = useState<{ pageNumber: number; slotIndex: number } | null>(null)
   const [viewCard, setViewCard] = useState<CardWithCollectionStatus | null>(null)
   const [highlightedSlotId, setHighlightedSlotId] = useState<string | null>(null)
@@ -228,10 +229,12 @@ export function BinderView({ binder }: { binder: BinderDetailResponse }) {
       gridType={binderGridType}
       coverColor={binderCoverColor}
       totalPages={totalPages}
+      shareToken={shareToken}
       onSettingsUpdate={handleSettingsUpdate}
       onPageDelete={handlePageDelete}
       onPageReorder={handlePageReorder}
       onTotalPagesChange={setTotalPages}
+      onShareTokenChange={setShareToken}
     />
   )
 
