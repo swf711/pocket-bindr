@@ -6,7 +6,7 @@ export interface RegisterInput {
 
 export interface RegisterResult {
   success: boolean
-  error?: 'EMAIL_TAKEN' | 'USERNAME_TAKEN' | 'INVALID_INPUT'
+  error?: 'EMAIL_TAKEN' | 'USERNAME_TAKEN' | 'INVALID_INPUT' | 'WEAK_PASSWORD'
   userId?: string
 }
 

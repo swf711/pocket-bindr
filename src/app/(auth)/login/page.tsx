@@ -7,7 +7,7 @@ interface LoginPageProps {
 export default async function LoginPage({ searchParams }: LoginPageProps) {
   const { error, account_deleted } = await searchParams
   return (
-    <div className="mx-auto mt-20 w-full max-w-md px-4">
+    <div className="w-full max-w-md">
       <LoginForm
         oauthError={error}
         accountDeleted={account_deleted === 'true'}

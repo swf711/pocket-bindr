@@ -25,6 +25,19 @@ function renderForm() {
   return render(<RegisterForm />)
 }
 
+/** 填妥所有必填欄位（密碼預設合法、確認一致） */
+function fillForm({
+  email = 'new@b.com',
+  username = 'newuser',
+  password = 'password123',
+  confirm = password,
+}: { email?: string; username?: string; password?: string; confirm?: string } = {}) {
+  fireEvent.change(screen.getByLabelText('Email'), { target: { value: email } })
+  fireEvent.change(screen.getByLabelText('使用者名稱'), { target: { value: username } })
+  fireEvent.change(screen.getByLabelText('密碼'), { target: { value: password } })
+  fireEvent.change(screen.getByLabelText('確認密碼'), { target: { value: confirm } })
+}
+
 describe('RegisterForm', () => {
   beforeEach(() => {
     mockSignIn.mockReset()
@@ -33,11 +46,12 @@ describe('RegisterForm', () => {
     vi.stubGlobal('fetch', vi.fn())
   })
 
-  it('渲染 email / username / password 三個欄位', () => {
+  it('渲染 email / username / password / 確認密碼 欄位', () => {
     renderForm()
     expect(screen.getByLabelText('Email')).toBeInTheDocument()
     expect(screen.getByLabelText('使用者名稱')).toBeInTheDocument()
     expect(screen.getByLabelText('密碼')).toBeInTheDocument()
+    expect(screen.getByLabelText('確認密碼')).toBeInTheDocument()
   })
 
   it('同時顯示 Google 與 Discord 社群登入按鈕', () => {
@@ -52,14 +66,39 @@ describe('RegisterForm', () => {
     expect(screen.getByText('以 Discord 登入')).toBeInTheDocument()
   })
 
+  it('輸入密碼時顯示強度提示', () => {
+    renderForm()
+    expect(screen.queryByTestId('password-strength')).not.toBeInTheDocument()
+    fireEvent.change(screen.getByLabelText('密碼'), { target: { value: 'Password1' } })
+    expect(screen.getByTestId('password-strength')).toHaveTextContent('強')
+  })
+
+  it('密碼過短時顯示錯誤且不送出 fetch', async () => {
+    renderForm()
+    fillForm({ password: 'short', confirm: 'short' })
+    fireEvent.click(screen.getByRole('button', { name: '註冊' }))
+    await waitFor(() => {
+      expect(screen.getByTestId('register-error')).toHaveTextContent('密碼至少需 8 個字元')
+    })
+    expect(fetch).not.toHaveBeenCalled()
+  })
+
+  it('兩次密碼不一致時顯示錯誤且不送出 fetch', async () => {
+    renderForm()
+    fillForm({ password: 'password123', confirm: 'password999' })
+    fireEvent.click(screen.getByRole('button', { name: '註冊' }))
+    await waitFor(() => {
+      expect(screen.getByTestId('register-error')).toHaveTextContent('兩次輸入的密碼不一致')
+    })
+    expect(fetch).not.toHaveBeenCalled()
+  })
+
   it('email 重複時顯示「此 Email 已被使用」', async () => {
     vi.mocked(fetch).mockResolvedValue({
       json: () => Promise.resolve({ success: false, error: 'EMAIL_TAKEN' }),
     } as Response)
     renderForm()
-    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'taken@b.com' } })
-    fireEvent.change(screen.getByLabelText('使用者名稱'), { target: { value: 'user1' } })
-    fireEvent.change(screen.getByLabelText('密碼'), { target: { value: 'pass123' } })
+    fillForm({ email: 'taken@b.com', username: 'user1' })
     fireEvent.click(screen.getByRole('button', { name: '註冊' }))
     await waitFor(() => {
       expect(screen.getByTestId('register-error')).toHaveTextContent('此 Email 已被使用')
@@ -71,9 +110,7 @@ describe('RegisterForm', () => {
       json: () => Promise.resolve({ success: false, error: 'USERNAME_TAKEN' }),
     } as Response)
     renderForm()
-    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'new@b.com' } })
-    fireEvent.change(screen.getByLabelText('使用者名稱'), { target: { value: 'taken' } })
-    fireEvent.change(screen.getByLabelText('密碼'), { target: { value: 'pass123' } })
+    fillForm({ username: 'taken' })
     fireEvent.click(screen.getByRole('button', { name: '註冊' }))
     await waitFor(() => {
       expect(screen.getByTestId('register-error')).toHaveTextContent('此使用者名稱已被使用')
@@ -86,9 +123,7 @@ describe('RegisterForm', () => {
     } as Response)
     mockSignIn.mockResolvedValue({ ok: true })
     renderForm()
-    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'new@b.com' } })
-    fireEvent.change(screen.getByLabelText('使用者名稱'), { target: { value: 'newuser' } })
-    fireEvent.change(screen.getByLabelText('密碼'), { target: { value: 'pass123' } })
+    fillForm()
     fireEvent.click(screen.getByRole('button', { name: '註冊' }))
     await waitFor(() => {
       expect(mockSignIn).toHaveBeenCalledWith('credentials', expect.objectContaining({ email: 'new@b.com' }))

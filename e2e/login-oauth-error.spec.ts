@@ -35,7 +35,7 @@ test('帶有 ?error=OAuthAccountNotLinked 時，正確憑證仍可成功登入',
   await expect(page.getByTestId('oauth-error-alert')).toBeVisible()
   // 輸入正確憑證
   await page.getByLabel('Email').fill(user.email)
-  await page.getByLabel('密碼').fill(user.password)
+  await page.getByLabel('密碼', { exact: true }).fill(user.password)
   await page.getByRole('button', { name: '登入', exact: true }).click()
   // 應成功跳轉，不出現錯誤
   await page.waitForURL('**/cards', { timeout: 10000 })

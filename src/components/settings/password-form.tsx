@@ -3,8 +3,8 @@
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { PasswordInput } from '@/components/auth/password-input'
 
 export function PasswordForm() {
   const [currentPassword, setCurrentPassword] = useState('')
@@ -47,10 +47,9 @@ export function PasswordForm() {
     <form onSubmit={handleSubmit} className="space-y-3">
       <div className="space-y-1.5">
         <Label htmlFor="current-password">目前密碼</Label>
-        <Input
+        <PasswordInput
           id="current-password"
           data-testid="current-password-input"
-          type="password"
           value={currentPassword}
           onChange={(e) => {
             setCurrentPassword(e.target.value)
@@ -61,10 +60,9 @@ export function PasswordForm() {
       </div>
       <div className="space-y-1.5">
         <Label htmlFor="new-password">新密碼</Label>
-        <Input
+        <PasswordInput
           id="new-password"
           data-testid="new-password-input"
-          type="password"
           value={newPassword}
           onChange={(e) => {
             setNewPassword(e.target.value)

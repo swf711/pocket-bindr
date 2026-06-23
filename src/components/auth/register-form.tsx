@@ -14,11 +14,15 @@ import {
   FieldSeparator,
 } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
+import { PasswordInput } from '@/components/auth/password-input'
+import { Progress } from '@/components/ui/progress'
+import { getPasswordStrength, isPasswordValid, MIN_PASSWORD_LENGTH } from '@/lib/password-policy'
 
 const errorMessages: Record<string, string> = {
   EMAIL_TAKEN: '此 Email 已被使用',
   USERNAME_TAKEN: '此使用者名稱已被使用',
   INVALID_INPUT: '請填寫所有欄位',
+  WEAK_PASSWORD: `密碼至少需 ${MIN_PASSWORD_LENGTH} 個字元`,
   SERVER_ERROR: '伺服器錯誤，請稍後再試',
 }
 
@@ -27,13 +31,26 @@ export function RegisterForm() {
   const [email, setEmail] = useState('')
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
+  const strength = getPasswordStrength(password)
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    setLoading(true)
     setError('')
+
+    if (!isPasswordValid(password)) {
+      setError(`密碼至少需 ${MIN_PASSWORD_LENGTH} 個字元`)
+      return
+    }
+    if (password !== confirmPassword) {
+      setError('兩次輸入的密碼不一致')
+      return
+    }
+
+    setLoading(true)
 
     const res = await fetch('/api/auth/register', {
       method: 'POST',
@@ -90,11 +107,28 @@ export function RegisterForm() {
 
               <Field>
                 <FieldLabel htmlFor="password">密碼</FieldLabel>
-                <Input
+                <PasswordInput
                   id="password"
-                  type="password"
                   value={password}
                   onChange={e => setPassword(e.target.value)}
+                  autoComplete="new-password"
+                  required
+                />
+                {password.length > 0 && (
+                  <div className="space-y-1" data-testid="password-strength">
+                    <Progress value={((strength.score + 1) / 4) * 100} className="h-1.5" />
+                    <FieldDescription>密碼強度：{strength.label}</FieldDescription>
+                  </div>
+                )}
+              </Field>
+
+              <Field>
+                <FieldLabel htmlFor="confirmPassword">確認密碼</FieldLabel>
+                <PasswordInput
+                  id="confirmPassword"
+                  value={confirmPassword}
+                  onChange={e => setConfirmPassword(e.target.value)}
+                  autoComplete="new-password"
                   required
                 />
               </Field>

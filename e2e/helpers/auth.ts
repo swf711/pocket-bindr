@@ -28,7 +28,7 @@ export function getTestUser(specName: string): TestUser {
 export async function loginAs(page: Page, user: TestUser): Promise<void> {
   await page.goto('/login')
   await page.getByLabel('Email').fill(user.email)
-  await page.getByLabel('密碼').fill(user.password)
+  await page.getByLabel('密碼', { exact: true }).fill(user.password)
   await page.getByRole('button', { name: '登入', exact: true }).click()
 
   // 等待登入結果：成功則跳轉，失敗則出現錯誤訊息
@@ -42,7 +42,8 @@ export async function loginAs(page: Page, user: TestUser): Promise<void> {
     await page.goto('/register')
     await page.getByLabel('Email').fill(user.email)
     await page.getByLabel('使用者名稱').fill(user.username)
-    await page.getByLabel('密碼').fill(user.password)
+    await page.getByLabel('密碼', { exact: true }).fill(user.password)
+    await page.getByLabel('確認密碼').fill(user.password)
     await page.getByRole('button', { name: '註冊', exact: true }).click()
     await page.waitForURL('**/cards')
   }

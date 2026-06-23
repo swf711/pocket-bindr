@@ -12,7 +12,8 @@ export async function POST(req: NextRequest) {
   try {
     const result = await registerUser({ email, username, password })
     if (!result.success) {
-      return NextResponse.json(result, { status: 409 })
+      const status = result.error === 'WEAK_PASSWORD' ? 400 : 409
+      return NextResponse.json(result, { status })
     }
     return NextResponse.json(result, { status: 201 })
   } catch (err) {

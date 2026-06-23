@@ -1,5 +1,6 @@
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { isPasswordValid } from '@/lib/password-policy'
 import bcrypt from 'bcryptjs'
 
 export async function PATCH(request: Request) {
@@ -15,7 +16,7 @@ export async function PATCH(request: Request) {
       newPassword: unknown
     }
 
-    if (typeof newPassword !== 'string' || newPassword.length < 8) {
+    if (typeof newPassword !== 'string' || !isPasswordValid(newPassword)) {
       return Response.json({ error: 'INVALID_NEW_PASSWORD' }, { status: 400 })
     }
 

@@ -50,6 +50,18 @@ describe('registerUser', () => {
     expect(bcrypt.hash).toHaveBeenCalledWith('password123', 12)
   })
 
+  it('密碼少於 8 字回傳 WEAK_PASSWORD 且不查 DB / 不建立使用者', async () => {
+    const result = await registerUser({
+      email: 'new@test.com',
+      username: 'newuser',
+      password: 'short',
+    })
+
+    expect(result).toEqual({ success: false, error: 'WEAK_PASSWORD' })
+    expect(prisma.user.findUnique).not.toHaveBeenCalled()
+    expect(prisma.user.create).not.toHaveBeenCalled()
+  })
+
   it('email 已被使用時回傳 EMAIL_TAKEN', async () => {
     vi.mocked(prisma.user.findUnique).mockResolvedValueOnce(mockUser)
 

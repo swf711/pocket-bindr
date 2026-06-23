@@ -1,9 +1,12 @@
 import bcrypt from 'bcryptjs'
 import { prisma } from '@/lib/prisma'
+import { isPasswordValid } from '@/lib/password-policy'
 import type { RegisterInput, RegisterResult, LoginInput } from '@/types/auth'
 
 export async function registerUser(input: RegisterInput): Promise<RegisterResult> {
   const { email, username, password } = input
+
+  if (!isPasswordValid(password)) return { success: false, error: 'WEAK_PASSWORD' }
 
   const existingEmail = await prisma.user.findUnique({ where: { email } })
   if (existingEmail) return { success: false, error: 'EMAIL_TAKEN' }

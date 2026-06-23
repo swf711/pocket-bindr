@@ -24,7 +24,8 @@ test.describe.serial('Auth Flow', () => {
 
     await page.getByLabel('Email').fill(TEST_EMAIL)
     await page.getByLabel('使用者名稱').fill(TEST_USERNAME)
-    await page.getByLabel('密碼').fill(TEST_PASSWORD)
+    await page.getByLabel('密碼', { exact: true }).fill(TEST_PASSWORD)
+    await page.getByLabel('確認密碼').fill(TEST_PASSWORD)
     await page.getByRole('button', { name: '註冊' }).click()
 
     await page.waitForURL('**/cards**', { timeout: 15000 })
@@ -36,7 +37,7 @@ test.describe.serial('Auth Flow', () => {
     await page.goto('/login')
     await page.waitForLoadState('networkidle')
     await page.getByLabel('Email').fill(TEST_EMAIL)
-    await page.getByLabel('密碼').fill(TEST_PASSWORD)
+    await page.getByLabel('密碼', { exact: true }).fill(TEST_PASSWORD)
     await page.getByRole('button', { name: '登入', exact: true }).click()
     await page.waitForURL('**/cards**', { timeout: 10000 })
 
@@ -61,7 +62,7 @@ test.describe.serial('Auth Flow', () => {
     await page.waitForLoadState('networkidle')
 
     await page.getByLabel('Email').fill(TEST_EMAIL)
-    await page.getByLabel('密碼').fill(TEST_PASSWORD)
+    await page.getByLabel('密碼', { exact: true }).fill(TEST_PASSWORD)
     await page.getByRole('button', { name: '登入', exact: true }).click()
 
     await page.waitForURL('**/cards**', { timeout: 10000 })
@@ -73,7 +74,7 @@ test.describe.serial('Auth Flow', () => {
     await page.goto('/login')
     await page.waitForLoadState('networkidle')
     await page.getByLabel('Email').fill(TEST_EMAIL)
-    await page.getByLabel('密碼').fill(TEST_PASSWORD)
+    await page.getByLabel('密碼', { exact: true }).fill(TEST_PASSWORD)
     await page.getByRole('button', { name: '登入', exact: true }).click()
     await page.waitForURL('**/cards**', { timeout: 10000 })
 
@@ -88,7 +89,7 @@ test.describe.serial('Auth Flow', () => {
     await page.waitForLoadState('networkidle')
 
     await page.getByLabel('Email').fill(TEST_EMAIL)
-    await page.getByLabel('密碼').fill('WrongPassword!')
+    await page.getByLabel('密碼', { exact: true }).fill('WrongPassword!')
     await page.getByRole('button', { name: '登入', exact: true }).click()
 
     await expect(page.getByText('Email 或密碼錯誤')).toBeVisible({ timeout: 10000 })
@@ -101,9 +102,38 @@ test.describe.serial('Auth Flow', () => {
 
     await page.getByLabel('Email').fill(TEST_EMAIL)
     await page.getByLabel('使用者名稱').fill('anotherusername')
-    await page.getByLabel('密碼').fill('Test1234!')
+    await page.getByLabel('密碼', { exact: true }).fill('Test1234!')
+    await page.getByLabel('確認密碼').fill('Test1234!')
     await page.getByRole('button', { name: '註冊' }).click()
 
     await expect(page.getByText('此 Email 已被使用')).toBeVisible({ timeout: 10000 })
+  })
+
+  test('9. Register with weak password (<8) shows error and stays on /register', async ({ page }) => {
+    await page.goto('/register')
+    await page.waitForLoadState('networkidle')
+
+    await page.getByLabel('Email').fill(`weak-${Date.now()}@tcgbinder.com`)
+    await page.getByLabel('使用者名稱').fill(`weak${Date.now()}`)
+    await page.getByLabel('密碼', { exact: true }).fill('short')
+    await page.getByLabel('確認密碼').fill('short')
+    await page.getByRole('button', { name: '註冊' }).click()
+
+    await expect(page.getByText('密碼至少需 8 個字元')).toBeVisible({ timeout: 10000 })
+    expect(page.url()).toContain('/register')
+  })
+
+  test('10. Register with mismatched confirm password shows error', async ({ page }) => {
+    await page.goto('/register')
+    await page.waitForLoadState('networkidle')
+
+    await page.getByLabel('Email').fill(`mismatch-${Date.now()}@tcgbinder.com`)
+    await page.getByLabel('使用者名稱').fill(`mismatch${Date.now()}`)
+    await page.getByLabel('密碼', { exact: true }).fill('password123')
+    await page.getByLabel('確認密碼').fill('password999')
+    await page.getByRole('button', { name: '註冊' }).click()
+
+    await expect(page.getByText('兩次輸入的密碼不一致')).toBeVisible({ timeout: 10000 })
+    expect(page.url()).toContain('/register')
   })
 })
