@@ -3,7 +3,7 @@
  */
 import '@testing-library/jest-dom/vitest'
 import React from 'react'
-import { describe, it, expect, vi, beforeAll } from 'vitest'
+import { describe, it, expect, vi, beforeAll, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { StatsCarouselSection } from '../stats-carousel-section'
 import type { ShowcaseCard } from '@/types/homepage'
@@ -18,6 +18,15 @@ vi.mock('@/components/ui/carousel', () => ({
   CarouselItem: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }))
 
+vi.mock('@/hooks/use-sticky-scroll-progress', () => ({
+  useStickyScrollProgress: () => ({ outerRef: { current: null }, progress: 0 }),
+}))
+
+const isMobileMock = vi.fn(() => false)
+vi.mock('@/hooks/use-is-mobile', () => ({
+  useIsMobile: () => isMobileMock(),
+}))
+
 beforeAll(() => {
   vi.stubGlobal(
     'IntersectionObserver',
@@ -27,6 +36,10 @@ beforeAll(() => {
       unobserve = vi.fn()
     }
   )
+})
+
+beforeEach(() => {
+  isMobileMock.mockReturnValue(false)
 })
 
 function makeCard(id: string): ShowcaseCard {
@@ -71,5 +84,26 @@ describe('StatsCarouselSection', () => {
   it('空 carouselCards 不渲染 carousel-card', () => {
     render(<StatsCarouselSection totalCards={0} carouselCards={[]} />)
     expect(screen.queryAllByTestId('carousel-card')).toHaveLength(0)
+  })
+
+  it('桌面渲染 sticky parallax 外層（h-[300vh]）+ snap anchors', () => {
+    render(<StatsCarouselSection totalCards={0} carouselCards={TWELVE_CARDS} />)
+    const section = screen.getByTestId('stats-carousel-section')
+    expect(section.tagName).toBe('SECTION')
+    expect(section.className).toContain('h-[300vh]')
+    // 兩個 snap anchor
+    expect(section.querySelectorAll('.snap-start')).toHaveLength(2)
+  })
+
+  it('行動版渲染兩頁 snap 堆疊、不含 sticky 外層', () => {
+    isMobileMock.mockReturnValue(true)
+    render(<StatsCarouselSection totalCards={0} carouselCards={TWELVE_CARDS} />)
+    const wrapper = screen.getByTestId('stats-carousel-section')
+    expect(wrapper.tagName).toBe('DIV')
+    expect(wrapper.className).not.toContain('h-[200vh]')
+    // 兩個 h-screen snap-start 面板
+    expect(wrapper.querySelectorAll('section.snap-start')).toHaveLength(2)
+    // carousel 仍渲染
+    expect(screen.getAllByTestId('carousel-card')).toHaveLength(12)
   })
 })

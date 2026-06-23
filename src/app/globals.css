@@ -127,3 +127,14 @@
     cursor: pointer;
   }
 }
+
+/*
+ * 首頁全螢幕 snap scroll：真正的捲動容器是 window（<html>），不是內層 div
+ * （body 為 min-h-full 會隨內容撐高）。由 HomeSnapScroll 於首頁掛載時加上此 class，
+ * scroll-padding-top 抵銷 sticky header（h-14 = 3.5rem）使各區塊對齊於 header 下方。
+ */
+html.home-snap-scroll {
+  scroll-snap-type: y proximity;
+  scroll-behavior: smooth;
+  scroll-padding-top: 3.5rem;
+}

@@ -48,11 +48,28 @@ test.describe('首頁', () => {
     await expect(podium.getByRole('tab', { name: 'One Piece' }).first()).toHaveAttribute('data-state', 'active')
   })
 
+  // 桌面 sticky parallax：把第二區塊捲到「卡冊覆蓋」停點，使大圖 carousel 進入可視
+  async function scrollToCarouselCover(page: import('@playwright/test').Page) {
+    await page.evaluate(() => {
+      const section = document.querySelector('[data-testid="stats-carousel-section"]') as HTMLElement | null
+      if (!section) return
+      // 捲到 progress=1：outerRect.top = -(offsetHeight - innerHeight)
+      const travel = section.offsetHeight - window.innerHeight
+      const target = window.scrollY + section.getBoundingClientRect().top + travel
+      window.scrollTo({ top: target, behavior: 'auto' })
+    })
+    await page.waitForTimeout(100)
+  }
+
   test('Scenario 4: 點擊 Carousel 卡牌開啟 Drawer（不含加入卡冊）', async ({ page }) => {
     await page.goto('/')
 
     const carouselSection = page.getByTestId('stats-carousel-section')
     const firstCard = carouselSection.getByTestId('carousel-card').first()
+
+    // parallax：大圖 carousel 初始覆蓋於文字下方、不在 viewport；捲到覆蓋停點後可點
+    await scrollToCarouselCover(page)
+    await expect(firstCard).toBeInViewport()
     await firstCard.click()
 
     // Drawer 應開啟
@@ -106,5 +123,25 @@ test.describe('首頁', () => {
     await page.goto('/')
 
     await expect(page.getByText(/即將推出：分享你的卡冊/)).toBeVisible()
+  })
+
+  test('Scenario 10: 第二區塊 sticky parallax — 大圖 carousel 上滑覆蓋後進入第三區塊', async ({ page }) => {
+    await page.goto('/')
+
+    const firstCard = page
+      .getByTestId('stats-carousel-section')
+      .getByTestId('carousel-card')
+      .first()
+
+    // 文字停點：大圖 carousel 尚未進入 viewport
+    await expect(firstCard).not.toBeInViewport()
+
+    // 滑到覆蓋停點：大圖 carousel 進入 viewport
+    await scrollToCarouselCover(page)
+    await expect(firstCard).toBeInViewport()
+
+    // 繼續滑動進入第三區塊（頒獎台）
+    await page.getByTestId('podium-section').scrollIntoViewIfNeeded()
+    await expect(page.getByTestId('podium-section')).toBeInViewport()
   })
 })
