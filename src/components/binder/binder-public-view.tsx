@@ -2,74 +2,125 @@
 
 import { useState } from 'react'
 import { GridType } from '@prisma/client'
-import { ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight } from 'lucide-react'
+import {
+  ChevronsLeft,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsRight,
+} from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Pagination,
   PaginationContent,
   PaginationItem,
 } from '@/components/ui/pagination'
+import { ButtonGroup } from '@/components/ui/button-group'
 import { ReadOnlySlotCard } from './read-only-slot-card'
-import { buildGridPages, buildSpreads, buildMobilePages } from '@/lib/binder-utils'
-import { useIsMobile } from '@/hooks/use-is-mobile'
-import type { BinderPublicData } from '@/types/binder'
-import type { BinderSlotItem, SlotWithCard } from '@/types/binder'
+import { useScaleFit } from '@/hooks/use-scale-fit'
+import {
+  buildGridPages,
+  buildSpreads,
+  buildMobilePages,
+} from '@/lib/binder-utils'
+import type { BinderPublicData, BinderSlotItem, SlotWithCard } from '@/types/binder'
+import type { SpreadPageContent } from '@/lib/binder-utils'
 
-const GRID_COLS: Record<GridType, number> = {
-  grid_1x2: 1,
-  grid_2x2: 2,
-  grid_3x3: 3,
-  grid_4x3: 4,
-  grid_4x4: 4,
-}
+const SPREAD_NATURAL_WIDTH = 1200
+const MOBILE_PAGE_NATURAL_WIDTH = 767
+const HEADER_HEIGHT = 56
+const PAGE_LABEL_HEIGHT = 20
 
-function ReadOnlyGrid({ slots, gridType }: { slots: BinderSlotItem[]; gridType: GridType }) {
+// ─── 唯讀格位 grid（無 DnD，無操作按鈕）────────────────────────────────────────
+
+function ReadOnlyGridSlots({
+  slots,
+  gridType,
+}: {
+  slots: BinderSlotItem[]
+  gridType: GridType
+}) {
+  const GRID_COLS: Record<GridType, number> = {
+    grid_1x2: 1,
+    grid_2x2: 2,
+    grid_3x3: 3,
+    grid_4x3: 4,
+    grid_4x4: 4,
+  }
   const cols = GRID_COLS[gridType]
   return (
     <div
-      className="grid gap-2 w-full"
+      className="grid gap-1"
       style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
     >
-      {slots.map((item, i) =>
-        item.id !== null ? (
-          <ReadOnlySlotCard key={item.id} slot={item as SlotWithCard} />
+      {slots.map((slot, i) => {
+        const emptyKey = `empty-${slot.pageNumber}-${slot.slotIndex}-${i}`
+        return slot.id !== null ? (
+          <ReadOnlySlotCard key={slot.id} slot={slot as SlotWithCard} />
         ) : (
           <div
-            key={`empty-${i}`}
+            key={emptyKey}
             className="w-full aspect-5/7 rounded-md border border-dashed border-border bg-muted/30"
           />
         )
-      )}
+      })}
     </div>
   )
 }
 
-function PagePanel({
+// ─── 面板內容（封面 / 空白 → coverColor；內頁 → grid）──────────────────────────
+
+function PublicPanelContent({
   content,
   coverColor,
   gridType,
+  counterScale,
+  mobileWrapper,
 }: {
-  content: ReturnType<typeof buildMobilePages>[number]
+  content: SpreadPageContent
   coverColor: string
   gridType: GridType
+  counterScale: number
+  mobileWrapper?: boolean
 }) {
   if (content.type === 'cover' || content.type === 'blank') {
-    return (
-      <div
-        className="flex-1 rounded-md border border-border min-h-96"
-        style={{ backgroundColor: coverColor }}
-      />
-    )
+    if (mobileWrapper) {
+      return (
+        <div
+          className="rounded-lg"
+          style={{
+            width: MOBILE_PAGE_NATURAL_WIDTH,
+            aspectRatio: '5/7',
+            backgroundColor: coverColor,
+          }}
+        />
+      )
+    }
+    return <div className="w-full h-full rounded-lg" style={{ backgroundColor: coverColor }} />
   }
+
+  // page
   return (
-    <div className="flex-1 rounded-md border border-border p-2 bg-background">
-      <ReadOnlyGrid slots={content.page} gridType={gridType} />
+    <div className="w-full p-4 dark bg-black">
+      <div style={{ height: PAGE_LABEL_HEIGHT * counterScale, overflow: 'visible' }}>
+        <p
+          className="text-xs text-muted-foreground text-center"
+          style={{
+            transform: `scale(${counterScale})`,
+            transformOrigin: 'top center',
+            display: 'block',
+          }}
+        >
+          第 {content.pageNumber} 頁
+        </p>
+      </div>
+      <ReadOnlyGridSlots slots={content.page} gridType={gridType} />
     </div>
   )
 }
 
+// ─── 主元件 ───────────────────────────────────────────────────────────────────
+
 export function BinderPublicView({ binder }: { binder: BinderPublicData }) {
-  const isMobile = useIsMobile()
   const [spreadIndex, setSpreadIndex] = useState(0)
   const [mobilePageIndex, setMobilePageIndex] = useState(0)
 
@@ -80,94 +131,326 @@ export function BinderPublicView({ binder }: { binder: BinderPublicData }) {
   const spreads = buildSpreads(pagesArray)
   const mobilePages = buildMobilePages(pagesArray)
 
-  if (isMobile) {
-    const page = mobilePages[mobilePageIndex]
-    return (
-      <div className="flex flex-col gap-4 p-4 max-w-lg mx-auto">
-        <OwnerBanner ownerName={binder.ownerName} binderName={binder.name} description={binder.description} />
-        <PagePanel content={page} coverColor={binder.coverColor} gridType={gridType} />
-        <Pagination>
-          <PaginationContent>
-            <PaginationItem>
-              <Button variant="outline" size="icon" onClick={() => setMobilePageIndex(0)} disabled={mobilePageIndex === 0} aria-label="首頁">
-                <ChevronsLeft className="h-4 w-4" />
-              </Button>
-            </PaginationItem>
-            <PaginationItem>
-              <Button variant="outline" size="icon" onClick={() => setMobilePageIndex(i => i - 1)} disabled={mobilePageIndex === 0} aria-label="上一頁">
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-            </PaginationItem>
-            <PaginationItem>
-              <span className="px-3 text-sm text-muted-foreground">
-                {mobilePageIndex + 1} / {mobilePages.length}
-              </span>
-            </PaginationItem>
-            <PaginationItem>
-              <Button variant="outline" size="icon" onClick={() => setMobilePageIndex(i => i + 1)} disabled={mobilePageIndex === mobilePages.length - 1} aria-label="下一頁">
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </PaginationItem>
-            <PaginationItem>
-              <Button variant="outline" size="icon" onClick={() => setMobilePageIndex(mobilePages.length - 1)} disabled={mobilePageIndex === mobilePages.length - 1} aria-label="末頁">
-                <ChevronsRight className="h-4 w-4" />
-              </Button>
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
-      </div>
-    )
-  }
+  // Snowglobe hooks — 必須無條件呼叫
+  const {
+    outerRef: spreadOuterRef,
+    innerRef: spreadInnerRef,
+    scale: spreadScale,
+    offsetX: spreadOffsetX,
+  } = useScaleFit(SPREAD_NATURAL_WIDTH)
+
+  const {
+    outerRef: mobileOuterRef,
+    innerRef: mobileInnerRef,
+    scale: mobileScale,
+    offsetX: mobileOffsetX,
+  } = useScaleFit(MOBILE_PAGE_NATURAL_WIDTH)
 
   const spread = spreads[spreadIndex]
-  return (
-    <div className="flex flex-col gap-4 p-6 max-w-5xl mx-auto">
-      <OwnerBanner ownerName={binder.ownerName} binderName={binder.name} description={binder.description} />
-      <div className="flex gap-4">
-        <PagePanel content={spread.left} coverColor={binder.coverColor} gridType={gridType} />
-        <PagePanel content={spread.right} coverColor={binder.coverColor} gridType={gridType} />
-      </div>
-      <Pagination>
-        <PaginationContent>
-          <PaginationItem>
-            <Button variant="outline" size="icon" onClick={() => setSpreadIndex(0)} disabled={spreadIndex === 0} aria-label="首頁">
-              <ChevronsLeft className="h-4 w-4" />
-            </Button>
-          </PaginationItem>
-          <PaginationItem>
-            <Button variant="outline" size="icon" onClick={() => setSpreadIndex(i => i - 1)} disabled={spreadIndex === 0} aria-label="上一頁">
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-          </PaginationItem>
-          <PaginationItem>
-            <span className="px-3 text-sm text-muted-foreground">
-              {spreadIndex + 1} / {spreads.length}
-            </span>
-          </PaginationItem>
-          <PaginationItem>
-            <Button variant="outline" size="icon" onClick={() => setSpreadIndex(i => i + 1)} disabled={spreadIndex === spreads.length - 1} aria-label="下一頁">
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </PaginationItem>
-          <PaginationItem>
-            <Button variant="outline" size="icon" onClick={() => setSpreadIndex(spreads.length - 1)} disabled={spreadIndex === spreads.length - 1} aria-label="末頁">
-              <ChevronsRight className="h-4 w-4" />
-            </Button>
-          </PaginationItem>
-        </PaginationContent>
-      </Pagination>
+  const mobilePage = mobilePages[mobilePageIndex]
+
+  const isLastSpread = spreadIndex === spreads.length - 1
+  const isLastMobilePage = mobilePageIndex === mobilePages.length - 1
+
+  // counterScale 抵銷 innerRef 縮放，使 header 與頁碼維持自然視覺尺寸
+  const spreadCounterScale = spreadScale > 0 ? 1 / spreadScale : 1
+  const mobileCounterScale = mobileScale > 0 ? 1 / mobileScale : 1
+
+  // header 在 innerRef 自然座標中的寬度，視覺寬度 = naturalWidth × scale
+  const spreadHeaderNaturalWidth =
+    spreadScale > 0 ? SPREAD_NATURAL_WIDTH * spreadScale : SPREAD_NATURAL_WIDTH
+  const mobileHeaderNaturalWidth =
+    mobileScale > 0 ? MOBILE_PAGE_NATURAL_WIDTH * mobileScale : MOBILE_PAGE_NATURAL_WIDTH
+
+  // 補償 counter-scale 視覺溢出
+  const spreadDynamicSpacerH =
+    spreadScale > 0 && spreadScale < 1 ? HEADER_HEIGHT * (1 / spreadScale - 1) : 0
+  const mobileDynamicSpacerH =
+    mobileScale > 0 && mobileScale < 1 ? HEADER_HEIGHT * (1 / mobileScale - 1) : 0
+
+  const headerLeft = (
+    <div>
+      <p
+        className="text-xs text-muted-foreground leading-none"
+        data-testid="public-owner-banner"
+      >
+        {binder.ownerName} 的卡冊
+      </p>
+      <h1 className="text-xl font-bold leading-tight">{binder.name}</h1>
     </div>
   )
-}
 
-function OwnerBanner({ ownerName, binderName, description }: { ownerName: string; binderName: string; description: string | null }) {
+  const panelProps = {
+    coverColor: binder.coverColor,
+    gridType,
+  }
+
   return (
-    <div>
-      <p className="text-sm text-muted-foreground" data-testid="public-owner-banner">
-        {ownerName} 的卡冊
-      </p>
-      <h1 className="text-2xl font-bold">{binderName}</h1>
-      {description && <p className="text-sm text-muted-foreground mt-1">{description}</p>}
+    <div className="flex flex-col flex-1 min-h-0 h-[calc(100vh-57px)] p-4">
+
+      {/* ── 桌面 Spread 雙頁展開 ── */}
+      <div
+        data-testid="binder-public-spread-view"
+        className="hidden md:flex flex-col flex-1 min-h-0"
+      >
+        <div ref={spreadOuterRef} className="flex-1 min-h-0 relative overflow-hidden">
+          {spread && (
+            <div
+              ref={spreadInnerRef}
+              style={{
+                position: 'absolute',
+                width: SPREAD_NATURAL_WIDTH,
+                top: 0,
+                left: spreadOffsetX,
+                transform: `scale(${spreadScale})`,
+                transformOrigin: 'top left',
+              }}
+            >
+              {/* Header — counter-scale 維持自然視覺尺寸 */}
+              <div
+                style={{
+                  transform: `scale(${spreadCounterScale})`,
+                  transformOrigin: 'top left',
+                  width: spreadHeaderNaturalWidth,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  height: HEADER_HEIGHT,
+                }}
+              >
+                {headerLeft}
+                <Pagination className="w-auto mx-0">
+                  <PaginationContent>
+                    <PaginationItem>
+                      <ButtonGroup>
+                        <Button
+                          variant="outline"
+                          size="icon-sm"
+                          onClick={() => setSpreadIndex(0)}
+                          disabled={spreadIndex === 0}
+                          aria-label="第一頁"
+                        >
+                          <ChevronsLeft />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="icon-sm"
+                          onClick={() => setSpreadIndex(spreadIndex - 1)}
+                          disabled={spreadIndex === 0}
+                        >
+                          <ChevronLeft />
+                        </Button>
+                      </ButtonGroup>
+                    </PaginationItem>
+                    <PaginationItem>
+                      <span className="text-sm text-muted-foreground tabular-nums px-2">
+                        {spreadIndex + 1} / {spreads.length}
+                      </span>
+                    </PaginationItem>
+                    <PaginationItem>
+                      <ButtonGroup>
+                        <Button
+                          variant="outline"
+                          size="icon-sm"
+                          onClick={() => setSpreadIndex(spreadIndex + 1)}
+                          disabled={isLastSpread}
+                        >
+                          <ChevronRight />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="icon-sm"
+                          onClick={() => setSpreadIndex(spreads.length - 1)}
+                          disabled={isLastSpread}
+                          aria-label="最後一頁"
+                        >
+                          <ChevronsRight />
+                        </Button>
+                      </ButtonGroup>
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
+              </div>
+
+              <div style={{ height: spreadDynamicSpacerH }} />
+
+              <div className="flex gap-4">
+                <div
+                  className="flex-1 rounded-lg overflow-hidden"
+                  style={{
+                    border: `4px solid ${binder.coverColor}`,
+                    backgroundColor: binder.coverColor,
+                  }}
+                >
+                  <PublicPanelContent
+                    content={spread.left}
+                    counterScale={spreadCounterScale}
+                    {...panelProps}
+                  />
+                </div>
+                <div
+                  className="flex-1 rounded-lg overflow-hidden"
+                  style={{
+                    border: `4px solid ${binder.coverColor}`,
+                    backgroundColor: binder.coverColor,
+                  }}
+                >
+                  <PublicPanelContent
+                    content={spread.right}
+                    counterScale={spreadCounterScale}
+                    {...panelProps}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ── 行動裝置單頁 ── */}
+      <div
+        data-testid="binder-public-mobile-view"
+        className="md:hidden flex flex-col flex-1 min-h-0"
+      >
+        <div ref={mobileOuterRef} className="flex-1 min-h-0 relative overflow-hidden">
+          {mobilePage && (
+            <div
+              ref={mobileInnerRef}
+              style={{
+                position: 'absolute',
+                width: MOBILE_PAGE_NATURAL_WIDTH,
+                top: 0,
+                left: mobileOffsetX,
+                transform: `scale(${mobileScale})`,
+                transformOrigin: 'top left',
+              }}
+            >
+              {/* Header — counter-scale 維持自然視覺尺寸 */}
+              <div
+                style={{
+                  transform: `scale(${mobileCounterScale})`,
+                  transformOrigin: 'top left',
+                  width: mobileHeaderNaturalWidth,
+                  display: 'flex',
+                  alignItems: 'center',
+                  height: HEADER_HEIGHT,
+                }}
+              >
+                {headerLeft}
+              </div>
+
+              <div style={{ height: mobileDynamicSpacerH }} />
+
+              <div
+                className="rounded-lg overflow-hidden"
+                style={{
+                  border: `4px solid ${binder.coverColor}`,
+                  backgroundColor: binder.coverColor,
+                }}
+              >
+                <PublicPanelContent
+                  content={mobilePage}
+                  counterScale={mobileCounterScale}
+                  mobileWrapper
+                  {...panelProps}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* 側邊翻頁按鈕 — 在 outerRef 內，不受 scale 影響 */}
+          {mobilePageIndex > 0 && (
+            <Button
+              variant="outline"
+              size="icon"
+              style={{
+                position: 'absolute',
+                left: mobileOffsetX - 44,
+                top: '50%',
+                transform: 'translateY(-50%)',
+              }}
+              className="z-20"
+              onClick={() => setMobilePageIndex(mobilePageIndex - 1)}
+              aria-label="上一頁"
+            >
+              <ChevronLeft />
+            </Button>
+          )}
+          {!isLastMobilePage && (
+            <Button
+              variant="outline"
+              size="icon"
+              style={{
+                position: 'absolute',
+                right: mobileOffsetX - 44,
+                top: '50%',
+                transform: 'translateY(-50%)',
+              }}
+              className="z-20"
+              onClick={() => setMobilePageIndex(mobilePageIndex + 1)}
+              aria-label="下一頁"
+            >
+              <ChevronRight />
+            </Button>
+          )}
+        </div>
+
+        {/* Pagination — 固定於卡冊下方（shrink-0，不進 Snowglobe） */}
+        <div className="shrink-0 flex items-center justify-center py-2">
+          <Pagination className="w-auto mx-0">
+            <PaginationContent>
+              <PaginationItem>
+                <ButtonGroup>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setMobilePageIndex(0)}
+                    disabled={mobilePageIndex === 0}
+                    aria-label="第一頁"
+                  >
+                    <ChevronsLeft />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setMobilePageIndex(mobilePageIndex - 1)}
+                    disabled={mobilePageIndex === 0}
+                  >
+                    <ChevronLeft />
+                  </Button>
+                </ButtonGroup>
+              </PaginationItem>
+              <PaginationItem>
+                <span className="text-sm text-muted-foreground tabular-nums px-1">
+                  {mobilePageIndex + 1} / {mobilePages.length}
+                </span>
+              </PaginationItem>
+              <PaginationItem>
+                <ButtonGroup>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setMobilePageIndex(mobilePageIndex + 1)}
+                    disabled={isLastMobilePage}
+                  >
+                    <ChevronRight />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setMobilePageIndex(mobilePages.length - 1)}
+                    disabled={isLastMobilePage}
+                    aria-label="最後一頁"
+                  >
+                    <ChevronsRight />
+                  </Button>
+                </ButtonGroup>
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        </div>
+      </div>
+
     </div>
   )
 }
