@@ -67,6 +67,56 @@ function ReadOnlyGridSlots({
   )
 }
 
+// ─── 封面資訊（卡冊名稱 + 描述，樣式比照 BinderCoverPanel）──────────────────────
+
+const COVER_NAME_HEIGHT = 40       // 與 BinderCoverPanel BINDER_NAME_HEIGHT 一致
+const COVER_DESC_HEIGHT = 25       // 與 BinderCoverPanel DESCRIPTION_LINE_HEIGHT 一致
+
+function CoverLabel({
+  binderName,
+  description,
+  counterScale,
+}: {
+  binderName: string
+  description?: string | null
+  counterScale: number
+}) {
+  return (
+    <div className="p-4">
+      <div className="dark text-white bg-black/50 rounded-md p-4 flex flex-col gap-2">
+        <div style={{ height: COVER_NAME_HEIGHT * counterScale, overflow: 'visible' }}>
+          <h1
+            className="text-4xl font-black truncate text-center select-none break-all"
+            style={{
+              transform: `scale(${counterScale})`,
+              transformOrigin: 'top left',
+              display: 'block',
+              width: `${100 / counterScale}%`,
+            }}
+          >
+            {binderName}
+          </h1>
+        </div>
+        {description && (
+          <div style={{ height: COVER_DESC_HEIGHT * counterScale, overflow: 'visible' }}>
+            <p
+              className="text-sm text-muted-foreground truncate text-center"
+              style={{
+                transform: `scale(${counterScale})`,
+                transformOrigin: 'top left',
+                display: 'block',
+                width: `${100 / counterScale}%`,
+              }}
+            >
+              {description}
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 // ─── 面板內容（封面 / 空白 → coverColor；內頁 → grid）──────────────────────────
 
 function PublicPanelContent({
@@ -75,14 +125,40 @@ function PublicPanelContent({
   gridType,
   counterScale,
   mobileWrapper,
+  binderName,
+  description,
 }: {
   content: SpreadPageContent
   coverColor: string
   gridType: GridType
   counterScale: number
   mobileWrapper?: boolean
+  binderName: string
+  description?: string | null
 }) {
-  if (content.type === 'cover' || content.type === 'blank') {
+  if (content.type === 'cover') {
+    if (mobileWrapper) {
+      return (
+        <div
+          className="rounded-lg flex flex-col justify-center overflow-hidden"
+          style={{
+            width: MOBILE_PAGE_NATURAL_WIDTH,
+            aspectRatio: '5/7',
+            backgroundColor: coverColor,
+          }}
+        >
+          <CoverLabel binderName={binderName} description={description} counterScale={counterScale} />
+        </div>
+      )
+    }
+    return (
+      <div className="w-full h-full rounded-lg flex flex-col justify-center" style={{ backgroundColor: coverColor }}>
+        <CoverLabel binderName={binderName} description={description} counterScale={counterScale} />
+      </div>
+    )
+  }
+
+  if (content.type === 'blank') {
     if (mobileWrapper) {
       return (
         <div
@@ -183,6 +259,8 @@ export function BinderPublicView({ binder }: { binder: BinderPublicData }) {
   const panelProps = {
     coverColor: binder.coverColor,
     gridType,
+    binderName: binder.name,
+    description: binder.description,
   }
 
   return (
