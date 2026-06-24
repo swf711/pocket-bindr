@@ -148,6 +148,7 @@ test.describe('gridType migration — EditBinderDialog', () => {
         has: page.locator(`[data-testid="enter-binder-btn"][href="/binders/${binder.id}"]`),
       })
       await binderCard.hover()
+      await binderCard.getByTestId('binder-more-btn').click()
       await page.getByTestId('edit-binder-btn').first().click()
 
       await expect(page.getByTestId('edit-binder-dialog')).toBeVisible()

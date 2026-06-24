@@ -41,7 +41,8 @@ test.describe('首頁', () => {
 
     const featureTitles = ['搜尋卡牌', '建立卡冊', '管理收藏', '不限裝置同步整理', '分享你的卡冊', '更多功能即將推出']
     for (const title of featureTitles) {
-      await expect(featureSection.getByText(title)).toBeVisible()
+      // exact match: 標題「建立卡冊」亦為某描述子字串（「建立卡冊連結…」），需精確比對避免 strict-mode 命中兩元素
+      await expect(featureSection.getByText(title, { exact: true })).toBeVisible()
     }
   })
 

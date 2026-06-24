@@ -83,20 +83,21 @@ test.describe('Scenario 2b: 選擇語言', () => {
 
     const firstImg = page.getByTestId('card-item').locator('img').first()
     await firstImg.waitFor({ timeout: 10000 })
-    // JA 圖片來自 www.pokemon-card.com，經 /api/proxy-image 代理（見 src/lib/get-card-image-url.ts）
+    // JA 圖片來自 pokemon-card.com（www 或 asia 子網域皆合法，見 PROXY_HOSTNAMES
+    // @ src/lib/get-card-image-url.ts），經 /api/proxy-image 代理
     const src = await firstImg.getAttribute('src')
     expect(src).toMatch(/\/api\/proxy-image/)
     const proxiedUrl = new URL(src!, page.url()).searchParams.get('url')
-    expect(new URL(proxiedUrl!).hostname).toBe('www.pokemon-card.com')
+    expect(new URL(proxiedUrl!).hostname).toMatch(/^(www|asia)\.pokemon-card\.com$/)
 
-    // 圖片為 lazy loading，捲動至可視範圍後確認實際載入成功
-    await firstImg.scrollIntoViewIfNeeded()
-    await expect
-      .poll(
-        () => firstImg.evaluate((img: HTMLImageElement) => img.naturalWidth),
-        { timeout: 15000 }
-      )
-      .toBeGreaterThan(0)
+    // 圖片為 lazy loading；搜尋後 grid 可能重渲染使元素短暫 detach，
+    // 故以 toPass 每次重新解析 locator、捲動後確認實際載入成功
+    await expect(async () => {
+      const img = page.getByTestId('card-item').locator('img').first()
+      await img.scrollIntoViewIfNeeded()
+      const naturalWidth = await img.evaluate((el: HTMLImageElement) => el.naturalWidth)
+      expect(naturalWidth).toBeGreaterThan(0)
+    }).toPass({ timeout: 15000 })
   })
 
   test('URL 帶無效 language 值時 fallback 為 繁體中文', async ({ page }) => {

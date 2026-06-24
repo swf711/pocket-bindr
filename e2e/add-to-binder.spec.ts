@@ -181,8 +181,8 @@ test.describe('加入卡冊 - 未登入情境', () => {
     // 點擊加入卡冊 → 登入 modal → 登入成功
     await page.getByTestId('modal-add-btn').click()
     await expect(page.getByTestId('login-modal')).toBeVisible({ timeout: 5000 })
-    await page.getByPlaceholder('Email').fill(USER.email)
-    await page.getByPlaceholder('密碼').fill(USER.password)
+    await page.getByLabel('Email').fill(USER.email)
+    await page.getByLabel('密碼', { exact: true }).fill(USER.password)
     await page.getByRole('button', { name: '登入', exact: true }).click()
 
     // 不重新整理頁面，直接顯示登入前已存在的真實收藏數量

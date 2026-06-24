@@ -47,8 +47,9 @@ test.describe('卡冊管理頁', () => {
     await page.getByTestId('binder-name-input').fill('原始名稱')
     await page.getByTestId('create-binder-submit').click()
     await expect(page.getByTestId('binder-card')).toBeVisible()
-    // 編輯（hover 後按鈕才顯示）
+    // 編輯（hover 顯示 ButtonGroup → 開啟 ⋮ 選單 → 點編輯）
     await page.getByTestId('binder-card').first().hover()
+    await page.getByTestId('binder-more-btn').first().click()
     await page.getByTestId('edit-binder-btn').first().click()
     await page.getByTestId('binder-name-input').clear()
     await page.getByTestId('binder-name-input').fill('更新後的名稱')
@@ -67,6 +68,7 @@ test.describe('卡冊管理頁', () => {
     await expect(page.getByTestId('binder-card')).toBeVisible()
     const initialCount = await page.getByTestId('binder-card').count()
     await page.getByTestId('binder-card').first().hover()
+    await page.getByTestId('binder-more-btn').first().click()
     await page.getByTestId('delete-binder-btn').first().click()
     await page.getByTestId('confirm-delete-binder').click()
     await expect(page.getByTestId('binder-card')).toHaveCount(initialCount - 1)
@@ -86,6 +88,7 @@ test.describe('卡冊管理頁', () => {
     await page.goto('/binders')
     await expect(page.getByTestId('binder-card')).toBeVisible()
     await page.getByTestId('binder-card').first().hover()
+    await page.getByTestId('binder-more-btn').first().click()
     await page.getByTestId('delete-binder-btn').first().click()
     await page.getByTestId('confirm-delete-binder').click()
     await expect(page.getByTestId('binder-card')).toHaveCount(0)
@@ -106,7 +109,8 @@ test.describe('卡冊管理頁', () => {
     await page.getByTestId('binder-grid-tabs').getByText('4×3').click()
     await page.getByTestId('create-binder-submit').click()
     await expect(page.getByTestId('binder-card')).toBeVisible()
-    await expect(page.getByText('4×3')).toBeVisible()
+    // 卡片格式以 binder-info 呈現（'4×3' 亦為 grid Tabs 標籤，需 scope 避免 strict-mode 命中兩元素）
+    await expect(page.getByTestId('binder-info')).toContainText('4×3')
     // 進入卡冊內頁，第一頁應為 4 欄 × 12 格
     await page.getByTestId('binder-card').first().hover()
     await page.getByTestId('enter-binder-btn').first().click()

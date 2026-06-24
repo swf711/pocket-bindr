@@ -1,5 +1,4 @@
 import 'dotenv/config'
-import { randomUUID } from 'crypto'
 import bcrypt from 'bcryptjs'
 import { prisma } from '../../src/lib/prisma'
 import { TEST_USER } from './auth'
@@ -191,15 +190,17 @@ export async function resetUserUsername(email: string, username: string | null):
 }
 
 /**
- * 建立 OAuth-only 測試用戶（無 passwordHash）並直接注入 Session，
+ * 建立 OAuth-only 測試用戶（無 passwordHash）與對應 Account，回傳 userId。
  * 供無法走 OAuth 真實流程的 E2E 測試使用（如驗證解綁防鎖死 disabled 狀態）。
+ * 注意：app 採 `session: { strategy: 'jwt' }`，不使用 DB Session table，
+ * 故此處不建立 Session row；登入由 loginAsOAuthUser 注入簽章 JWT cookie 完成。
  */
-export async function createOAuthUserWithSession(
+export async function createOAuthUser(
   email: string,
   username: string,
   provider: 'google' | 'discord',
   providerAccountId: string,
-): Promise<{ userId: string; sessionToken: string }> {
+): Promise<{ userId: string }> {
   const user = await prisma.user.upsert({
     where: { email },
     create: { email, username, passwordHash: null },
@@ -210,15 +211,7 @@ export async function createOAuthUserWithSession(
     create: { userId: user.id, provider, providerAccountId, type: 'oauth' },
     update: {},
   })
-  const sessionToken = randomUUID()
-  await prisma.session.create({
-    data: {
-      userId: user.id,
-      sessionToken,
-      expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
-    },
-  })
-  return { userId: user.id, sessionToken }
+  return { userId: user.id }
 }
 
 /**

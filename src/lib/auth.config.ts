@@ -43,10 +43,11 @@ export const authConfig: NextAuthConfig = {
     async jwt({ token, user }) {
       if (user) {
         token.sub = user.id
-        // Prisma User uses 'username' not 'name'; map to token.name explicitly.
-        // For OAuth users without a username, fall back to provider-supplied token.name.
-        token.name =
-          (user as { username?: string | null }).username ?? token.name ?? null
+        // Prisma User has no 'name' for credentials users (uses 'username'); OAuth users
+        // have no 'username' (PrismaAdapter writes provider name into User.name).
+        // Display-name precedence: username → User.name → existing token.name.
+        const u = user as { username?: string | null; name?: string | null }
+        token.name = u.username ?? u.name ?? token.name ?? null
       }
       return token
     },

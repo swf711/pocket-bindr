@@ -1,5 +1,10 @@
 import { Page } from '@playwright/test'
-import { createOAuthUserWithSession } from './db'
+import { encode } from 'next-auth/jwt'
+import { createOAuthUser } from './db'
+
+// Auth.js v5 default session cookie name on http (no __Secure prefix on localhost).
+// `salt` for JWT encode/decode equals the cookie name (see @auth/core).
+const SESSION_COOKIE = 'authjs.session-token'
 
 export interface TestUser {
   email: string
@@ -63,12 +68,21 @@ export async function loginAsOAuthUser(
   provider: 'google' | 'discord',
   providerAccountId: string,
 ): Promise<void> {
-  const { sessionToken } = await createOAuthUserWithSession(email, username, provider, providerAccountId)
+  const { userId } = await createOAuthUser(email, username, provider, providerAccountId)
+  // App uses `session: { strategy: 'jwt' }`; auth() decodes a signed JWE cookie,
+  // not a DB session row. Mint the same token the jwt callback would produce.
+  const secret = process.env.NEXTAUTH_SECRET
+  if (!secret) throw new Error('NEXTAUTH_SECRET is required to mint E2E session JWT')
+  const token = await encode({
+    token: { sub: userId, name: username },
+    secret,
+    salt: SESSION_COOKIE,
+  })
   await page.goto('/')
   await page.context().addCookies([
     {
-      name: 'next-auth.session-token',
-      value: sessionToken,
+      name: SESSION_COOKIE,
+      value: token,
       domain: 'localhost',
       path: '/',
       httpOnly: true,

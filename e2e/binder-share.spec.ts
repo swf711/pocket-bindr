@@ -26,6 +26,7 @@ test.describe('卡冊公開分享', () => {
     await expect(page.getByTestId('binder-card')).toBeVisible()
 
     // 點擊 ⋮ 按鈕
+    await page.getByTestId('binder-card').first().hover()
     await page.getByTestId('binder-more-btn').click()
 
     // DropdownMenu 展開後應看到編輯/分享/刪除
@@ -43,6 +44,7 @@ test.describe('卡冊公開分享', () => {
     await expect(page.getByTestId('binder-card')).toBeVisible()
 
     // 開啟分享 Dialog
+    await page.getByTestId('binder-card').first().hover()
     await page.getByTestId('binder-more-btn').click()
     await page.getByTestId('share-binder-btn').click()
 
@@ -72,6 +74,7 @@ test.describe('卡冊公開分享', () => {
     await expect(page.getByTestId('binder-card')).toBeVisible()
 
     // 啟用分享
+    await page.getByTestId('binder-card').first().hover()
     await page.getByTestId('binder-more-btn').click()
     await page.getByTestId('share-binder-btn').click()
     await page.getByTestId('enable-share-btn').click()
@@ -100,7 +103,7 @@ test.describe('卡冊公開分享', () => {
     await page.goto(`/binders/${binder.id}`)
 
     // 開啟 Settings Drawer
-    await page.getByTestId('open-settings-drawer').click()
+    await page.getByTestId('binder-settings-btn').first().click()
 
     // 找到 Drawer 內的啟用分享按鈕
     await expect(page.getByTestId('drawer-enable-share-btn')).toBeVisible()
@@ -135,11 +138,11 @@ test.describe('卡冊公開分享', () => {
     // 無痕模式下訪問公開頁
     await page.goto(`/b/${token}`)
 
-    // 顯示 owner banner
-    await expect(page.getByTestId('public-owner-banner')).toBeVisible()
+    // 顯示 owner banner（spread + mobile 兩 view 各渲染一份，取首個可見者）
+    await expect(page.getByTestId('public-owner-banner').first()).toBeVisible()
 
-    // 無 Settings 觸發按鈕（open-settings-drawer）
-    await expect(page.getByTestId('open-settings-drawer')).not.toBeVisible()
+    // 無 Settings 觸發按鈕（公開唯讀頁不含 binder-settings-btn）
+    await expect(page.getByTestId('binder-settings-btn')).toHaveCount(0)
 
     // 清理
     await clearBinderShareToken(binder.id)

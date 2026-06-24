@@ -53,9 +53,12 @@ test.describe('Binder Spread Layout - 封面顏色', () => {
     const card = page.getByTestId('binder-card').filter({ hasText: name })
     await expect(card).toBeVisible()
 
-    await card.getByTestId('edit-binder-btn').click()
+    await card.hover()
+    await card.getByTestId('binder-more-btn').click()
+    await page.getByTestId('edit-binder-btn').click()
     await page.getByTestId('cover-color-picker').click()
-    await page.locator('[title="#DC2626"]').first().click()
+    // 色票有 hover:scale-110 + Popover 進場動畫，Playwright 穩定性檢查會與動畫互斥；force 略過
+    await page.locator('[title="#DC2626"]').first().click({ force: true })
     await page.getByTestId('edit-binder-submit').click()
 
     // Color updates immediately in the list
