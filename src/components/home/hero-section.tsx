@@ -14,8 +14,8 @@ export function HeroSection({ isLoggedIn, cards }: HeroSectionProps) {
       className="h-screen snap-start flex items-start"
       data-testid="hero-section"
     >
-      <div className="container mx-auto px-16 pt-16 pb-12 overflow-visible">
-        <div className="grid grid-cols-1 lg:grid-cols-2 overflow-visible">
+      <div className="container mx-auto px-4 lg:px-16 pt-16 pb-12 overflow-visible">
+        <div className="grid grid-cols-1 lg:grid-cols-2 overflow-visible gap-10 lg:gap-0">
           {/* Left: Text + CTA */}
           <div className="flex flex-col justify-center gap-6 text-center lg:text-left">
             <div>

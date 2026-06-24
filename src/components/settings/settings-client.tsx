@@ -58,7 +58,7 @@ export function SettingsClient({
 
       <h1 className="text-2xl font-bold">帳號設定</h1>
 
-      <div className='grid grid-cols-2 gap-4'>
+      <div className='grid md:grid-cols-2 gap-4'>
         <Card>
           <CardHeader>
             <CardTitle>用戶名稱</CardTitle>

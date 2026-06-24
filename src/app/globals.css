@@ -138,3 +138,17 @@ html.home-snap-scroll {
   scroll-behavior: smooth;
   scroll-padding-top: 3.5rem;
 }
+
+/* Disable snap while any overlay/sheet/drawer is open (detects via [data-state="open"]).
+ * Prevents snap scroll from re-firing during scroll-lock applied by Radix / vaul. */
+html.home-snap-scroll:has([data-state="open"]) {
+  scroll-snap-type: none;
+}
+
+/* Safety net: prevent react-remove-scroll from applying an incorrect large margin-right to body.
+ * Root cause: the carousel's overflow-visible causes temporary horizontal page overflow that makes
+ * react-remove-scroll miscalculate scrollbar width (e.g. 973px instead of 0).
+ * Primary fix is overflow-x-clip on the carousel wrapper; this rule is the fallback. */
+html.home-snap-scroll body[data-scroll-locked] {
+  margin-right: 0px !important;
+}

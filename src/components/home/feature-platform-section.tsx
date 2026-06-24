@@ -1,5 +1,5 @@
 import { BookOpen, Laptop2, Library, Search, Share2, Sparkles } from 'lucide-react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
 const FEATURES = [
   {
@@ -19,7 +19,7 @@ const FEATURES = [
   },
   {
     icon: Laptop2,
-    title: '不限裝置同步整理',
+    title: '裝置同步',
     description: '帳號資料雲端同步，隨時隨地在任何裝置上整理你的收藏。',
   },
   {
@@ -29,7 +29,7 @@ const FEATURES = [
   },
   {
     icon: Sparkles,
-    title: '更多功能即將推出',
+    title: '更多功能',
     description: '持續開發中，敬請期待更多實用功能。',
   },
 ]
@@ -40,19 +40,21 @@ export function FeaturePlatformSection() {
       className="min-h-screen snap-start flex flex-col items-center justify-center py-16 px-4"
       data-testid="feature-platform-section"
     >
-      <div className="w-full max-w-4xl">
+      <div className="container">
         <div className="text-center mb-10">
           <h2 className="text-3xl font-bold">平台功能</h2>
           <p className="text-muted-foreground mt-2">所有你需要的卡牌收藏工具，一站搞定</p>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
           {FEATURES.map(({ icon: Icon, title, description }) => (
-            <Card key={title}>
-              <CardHeader className="pb-2">
-                <div className="flex items-center gap-2">
-                  <Icon className="h-5 w-5 text-primary" />
-                  <CardTitle className="text-base">{title}</CardTitle>
-                </div>
+            <Card key={title} className="[--card-spacing:--spacing(3)] sm:[--card-spacing:--spacing(6)]">
+              <CardHeader>
+                <CardTitle>
+                  <div className="flex sm:flex-col items-center sm:items-start gap-3 sm:gap-5">
+                    <Icon className="text-primary size-4" />
+                    <CardTitle className="text-lg">{title}</CardTitle>
+                  </div>
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground">{description}</p>

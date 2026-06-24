@@ -18,10 +18,6 @@ vi.mock('@/components/ui/carousel', () => ({
   CarouselItem: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }))
 
-vi.mock('@/hooks/use-sticky-scroll-progress', () => ({
-  useStickyScrollProgress: () => ({ outerRef: { current: null }, progress: 0 }),
-}))
-
 const isMobileMock = vi.fn(() => false)
 vi.mock('@/hooks/use-is-mobile', () => ({
   useIsMobile: () => isMobileMock(),
@@ -70,6 +66,12 @@ describe('StatsCarouselSection', () => {
     expect(screen.getByTestId('total-card-count')).toHaveTextContent('0')
   })
 
+  it('totalCards 初始顯示 0（行動版，動畫前）', () => {
+    isMobileMock.mockReturnValue(true)
+    render(<StatsCarouselSection totalCards={68000} carouselCards={TWELVE_CARDS} />)
+    expect(screen.getByTestId('total-card-count')).toHaveTextContent('0')
+  })
+
   it('12 張 carouselCards 全部渲染', () => {
     render(<StatsCarouselSection totalCards={0} carouselCards={TWELVE_CARDS} />)
     const carouselCardEls = screen.getAllByTestId('carousel-card')
@@ -95,15 +97,15 @@ describe('StatsCarouselSection', () => {
     expect(section.querySelectorAll('.snap-start')).toHaveLength(2)
   })
 
-  it('行動版渲染兩頁 snap 堆疊、不含 sticky 外層', () => {
+  it('行動版渲染單一 snap section（文字在上 + carousel 在下）', () => {
     isMobileMock.mockReturnValue(true)
     render(<StatsCarouselSection totalCards={0} carouselCards={TWELVE_CARDS} />)
     const wrapper = screen.getByTestId('stats-carousel-section')
     expect(wrapper.tagName).toBe('DIV')
-    expect(wrapper.className).not.toContain('h-[200vh]')
-    // 兩個 h-screen snap-start 面板
-    expect(wrapper.querySelectorAll('section.snap-start')).toHaveLength(2)
-    // carousel 仍渲染
+    // 單一 h-screen snap-start section
+    expect(wrapper.querySelectorAll('section.snap-start')).toHaveLength(1)
+    // 統計文字與 carousel 同在此 section 內
+    expect(screen.getByTestId('total-card-count')).toBeInTheDocument()
     expect(screen.getAllByTestId('carousel-card')).toHaveLength(12)
   })
 })

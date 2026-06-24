@@ -76,8 +76,13 @@ export function StatsCarouselSection({ totalCards, carouselCards }: StatsCarouse
     return () => clearInterval(interval)
   }, [carouselApi])
 
-  // Number animation when the stats block enters the viewport
+  // Number animation when the stats block enters the viewport.
+  // isMobile is in deps because useIsMobile starts false (SSR) then updates — the layout
+  // switches between desktop sticky and mobile single-screen, which unmounts/remounts the
+  // statsRef DOM node. Without re-running, the observer watches a detached element forever.
   useEffect(() => {
+    animatedRef.current = false
+    setCount(0)
     const el = statsRef.current
     if (!el) return
 
@@ -102,11 +107,11 @@ export function StatsCarouselSection({ totalCards, carouselCards }: StatsCarouse
 
     observer.observe(el)
     return () => observer.disconnect()
-  }, [totalCards])
+  }, [totalCards, isMobile])
 
   const statsContent = (
     <div ref={statsRef} className="container mx-auto px-4 text-center">
-      <p className="text-muted-foreground text-sm uppercase tracking-widest mb-2">
+      <p className="text-muted-foreground text-base uppercase tracking-widest mb-2">
         平台即時同步所有系列
       </p>
       <div className="flex items-baseline justify-center gap-3 mb-4">
@@ -120,6 +125,8 @@ export function StatsCarouselSection({ totalCards, carouselCards }: StatsCarouse
       </p>
     </div>
   )
+
+  const cardHeight = isMobile ? 'h-[26vh]' : 'h-[45vh]'
 
   // Large-image showcase carousel (covers the stats text on scroll)
   const carouselContent = (
@@ -137,7 +144,7 @@ export function StatsCarouselSection({ totalCards, carouselCards }: StatsCarouse
                 <img
                   src={card.imageSmall}
                   alt={card.zhName ?? card.name}
-                  className="h-[45vh] w-auto object-contain rounded-xl shadow-lg hover:shadow-2xl hover:scale-105 transition-all duration-200"
+                  className={`${cardHeight} w-auto object-contain rounded-xl shadow-lg hover:shadow-2xl hover:scale-105 transition-all duration-200`}
                 />
               </button>
             </CarouselItem>
@@ -160,15 +167,17 @@ export function StatsCarouselSection({ totalCards, carouselCards }: StatsCarouse
     />
   )
 
-  // Mobile / reduced-motion: two static snap pages stacked, no sticky parallax
+  // Mobile / reduced-motion: single snap page — stats text on top, carousel below
   if (isMobile || reducedMotion) {
     return (
-      <div data-testid="stats-carousel-section">
-        <section className="h-screen snap-start flex flex-col justify-center py-16">
-          {statsContent}
-        </section>
-        <section className="h-screen snap-start flex flex-col justify-center py-16">
-          {carouselContent}
+      <div data-testid="stats-carousel-section" className="overflow-x-clip">
+        <section className="h-svh snap-start flex flex-col justify-center md:justify-between gap-10 py-8">
+          <div className="md:flex-1 flex items-center justify-center">
+            {statsContent}
+          </div>
+          <div className="shrink-0">
+            {carouselContent}
+          </div>
         </section>
         {drawer}
       </div>
@@ -179,7 +188,7 @@ export function StatsCarouselSection({ totalCards, carouselCards }: StatsCarouse
   // Animation driven by direct DOM ref mutation (no React re-renders) for smooth 60fps.
   // 300vh outer gives ample scroll travel; proximity snap settles at top-0 or top-[200vh].
   return (
-    <section ref={outerRef} data-testid="stats-carousel-section" className="relative h-[300vh]">
+    <section ref={outerRef} data-testid="stats-carousel-section" className="relative h-[300vh] overflow-x-clip">
       {/* snap anchors：top:0（文字）與 top:200vh（carousel 完全覆蓋）兩個停點 */}
       <div className="absolute top-0 left-0 h-px w-full snap-start" aria-hidden />
       <div className="absolute top-[200vh] left-0 h-px w-full snap-start" aria-hidden />
