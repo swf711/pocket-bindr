@@ -50,21 +50,11 @@ AGENT_TEAM_PROMPT.md
 test-results/
 playwright-report/
 
-# 官網爬蟲腳本（本機工具，不進版控）
-scripts/scrape-*.ts
-scripts/scrape-*/
-scripts/sync-*.ts
-scripts/lib/
-# 補圖／稽核／驗證等本機資料工具（依賴 scripts/lib/，不進版控）
-scripts/backfill-*.ts
-scripts/audit-*.ts
-scripts/verify-*.ts
-scripts/import-*.ts
+# 爬蟲與維護腳本（本機工具，不進版控）
+scripts/
 
 # 腳本產出的暫存檔 / seed 資料
 /tmp/
-scripts/.snapshots/
-scripts/data/
 .cache/
 
 # Scripts 腳本說明文件
