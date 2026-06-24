@@ -104,7 +104,7 @@ export function SlotCard({
                     variant="secondary"
                     size="icon-sm"
                     onClick={() => onToggleStatus(slot.id)}
-                    title={slot.status === 'owned' ? '切換為想要' : '切換為擁有'}
+                    aria-label={slot.status === 'owned' ? '切換為想要' : '切換為擁有'}
                   >
                     {slot.status === 'owned' ? <Bookmark /> : <BookCheck />}
                   </Button>
@@ -121,6 +121,7 @@ export function SlotCard({
                       size="icon-sm"
                       onClick={() => onView(slot.cardId)}
                       data-testid={`slot-view-btn-${slot.id}`}
+                      aria-label="查看卡牌"
                     >
                       <Eye />
                     </Button>
@@ -134,7 +135,7 @@ export function SlotCard({
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <AlertDialogTrigger asChild>
-                      <Button variant="secondary" size="icon-sm" data-variant="destructive">
+                      <Button variant="secondary" size="icon-sm" data-variant="destructive" aria-label="移除卡牌">
                         <Trash2 className="text-destructive" />
                       </Button>
                     </AlertDialogTrigger>

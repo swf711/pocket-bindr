@@ -28,6 +28,7 @@ import { useScaleFit } from '@/hooks/use-scale-fit'
 import type { Spread, SpreadPageContent } from '@/lib/binder-utils'
 import type { SlotWithCard } from '@/types/binder'
 import { ButtonGroup } from '../ui/button-group'
+import { IconTooltipButton } from '../common/icon-tooltip-button'
 
 const SPREAD_NATURAL_WIDTH = 1200 // 2 × 542px panels + 16px gap; tune this to taste
 const EDGE_HINT_PX = 64          // matches w-16 (Tailwind) — natural-coordinate width of drag-hint panels
@@ -280,26 +281,27 @@ export function BinderSpreadView({
                   <PaginationContent>
                     <PaginationItem>
                       <ButtonGroup>
-                        <Button
+                        <IconTooltipButton
                           variant="outline"
                           size="icon-sm"
                           data-testid="spread-first-btn"
                           onClick={() => onSpreadChange(0)}
                           disabled={spreadIndex === 0 || isDragging}
-                          aria-label="第一頁"
+                          tooltip="第一頁"
                         >
                           <ChevronsLeft />
-                        </Button>
-                        <Button
+                        </IconTooltipButton>
+                        <IconTooltipButton
                           variant="outline"
                           size="icon-sm"
                           data-testid="spread-prev-btn"
                           onClick={() => onSpreadChange(spreadIndex - 1)}
                           disabled={spreadIndex === 0 || isDragging}
                           className="gap-1 px-2.5"
+                          tooltip="上一頁"
                         >
                           <ChevronLeft />
-                        </Button>
+                        </IconTooltipButton>
                       </ButtonGroup>
                     </PaginationItem>
                     <PaginationItem>
@@ -322,27 +324,28 @@ export function BinderSpreadView({
                             <span>新增內頁</span>
                           </Button>
                         ) : (
-                          <Button
+                          <IconTooltipButton
                             variant="outline"
                             size="icon-sm"
                             data-testid="spread-next-btn"
                             onClick={() => onSpreadChange(spreadIndex + 1)}
                             disabled={isDragging}
                             className="gap-1 px-2.5"
+                            tooltip="下一頁"
                           >
                             <ChevronRight />
-                          </Button>
+                          </IconTooltipButton>
                         )}
-                        <Button
+                        <IconTooltipButton
                           variant="outline"
                           size="icon-sm"
                           data-testid="spread-last-btn"
                           onClick={() => onSpreadChange(spreads.length - 1)}
                           disabled={isLastSpread || isDragging}
-                          aria-label="最後一頁"
+                          tooltip="最後一頁"
                         >
                           <ChevronsRight />
-                        </Button>
+                        </IconTooltipButton>
                       </ButtonGroup>
                     </PaginationItem>
                   </PaginationContent>

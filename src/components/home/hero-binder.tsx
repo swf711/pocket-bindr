@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import {
   DndContext,
+  KeyboardSensor,
   PointerSensor,
   TouchSensor,
   useSensor,
@@ -10,7 +11,7 @@ import {
   type DragEndEvent,
   type DragStartEvent,
 } from '@dnd-kit/core'
-import { SortableContext, arrayMove, rectSortingStrategy, useSortable } from '@dnd-kit/sortable'
+import { SortableContext, arrayMove, rectSortingStrategy, sortableKeyboardCoordinates, useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { Move } from 'lucide-react'
 import { usePrefersReducedMotion } from '@/hooks/use-prefers-reduced-motion'
@@ -113,7 +114,8 @@ export function HeroBinder({ cards }: HeroBinderProps) {
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
-    useSensor(TouchSensor, { activationConstraint: { delay: 150, tolerance: 5 } })
+    useSensor(TouchSensor, { activationConstraint: { delay: 150, tolerance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   )
 
   // Restore the tilt when the press ends without (or after) a drag.

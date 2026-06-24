@@ -29,6 +29,7 @@ import { useEdgeHoverPageFlip } from '@/hooks/use-edge-hover-page-flip'
 import type { SpreadPageContent } from '@/lib/binder-utils'
 import type { SlotWithCard } from '@/types/binder'
 import { ButtonGroup } from '../ui/button-group'
+import { IconTooltipButton } from '../common/icon-tooltip-button'
 
 const MOBILE_PAGE_NATURAL_WIDTH = 767 // 行動裝置單頁自然寬度（px），Snowglobe 縮放基準
 const PAGE_LABEL_HEIGHT = 20           // text-xs 行高約 16px + mb-1 4px，counter-scale 補償基準
@@ -348,26 +349,27 @@ export function BinderMobileView({
           <PaginationContent>
             <PaginationItem>
               <ButtonGroup>
-                <Button
+                <IconTooltipButton
                   variant="outline"
                   size="icon"
                   data-testid="mobile-first-btn"
                   onClick={() => onPageChange(0)}
                   disabled={pageIndex === 0}
-                  aria-label="第一頁"
+                  tooltip="第一頁"
                 >
                   <ChevronsLeft />
-                </Button>
-                <Button
+                </IconTooltipButton>
+                <IconTooltipButton
                   variant="outline"
                   size="icon"
                   data-testid="mobile-prev-btn"
                   onClick={() => onPageChange(pageIndex - 1)}
                   disabled={pageIndex === 0}
                   className="gap-1 px-2.5"
+                  tooltip="上一頁"
                 >
                   <ChevronLeft />
-                </Button>
+                </IconTooltipButton>
               </ButtonGroup>
             </PaginationItem>
             <PaginationItem>
@@ -387,26 +389,27 @@ export function BinderMobileView({
                     <PlusCircle />
                   </Button>
                 ) : (
-                  <Button
+                  <IconTooltipButton
                     variant="outline"
                     size="icon"
                     data-testid="mobile-next-btn"
                     onClick={() => onPageChange(pageIndex + 1)}
                     className="gap-1 px-2.5"
+                    tooltip="下一頁"
                   >
                     <ChevronRight />
-                  </Button>
+                  </IconTooltipButton>
                 )}
-                <Button
+                <IconTooltipButton
                   variant="outline"
                   size="icon"
                   data-testid="mobile-last-btn"
                   onClick={() => onPageChange(mobilePages.length - 1)}
                   disabled={isLastMobilePage}
-                  aria-label="最後一頁"
+                  tooltip="最後一頁"
                 >
                   <ChevronsRight />
-                </Button>
+                </IconTooltipButton>
               </ButtonGroup>
             </PaginationItem>
           </PaginationContent>

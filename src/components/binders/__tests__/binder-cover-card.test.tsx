@@ -3,9 +3,14 @@
  */
 import '@testing-library/jest-dom/vitest'
 import { describe, it, expect, vi } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render as baseRender, screen } from '@testing-library/react'
 import { BinderCoverCard } from '../binder-cover-card'
+import { TooltipProvider } from '@/components/ui/tooltip'
 import type { BinderSummary } from '@/types/binder'
+
+// ⋮ 操作按鈕已改用 Tooltip，需 TooltipProvider context（正式環境由 root layout 提供）
+const render = ((ui: Parameters<typeof baseRender>[0]) =>
+  baseRender(ui, { wrapper: TooltipProvider })) as typeof baseRender
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: vi.fn() }),

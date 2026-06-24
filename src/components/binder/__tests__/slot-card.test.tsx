@@ -30,7 +30,7 @@ describe('SlotCard', () => {
     renderWithProviders(
       <SlotCard slot={makeSlot()} onDelete={() => {}} onToggleStatus={() => {}} onView={() => {}} />,
     )
-    expect(screen.getByTitle('切換為想要')).toBeInTheDocument()
+    expect(screen.getByLabelText('切換為想要')).toBeInTheDocument()
     expect(screen.getByTestId('slot-view-btn-slot1')).toBeInTheDocument()
   })
 

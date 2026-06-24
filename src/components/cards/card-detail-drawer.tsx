@@ -8,6 +8,7 @@ import {
 import { CardDetailDrawerContent } from '@/components/cards/card-detail-drawer-content'
 import { Button } from '@/components/ui/button'
 import { ButtonGroup } from '@/components/ui/button-group'
+import { IconTooltipButton } from '@/components/common/icon-tooltip-button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
@@ -113,29 +114,31 @@ export function CardDetailDrawer({ card, open, onClose, onAddToBinder, onLoginSu
   const atEnd = currentIndex === undefined || !cards || currentIndex === cards.length - 1
 
   const PrevButton = onNavigate && (
-    <Button
+    <IconTooltipButton
       data-testid="modal-nav-prev"
       variant="outline"
       size="icon-lg"
       className="rounded-full md:scale-130 md:hover:scale-140 active:scale-90 md:active:scale-130 transition-transform"
       disabled={atStart}
       onClick={() => onNavigate(currentIndex! - 1)}
+      tooltip="上一張"
     >
       <ChevronLeft />
-    </Button>
+    </IconTooltipButton>
   )
 
   const NextButton = onNavigate && (
-    <Button
+    <IconTooltipButton
       data-testid="modal-nav-next"
       variant="outline"
       size="icon-lg"
       className="rounded-full md:scale-130 md:hover:scale-140 active:scale-90 md:active:scale-130 transition-transform"
       disabled={atEnd}
       onClick={() => onNavigate(currentIndex! + 1)}
+      tooltip="下一張"
     >
       <ChevronRight />
-    </Button>
+    </IconTooltipButton>
   )
 
   const infoBlock = (

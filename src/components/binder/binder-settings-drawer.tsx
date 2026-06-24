@@ -46,6 +46,8 @@ import {
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Separator } from '@/components/ui/separator'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { IconTooltipButton } from '@/components/common/icon-tooltip-button'
 import { CoverColorPicker } from '@/components/binders/cover-color-picker'
 import { GRID_SHORT_LABELS, GRID_TYPE_LABELS, type SlotWithCard, type BinderSettings } from '@/types/binder'
 
@@ -99,7 +101,7 @@ function SortablePageRow({
     >
       <div className="flex items-center gap-2">
         <button
-          className="cursor-grab text-muted-foreground hover:text-foreground touch-none"
+          className="cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground touch-none"
           {...attributes}
           {...listeners}
           aria-label={`拖拉第 ${page} 頁`}
@@ -110,18 +112,25 @@ function SortablePageRow({
         <span className="text-sm">第 {page} 頁</span>
       </div>
       <AlertDialog>
-        <AlertDialogTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-7 w-7 text-destructive hover:text-destructive"
-            disabled={totalPages <= 1 || deletingPage === page}
-            aria-label={`刪除第 ${page} 頁`}
-            data-testid={`page-delete-btn-${page}`}
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
-        </AlertDialogTrigger>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <AlertDialogTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7 text-destructive hover:text-destructive"
+                disabled={totalPages <= 1 || deletingPage === page}
+                aria-label={`刪除第 ${page} 頁`}
+                data-testid={`page-delete-btn-${page}`}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </AlertDialogTrigger>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>刪除此頁</p>
+          </TooltipContent>
+        </Tooltip>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>刪除第 {page} 頁？</AlertDialogTitle>
@@ -309,11 +318,18 @@ export function BinderSettingsDrawer({
 
   return (
     <Drawer open={open} onOpenChange={setOpen} direction="right">
-      <DrawerTrigger asChild>
-        <Button variant="outline" size="icon-sm" data-testid="binder-settings-btn" aria-label="卡冊設定">
-          <Settings className="h-5 w-5" />
-        </Button>
-      </DrawerTrigger>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <DrawerTrigger asChild>
+            <Button variant="outline" size="icon-sm" data-testid="binder-settings-btn" aria-label="卡冊設定">
+              <Settings className="h-5 w-5" />
+            </Button>
+          </DrawerTrigger>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>卡冊設定</p>
+        </TooltipContent>
+      </Tooltip>
       <DrawerContent className="h-full w-80 right-0 left-auto">
         <DrawerHeader>
           <DrawerTitle>卡冊設定</DrawerTitle>
@@ -399,16 +415,16 @@ export function BinderSettingsDrawer({
                     className="font-mono text-xs h-8"
                     data-testid="drawer-share-url-input"
                   />
-                  <Button
+                  <IconTooltipButton
                     variant="outline"
                     size="icon"
                     className="h-8 w-8 shrink-0"
                     onClick={handleCopyShareUrl}
-                    aria-label="複製連結"
+                    tooltip="複製連結"
                     data-testid="drawer-copy-share-url-btn"
                   >
                     <Copy className="h-3.5 w-3.5" />
-                  </Button>
+                  </IconTooltipButton>
                 </div>
                 <Button
                   variant="destructive"

@@ -4,6 +4,7 @@ import { ArrowRight, EllipsisVertical, Pencil, Share2, Trash2 } from 'lucide-rea
 import { PendingLink } from '@/components/layout/pending-link'
 import { Button } from '@/components/ui/button'
 import { ButtonGroup } from '@/components/ui/button-group'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -121,18 +122,25 @@ export function BinderCoverCard({ binder, onEdit, onDelete, onShare, isTapped }:
 
             {/* ⋮ DropdownMenu：編輯、分享、刪除 */}
             <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="h-7 w-7 shrink-0 active:not-aria-[haspopup]:translate-y-px"
-                  style={{ color: textColor }}
-                  data-testid="binder-more-btn"
-                  aria-label="更多操作"
-                >
-                  <EllipsisVertical className="h-3 w-3" />
-                </Button>
-              </DropdownMenuTrigger>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="h-7 w-7 shrink-0 active:not-aria-[haspopup]:translate-y-px"
+                      style={{ color: textColor }}
+                      data-testid="binder-more-btn"
+                      aria-label="更多操作"
+                    >
+                      <EllipsisVertical className="h-3 w-3" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>更多操作</p>
+                </TooltipContent>
+              </Tooltip>
               <DropdownMenuContent align="end" className="min-w-[120px]">
                 <DropdownMenuItem
                   onClick={() => onEdit(binder)}

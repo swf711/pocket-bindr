@@ -15,6 +15,7 @@ import {
   PaginationItem,
 } from '@/components/ui/pagination'
 import { ButtonGroup } from '@/components/ui/button-group'
+import { IconTooltipButton } from '@/components/common/icon-tooltip-button'
 import { ReadOnlySlotCard } from './read-only-slot-card'
 import { useScaleFit } from '@/hooks/use-scale-fit'
 import {
@@ -301,23 +302,24 @@ export function BinderPublicView({ binder }: { binder: BinderPublicData }) {
                   <PaginationContent>
                     <PaginationItem>
                       <ButtonGroup>
-                        <Button
+                        <IconTooltipButton
                           variant="outline"
                           size="icon-sm"
                           onClick={() => setSpreadIndex(0)}
                           disabled={spreadIndex === 0}
-                          aria-label="第一頁"
+                          tooltip="第一頁"
                         >
                           <ChevronsLeft />
-                        </Button>
-                        <Button
+                        </IconTooltipButton>
+                        <IconTooltipButton
                           variant="outline"
                           size="icon-sm"
                           onClick={() => setSpreadIndex(spreadIndex - 1)}
                           disabled={spreadIndex === 0}
+                          tooltip="上一頁"
                         >
                           <ChevronLeft />
-                        </Button>
+                        </IconTooltipButton>
                       </ButtonGroup>
                     </PaginationItem>
                     <PaginationItem>
@@ -327,23 +329,24 @@ export function BinderPublicView({ binder }: { binder: BinderPublicData }) {
                     </PaginationItem>
                     <PaginationItem>
                       <ButtonGroup>
-                        <Button
+                        <IconTooltipButton
                           variant="outline"
                           size="icon-sm"
                           onClick={() => setSpreadIndex(spreadIndex + 1)}
                           disabled={isLastSpread}
+                          tooltip="下一頁"
                         >
                           <ChevronRight />
-                        </Button>
-                        <Button
+                        </IconTooltipButton>
+                        <IconTooltipButton
                           variant="outline"
                           size="icon-sm"
                           onClick={() => setSpreadIndex(spreads.length - 1)}
                           disabled={isLastSpread}
-                          aria-label="最後一頁"
+                          tooltip="最後一頁"
                         >
                           <ChevronsRight />
-                        </Button>
+                        </IconTooltipButton>
                       </ButtonGroup>
                     </PaginationItem>
                   </PaginationContent>
@@ -479,23 +482,24 @@ export function BinderPublicView({ binder }: { binder: BinderPublicData }) {
             <PaginationContent>
               <PaginationItem>
                 <ButtonGroup>
-                  <Button
+                  <IconTooltipButton
                     variant="outline"
                     size="icon"
                     onClick={() => setMobilePageIndex(0)}
                     disabled={mobilePageIndex === 0}
-                    aria-label="第一頁"
+                    tooltip="第一頁"
                   >
                     <ChevronsLeft />
-                  </Button>
-                  <Button
+                  </IconTooltipButton>
+                  <IconTooltipButton
                     variant="outline"
                     size="icon"
                     onClick={() => setMobilePageIndex(mobilePageIndex - 1)}
                     disabled={mobilePageIndex === 0}
+                    tooltip="上一頁"
                   >
                     <ChevronLeft />
-                  </Button>
+                  </IconTooltipButton>
                 </ButtonGroup>
               </PaginationItem>
               <PaginationItem>
@@ -505,23 +509,24 @@ export function BinderPublicView({ binder }: { binder: BinderPublicData }) {
               </PaginationItem>
               <PaginationItem>
                 <ButtonGroup>
-                  <Button
+                  <IconTooltipButton
                     variant="outline"
                     size="icon"
                     onClick={() => setMobilePageIndex(mobilePageIndex + 1)}
                     disabled={isLastMobilePage}
+                    tooltip="下一頁"
                   >
                     <ChevronRight />
-                  </Button>
-                  <Button
+                  </IconTooltipButton>
+                  <IconTooltipButton
                     variant="outline"
                     size="icon"
                     onClick={() => setMobilePageIndex(mobilePages.length - 1)}
                     disabled={isLastMobilePage}
-                    aria-label="最後一頁"
+                    tooltip="最後一頁"
                   >
                     <ChevronsRight />
-                  </Button>
+                  </IconTooltipButton>
                 </ButtonGroup>
               </PaginationItem>
             </PaginationContent>

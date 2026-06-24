@@ -3,8 +3,13 @@
  */
 import '@testing-library/jest-dom/vitest'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render as baseRender, screen, fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { TooltipProvider } from '@/components/ui/tooltip'
+
+// icon-only 導航按鈕已改用 Tooltip，需 TooltipProvider context（正式環境由 root layout 提供）
+const render = ((ui: Parameters<typeof baseRender>[0]) =>
+  baseRender(ui, { wrapper: TooltipProvider })) as typeof baseRender
 
 // Mock modules that have side effects or are not needed for navigation tests
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }))
