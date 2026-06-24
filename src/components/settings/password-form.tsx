@@ -5,12 +5,17 @@ import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { PasswordInput } from '@/components/auth/password-input'
+import { Progress } from '@/components/ui/progress'
+import { FieldDescription } from '@/components/ui/field'
+import { getPasswordStrength } from '@/lib/password-policy'
 
 export function PasswordForm() {
   const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+
+  const strength = getPasswordStrength(newPassword)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -71,6 +76,12 @@ export function PasswordForm() {
           autoComplete="new-password"
           placeholder="最少 8 個字元"
         />
+        {newPassword.length > 0 && (
+          <div className="space-y-1" data-testid="password-strength">
+            <Progress value={((strength.score + 1) / 4) * 100} className="h-1.5" />
+            <FieldDescription>密碼強度：{strength.label}</FieldDescription>
+          </div>
+        )}
         {error && (
           <p data-testid="password-error" className="text-sm text-destructive">
             {error}
