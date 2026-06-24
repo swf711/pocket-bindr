@@ -13,7 +13,8 @@
     "sync": "tsx scripts/sync-ptcg.ts",
     "sync:set": "tsx scripts/sync-ptcg.ts --set",
     "migrate:language": "tsx scripts/migrate-language.ts",
-    "detect-new-sets": "tsx scripts/detect-new-sets.ts"
+    "detect-new-sets": "tsx scripts/detect-new-sets.ts",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.2",
