@@ -3,6 +3,7 @@ import { auth } from '@/lib/auth'
 import { Button } from '@/components/ui/button'
 import { UserMenu } from '@/components/layout/user-menu'
 import { MobileNav } from '@/components/layout/mobile-nav'
+import { PendingLink } from '@/components/layout/pending-link'
 import { ModeToggle } from './mode-toggle'
 
 export async function Header() {
@@ -22,21 +23,21 @@ export async function Header() {
             TCG Binder
           </Link>
           <nav className="hidden items-center gap-4 md:flex">
-            <Link
+            <PendingLink
               href="/cards"
               data-testid="nav-cards"
               className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
             >
               卡牌搜尋
-            </Link>
+            </PendingLink>
             {isLoggedIn && (
-              <Link
+              <PendingLink
                 href="/binders"
                 data-testid="nav-binders"
                 className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
               >
                 我的卡冊
-              </Link>
+              </PendingLink>
             )}
           </nav>
         </div>

@@ -14,7 +14,7 @@ describe('FeaturePlatformSection', () => {
 
   it('顯示 6 個功能卡片標題', () => {
     render(<FeaturePlatformSection />)
-    const titles = ['搜尋卡牌', '建立卡冊', '管理收藏', '不限裝置同步整理', '分享你的卡冊', '更多功能即將推出']
+    const titles = ['搜尋卡牌', '建立卡冊', '管理收藏', '裝置同步', '分享你的卡冊', '更多功能']
     titles.forEach((title) => {
       expect(screen.getByText(title)).toBeInTheDocument()
     })

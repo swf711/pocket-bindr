@@ -1,7 +1,7 @@
 'use client'
 
-import Link from 'next/link'
 import { ArrowRight, EllipsisVertical, Pencil, Share2, Trash2 } from 'lucide-react'
+import { PendingLink } from '@/components/layout/pending-link'
 import { Button } from '@/components/ui/button'
 import { ButtonGroup } from '@/components/ui/button-group'
 import {
@@ -109,14 +109,14 @@ export function BinderCoverCard({ binder, onEdit, onDelete, onShare, isTapped }:
               className="h-7 shrink-0 text-xs active:not-aria-[haspopup]:translate-y-px"
               style={{ color: textColor }}
             >
-              <Link
+              <PendingLink
                 href={`/binders/${binder.id}`}
                 data-testid="enter-binder-btn"
                 aria-label={`進入卡冊：${binder.name}`}
               >
                 <ArrowRight className="h-3 w-3" />
                 進入卡冊
-              </Link>
+              </PendingLink>
             </Button>
 
             {/* ⋮ DropdownMenu：編輯、分享、刪除 */}

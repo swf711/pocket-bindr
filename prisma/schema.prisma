@@ -88,6 +88,8 @@ model Card {
   binderSlots     BinderSlot[]
 
   @@unique([game, language, externalId])
+  @@index([setId, cardNumber])
+  @@index([canonicalCardId])
 }
 
 model UserCard {
@@ -119,6 +121,8 @@ model Binder {
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
   slots       BinderSlot[]
+
+  @@index([userId])
 }
 
 model BinderSlot {

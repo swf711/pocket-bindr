@@ -59,6 +59,9 @@ async function handleGet(req: NextRequest) {
   }
   const skip = (pageNum - 1) * pageSizeNum
 
+  // auth() 與卡片查詢並行，避免串行多一段 round trip（尤其跨 region 時）
+  const sessionPromise = auth()
+
   let cards
   let total: number
   if (setId) {
@@ -105,7 +108,7 @@ async function handleGet(req: NextRequest) {
     cards = pageIds.map(id => byId.get(id)).filter((c): c is NonNullable<typeof c> => Boolean(c))
   }
 
-  const session = await auth()
+  const session = await sessionPromise
   const collectionMap = await getCollectionStatusMap(cards, session?.user?.id, includeCanonical)
 
   return Response.json({
