@@ -1,6 +1,7 @@
 // Requires running server and test database
 import { test, expect } from '@playwright/test'
-import { getTestUser, loginAs } from './helpers/auth'
+import { getTestUser, loginAs, loginAsOAuthUser } from './helpers/auth'
+import { deleteUserByEmail } from './helpers/db'
 
 const USER = getTestUser('settingsprov')
 
@@ -122,4 +123,52 @@ test('刪除帳號 dialog：輸入 DELETE 後確認按鈕 enabled（不點擊確
   await page.getByTestId('delete-confirm-input').fill('DELETE')
   await expect(page.getByTestId('confirm-delete-btn')).toBeEnabled()
   // 確保不點擊確認，不實際刪除帳號
+})
+
+// ---- 解綁防鎖死（OAuth-only user）----
+
+const OAUTH_ONLY_EMAIL = 'e2e-oauthonly@tcgbinder.com'
+const OAUTH_ONLY_USERNAME = 'e2eoauthonly'
+const OAUTH_ONLY_PROVIDER_ID = 'mock-e2e-provider-001'
+
+test.describe('解綁防鎖死', () => {
+  test.afterAll(async () => {
+    await deleteUserByEmail(OAUTH_ONLY_EMAIL)
+  })
+
+  test('OAuth-only 用戶：唯一登入方式，Google 解綁按鈕 disabled', async ({ page }) => {
+    await loginAsOAuthUser(page, OAUTH_ONLY_EMAIL, OAUTH_ONLY_USERNAME, 'google', OAUTH_ONLY_PROVIDER_ID)
+    await page.goto('/settings')
+    await page.waitForURL('/settings')
+    await expect(page.getByTestId('google-unlink-btn')).toBeDisabled()
+  })
+
+  test('OAuth-only 用戶：唯一登入方式，解綁按鈕有防鎖死 tooltip', async ({ page }) => {
+    await loginAsOAuthUser(page, OAUTH_ONLY_EMAIL, OAUTH_ONLY_USERNAME, 'google', OAUTH_ONLY_PROVIDER_ID)
+    await page.goto('/settings')
+    await page.waitForURL('/settings')
+    await expect(page.getByTestId('google-unlink-btn')).toHaveAttribute('title', '這是您目前唯一的登入方式，無法解綁')
+  })
+})
+
+// ---- 帳號刪除完整流程 ----
+
+const DELETE_USER = getTestUser('settingsdel')
+
+test.describe('帳號刪除完整流程', () => {
+  // 不需 afterAll：測試本身刪除帳號；下次 E2E run 由 loginAs 自動重建
+
+  test('刪除帳號後導向 /login?account_deleted=true 並顯示刪除 alert', async ({ page }) => {
+    await loginAs(page, DELETE_USER)
+    await page.goto('/settings')
+    await page.waitForURL('/settings')
+
+    await page.getByRole('button', { name: '刪除帳號' }).click()
+    await page.getByTestId('delete-confirm-input').fill('DELETE')
+    await page.getByTestId('confirm-delete-btn').click()
+
+    await page.waitForURL(/\/login/)
+    expect(page.url()).toContain('account_deleted=true')
+    await expect(page.getByTestId('account-deleted-alert')).toBeVisible()
+  })
 })

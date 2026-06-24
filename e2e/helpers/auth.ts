@@ -1,4 +1,5 @@
 import { Page } from '@playwright/test'
+import { createOAuthUserWithSession } from './db'
 
 export interface TestUser {
   email: string
@@ -47,6 +48,33 @@ export async function loginAs(page: Page, user: TestUser): Promise<void> {
     await page.getByRole('button', { name: '註冊', exact: true }).click()
     await page.waitForURL('**/cards')
   }
+}
+
+/**
+ * 以 OAuth-only 身份登入（無 email+password）。
+ * 直接在 DB 建立 User + Account + Session，再將 sessionToken 注入 cookie，
+ * 繞過無法在 E2E 模擬的 OAuth provider 流程。
+ * 適用於驗證「唯一登入方式防鎖死」等需要 OAuth-only 用戶狀態的情境。
+ */
+export async function loginAsOAuthUser(
+  page: Page,
+  email: string,
+  username: string,
+  provider: 'google' | 'discord',
+  providerAccountId: string,
+): Promise<void> {
+  const { sessionToken } = await createOAuthUserWithSession(email, username, provider, providerAccountId)
+  await page.goto('/')
+  await page.context().addCookies([
+    {
+      name: 'next-auth.session-token',
+      value: sessionToken,
+      domain: 'localhost',
+      path: '/',
+      httpOnly: true,
+      sameSite: 'Lax',
+    },
+  ])
 }
 
 // ---- 舊 API（保留為 wrapper，未遷移的呼叫點繼續可用）----

@@ -1,4 +1,5 @@
 import 'dotenv/config'
+import { randomUUID } from 'crypto'
 import bcrypt from 'bcryptjs'
 import { prisma } from '../../src/lib/prisma'
 import { TEST_USER } from './auth'
@@ -187,6 +188,45 @@ export async function resetUserUsername(email: string, username: string | null):
     where: { email },
     data: { username },
   })
+}
+
+/**
+ * 建立 OAuth-only 測試用戶（無 passwordHash）並直接注入 Session，
+ * 供無法走 OAuth 真實流程的 E2E 測試使用（如驗證解綁防鎖死 disabled 狀態）。
+ */
+export async function createOAuthUserWithSession(
+  email: string,
+  username: string,
+  provider: 'google' | 'discord',
+  providerAccountId: string,
+): Promise<{ userId: string; sessionToken: string }> {
+  const user = await prisma.user.upsert({
+    where: { email },
+    create: { email, username, passwordHash: null },
+    update: {},
+  })
+  await prisma.account.upsert({
+    where: { provider_providerAccountId: { provider, providerAccountId } },
+    create: { userId: user.id, provider, providerAccountId, type: 'oauth' },
+    update: {},
+  })
+  const sessionToken = randomUUID()
+  await prisma.session.create({
+    data: {
+      userId: user.id,
+      sessionToken,
+      expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
+    },
+  })
+  return { userId: user.id, sessionToken }
+}
+
+/**
+ * 刪除指定 email 帳號（含所有 Account/Session/UserCard/Binder，由 cascade 處理）。
+ * 供 E2E afterAll 清理 OAuth-only 測試帳號，或驗證帳號刪除後重建。
+ */
+export async function deleteUserByEmail(email: string): Promise<void> {
+  await prisma.user.deleteMany({ where: { email } })
 }
 
 /**
