@@ -113,7 +113,7 @@ export function BinderListClient({ initialBinders }: BinderListClientProps) {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">我的卡冊</h1>
         <div className="flex items-center gap-3">
-          <div className="whitespace-nowrap">
+          <div className="whitespace-nowrap" data-testid="binder-count-stat">
             <span className="text-xl mr-1">{binderList.length}</span>
             <span className="text-sm text-muted-foreground">/ {MAX_BINDERS_PER_USER} 本</span>
           </div>

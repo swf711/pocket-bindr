@@ -51,7 +51,7 @@ test.describe('卡冊列表優化', () => {
     // 虛線格位應消失
     await expect(page.getByTestId('add-binder-slot')).not.toBeVisible()
     // 統計顯示 3 / 3
-    await expect(page.getByText(/3\s*\/\s*3\s*本/)).toBeVisible()
+    await expect(page.getByTestId('binder-count-stat')).toContainText(/3\s*\/\s*3\s*本/)
   })
 
   test('嘗試透過 API 建立第 4 本：回傳 409 binderLimitReached', async ({ page }) => {

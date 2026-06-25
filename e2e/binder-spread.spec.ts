@@ -6,11 +6,13 @@ import { startDrag, dropOn } from './helpers/drag'
 
 const USER = getTestUser('binderspread')
 
-test.describe('Binder Spread Layout - 封面顏色', () => {
-  test.beforeEach(async () => {
-    await clearUserBindersByEmail(USER.email)
-  })
+// 提升至 file 層級：三個 describe block（封面顏色／桌面雙頁／行動裝置）每個 test 前都清空
+// binderspread 帳號卡冊，消除前次失敗 run 留下的孤兒卡冊累積撞 MAX_BINDERS。
+test.beforeEach(async () => {
+  await clearUserBindersByEmail(USER.email)
+})
 
+test.describe('Binder Spread Layout - 封面顏色', () => {
   test('建立卡冊時可選擇封面顏色，列表頁封面套用該顏色', async ({ page }) => {
     await loginAs(page, USER)
     await page.goto('/binders')

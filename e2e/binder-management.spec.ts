@@ -149,13 +149,13 @@ test.describe('卡冊管理頁', () => {
     await clearUserBindersByEmail(USER.email)
     await loginAs(page, USER)
     await page.goto('/binders')
-    await expect(page.getByText(/0\s*\/\s*3\s*本/)).toBeVisible()
+    await expect(page.getByTestId('binder-count-stat')).toContainText(/0\s*\/\s*3\s*本/)
     // 建立一本後計數更新
     await page.getByText('建立第一本卡冊').click()
     await page.getByTestId('binder-name-input').fill('計數測試冊')
     await page.getByTestId('create-binder-submit').click()
     await expect(page.getByTestId('binder-card')).toBeVisible()
-    await expect(page.getByText(/1\s*\/\s*3\s*本/)).toBeVisible()
+    await expect(page.getByTestId('binder-count-stat')).toContainText(/1\s*\/\s*3\s*本/)
   })
 
   test('hover 後操作按鈕顯示', async ({ page }) => {
