@@ -148,7 +148,7 @@ test.describe('卡冊公開分享', () => {
     await clearBinderShareToken(binder.id)
   })
 
-  test('公開頁：訪客點格位開啟唯讀卡牌詳情（無加入卡冊）', async ({ page }) => {
+  test('公開頁：未登入訪客點格位 → 卡牌詳情顯示登入引導', async ({ page }) => {
     const userId = await getUserIdByEmail(USER.email)
     const card = await getCardWithImage('PTCG', 'EN')
     const { binder } = await createBinderWithSlots(
@@ -165,11 +165,47 @@ test.describe('卡冊公開分享', () => {
     // 點擊有卡的格位（取首個可見的卡圖）
     await page.locator(`img[alt="${card.name}"]`).first().click()
 
-    // 唯讀 CardDetailDrawer 開啟，顯示卡牌詳情
+    // CardDetailDrawer 開啟；未登入訪客的加入卡冊區塊顯示登入引導
     await expect(page.getByTestId('card-detail-drawer')).toBeVisible()
-    await expect(page.getByRole('button', { name: '加入卡冊' })).toHaveCount(0)
+    await expect(page.getByText('請先登入以加入卡冊')).toBeVisible({ timeout: 5000 })
+    await page.getByTestId('modal-add-btn').click()
+    await expect(page.getByTestId('login-modal')).toBeVisible({ timeout: 5000 })
 
     await clearBinderShareToken(binder.id)
+  })
+
+  test('公開頁：登入訪客可把卡加入自己的卡冊', async ({ page }) => {
+    // 卡冊擁有者
+    const ownerId = await getUserIdByEmail(USER.email)
+    const card = await getCardWithImage('PTCG', 'EN')
+    const { binder } = await createBinderWithSlots(
+      ownerId,
+      'grid_3x3',
+      [{ cardId: card.id, status: 'owned', pageNumber: 1, slotIndex: 0 }],
+    )
+    const token = 'e2etesttoken00000000000000000003'
+    await prisma.binder.update({ where: { id: binder.id }, data: { shareToken: token } })
+
+    // 訪客（另一帳號）登入並備妥自己的卡冊
+    const VISITOR = getTestUser('bindersharevisitor')
+    await clearUserBindersByEmail(VISITOR.email)
+    await loginAs(page, VISITOR)
+    const visitorRes = await page.request.post('/api/binders', {
+      data: { name: 'Visitor Binder', gridType: 'grid_3x3' },
+    })
+    expect(visitorRes.status()).toBe(201)
+
+    await page.goto(`/b/${token}`)
+    await page.locator(`img[alt="${card.name}"]`).first().click()
+    await expect(page.getByTestId('card-detail-drawer')).toBeVisible()
+
+    // 下拉為訪客自己的卡冊；加入成功
+    await expect(page.getByTestId('modal-binder-select')).toContainText('Visitor Binder')
+    await page.getByTestId('modal-add-btn').click()
+    await expect(page.getByText(/已加入/)).toBeVisible({ timeout: 5000 })
+
+    await clearBinderShareToken(binder.id)
+    await clearUserBindersByEmail(VISITOR.email)
   })
 
   test('無效 token → 404 頁面', async ({ page }) => {

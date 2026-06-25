@@ -178,3 +178,43 @@ describe('CardDetailDrawer hideAddToBinder', () => {
     expect(screen.queryByText('請先登入以加入卡冊')).not.toBeInTheDocument()
   })
 })
+
+describe('CardDetailDrawer currentBinderId 預選', () => {
+  const binders = [
+    { id: 'b1', name: 'Binder One' },
+    { id: 'b2', name: 'Binder Two' },
+    { id: 'b3', name: 'Binder Three' },
+  ]
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+    ;(global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+      status: 200,
+      ok: true,
+      json: async () => binders,
+    })
+  })
+
+  // 卡冊以 shadcn Select 呈現，trigger 內顯示當前選中卡冊名稱（SelectValue）
+  it('currentBinderId 命中清單時預選該卡冊', async () => {
+    render(
+      <CardDetailDrawer card={cardA} open={true} onClose={vi.fn()} onAddToBinder={vi.fn()} currentBinderId="b2" />,
+    )
+    const trigger = await screen.findByTestId('modal-binder-select')
+    expect(trigger).toHaveTextContent('Binder Two')
+  })
+
+  it('currentBinderId 不在清單時 fallback 預設第一本', async () => {
+    render(
+      <CardDetailDrawer card={cardA} open={true} onClose={vi.fn()} onAddToBinder={vi.fn()} currentBinderId="nope" />,
+    )
+    const trigger = await screen.findByTestId('modal-binder-select')
+    expect(trigger).toHaveTextContent('Binder One')
+  })
+
+  it('未提供 currentBinderId 時維持預設第一本', async () => {
+    render(<CardDetailDrawer card={cardA} open={true} onClose={vi.fn()} onAddToBinder={vi.fn()} />)
+    const trigger = await screen.findByTestId('modal-binder-select')
+    expect(trigger).toHaveTextContent('Binder One')
+  })
+})

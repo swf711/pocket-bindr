@@ -13,6 +13,7 @@ import type { CardWithCollectionStatus } from '@/types/card'
 import { buildGridPages, buildSpreads, buildMobilePages, pageNumberToSpreadIndex, findNextEmptySlot } from '@/lib/binder-utils'
 import { useIsMobile } from '@/hooks/use-is-mobile'
 import { useSwapSlots } from '@/hooks/use-swap-slots'
+import { useAddToBinder } from '@/hooks/use-add-to-binder'
 
 export function BinderView({ binder }: { binder: BinderDetailResponse }) {
   const [slots, setSlots] = useState<SlotWithCard[]>(binder.slots)
@@ -30,6 +31,7 @@ export function BinderView({ binder }: { binder: BinderDetailResponse }) {
   const highlightTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const isMobile = useIsMobile()
   const swapSlots = useSwapSlots()
+  const addToBinder = useAddToBinder()
 
   const gridType = binderGridType
   const pages = buildGridPages(slots, gridType, totalPages)
@@ -186,6 +188,24 @@ export function BinderView({ binder }: { binder: BinderDetailResponse }) {
     toast.success('已加入卡片')
   }
 
+  const handleAddToBinderFromDrawer = async (
+    binderId: string,
+    status: CardStatus,
+    quantity: number,
+  ) => {
+    if (!viewCard) return
+    const result = await addToBinder.mutateAsync({ card: viewCard, binderId, status, quantity })
+    // 加入「此卡冊」（正在看的卡冊）→ 立即重抓格位反映新增；GET 不回 totalPages，故用 POST 回傳值
+    if (binderId === binder.id) {
+      if (result.updatedTotalPages) setTotalPages(result.updatedTotalPages)
+      const res = await fetch(`/api/binders/${binder.id}`)
+      if (res.ok) {
+        const data = await res.json()
+        setSlots(data.slots)
+      }
+    }
+  }
+
   const handleViewCard = async (cardId: string) => {
     const res = await fetch(`/api/cards/${cardId}`)
     if (!res.ok) {
@@ -328,7 +348,8 @@ export function BinderView({ binder }: { binder: BinderDetailResponse }) {
         card={viewCard}
         open={viewCard !== null}
         onClose={() => setViewCard(null)}
-        hideAddToBinder
+        onAddToBinder={handleAddToBinderFromDrawer}
+        currentBinderId={binder.id}
       />
     </div>
   )

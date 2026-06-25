@@ -37,9 +37,10 @@ interface CardDetailDrawerProps {
   currentIndex?: number
   onNavigate?: (index: number) => void
   hideAddToBinder?: boolean
+  currentBinderId?: string
 }
 
-export function CardDetailDrawer({ card, open, onClose, onAddToBinder, onLoginSuccess, cards, currentIndex, onNavigate, hideAddToBinder = false }: CardDetailDrawerProps) {
+export function CardDetailDrawer({ card, open, onClose, onAddToBinder, onLoginSuccess, cards, currentIndex, onNavigate, hideAddToBinder = false, currentBinderId }: CardDetailDrawerProps) {
   const isMobile = useIsMobile()
   const { containerRef: tiltRef, transformerStyle, shineStyle, handlers: tiltHandlers } = useCardTilt({
     maxRotateDeg: 15,
@@ -233,7 +234,7 @@ export function CardDetailDrawer({ card, open, onClose, onAddToBinder, onLoginSu
             {/* 左欄：卡牌資訊；右欄：加入卡冊操作（收藏狀態移至卡圖下方 overlay） */}
             {infoBlock}
             {!hideAddToBinder && (
-              <AddToBinderSection card={card} onAddToBinder={onAddToBinder} onLoginSuccess={onLoginSuccess} />
+              <AddToBinderSection card={card} onAddToBinder={onAddToBinder} onLoginSuccess={onLoginSuccess} currentBinderId={currentBinderId} />
             )}
           </div>
         ) : (
@@ -242,7 +243,7 @@ export function CardDetailDrawer({ card, open, onClose, onAddToBinder, onLoginSu
             {!hideAddToBinder && (
               <>
                 <Separator />
-                <AddToBinderSection card={card} onAddToBinder={onAddToBinder} onLoginSuccess={onLoginSuccess} />
+                <AddToBinderSection card={card} onAddToBinder={onAddToBinder} onLoginSuccess={onLoginSuccess} currentBinderId={currentBinderId} />
               </>
             )}
           </div>
@@ -310,10 +311,12 @@ function AddToBinderSection({
   card,
   onAddToBinder,
   onLoginSuccess,
+  currentBinderId,
 }: {
   card: CardWithCollectionStatus
   onAddToBinder?: CardDetailDrawerProps['onAddToBinder']
   onLoginSuccess?: CardDetailDrawerProps['onLoginSuccess']
+  currentBinderId?: string
 }) {
   const [binders, setBinders] = useState<BinderSummary[]>([])
   const [isGuest, setIsGuest] = useState(false)
@@ -334,11 +337,11 @@ function AddToBinderSection({
           const list: BinderSummary[] = Array.isArray(data) ? data : (data.binders ?? [])
           setBinders(list)
           if (list.length === 0) setNoBinders(true)
-          else setSelectedBinderId(list[0].id)
+          else setSelectedBinderId(list.find(b => b.id === currentBinderId)?.id ?? list[0].id)
         }
       })
       .catch(() => {})
-  }, [card.id])
+  }, [card.id, currentBinderId])
 
   const [loginModalOpen, setLoginModalOpen] = useState(false)
 
@@ -364,10 +367,9 @@ function AddToBinderSection({
                 const list: BinderSummary[] = Array.isArray(data) ? data : (data.binders ?? [])
                 setBinders(list)
                 if (list.length === 0) setNoBinders(true)
-                else setSelectedBinderId(list[0].id)
+                else setSelectedBinderId(list.find(b => b.id === currentBinderId)?.id ?? list[0].id)
               }
             })
-            console.log('[DEBUG] calling onLoginSuccess', typeof onLoginSuccess)
             onLoginSuccess?.()
           }}
         />

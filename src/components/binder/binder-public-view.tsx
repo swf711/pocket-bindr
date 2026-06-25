@@ -20,6 +20,7 @@ import { IconTooltipButton } from '@/components/common/icon-tooltip-button'
 import { ReadOnlySlotCard } from './read-only-slot-card'
 import { CardDetailDrawer } from '@/components/cards/card-detail-drawer'
 import { useScaleFit } from '@/hooks/use-scale-fit'
+import { useAddToBinder } from '@/hooks/use-add-to-binder'
 import {
   buildGridPages,
   buildSpreads,
@@ -28,6 +29,7 @@ import {
 import type { BinderPublicData, BinderSlotItem, SlotWithCard } from '@/types/binder'
 import type { CardWithCollectionStatus } from '@/types/card'
 import type { SpreadPageContent } from '@/lib/binder-utils'
+import type { CardStatus } from '@prisma/client'
 
 const SPREAD_NATURAL_WIDTH = 1200
 const MOBILE_PAGE_NATURAL_WIDTH = 767
@@ -208,6 +210,14 @@ export function BinderPublicView({ binder }: { binder: BinderPublicData }) {
   const [spreadIndex, setSpreadIndex] = useState(0)
   const [mobilePageIndex, setMobilePageIndex] = useState(0)
   const [viewCard, setViewCard] = useState<CardWithCollectionStatus | null>(null)
+  const addToBinder = useAddToBinder()
+
+  // 公開頁加入的是訪客「自己的」卡冊（binderId 來自 AddToBinderSection 內 /api/binders），
+  // 與正在瀏覽的他人公開卡冊無關，故不刷新顯示中的卡冊。
+  const handleAddToBinder = async (binderId: string, status: CardStatus, quantity: number) => {
+    if (!viewCard) return
+    await addToBinder.mutateAsync({ card: viewCard, binderId, status, quantity })
+  }
 
   const handleViewCard = async (cardId: string) => {
     const res = await fetch(`/api/cards/${cardId}`)
@@ -556,7 +566,7 @@ export function BinderPublicView({ binder }: { binder: BinderPublicData }) {
         card={viewCard}
         open={viewCard !== null}
         onClose={() => setViewCard(null)}
-        hideAddToBinder
+        onAddToBinder={handleAddToBinder}
       />
     </div>
   )
