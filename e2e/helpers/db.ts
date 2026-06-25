@@ -286,3 +286,49 @@ export async function createMultiPageBinder(
 
   return { binder: { id: binder.id, coverColor }, slots }
 }
+
+// ─── Forgot-password E2E helpers ──────────────────────────────────────────────
+
+/**
+ * 建立有 email + passwordHash 的測試帳號，供 forgot-password E2E 使用。
+ * 若帳號已存在則直接回傳現有 userId。
+ */
+export async function createPasswordUser(
+  email: string,
+  username: string,
+  password: string,
+): Promise<{ userId: string }> {
+  const passwordHash = await bcrypt.hash(password, 12)
+  const user = await prisma.user.upsert({
+    where: { email },
+    create: { email, username, passwordHash },
+    update: {},
+    select: { id: true },
+  })
+  return { userId: user.id }
+}
+
+/**
+ * 建立有效的密碼重設 token（直接使用 createResetToken，繞過 email 寄送）。
+ * 供 E2E 測試直接導航至 /reset-password?token=... 驗收完整重設流程。
+ */
+export async function createValidResetToken(email: string): Promise<string> {
+  const { createResetToken } = await import('../../src/lib/reset-password')
+  const user = await prisma.user.findUniqueOrThrow({
+    where: { email },
+    select: { id: true, email: true, passwordHash: true },
+  })
+  if (!user.passwordHash) throw new Error('User has no passwordHash')
+  return createResetToken(user.id, user.email!, user.passwordHash)
+}
+
+/**
+ * 取得指定 email 帳號目前的 passwordHash（供驗證重設後 hash 是否改變）。
+ */
+export async function getUserPasswordHash(email: string): Promise<string | null> {
+  const user = await prisma.user.findUnique({
+    where: { email },
+    select: { passwordHash: true },
+  })
+  return user?.passwordHash ?? null
+}

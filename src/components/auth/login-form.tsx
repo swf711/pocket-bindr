@@ -20,13 +20,14 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 interface LoginFormProps {
   oauthError?: string
   accountDeleted?: boolean
+  passwordReset?: boolean
 }
 
 const OAUTH_ERROR_MESSAGES: Record<string, string> = {
   OAuthAccountNotLinked: '此 email 已有帳號但尚未綁定此社群帳號，請用原本方式登入後，到設定頁進行社群綁定。',
 }
 
-export function LoginForm({ oauthError, accountDeleted }: LoginFormProps) {
+export function LoginForm({ oauthError, accountDeleted, passwordReset }: LoginFormProps) {
   const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -61,6 +62,11 @@ export function LoginForm({ oauthError, accountDeleted }: LoginFormProps) {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          {passwordReset && (
+            <Alert data-testid="password-reset-alert">
+              <AlertDescription>密碼已重設，請使用新密碼登入。</AlertDescription>
+            </Alert>
+          )}
           {accountDeleted && (
             <Alert data-testid="account-deleted-alert">
               <AlertDescription>帳號已刪除，感謝您的使用。</AlertDescription>
@@ -85,7 +91,12 @@ export function LoginForm({ oauthError, accountDeleted }: LoginFormProps) {
               </Field>
 
               <Field>
-                <FieldLabel htmlFor="password">密碼</FieldLabel>
+                <div className="flex items-center justify-between">
+                  <FieldLabel htmlFor="password">密碼</FieldLabel>
+                  <Link href="/forgot-password" className="text-sm text-muted-foreground hover:text-foreground underline-offset-4 hover:underline">
+                    忘記密碼？
+                  </Link>
+                </div>
                 <PasswordInput id="password" value={password} onChange={e => setPassword(e.target.value)} autoComplete="current-password" required />
               </Field>
 
