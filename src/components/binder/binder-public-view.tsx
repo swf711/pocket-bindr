@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { GridType } from '@prisma/client'
+import { toast } from 'sonner'
 import {
   ChevronsLeft,
   ChevronLeft,
@@ -17,6 +18,7 @@ import {
 import { ButtonGroup } from '@/components/ui/button-group'
 import { IconTooltipButton } from '@/components/common/icon-tooltip-button'
 import { ReadOnlySlotCard } from './read-only-slot-card'
+import { CardDetailDrawer } from '@/components/cards/card-detail-drawer'
 import { useScaleFit } from '@/hooks/use-scale-fit'
 import {
   buildGridPages,
@@ -24,6 +26,7 @@ import {
   buildMobilePages,
 } from '@/lib/binder-utils'
 import type { BinderPublicData, BinderSlotItem, SlotWithCard } from '@/types/binder'
+import type { CardWithCollectionStatus } from '@/types/card'
 import type { SpreadPageContent } from '@/lib/binder-utils'
 
 const SPREAD_NATURAL_WIDTH = 1200
@@ -36,9 +39,11 @@ const PAGE_LABEL_HEIGHT = 20
 function ReadOnlyGridSlots({
   slots,
   gridType,
+  onView,
 }: {
   slots: BinderSlotItem[]
   gridType: GridType
+  onView?: (cardId: string) => void
 }) {
   const GRID_COLS: Record<GridType, number> = {
     grid_1x2: 1,
@@ -56,7 +61,7 @@ function ReadOnlyGridSlots({
       {slots.map((slot, i) => {
         const emptyKey = `empty-${slot.pageNumber}-${slot.slotIndex}-${i}`
         return slot.id !== null ? (
-          <ReadOnlySlotCard key={slot.id} slot={slot as SlotWithCard} />
+          <ReadOnlySlotCard key={slot.id} slot={slot as SlotWithCard} onView={onView} />
         ) : (
           <div
             key={emptyKey}
@@ -128,6 +133,7 @@ function PublicPanelContent({
   mobileWrapper,
   binderName,
   description,
+  onView,
 }: {
   content: SpreadPageContent
   coverColor: string
@@ -136,6 +142,7 @@ function PublicPanelContent({
   mobileWrapper?: boolean
   binderName: string
   description?: string | null
+  onView?: (cardId: string) => void
 }) {
   if (content.type === 'cover') {
     if (mobileWrapper) {
@@ -190,7 +197,7 @@ function PublicPanelContent({
           第 {content.pageNumber} 頁
         </p>
       </div>
-      <ReadOnlyGridSlots slots={content.page} gridType={gridType} />
+      <ReadOnlyGridSlots slots={content.page} gridType={gridType} onView={onView} />
     </div>
   )
 }
@@ -200,6 +207,16 @@ function PublicPanelContent({
 export function BinderPublicView({ binder }: { binder: BinderPublicData }) {
   const [spreadIndex, setSpreadIndex] = useState(0)
   const [mobilePageIndex, setMobilePageIndex] = useState(0)
+  const [viewCard, setViewCard] = useState<CardWithCollectionStatus | null>(null)
+
+  const handleViewCard = async (cardId: string) => {
+    const res = await fetch(`/api/cards/${cardId}`)
+    if (!res.ok) {
+      toast.error('讀取卡牌資料失敗')
+      return
+    }
+    setViewCard(await res.json())
+  }
 
   const gridType = binder.gridType as GridType
   const totalPages = binder.settings?.totalPages ?? 1
@@ -262,6 +279,7 @@ export function BinderPublicView({ binder }: { binder: BinderPublicData }) {
     gridType,
     binderName: binder.name,
     description: binder.description,
+    onView: handleViewCard,
   }
 
   return (
@@ -534,6 +552,12 @@ export function BinderPublicView({ binder }: { binder: BinderPublicData }) {
         </div>
       </div>
 
+      <CardDetailDrawer
+        card={viewCard}
+        open={viewCard !== null}
+        onClose={() => setViewCard(null)}
+        hideAddToBinder
+      />
     </div>
   )
 }

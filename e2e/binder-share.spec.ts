@@ -148,6 +148,30 @@ test.describe('卡冊公開分享', () => {
     await clearBinderShareToken(binder.id)
   })
 
+  test('公開頁：訪客點格位開啟唯讀卡牌詳情（無加入卡冊）', async ({ page }) => {
+    const userId = await getUserIdByEmail(USER.email)
+    const card = await getCardWithImage('PTCG', 'EN')
+    const { binder } = await createBinderWithSlots(
+      userId,
+      'grid_3x3',
+      [{ cardId: card.id, status: 'owned', pageNumber: 1, slotIndex: 0 }],
+    )
+
+    const token = 'e2etesttoken00000000000000000002'
+    await prisma.binder.update({ where: { id: binder.id }, data: { shareToken: token } })
+
+    await page.goto(`/b/${token}`)
+
+    // 點擊有卡的格位（取首個可見的卡圖）
+    await page.locator(`img[alt="${card.name}"]`).first().click()
+
+    // 唯讀 CardDetailDrawer 開啟，顯示卡牌詳情
+    await expect(page.getByTestId('card-detail-drawer')).toBeVisible()
+    await expect(page.getByRole('button', { name: '加入卡冊' })).toHaveCount(0)
+
+    await clearBinderShareToken(binder.id)
+  })
+
   test('無效 token → 404 頁面', async ({ page }) => {
     const res = await page.goto('/b/invalidtoken00000000000000000000')
     expect(res?.status()).toBe(404)

@@ -5,13 +5,19 @@ import type { SlotWithCard } from '@/types/binder'
 
 interface ReadOnlySlotCardProps {
   slot: SlotWithCard
+  onView?: (cardId: string) => void
 }
 
-export function ReadOnlySlotCard({ slot }: ReadOnlySlotCardProps) {
+export function ReadOnlySlotCard({ slot, onView }: ReadOnlySlotCardProps) {
   const imageUrl = getCardImageUrl(slot.card.imageSmall)
 
   return (
-    <div className="relative w-full aspect-5/7 overflow-hidden rounded-md border border-border bg-card">
+    <div
+      className={`relative w-full aspect-5/7 overflow-hidden rounded-md border border-border bg-card${
+        onView ? ' cursor-pointer transition-opacity hover:opacity-80' : ''
+      }`}
+      onClick={onView ? () => onView(slot.card.id) : undefined}
+    >
       {imageUrl ? (
         <img
           src={imageUrl}
