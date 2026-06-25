@@ -161,7 +161,7 @@ export function SlotCardPickerDialog({ open, onClose, onConfirm }: SlotCardPicke
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-3xl" data-testid="slot-card-picker-dialog">
+      <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-[calc(100%-2rem)] lg:max-w-5xl" data-testid="slot-card-picker-dialog">
         <DialogHeader>
           <DialogTitle>{selectedCard ? '選擇收藏狀態' : '選擇要加入的卡片'}</DialogTitle>
         </DialogHeader>
