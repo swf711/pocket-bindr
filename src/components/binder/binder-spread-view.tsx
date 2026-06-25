@@ -51,6 +51,7 @@ interface BinderSpreadViewProps {
   onSwap: (slotAId: string, slotBId: string) => void
   onMove: (slotId: string, pageNumber: number, slotIndex: number) => void
   onView?: (cardId: string) => void
+  onCopy?: (slotId: string) => void
   onAddCard?: (pageNumber: number, slotIndex: number) => void
   onJumpToSlot: (slot: SlotWithCard) => void
   highlightedSlotId?: string | null
@@ -69,6 +70,7 @@ function SpreadPanelContent({
   onDelete,
   onToggleStatus,
   onView,
+  onCopy,
   isDragging,
   onAddCard,
   onJumpToSlot,
@@ -85,6 +87,7 @@ function SpreadPanelContent({
   onDelete: (slotId: string) => void
   onToggleStatus: (slotId: string) => void
   onView?: (cardId: string) => void
+  onCopy?: (slotId: string) => void
   isDragging: boolean
   onAddCard?: (pageNumber: number, slotIndex: number) => void
   onJumpToSlot: (slot: SlotWithCard) => void
@@ -124,6 +127,7 @@ function SpreadPanelContent({
         onDelete={onDelete}
         onToggleStatus={onToggleStatus}
         onView={onView}
+        onCopy={onCopy}
         isDragging={isDragging}
         onAddCard={onAddCard}
         highlightedSlotId={highlightedSlotId}
@@ -149,6 +153,7 @@ export function BinderSpreadView({
   onSwap,
   onMove,
   onView,
+  onCopy,
   onAddCard,
   onJumpToSlot,
   highlightedSlotId,
@@ -374,6 +379,7 @@ export function BinderSpreadView({
                     onDelete={onDelete}
                     onToggleStatus={onToggleStatus}
                     onView={onView}
+                    onCopy={onCopy}
                     isDragging={isDragging}
                     onAddCard={onAddCard}
                     onJumpToSlot={onJumpToSlot}
@@ -396,6 +402,7 @@ export function BinderSpreadView({
                     onDelete={onDelete}
                     onToggleStatus={onToggleStatus}
                     onView={onView}
+                    onCopy={onCopy}
                     isDragging={isDragging}
                     onAddCard={onAddCard}
                     onJumpToSlot={onJumpToSlot}

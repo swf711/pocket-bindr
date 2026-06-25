@@ -10,7 +10,7 @@ import { SlotCardPickerDialog } from './slot-card-picker-dialog'
 import { CardDetailDrawer } from '@/components/cards/card-detail-drawer'
 import type { BinderDetailResponse, SlotWithCard, SlotCardResult } from '@/types/binder'
 import type { CardWithCollectionStatus } from '@/types/card'
-import { buildGridPages, buildSpreads, buildMobilePages, pageNumberToSpreadIndex } from '@/lib/binder-utils'
+import { buildGridPages, buildSpreads, buildMobilePages, pageNumberToSpreadIndex, findNextEmptySlot } from '@/lib/binder-utils'
 import { useIsMobile } from '@/hooks/use-is-mobile'
 import { useSwapSlots } from '@/hooks/use-swap-slots'
 
@@ -211,6 +211,52 @@ export function BinderView({ binder }: { binder: BinderDetailResponse }) {
     })
   }
 
+  const handleCopyCard = async (slotId: string) => {
+    const src = slots.find((s) => s.id === slotId)
+    if (!src) return
+
+    // 同頁優先找下一個空格；全卡冊皆滿則自動新增一頁
+    let target = findNextEmptySlot(pages, totalPages, src.pageNumber)
+    if (!target) {
+      const pageRes = await fetch(`/api/binders/${binder.id}/pages`, { method: 'POST' })
+      if (pageRes.status === 409) {
+        toast.error('卡冊最多 100 頁')
+        return
+      }
+      if (!pageRes.ok) {
+        toast.error('複製失敗，請重試')
+        return
+      }
+      const data = await pageRes.json()
+      setTotalPages(data.totalPages)
+      target = { pageNumber: data.totalPages, slotIndex: 0 }
+    }
+
+    const res = await fetch(`/api/binders/${binder.id}/slots`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...target, cardId: src.cardId, status: src.status }),
+    })
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}))
+      toast.error(err?.error ?? '複製失敗，請重試')
+      return
+    }
+    const result: SlotCardResult = await res.json()
+    const newSlot: SlotWithCard = {
+      id: result.slot.id,
+      binderId: binder.id,
+      cardId: result.userCard.cardId,
+      pageNumber: result.slot.pageNumber,
+      slotIndex: result.slot.slotIndex,
+      status: result.slot.status,
+      card: result.slot.card,
+    }
+    setSlots((prev) => [...prev, newSlot])
+    handleJumpToSlot(newSlot)
+    toast.success('已複製卡片')
+  }
+
   const sharedHandlers = {
     onDelete: handleDelete,
     onSwap: handleSwap,
@@ -218,6 +264,7 @@ export function BinderView({ binder }: { binder: BinderDetailResponse }) {
     onMove: handleMove,
     onAddCard: handleAddCard,
     onView: handleViewCard,
+    onCopy: handleCopyCard,
     highlightedSlotId,
   }
 

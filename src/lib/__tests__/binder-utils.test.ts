@@ -7,6 +7,7 @@ import {
   computeSlotMigration,
   decrementUserCardsForSlots,
   pageNumberToSpreadIndex,
+  findNextEmptySlot,
 } from '../binder-utils'
 import type { SlotWithCard } from '@/types/binder'
 import type { GridPage } from '../binder-utils'
@@ -234,6 +235,53 @@ describe('decrementUserCardsForSlots', () => {
     ])
     expect(tx.userCard.updateMany).not.toHaveBeenCalled()
     expect(tx.userCard.deleteMany).not.toHaveBeenCalled()
+  })
+})
+
+describe('findNextEmptySlot', () => {
+  // grid_2x2 = 每頁 4 格；填滿某頁所有 slotIndex
+  function fullPage(pageNumber: number): SlotWithCard[] {
+    return Array.from({ length: 4 }, (_, i) =>
+      makeSlot({ id: `slot-${pageNumber}-${i}`, pageNumber, slotIndex: i }),
+    )
+  }
+
+  it('來源頁有空格 → 回該頁第一個空格 slotIndex（同頁優先）', () => {
+    const slots = [makeSlot({ pageNumber: 1, slotIndex: 0 })]
+    const pages = buildGridPages(slots, 'grid_2x2' as GridType, 2)
+    expect(findNextEmptySlot(pages, 2, 1)).toEqual({ pageNumber: 1, slotIndex: 1 })
+  })
+
+  it('來源頁已滿、後續頁有空格 → 回後續最早頁的第一個空格', () => {
+    const slots = fullPage(1)
+    const pages = buildGridPages(slots, 'grid_2x2' as GridType, 2)
+    expect(findNextEmptySlot(pages, 2, 1)).toEqual({ pageNumber: 2, slotIndex: 0 })
+  })
+
+  it('來源頁滿但更前面頁有空格 → 回 1..totalPages 升冪最早空格', () => {
+    // page2 滿、page1 有空格，fromPage=2 → 同頁無空格，回頁碼升冪第一個空格（page1）
+    const slots = [...fullPage(2), makeSlot({ pageNumber: 1, slotIndex: 0 })]
+    const pages = buildGridPages(slots, 'grid_2x2' as GridType, 2)
+    expect(findNextEmptySlot(pages, 2, 2)).toEqual({ pageNumber: 1, slotIndex: 1 })
+  })
+
+  it('全卡冊皆滿 → 回 null', () => {
+    const slots = [...fullPage(1), ...fullPage(2)]
+    const pages = buildGridPages(slots, 'grid_2x2' as GridType, 2)
+    expect(findNextEmptySlot(pages, 2, 1)).toBeNull()
+  })
+
+  it('單頁卡冊（grid_1x2）邊界：唯一空格正確、全滿回 null', () => {
+    const oneSlot = [makeSlot({ pageNumber: 1, slotIndex: 0 })]
+    const pages = buildGridPages(oneSlot, 'grid_1x2' as GridType, 1)
+    expect(findNextEmptySlot(pages, 1, 1)).toEqual({ pageNumber: 1, slotIndex: 1 })
+
+    const bothSlots = [
+      makeSlot({ id: 's0', pageNumber: 1, slotIndex: 0 }),
+      makeSlot({ id: 's1', pageNumber: 1, slotIndex: 1 }),
+    ]
+    const fullPages = buildGridPages(bothSlots, 'grid_1x2' as GridType, 1)
+    expect(findNextEmptySlot(fullPages, 1, 1)).toBeNull()
   })
 })
 

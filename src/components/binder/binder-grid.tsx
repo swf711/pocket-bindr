@@ -30,6 +30,7 @@ interface BinderGridSlotsProps {
   onDelete: (slotId: string) => void
   onToggleStatus: (slotId: string) => void
   onView?: (cardId: string) => void
+  onCopy?: (slotId: string) => void
   isDragging?: boolean
   onAddCard?: (pageNumber: number, slotIndex: number) => void
   highlightedSlotId?: string | null
@@ -45,6 +46,7 @@ export function BinderGridSlots({
   onDelete,
   onToggleStatus,
   onView,
+  onCopy,
   isDragging = false,
   onAddCard,
   highlightedSlotId,
@@ -76,6 +78,7 @@ export function BinderGridSlots({
                 onDelete={onDelete}
                 onToggleStatus={onToggleStatus}
                 onView={onView}
+                onCopy={onCopy}
                 isHighlighted={highlightedSlotId === slot.id}
                 counterScale={counterScale}
                 isTapped={tappedSlotId === slot.id}

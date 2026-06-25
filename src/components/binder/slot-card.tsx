@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { BookCheck, Bookmark, Eye, Trash2 } from 'lucide-react'
+import { BookCheck, Bookmark, Copy, Eye, Trash2 } from 'lucide-react'
 import { useDraggable, useDroppable } from '@dnd-kit/core'
 import { Button } from '@/components/ui/button'
 import { ButtonGroup } from '@/components/ui/button-group'
@@ -25,6 +25,7 @@ interface SlotCardProps {
   onDelete: (slotId: string) => void
   onToggleStatus: (slotId: string) => void
   onView?: (cardId: string) => void
+  onCopy?: (slotId: string) => void
   isDragOverlay?: boolean
   isHighlighted?: boolean
   counterScale?: number
@@ -37,6 +38,7 @@ export function SlotCard({
   onDelete,
   onToggleStatus,
   onView,
+  onCopy,
   isDragOverlay = false,
   isHighlighted = false,
   counterScale = 1,
@@ -113,6 +115,24 @@ export function SlotCard({
                   <p>{slot.status === 'owned' ? '切換為想要' : '切換為擁有'}</p>
                 </TooltipContent>
               </Tooltip>
+              {onCopy && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="secondary"
+                      size="icon-sm"
+                      onClick={() => onCopy(slot.id)}
+                      data-testid={`slot-copy-btn-${slot.id}`}
+                      aria-label="複製到空格"
+                    >
+                      <Copy />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>複製到空格</p>
+                  </TooltipContent>
+                </Tooltip>
+              )}
               {onView && (
                 <Tooltip>
                   <TooltipTrigger asChild>

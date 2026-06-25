@@ -50,6 +50,7 @@ interface BinderMobileViewProps {
   onSwap: (slotAId: string, slotBId: string) => void
   onMove: (slotId: string, pageNumber: number, slotIndex: number) => void
   onView?: (cardId: string) => void
+  onCopy?: (slotId: string) => void
   onAddCard?: (pageNumber: number, slotIndex: number) => void
   onJumpToSlot: (slot: SlotWithCard) => void
   highlightedSlotId?: string | null
@@ -72,6 +73,7 @@ export function BinderMobileView({
   onSwap,
   onMove,
   onView,
+  onCopy,
   onAddCard,
   onJumpToSlot,
   highlightedSlotId,
@@ -261,6 +263,7 @@ export function BinderMobileView({
                     onDelete={onDelete}
                     onToggleStatus={onToggleStatus}
                     onView={onView}
+                    onCopy={onCopy}
                     isDragging={isDragging}
                     onAddCard={onAddCard}
                     highlightedSlotId={highlightedSlotId}
