@@ -1,7 +1,7 @@
 // Requires running server and test database
 import { test, expect } from '@playwright/test'
 import { getTestUser, loginAs, loginAsOAuthUser } from './helpers/auth'
-import { deleteUserByEmail } from './helpers/db'
+import { clearUserPassword, deleteUserByEmail } from './helpers/db'
 
 const USER = getTestUser('settingsprov')
 
@@ -147,6 +147,65 @@ test.describe('解綁防鎖死', () => {
     await page.goto('/settings')
     await page.waitForURL('/settings')
     await expect(page.getByTestId('google-unlink-btn')).toHaveAttribute('title', '這是您目前唯一的登入方式，無法解綁')
+  })
+})
+
+// ---- 純 OAuth 使用者設定密碼 ----
+
+const SET_PW_EMAIL = 'e2e-setpw@tcgbinder.com'
+const SET_PW_USERNAME = 'e2esetpw'
+const SET_PW_PROVIDER_ID = 'mock-e2e-setpw-001'
+
+test.describe('純 OAuth 使用者設定密碼', () => {
+  test.beforeEach(async () => {
+    // 還原為純 OAuth 狀態（前一測試可能已設過密碼）
+    await clearUserPassword(SET_PW_EMAIL)
+  })
+
+  test.afterAll(async () => {
+    await deleteUserByEmail(SET_PW_EMAIL)
+  })
+
+  test('純 OAuth 用戶 settings 頁顯示「設定密碼」卡、不顯示「修改密碼」卡', async ({ page }) => {
+    await loginAsOAuthUser(page, SET_PW_EMAIL, SET_PW_USERNAME, 'google', SET_PW_PROVIDER_ID)
+    await page.goto('/settings')
+    await page.waitForURL('/settings')
+    await expect(page.getByTestId('set-password-input')).toBeVisible()
+    // 純 OAuth（無密碼）不應顯示「修改密碼」卡（其 current-password 欄位）
+    await expect(page.getByTestId('current-password-input')).not.toBeVisible()
+  })
+
+  test('新密碼少於 8 字元顯示錯誤', async ({ page }) => {
+    await loginAsOAuthUser(page, SET_PW_EMAIL, SET_PW_USERNAME, 'google', SET_PW_PROVIDER_ID)
+    await page.goto('/settings')
+    await page.waitForURL('/settings')
+    await page.getByTestId('set-password-input').fill('short')
+    await page.getByTestId('set-password-confirm-input').fill('short')
+    await page.getByTestId('save-set-password-btn').click()
+    await expect(page.getByTestId('set-password-error')).toBeVisible()
+  })
+
+  test('兩次密碼不一致顯示錯誤', async ({ page }) => {
+    await loginAsOAuthUser(page, SET_PW_EMAIL, SET_PW_USERNAME, 'google', SET_PW_PROVIDER_ID)
+    await page.goto('/settings')
+    await page.waitForURL('/settings')
+    await page.getByTestId('set-password-input').fill('NewPassword123!')
+    await page.getByTestId('set-password-confirm-input').fill('Different123!')
+    await page.getByTestId('save-set-password-btn').click()
+    await expect(page.getByTestId('set-password-error')).toHaveText('兩次輸入的密碼不一致')
+  })
+
+  test('成功設定密碼顯示 toast、卡片切回「修改密碼」', async ({ page }) => {
+    await loginAsOAuthUser(page, SET_PW_EMAIL, SET_PW_USERNAME, 'google', SET_PW_PROVIDER_ID)
+    await page.goto('/settings')
+    await page.waitForURL('/settings')
+    await page.getByTestId('set-password-input').fill('NewPassword123!')
+    await page.getByTestId('set-password-confirm-input').fill('NewPassword123!')
+    await page.getByTestId('save-set-password-btn').click()
+    await expect(page.getByText('密碼已設定')).toBeVisible()
+    // router.refresh 後 hasPassword=true，卡片切回「修改密碼」（出現 current-password 欄位）
+    await expect(page.getByTestId('current-password-input')).toBeVisible()
+    await expect(page.getByTestId('set-password-input')).not.toBeVisible()
   })
 })
 

@@ -8,9 +8,10 @@ import { Label } from '@/components/ui/label'
 
 interface UsernameFormProps {
   username: string | null
+  email: string | null
 }
 
-export function UsernameForm({ username }: UsernameFormProps) {
+export function UsernameForm({ username, email }: UsernameFormProps) {
   const [value, setValue] = useState(username ?? '')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
@@ -46,6 +47,17 @@ export function UsernameForm({ username }: UsernameFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
+      <div className="space-y-1.5">
+        <Label htmlFor="email">Email</Label>
+        <Input
+          id="email"
+          data-testid="email-input"
+          value={email ?? ''}
+          placeholder="（未設定）"
+          disabled
+          readOnly
+        />
+      </div>
       <div className="space-y-1.5">
         <Label htmlFor="username">用戶名稱</Label>
         <Input

@@ -173,6 +173,18 @@ export async function resetUserPassword(email: string, password: string): Promis
 }
 
 /**
+ * 清除指定帳號的 passwordHash（還原為純 OAuth 狀態），
+ * 供「純 OAuth 使用者設定密碼」E2E 在測試間還原狀態。
+ */
+export async function clearUserPassword(email: string): Promise<void> {
+  // updateMany so it's a no-op (not an error) when the user doesn't exist yet.
+  await prisma.user.updateMany({
+    where: { email },
+    data: { passwordHash: null },
+  })
+}
+
+/**
  * 清除指定 binderId 的 shareToken（撤銷分享），供分享 E2E 測試清理用。
  */
 export async function clearBinderShareToken(binderId: string): Promise<void> {

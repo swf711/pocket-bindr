@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/card'
 import { UsernameForm } from './username-form'
 import { PasswordForm } from './password-form'
+import { SetPasswordForm } from './set-password-form'
 import { OAuthProvidersSection } from './oauth-providers-section'
 import { DeleteAccountSection } from './delete-account-section'
 import type { UserSettingsData } from '@/types/user'
@@ -61,11 +62,10 @@ export function SettingsClient({
       <div className='grid md:grid-cols-2 gap-4'>
         <Card>
           <CardHeader>
-            <CardTitle>用戶名稱</CardTitle>
-            <CardDescription>目前 Email：{email ?? '（未設定）'}</CardDescription>
+            <CardTitle>用戶資料</CardTitle>
           </CardHeader>
           <CardContent>
-            <UsernameForm username={username} />
+            <UsernameForm username={username} email={email} />
           </CardContent>
         </Card>
 
@@ -76,6 +76,32 @@ export function SettingsClient({
             </CardHeader>
             <CardContent>
               <PasswordForm />
+            </CardContent>
+          </Card>
+        )}
+
+        {!hasPassword && email != null && (
+          <Card>
+            <CardHeader>
+              <CardTitle>設定密碼</CardTitle>
+              <CardDescription>設定後可使用 Email + 密碼登入</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <SetPasswordForm />
+            </CardContent>
+          </Card>
+        )}
+
+        {!hasPassword && email == null && (
+          <Card>
+            <CardHeader>
+              <CardTitle>設定密碼</CardTitle>
+              <CardDescription>需先設定 Email 才能設定密碼登入</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">
+                您的帳號目前沒有 Email，無法以密碼登入。請先綁定具有 Email 的社群帳號。
+              </p>
             </CardContent>
           </Card>
         )}
