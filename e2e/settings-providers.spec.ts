@@ -26,22 +26,21 @@ test('點擊連結按鈕觸發 initiate POST，進入 loading 狀態', async ({ 
   await page.goto('/settings')
   await page.waitForURL('/settings')
 
-  await page.route('/api/auth/link/google/initiate', (route) =>
-    route.fulfill({
+  // 延遲 initiate 回應：handleLink 先同步 setLinkingProvider（按鈕立即 disabled）才 await 此 fetch，
+  // 故在 fetch pending 期間按鈕穩定維持 disabled，可在此視窗內斷言；待回應 resolve 後才
+  // window.location.href 導離。如此完全避開「disabled 態」與「導向」的競態（原測試 fetch 即時 resolve
+  // 致導向幾乎與 click 同時發生 → 按鈕被銷毀 → flaky）。
+  await page.route('/api/auth/link/google/initiate', async (route) => {
+    await new Promise((r) => setTimeout(r, 1500))
+    await route.fulfill({
       status: 200,
       contentType: 'application/json',
       body: JSON.stringify({ authUrl: 'https://accounts.google.com/mock-auth-url' }),
     })
-  )
-
-  // 攔截外部導向，避免真正跳離
-  let navigated = false
-  page.on('request', (req) => {
-    if (req.url().includes('accounts.google.com')) navigated = true
   })
 
   await page.getByTestId('google-link-btn').click()
-  // 按鈕進入 disabled loading 狀態
+  // 按鈕進入 disabled loading 狀態（fetch pending 期間）
   await expect(page.getByTestId('google-link-btn')).toBeDisabled()
 })
 

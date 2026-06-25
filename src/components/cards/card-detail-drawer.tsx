@@ -344,7 +344,7 @@ function AddToBinderSection({
 
   if (isGuest) {
     return (
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-3" onPointerDown={(e) => e.stopPropagation()}>
         <p className="text-sm text-muted-foreground">請先登入以加入卡冊</p>
         <Button
           data-testid="modal-add-btn"
@@ -377,7 +377,10 @@ function AddToBinderSection({
 
   if (noBinders) {
     return (
-      <div className="flex flex-col gap-3">
+      // vaul Drawer 內容可拖曳，pointerdown 會被 vaul 當拖曳手勢攔截而吞掉按鈕 click
+      // （負載下偶發，致「建立卡冊」未開啟巢狀 CreateBinderDialog）。stopPropagation
+      // 阻止 vaul 接到此互動區的 pointerdown，與卡圖 overlay（見上方）同一 pattern。
+      <div className="flex flex-col gap-3" onPointerDown={(e) => e.stopPropagation()}>
         <p className="text-sm text-muted-foreground">尚無卡冊</p>
         <Button onClick={() => setCreateOpen(true)}>建立卡冊</Button>
         <CreateBinderDialog
@@ -408,7 +411,7 @@ function AddToBinderSection({
   }
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-3" onPointerDown={(e) => e.stopPropagation()}>
       <div>
         <p className="text-xs text-muted-foreground mb-1">卡冊</p>
         <Select value={selectedBinderId} onValueChange={setSelectedBinderId}>
