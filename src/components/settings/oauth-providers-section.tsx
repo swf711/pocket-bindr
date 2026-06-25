@@ -54,7 +54,7 @@ export function OAuthProvidersSection({ linkedProviders, hasPassword }: OAuthPro
         return
       }
       const { authUrl } = await res.json() as { authUrl: string }
-      window.location.href = authUrl
+      window.location.assign(authUrl)
       // 不 reset：頁面即將導離，維持 loading 狀態
     } catch {
       toast.error('連結失敗，請再試一次')

@@ -69,7 +69,7 @@ const validBody = { pageNumber: 1, slotIndex: 0, cardId: 'c1', status: 'owned' }
 describe('POST /api/binders/[id]/slots', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    vi.mocked(prisma.$transaction).mockImplementation(async (cb) => cb(prisma as any))
+    vi.mocked(prisma.$transaction).mockImplementation(async (cb) => cb(prisma as never))
   })
 
   it('未登入回傳 401', async () => {
@@ -124,7 +124,7 @@ describe('POST /api/binders/[id]/slots', () => {
   it('該位置已有格位回傳 400', async () => {
     mockAuth.mockResolvedValue({ user: { id: 'u1' } })
     vi.mocked(prisma.binder.findUnique).mockResolvedValue(mockBinder)
-    vi.mocked(prisma.binderSlot.findUnique).mockResolvedValue({ id: 'existing' } as any)
+    vi.mocked(prisma.binderSlot.findUnique).mockResolvedValue({ id: 'existing' } as never)
     const res = await POST(makeRequest(validBody), makeContext('b1'))
     expect(res.status).toBe(400)
   })
@@ -144,7 +144,7 @@ describe('POST /api/binders/[id]/slots', () => {
     vi.mocked(prisma.binderSlot.findUnique).mockResolvedValue(null)
     vi.mocked(prisma.card.findUnique).mockResolvedValue({ id: 'c1', isCollectible: true, canonicalCardId: null } as never)
     vi.mocked(prisma.userCard.upsert).mockResolvedValue(mockUserCard)
-    vi.mocked(prisma.binderSlot.create).mockResolvedValue(mockCreatedSlot as any)
+    vi.mocked(prisma.binderSlot.create).mockResolvedValue(mockCreatedSlot as never)
 
     const res = await POST(makeRequest(validBody), makeContext('b1'))
     expect(res.status).toBe(200)
@@ -173,7 +173,7 @@ describe('POST /api/binders/[id]/slots', () => {
     vi.mocked(prisma.binderSlot.findUnique).mockResolvedValue(null)
     vi.mocked(prisma.card.findUnique).mockResolvedValue({ id: 'c1', isCollectible: true, canonicalCardId: null } as never)
     vi.mocked(prisma.userCard.upsert).mockResolvedValue({ ...mockUserCard, quantity: 2 })
-    vi.mocked(prisma.binderSlot.create).mockResolvedValue(mockCreatedSlot as any)
+    vi.mocked(prisma.binderSlot.create).mockResolvedValue(mockCreatedSlot as never)
 
     await POST(makeRequest(validBody), makeContext('b1'))
 
@@ -190,7 +190,7 @@ describe('POST /api/binders/[id]/slots', () => {
       .mockResolvedValueOnce({ id: 'zhtw-c1', isCollectible: false, canonicalCardId: 'ja-c1' } as never)
       .mockResolvedValueOnce({ id: 'ja-c1', isCollectible: true, canonicalCardId: null } as never)
     vi.mocked(prisma.userCard.upsert).mockResolvedValue({ ...mockUserCard, cardId: 'ja-c1' })
-    vi.mocked(prisma.binderSlot.create).mockResolvedValue(mockCreatedSlot as any)
+    vi.mocked(prisma.binderSlot.create).mockResolvedValue(mockCreatedSlot as never)
 
     await POST(makeRequest({ ...validBody, cardId: 'zhtw-c1' }), makeContext('b1'))
 

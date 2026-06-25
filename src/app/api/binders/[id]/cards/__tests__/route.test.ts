@@ -77,7 +77,7 @@ describe('POST /api/binders/[id]/cards', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     // Default: $transaction calls the callback with prisma as tx
-    vi.mocked(prisma.$transaction).mockImplementation(async (cb) => cb(prisma as any))
+    vi.mocked(prisma.$transaction).mockImplementation(async (cb) => cb(prisma as never))
   })
 
   it('未登入回傳 401', async () => {
@@ -156,7 +156,7 @@ describe('POST /api/binders/[id]/cards', () => {
     const emptySlot1 = { id: 'slot1', binderId: 'b1', cardId: null, status: null, pageNumber: 1, slotIndex: 0, createdAt: new Date() }
     const emptySlot2 = { id: 'slot2', binderId: 'b1', cardId: null, status: null, pageNumber: 1, slotIndex: 1, createdAt: new Date() }
     vi.mocked(prisma.binderSlot.findMany).mockResolvedValue([emptySlot1, emptySlot2])
-    vi.mocked(prisma.binderSlot.update).mockResolvedValue(emptySlot1 as any)
+    vi.mocked(prisma.binderSlot.update).mockResolvedValue(emptySlot1 as never)
     vi.mocked(prisma.userCard.upsert).mockResolvedValue(mockUserCard)
 
     await POST(makeRequest({ cardId: 'c1', status: 'owned', quantity: 2 }), makeContext('b1'))
@@ -174,10 +174,10 @@ describe('POST /api/binders/[id]/cards', () => {
     // Only 1 empty slot exists, but we're adding 3
     const emptySlot = { id: 'slot1', binderId: 'b1', cardId: null, status: null, pageNumber: 1, slotIndex: 0, createdAt: new Date() }
     vi.mocked(prisma.binderSlot.findMany).mockResolvedValue([emptySlot])
-    vi.mocked(prisma.binderSlot.update).mockResolvedValue(emptySlot as any)
+    vi.mocked(prisma.binderSlot.update).mockResolvedValue(emptySlot as never)
 
     const lastSlot = { id: 'slotLast', binderId: 'b1', cardId: 'other', status: 'owned', pageNumber: 1, slotIndex: 2, createdAt: new Date() }
-    vi.mocked(prisma.binderSlot.findFirst).mockResolvedValue(lastSlot as any)
+    vi.mocked(prisma.binderSlot.findFirst).mockResolvedValue(lastSlot as never)
     vi.mocked(prisma.binderSlot.createMany).mockResolvedValue({ count: 2 })
     vi.mocked(prisma.userCard.upsert).mockResolvedValue({ ...mockUserCard, quantity: 3 })
 

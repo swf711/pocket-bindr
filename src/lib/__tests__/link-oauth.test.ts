@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { createHmac } from 'crypto'
 
 vi.stubEnv('LINK_STATE_SECRET', 'test-secret-32-chars-long-enough!')
 vi.stubEnv('GOOGLE_CLIENT_ID', 'google-client-id')
@@ -64,7 +65,6 @@ describe('createLinkState / verifyLinkState', () => {
     const payload = verifyLinkState(state)
     // Manually rebuild an expired state
     const expiredPayload = { ...payload, exp: Date.now() - 1 }
-    const { createHmac } = require('crypto') as typeof import('crypto')
     const data = Buffer.from(JSON.stringify(expiredPayload)).toString('base64url')
     const sig = createHmac('sha256', 'test-secret-32-chars-long-enough!').update(data).digest('hex')
     const expiredState = `${data}.${sig}`
