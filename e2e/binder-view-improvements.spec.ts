@@ -56,6 +56,27 @@ test.describe('卡冊詳情頁改善', () => {
     }
   })
 
+  test('Settings Drawer 修改描述儲存後封面面板即時更新', async ({ page }) => {
+    await loginAs(page, USER)
+    const userId = await getUserIdByEmail(USER.email)
+    const { binder } = await createMultiPageBinder(userId, { pageCount: 1 })
+    try {
+      await page.goto(`/binders/${binder.id}`)
+      const coverPanel = page.getByTestId('binder-cover-panel').first()
+      await expect(coverPanel).toBeVisible()
+
+      const desc = `即時更新描述-${Date.now()}`
+      await page.getByTestId('binder-settings-btn').first().click()
+      await page.locator('#drawer-binder-description').fill(desc)
+      await page.getByRole('button', { name: '儲存設定' }).click()
+
+      // 不重新整理，封面面板即顯示新描述
+      await expect(coverPanel.getByText(desc)).toBeVisible()
+    } finally {
+      await cleanupBinder(binder.id)
+    }
+  })
+
   test('Settings Drawer 內頁列表顯示拖拉 handle', async ({ page }) => {
     await loginAs(page, USER)
     const userId = await getUserIdByEmail(USER.email)

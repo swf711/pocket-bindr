@@ -63,6 +63,7 @@ interface BinderSettingsDrawerProps {
     name: string
     gridType: GridType
     coverColor: string
+    description?: string | null
     newSlots?: SlotWithCard[]
     newTotalPages?: number
   }) => void
@@ -217,12 +218,13 @@ export function BinderSettingsDrawer({
           name,
           gridType: localGridType,
           coverColor: localCoverColor,
+          description: description || null,
           newSlots: refreshData.slots,
           newTotalPages,
         })
         toast(`格式已更新，${affectedSlotsCount} 張卡牌已搬移至第 ${totalPages + 1}～${newTotalPages} 頁`)
       } else {
-        onSettingsUpdate({ name, gridType: localGridType, coverColor: localCoverColor })
+        onSettingsUpdate({ name, gridType: localGridType, coverColor: localCoverColor, description: description || null })
         toast('設定已儲存')
       }
     } catch (err) {
