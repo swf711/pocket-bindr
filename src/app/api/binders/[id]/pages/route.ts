@@ -1,6 +1,7 @@
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { MAX_PAGES_PER_BINDER } from '@/lib/binder-limits'
+import { revalidatePublicBinder } from '@/lib/binder-cache'
 
 type RouteContext = { params: Promise<{ id: string }> }
 
@@ -47,5 +48,6 @@ export async function POST(_request: Request, context: RouteContext) {
     data: { settings: { ...settings, totalPages: newTotalPages } },
   })
 
+  revalidatePublicBinder(binder!.shareToken)
   return Response.json({ totalPages: newTotalPages })
 }

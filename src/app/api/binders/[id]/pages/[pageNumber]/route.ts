@@ -1,6 +1,7 @@
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { decrementUserCardsForSlots } from '@/lib/binder-utils'
+import { revalidatePublicBinder } from '@/lib/binder-cache'
 
 type RouteContext = { params: Promise<{ id: string; pageNumber: string }> }
 
@@ -106,5 +107,6 @@ export async function DELETE(_request: Request, context: RouteContext) {
     })
   })
 
+  revalidatePublicBinder(binder!.shareToken)
   return Response.json({ totalPages: newTotalPages, slots })
 }

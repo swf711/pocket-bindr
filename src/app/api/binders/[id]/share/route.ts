@@ -1,6 +1,7 @@
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { generateShareToken } from '@/lib/share-token'
+import { revalidatePublicBinder } from '@/lib/binder-cache'
 
 type RouteContext = { params: Promise<{ id: string }> }
 
@@ -32,6 +33,7 @@ export async function POST(_request: Request, context: RouteContext) {
 
   const shareToken = generateShareToken()
   await prisma.binder.update({ where: { id }, data: { shareToken } })
+  revalidatePublicBinder(shareToken)
 
   const shareUrl = `${process.env.NEXTAUTH_URL}/b/${shareToken}`
   return Response.json({ shareToken, shareUrl })
@@ -44,9 +46,11 @@ export async function DELETE(_request: Request, context: RouteContext) {
   }
 
   const { id } = await context.params
-  const { error } = await getBinderOrError(id, session.user.id)
+  const { binder, error } = await getBinderOrError(id, session.user.id)
   if (error) return error
 
+  const oldToken = binder!.shareToken
   await prisma.binder.update({ where: { id }, data: { shareToken: null } })
+  revalidatePublicBinder(oldToken)
   return Response.json({ ok: true })
 }

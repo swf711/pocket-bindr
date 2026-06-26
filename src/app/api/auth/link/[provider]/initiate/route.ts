@@ -8,15 +8,27 @@ import {
   getCallbackUrl,
   makeLinkStateCookie,
 } from '@/lib/link-oauth'
+import { linkIpLimiter, linkUserLimiter } from '@/lib/rate-limit'
 import type { SupportedOAuthProvider } from '@/types/user'
 
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ provider: string }> }
 ) {
+  const ip = (request.headers.get('x-forwarded-for') ?? '127.0.0.1').split(',')[0].trim()
+  const ipResult = await linkIpLimiter.limit(ip)
+  if (!ipResult.success) {
+    return Response.json({ error: 'RATE_LIMITED' }, { status: 429 })
+  }
+
   const session = await auth()
   if (!session?.user?.id) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  const userResult = await linkUserLimiter.limit(session.user.id)
+  if (!userResult.success) {
+    return Response.json({ error: 'RATE_LIMITED' }, { status: 429 })
   }
 
   const { provider } = await params

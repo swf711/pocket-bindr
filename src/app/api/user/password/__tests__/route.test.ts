@@ -22,6 +22,13 @@ vi.mock('bcryptjs', () => ({
   },
 }))
 
+vi.mock('@/lib/rate-limit', () => ({
+  passwordChangeIpLimiter: { limit: vi.fn().mockResolvedValue({ success: true }) },
+  passwordChangeUserLimiter: { limit: vi.fn().mockResolvedValue({ success: true }) },
+  passwordSetIpLimiter: { limit: vi.fn().mockResolvedValue({ success: true }) },
+  passwordSetUserLimiter: { limit: vi.fn().mockResolvedValue({ success: true }) },
+}))
+
 import { PATCH, POST } from '../route'
 import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'

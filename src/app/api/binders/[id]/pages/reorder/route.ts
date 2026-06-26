@@ -1,5 +1,6 @@
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { revalidatePublicBinder } from '@/lib/binder-cache'
 
 type RouteContext = { params: Promise<{ id: string }> }
 
@@ -20,7 +21,7 @@ export async function PATCH(request: Request, context: RouteContext) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 })
   }
   const { id } = await context.params
-  const { error } = await getBinderOrError(id, session.user.id)
+  const { binder, error } = await getBinderOrError(id, session.user.id)
   if (error) return error
 
   let body: unknown
@@ -87,5 +88,6 @@ export async function PATCH(request: Request, context: RouteContext) {
     })
   })
 
+  revalidatePublicBinder(binder!.shareToken)
   return Response.json({ slots })
 }

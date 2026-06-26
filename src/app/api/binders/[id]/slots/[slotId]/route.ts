@@ -1,6 +1,7 @@
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { decrementUserCardsForSlots } from '@/lib/binder-utils'
+import { revalidatePublicBinder } from '@/lib/binder-cache'
 
 type RouteContext = { params: Promise<{ id: string; slotId: string }> }
 
@@ -26,7 +27,7 @@ export async function DELETE(_request: Request, context: RouteContext) {
   }
   const userId = session.user.id
   const { id: binderId, slotId } = await context.params
-  const { slot, error } = await getBinderAndSlot(binderId, slotId, userId)
+  const { binder, slot, error } = await getBinderAndSlot(binderId, slotId, userId)
   if (error) return error
 
   await prisma.$transaction(async (tx) => {
@@ -34,6 +35,7 @@ export async function DELETE(_request: Request, context: RouteContext) {
     await decrementUserCardsForSlots(tx, userId, [slot!])
   })
 
+  revalidatePublicBinder(binder!.shareToken)
   return Response.json({ deleted: true })
 }
 
@@ -43,7 +45,7 @@ export async function PATCH(request: Request, context: RouteContext) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 })
   }
   const { id: binderId, slotId } = await context.params
-  const { error } = await getBinderAndSlot(binderId, slotId, session.user.id)
+  const { binder, error } = await getBinderAndSlot(binderId, slotId, session.user.id)
   if (error) return error
 
   let body: unknown
@@ -63,5 +65,6 @@ export async function PATCH(request: Request, context: RouteContext) {
     data: { pageNumber, slotIndex },
     select: { id: true, pageNumber: true, slotIndex: true },
   })
+  revalidatePublicBinder(binder!.shareToken)
   return Response.json(updated)
 }

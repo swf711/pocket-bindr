@@ -15,6 +15,10 @@ vi.mock('@/lib/share-token', () => ({
   generateShareToken: vi.fn(() => 'abc123deadbeef0011223344556677ff'),
 }))
 
+vi.mock('@/lib/binder-cache', () => ({
+  revalidatePublicBinder: vi.fn(),
+}))
+
 import { POST, DELETE } from '../route'
 import { prisma } from '@/lib/prisma'
 

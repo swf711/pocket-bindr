@@ -3,6 +3,7 @@ import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { computeSlotMigration, decrementUserCardsForSlots } from '@/lib/binder-utils'
 import { GRID_TYPE_SLOTS } from '@/types/binder'
+import { revalidatePublicBinder } from '@/lib/binder-cache'
 
 const HEX_COLOR_RE = /^#[0-9A-Fa-f]{6}$/
 
@@ -176,6 +177,7 @@ export async function PATCH(request: Request, context: RouteContext) {
       ])
 
       affectedSlotsCount = migrations.length
+      revalidatePublicBinder(currentBinder!.shareToken)
       return Response.json({ ...updated, affectedSlotsCount })
     }
   }
@@ -186,6 +188,7 @@ export async function PATCH(request: Request, context: RouteContext) {
     include: { _count: { select: { slots: true } } },
   })
 
+  revalidatePublicBinder(currentBinder!.shareToken)
   return Response.json(updated)
 }
 
@@ -197,7 +200,7 @@ export async function DELETE(_request: Request, context: RouteContext) {
   const userId = session.user.id
   const { id } = await context.params
 
-  const { error } = await getBinderOrError(id, userId)
+  const { binder, error } = await getBinderOrError(id, userId)
   if (error) return error
 
   await prisma.$transaction(async (tx) => {
@@ -209,5 +212,6 @@ export async function DELETE(_request: Request, context: RouteContext) {
     await tx.binder.delete({ where: { id } })
   })
 
+  revalidatePublicBinder(binder!.shareToken)
   return new Response(null, { status: 204 })
 }

@@ -3,6 +3,11 @@ import { NextRequest } from 'next/server'
 
 vi.mock('@/lib/auth-utils', () => ({ registerUser: vi.fn() }))
 
+vi.mock('@/lib/rate-limit', () => ({
+  registerIpLimiter: { limit: vi.fn().mockResolvedValue({ success: true }) },
+  registerEmailLimiter: { limit: vi.fn().mockResolvedValue({ success: true }) },
+}))
+
 import { POST } from '../route'
 import { registerUser } from '@/lib/auth-utils'
 

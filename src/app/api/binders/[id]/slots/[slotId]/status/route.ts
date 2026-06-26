@@ -1,6 +1,7 @@
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { CardStatus } from '@prisma/client'
+import { revalidatePublicBinder } from '@/lib/binder-cache'
 
 type RouteContext = { params: Promise<{ id: string; slotId: string }> }
 
@@ -48,5 +49,6 @@ export async function PATCH(_request: Request, context: RouteContext) {
     })
   })
 
+  revalidatePublicBinder(binder.shareToken)
   return Response.json({ id: slotId, status: newStatus })
 }

@@ -2,12 +2,29 @@ import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { isPasswordValid } from '@/lib/password-policy'
 import bcrypt from 'bcryptjs'
+import {
+  passwordChangeIpLimiter,
+  passwordChangeUserLimiter,
+  passwordSetIpLimiter,
+  passwordSetUserLimiter,
+} from '@/lib/rate-limit'
 
 export async function PATCH(request: Request) {
   try {
+    const ip = (request.headers.get('x-forwarded-for') ?? '127.0.0.1').split(',')[0].trim()
+    const ipResult = await passwordChangeIpLimiter.limit(ip)
+    if (!ipResult.success) {
+      return Response.json({ error: 'RATE_LIMITED' }, { status: 429 })
+    }
+
     const session = await auth()
     if (!session?.user?.id) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const userResult = await passwordChangeUserLimiter.limit(session.user.id)
+    if (!userResult.success) {
+      return Response.json({ error: 'RATE_LIMITED' }, { status: 429 })
     }
 
     const body = await request.json()
@@ -56,9 +73,20 @@ export async function PATCH(request: Request) {
 // currentPassword required, only allowed when passwordHash is null.
 export async function POST(request: Request) {
   try {
+    const ip = (request.headers.get('x-forwarded-for') ?? '127.0.0.1').split(',')[0].trim()
+    const ipResult = await passwordSetIpLimiter.limit(ip)
+    if (!ipResult.success) {
+      return Response.json({ error: 'RATE_LIMITED' }, { status: 429 })
+    }
+
     const session = await auth()
     if (!session?.user?.id) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const userResult = await passwordSetUserLimiter.limit(session.user.id)
+    if (!userResult.success) {
+      return Response.json({ error: 'RATE_LIMITED' }, { status: 429 })
     }
 
     const body = await request.json()

@@ -1,39 +1,50 @@
+import { unstable_cache } from 'next/cache'
 import { notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
+import { publicBinderTag } from '@/lib/binder-cache'
 import { BinderPublicView } from '@/components/binder/binder-public-view'
 import type { BinderPublicData } from '@/types/binder'
+
+function fetchPublicBinder(token: string) {
+  return unstable_cache(
+    () =>
+      prisma.binder.findUnique({
+        where: { shareToken: token },
+        include: {
+          user: { select: { username: true } },
+          slots: {
+            where: { cardId: { not: null } },
+            orderBy: [{ pageNumber: 'asc' }, { slotIndex: 'asc' }],
+            select: {
+              id: true,
+              binderId: true,
+              cardId: true,
+              pageNumber: true,
+              slotIndex: true,
+              status: true,
+              card: {
+                select: {
+                  id: true,
+                  name: true,
+                  imageSmall: true,
+                  language: true,
+                  cardNumber: true,
+                  rarity: true,
+                },
+              },
+            },
+          },
+        },
+      }),
+    ['binder-public', token],
+    { revalidate: 300, tags: [publicBinderTag(token)] },
+  )()
+}
 
 export default async function PublicBinderPage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params
 
-  const binder = await prisma.binder.findUnique({
-    where: { shareToken: token },
-    include: {
-      user: { select: { username: true } },
-      slots: {
-        where: { cardId: { not: null } },
-        orderBy: [{ pageNumber: 'asc' }, { slotIndex: 'asc' }],
-        select: {
-          id: true,
-          binderId: true,
-          cardId: true,
-          pageNumber: true,
-          slotIndex: true,
-          status: true,
-          card: {
-            select: {
-              id: true,
-              name: true,
-              imageSmall: true,
-              language: true,
-              cardNumber: true,
-              rarity: true,
-            },
-          },
-        },
-      },
-    },
-  })
+  const binder = await fetchPublicBinder(token)
 
   if (!binder) notFound()
 

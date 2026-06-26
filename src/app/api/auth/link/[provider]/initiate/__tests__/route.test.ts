@@ -27,6 +27,11 @@ vi.mock('@/lib/link-oauth', () => ({
   makeLinkStateCookie: mockMakeCookie,
 }))
 
+vi.mock('@/lib/rate-limit', () => ({
+  linkIpLimiter: { limit: vi.fn().mockResolvedValue({ success: true }) },
+  linkUserLimiter: { limit: vi.fn().mockResolvedValue({ success: true }) },
+}))
+
 import { POST } from '../route'
 
 function makeRequest(provider: string) {

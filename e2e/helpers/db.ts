@@ -3,6 +3,23 @@ import bcrypt from 'bcryptjs'
 import { prisma } from '../../src/lib/prisma'
 import { TEST_USER } from './auth'
 
+// Only import Redis when UPSTASH_REDIS_REST_URL is set (CI may not have it).
+async function getRedis() {
+  if (!process.env.UPSTASH_REDIS_REST_URL) return null
+  const { Redis } = await import('@upstash/redis')
+  return new Redis({ url: process.env.UPSTASH_REDIS_REST_URL!, token: process.env.UPSTASH_REDIS_REST_TOKEN! })
+}
+
+/**
+ * Clear rate-limit sliding-window keys for a given prefix + identifier so
+ * rate-limit E2E tests start from a clean slate.
+ */
+export async function clearRateLimitKey(prefix: string, identifier: string): Promise<void> {
+  const r = await getRedis()
+  if (!r) return
+  await r.del(`${prefix}:${identifier}`)
+}
+
 /**
  * 清除指定 email 帳號的所有 user_cards 紀錄，
  * 確保收藏相關測試之間互不影響。

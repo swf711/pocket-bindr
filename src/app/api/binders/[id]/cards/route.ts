@@ -3,6 +3,7 @@ import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { GRID_TYPE_SLOTS } from '@/types/binder'
 import { resolveCanonicalCardId } from '@/lib/resolve-canonical-card'
+import { revalidatePublicBinder } from '@/lib/binder-cache'
 
 type RouteContext = { params: Promise<{ id: string }> }
 
@@ -140,6 +141,7 @@ export async function POST(request: Request, context: RouteContext) {
     return { userCard, updatedTotalPages }
   })
 
+  revalidatePublicBinder(binder.shareToken)
   return Response.json({
     slotsAdded: typedQuantity,
     userCard: {
