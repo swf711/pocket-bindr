@@ -60,7 +60,7 @@ describe('GET /api/collection', () => {
     vi.mocked(prisma.card.findMany).mockResolvedValue([mockCard] as never)
     vi.mocked(prisma.card.count).mockResolvedValue(1)
     vi.mocked(prisma.userCard.findMany).mockResolvedValue([
-      { cardId: 'card-1', status: 'owned', quantity: 2 },
+      { cardId: 'card-1', displayCardId: null, status: 'owned', quantity: 2 },
     ] as never)
   })
 
@@ -84,8 +84,8 @@ describe('GET /api/collection', () => {
   it('同卡 owned+wanted 兩徽章都亮', async () => {
     mockAuth.mockResolvedValue({ user: { id: 'u1' } })
     vi.mocked(prisma.userCard.findMany).mockResolvedValue([
-      { cardId: 'card-1', status: 'owned', quantity: 1 },
-      { cardId: 'card-1', status: 'wanted', quantity: 1 },
+      { cardId: 'card-1', displayCardId: null, status: 'owned', quantity: 1 },
+      { cardId: 'card-1', displayCardId: null, status: 'wanted', quantity: 1 },
     ] as never)
     const res = await GET(makeGetRequest())
     const data = await res.json()
@@ -93,11 +93,34 @@ describe('GET /api/collection', () => {
     expect(data.cards[0].collectionStatus.wanted).toBe(1)
   })
 
-  it('status=owned 傳入正確的 where 條件', async () => {
+  it('OPCG ZH_TW alias 收藏以顯示卡（displayCardId）為 key 聚合狀態', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'u1' } })
+    // 顯示卡為 ZH_TW alias（zhtw-1），其 UserCard.cardId 為 canonical JA、displayCardId 指向 zhtw-1
+    vi.mocked(prisma.card.findMany).mockResolvedValue([
+      { ...mockCard, id: 'zhtw-1', language: 'ZH_TW', isCollectible: false, canonicalCardId: 'ja-1' },
+    ] as never)
+    vi.mocked(prisma.userCard.findMany).mockResolvedValue([
+      { cardId: 'ja-1', displayCardId: 'zhtw-1', status: 'owned', quantity: 3 },
+    ] as never)
+    const res = await GET(makeGetRequest({ language: 'ZH_TW' }))
+    const data = await res.json()
+    expect(data.cards[0].id).toBe('zhtw-1')
+    expect(data.cards[0].collectionStatus.owned).toBe(3)
+  })
+
+  it('status=owned 傳入正確的 where 條件（兩個顯示身份分支都帶 status）', async () => {
     mockAuth.mockResolvedValue({ user: { id: 'u1' } })
     await GET(makeGetRequest({ status: 'owned' }))
     const call = vi.mocked(prisma.card.findMany).mock.calls[0][0]
-    expect((call?.where as { userCards?: { some?: { status?: string } } })?.userCards?.some?.status).toBe('owned')
+    const w = call?.where as {
+      OR?: Array<{
+        displayUserCards?: { some?: { status?: string } }
+        userCards?: { some?: { status?: string; displayCardId?: null } }
+      }>
+    }
+    expect(w?.OR?.[0]?.displayUserCards?.some?.status).toBe('owned')
+    expect(w?.OR?.[1]?.userCards?.some?.status).toBe('owned')
+    expect(w?.OR?.[1]?.userCards?.some?.displayCardId).toBeNull()
   })
 
   it('依 game / language / setId 篩選', async () => {
@@ -110,14 +133,15 @@ describe('GET /api/collection', () => {
     expect(w?.setId).toBe('set-1')
   })
 
-  it('q 以卡名 contains 或型號前綴篩選（insensitive）', async () => {
+  it('q 以卡名 contains 或型號前綴篩選（insensitive，置於 AND 不與顯示身份 OR 衝突）', async () => {
     mockAuth.mockResolvedValue({ user: { id: 'u1' } })
     await GET(makeGetRequest({ q: 'Pikachu' }))
     const call = vi.mocked(prisma.card.findMany).mock.calls[0][0]
-    const w = call?.where as { OR?: Array<{ name?: { contains: string }; externalId?: { startsWith: string } }> }
-    expect(w?.OR).toBeDefined()
-    expect(w?.OR?.[0]?.name?.contains).toBe('Pikachu')
-    expect(w?.OR?.[1]?.externalId?.startsWith).toBe('Pikachu')
+    const w = call?.where as { AND?: Array<{ OR?: Array<{ name?: { contains: string }; externalId?: { startsWith: string } }> }> }
+    const qOr = w?.AND?.[0]?.OR
+    expect(qOr).toBeDefined()
+    expect(qOr?.[0]?.name?.contains).toBe('Pikachu')
+    expect(qOr?.[1]?.externalId?.startsWith).toBe('Pikachu')
   })
 
   it('分頁：pageSize 上限 100、page 下限 1、totalPages 正確', async () => {
@@ -155,10 +179,16 @@ describe('GET /api/collection', () => {
     const res = await GET(makeGetRequest())
     const data = await res.json()
     expect(data.cards).toHaveLength(0)
-    // where 條件中 userCards.some.userId 必須是 u1
+    // 兩個顯示身份分支的 userId 都必須是 u1
     const call = vi.mocked(prisma.card.findMany).mock.calls[0][0]
-    const w = call?.where as { userCards?: { some?: { userId?: string } } }
-    expect(w?.userCards?.some?.userId).toBe('u1')
+    const w = call?.where as {
+      OR?: Array<{
+        displayUserCards?: { some?: { userId?: string } }
+        userCards?: { some?: { userId?: string } }
+      }>
+    }
+    expect(w?.OR?.[0]?.displayUserCards?.some?.userId).toBe('u1')
+    expect(w?.OR?.[1]?.userCards?.some?.userId).toBe('u1')
   })
 })
 
@@ -198,7 +228,7 @@ describe('POST /api/collection', () => {
     expect(data).toEqual({ success: true, cardId: 'c1', status: 'owned' })
     expect(prisma.userCard.upsert).toHaveBeenCalledWith({
       where: { userId_cardId_status: { userId: 'u1', cardId: 'c1', status: 'owned' } },
-      create: { userId: 'u1', cardId: 'c1', status: 'owned' },
+      create: { userId: 'u1', cardId: 'c1', status: 'owned', displayCardId: null },
       update: { status: 'owned' },
     })
   })
@@ -242,6 +272,23 @@ describe('POST /api/collection', () => {
     expect(prisma.userCard.upsert).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({ userId_cardId_status: expect.objectContaining({ cardId: 'ja-card-1' }) }),
+        // 保留原始顯示語言：displayCardId 記原始 alias id
+        create: expect.objectContaining({ cardId: 'ja-card-1', displayCardId: 'zhtw-alias-id' }),
+      })
+    )
+  })
+
+  it('collectible 卡：create 的 displayCardId 為 null（純 canonical 加入）', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'u1' } })
+    vi.mocked(prisma.userCard.upsert).mockResolvedValue({
+      id: 'uc1', userId: 'u1', cardId: 'c1', status: 'owned',
+      quantity: 1, condition: null, notes: null,
+      createdAt: new Date(), updatedAt: new Date(),
+    } as never)
+    await POST(makeRequest({ cardId: 'c1', status: 'owned' }))
+    expect(prisma.userCard.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        create: expect.objectContaining({ displayCardId: null }),
       })
     )
   })

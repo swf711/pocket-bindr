@@ -65,6 +65,7 @@ const mockUserCard = {
   id: 'uc1',
   userId: 'u1',
   cardId: 'c1',
+  displayCardId: null,
   status: 'owned' as const,
   quantity: 1,
   condition: null,
@@ -143,7 +144,7 @@ describe('POST /api/binders/[id]/cards', () => {
 
     expect(prisma.userCard.upsert).toHaveBeenCalledWith({
       where: { userId_cardId_status: { userId: 'u1', cardId: 'c1', status: 'owned' } },
-      create: { userId: 'u1', cardId: 'c1', status: 'owned', quantity: 2 },
+      create: { userId: 'u1', cardId: 'c1', status: 'owned', quantity: 2, displayCardId: null },
       update: { quantity: { increment: 2 } },
     })
   })
@@ -153,8 +154,8 @@ describe('POST /api/binders/[id]/cards', () => {
     vi.mocked(prisma.binder.findUnique).mockResolvedValue(mockBinder)
     vi.mocked(prisma.card.findUnique).mockResolvedValue(mockCard)
 
-    const emptySlot1 = { id: 'slot1', binderId: 'b1', cardId: null, status: null, pageNumber: 1, slotIndex: 0, createdAt: new Date() }
-    const emptySlot2 = { id: 'slot2', binderId: 'b1', cardId: null, status: null, pageNumber: 1, slotIndex: 1, createdAt: new Date() }
+    const emptySlot1 = { id: 'slot1', binderId: 'b1', cardId: null, displayCardId: null, status: null, pageNumber: 1, slotIndex: 0, createdAt: new Date() }
+    const emptySlot2 = { id: 'slot2', binderId: 'b1', cardId: null, displayCardId: null, status: null, pageNumber: 1, slotIndex: 1, createdAt: new Date() }
     vi.mocked(prisma.binderSlot.findMany).mockResolvedValue([emptySlot1, emptySlot2])
     vi.mocked(prisma.binderSlot.update).mockResolvedValue(emptySlot1 as never)
     vi.mocked(prisma.userCard.upsert).mockResolvedValue(mockUserCard)
@@ -172,11 +173,11 @@ describe('POST /api/binders/[id]/cards', () => {
     vi.mocked(prisma.card.findUnique).mockResolvedValue(mockCard)
 
     // Only 1 empty slot exists, but we're adding 3
-    const emptySlot = { id: 'slot1', binderId: 'b1', cardId: null, status: null, pageNumber: 1, slotIndex: 0, createdAt: new Date() }
+    const emptySlot = { id: 'slot1', binderId: 'b1', cardId: null, displayCardId: null, status: null, pageNumber: 1, slotIndex: 0, createdAt: new Date() }
     vi.mocked(prisma.binderSlot.findMany).mockResolvedValue([emptySlot])
     vi.mocked(prisma.binderSlot.update).mockResolvedValue(emptySlot as never)
 
-    const lastSlot = { id: 'slotLast', binderId: 'b1', cardId: 'other', status: 'owned', pageNumber: 1, slotIndex: 2, createdAt: new Date() }
+    const lastSlot = { id: 'slotLast', binderId: 'b1', cardId: 'other', displayCardId: null, status: 'owned', pageNumber: 1, slotIndex: 2, createdAt: new Date() }
     vi.mocked(prisma.binderSlot.findFirst).mockResolvedValue(lastSlot as never)
     vi.mocked(prisma.binderSlot.createMany).mockResolvedValue({ count: 2 })
     vi.mocked(prisma.userCard.upsert).mockResolvedValue({ ...mockUserCard, quantity: 3 })
@@ -232,8 +233,14 @@ describe('POST /api/binders/[id]/cards', () => {
     expect(prisma.userCard.upsert).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({ userId_cardId_status: expect.objectContaining({ cardId: 'ja-c1' }) }),
+        // 保留原始顯示語言：displayCardId 記原始 alias id
+        create: expect.objectContaining({ cardId: 'ja-c1', displayCardId: 'zhtw-c1' }),
       })
     )
+    // 建立的格位亦帶 displayCardId（逐格還原顯示語言）
+    const createManyArg = vi.mocked(prisma.binderSlot.createMany).mock.calls[0]?.[0]
+    const createdSlots = createManyArg?.data as Array<{ displayCardId?: string | null }>
+    expect(createdSlots[0]?.displayCardId).toBe('zhtw-c1')
   })
 
   it('alias 卡 canonical 不存在時回傳 404', async () => {

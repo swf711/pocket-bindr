@@ -3,7 +3,8 @@ import { prisma } from '@/lib/prisma'
 import { auth } from '@/lib/auth'
 import { CardStatus, Game, Language, Prisma } from '@prisma/client'
 import { parseLanguage } from '@/lib/language'
-import { getCollectionStatusMap } from '@/lib/card-collection-status'
+import { deriveDisplayCardId } from '@/lib/resolve-canonical-card'
+import { getDisplayCollectionStatusMap } from '@/lib/card-collection-status'
 
 const validStatuses: string[] = Object.values(CardStatus)
 
@@ -37,20 +38,26 @@ export async function GET(req: NextRequest) {
     }
   }
 
+  // 以「顯示身份」聚合：一張 Card 是某收藏的顯示卡，當
+  // (1) 它是 alias 且被 UserCard.displayCardId 指向（OPCG ZH_TW 經 alias 加入），或
+  // (2) 它被直接加入（UserCard.cardId = 自身、displayCardId = null，含遷移前既有資料）。
+  const userCardFilter = statusParam ? { userId, status: statusParam as CardStatus } : { userId }
   const where: Prisma.CardWhereInput = {
-    userCards: {
-      some: {
-        userId,
-        ...(statusParam ? { status: statusParam as CardStatus } : {}),
-      },
-    },
+    OR: [
+      { displayUserCards: { some: userCardFilter } },
+      { userCards: { some: { ...userCardFilter, displayCardId: null } } },
+    ],
     ...(gameParam ? { game: gameParam as Game } : {}),
     ...(language ? { language } : {}),
     ...(setId ? { setId } : {}),
     ...(q ? {
-      OR: [
-        { name: { contains: q, mode: 'insensitive' as const } },
-        { externalId: { startsWith: q, mode: 'insensitive' as const } },
+      AND: [
+        {
+          OR: [
+            { name: { contains: q, mode: 'insensitive' as const } },
+            { externalId: { startsWith: q, mode: 'insensitive' as const } },
+          ],
+        },
       ],
     } : {}),
   }
@@ -70,8 +77,8 @@ export async function GET(req: NextRequest) {
     prisma.card.count({ where }),
   ])
 
-  // includeCanonical=false: UserCard.cardId is always canonical already
-  const collectionMap = await getCollectionStatusMap(cards, userId, false)
+  // cards 為「顯示卡」，以 displayCardId ?? cardId 為 key 聚合狀態
+  const collectionMap = await getDisplayCollectionStatusMap(cards.map(c => c.id), userId)
 
   return Response.json({
     cards: cards.map(card => ({
@@ -111,6 +118,8 @@ export async function POST(req: Request) {
   const resolvedCardId = cardRecord && !cardRecord.isCollectible && cardRecord.canonicalCardId
     ? cardRecord.canonicalCardId
     : cardId
+  // 保留原始顯示語言：alias 加入時記下原 cardId（ZH_TW），純 canonical 則 null
+  const displayCardId = deriveDisplayCardId(cardId, resolvedCardId)
 
   if (status === null) {
     if (!deleteStatus || !validStatuses.includes(deleteStatus)) {
@@ -122,9 +131,10 @@ export async function POST(req: Request) {
     return Response.json({ success: true, cardId: resolvedCardId, status: null })
   }
 
+  // 首次寫入保留 displayCardId；既有紀錄（update）不覆蓋
   const userCard = await prisma.userCard.upsert({
     where: { userId_cardId_status: { userId, cardId: resolvedCardId, status } },
-    create: { userId, cardId: resolvedCardId, status },
+    create: { userId, cardId: resolvedCardId, status, displayCardId },
     update: { status },
   })
 

@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { publicBinderTag } from '@/lib/binder-cache'
 import { BinderPublicView } from '@/components/binder/binder-public-view'
+import { slotDisplaySelect, toDisplaySlot } from '@/lib/slot-display'
 import type { BinderPublicData } from '@/types/binder'
 
 function fetchPublicBinder(token: string) {
@@ -15,24 +16,7 @@ function fetchPublicBinder(token: string) {
           slots: {
             where: { cardId: { not: null } },
             orderBy: [{ pageNumber: 'asc' }, { slotIndex: 'asc' }],
-            select: {
-              id: true,
-              binderId: true,
-              cardId: true,
-              pageNumber: true,
-              slotIndex: true,
-              status: true,
-              card: {
-                select: {
-                  id: true,
-                  name: true,
-                  imageSmall: true,
-                  language: true,
-                  cardNumber: true,
-                  rarity: true,
-                },
-              },
-            },
+            select: slotDisplaySelect,
           },
         },
       }),
@@ -59,7 +43,7 @@ export default async function PublicBinderPage({ params }: { params: Promise<{ t
     coverColor: binder.coverColor,
     description: binder.description ?? null,
     settings: { totalPages },
-    slots: binder.slots.filter((s) => s.cardId !== null) as BinderPublicData['slots'],
+    slots: binder.slots.map(toDisplaySlot),
     ownerName: binder.user.username ?? 'TCG 玩家',
   }
 

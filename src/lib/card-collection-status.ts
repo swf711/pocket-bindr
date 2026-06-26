@@ -41,3 +41,40 @@ export async function getCollectionStatusMap(
   }
   return map
 }
+
+/**
+ * /collection 專用：以「顯示身份」（displayCardId ?? cardId）為 key 聚合收藏狀態。
+ * displayIds 為當頁顯示卡的 id 集合；OPCG ZH_TW alias 收藏的 UserCard.cardId 為
+ * canonical JA，但 displayCardId 指向 ZH_TW alias，故以 displayCardId ?? cardId 還原顯示身份。
+ */
+export async function getDisplayCollectionStatusMap(
+  displayIds: string[],
+  userId: string,
+): Promise<Record<string, CollectionEntry>> {
+  if (displayIds.length === 0) return {}
+
+  const userCards = await prisma.userCard.findMany({
+    where: {
+      userId,
+      OR: [
+        { displayCardId: { in: displayIds } },
+        { displayCardId: null, cardId: { in: displayIds } },
+      ],
+    },
+    select: { cardId: true, displayCardId: true, status: true, quantity: true },
+  })
+
+  const map: Record<string, CollectionEntry> = {}
+  for (const uc of userCards) {
+    const key = uc.displayCardId ?? uc.cardId
+    if (!map[key]) {
+      map[key] = { owned: null, wanted: null }
+    }
+    if (uc.status === 'owned') {
+      map[key].owned = uc.quantity
+    } else if (uc.status === 'wanted') {
+      map[key].wanted = uc.quantity
+    }
+  }
+  return map
+}

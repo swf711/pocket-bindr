@@ -2,6 +2,7 @@ import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { redirect } from 'next/navigation'
 import { BinderView } from '@/components/binder/binder-view'
+import { slotDisplaySelect, toDisplaySlot } from '@/lib/slot-display'
 import type { BinderDetailResponse, BinderSettings } from '@/types/binder'
 
 export default async function BinderDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -15,31 +16,14 @@ export default async function BinderDetailPage({ params }: { params: Promise<{ i
       slots: {
         where: { cardId: { not: null } },
         orderBy: [{ pageNumber: 'asc' }, { slotIndex: 'asc' }],
-        select: {
-          id: true,
-          binderId: true,
-          cardId: true,
-          pageNumber: true,
-          slotIndex: true,
-          status: true,
-          card: {
-            select: {
-              id: true,
-              name: true,
-              imageSmall: true,
-              language: true,
-              cardNumber: true,
-              rarity: true,
-            },
-          },
-        },
+        select: slotDisplaySelect,
       },
     },
   })
 
   if (!binder || binder.userId !== session.user.id) redirect('/binders')
 
-  const slots = binder.slots.filter((s) => s.cardId !== null) as BinderDetailResponse['slots']
+  const slots = binder.slots.map(toDisplaySlot)
   const rawSettings = binder.settings as BinderSettings | null
   const maxPageFromSlots = slots.reduce((max, s) => Math.max(max, s.pageNumber), 0)
   const totalPages = Math.max(rawSettings?.totalPages ?? 0, maxPageFromSlots, 1)

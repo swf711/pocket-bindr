@@ -48,6 +48,7 @@ const mockUserCard = {
   id: 'uc1',
   userId: 'u1',
   cardId: 'c1',
+  displayCardId: null,
   status: 'owned' as const,
   quantity: 1,
   condition: null,
@@ -56,12 +57,17 @@ const mockUserCard = {
   updatedAt: new Date(),
 }
 
+// 形狀對齊 slotDisplaySelect（含 displayCard）以供 toDisplaySlot 投影
 const mockCreatedSlot = {
   id: 'slot1',
+  binderId: 'b1',
+  cardId: 'c1',
+  displayCardId: null,
   pageNumber: 1,
   slotIndex: 0,
   status: 'owned' as const,
   card: { id: 'c1', name: 'Pikachu', imageSmall: 'x.png', language: 'EN', cardNumber: '001', rarity: null },
+  displayCard: null,
 }
 
 const validBody = { pageNumber: 1, slotIndex: 0, cardId: 'c1', status: 'owned' }
@@ -151,12 +157,12 @@ describe('POST /api/binders/[id]/slots', () => {
 
     expect(prisma.userCard.upsert).toHaveBeenCalledWith({
       where: { userId_cardId_status: { userId: 'u1', cardId: 'c1', status: 'owned' } },
-      create: { userId: 'u1', cardId: 'c1', status: 'owned', quantity: 1 },
+      create: { userId: 'u1', cardId: 'c1', status: 'owned', quantity: 1, displayCardId: null },
       update: { quantity: { increment: 1 } },
     })
     expect(prisma.binderSlot.create).toHaveBeenCalledWith(
       expect.objectContaining({
-        data: { binderId: 'b1', pageNumber: 1, slotIndex: 0, cardId: 'c1', status: 'owned' },
+        data: { binderId: 'b1', pageNumber: 1, slotIndex: 0, cardId: 'c1', status: 'owned', displayCardId: null },
       }),
     )
 
@@ -189,19 +195,33 @@ describe('POST /api/binders/[id]/slots', () => {
     vi.mocked(prisma.card.findUnique)
       .mockResolvedValueOnce({ id: 'zhtw-c1', isCollectible: false, canonicalCardId: 'ja-c1' } as never)
       .mockResolvedValueOnce({ id: 'ja-c1', isCollectible: true, canonicalCardId: null } as never)
-    vi.mocked(prisma.userCard.upsert).mockResolvedValue({ ...mockUserCard, cardId: 'ja-c1' })
-    vi.mocked(prisma.binderSlot.create).mockResolvedValue(mockCreatedSlot as never)
+    vi.mocked(prisma.userCard.upsert).mockResolvedValue({ ...mockUserCard, cardId: 'ja-c1', displayCardId: 'zhtw-c1' })
+    // 建立的格位帶 displayCard（ZH_TW），toDisplaySlot 應以 ZH_TW 身份回傳
+    vi.mocked(prisma.binderSlot.create).mockResolvedValue({
+      ...mockCreatedSlot,
+      cardId: 'ja-c1',
+      displayCardId: 'zhtw-c1',
+      card: { id: 'ja-c1', name: 'ルフィ', imageSmall: 'ja.png', language: 'JA', cardNumber: 'OP01-001', rarity: null },
+      displayCard: { id: 'zhtw-c1', name: '魯夫', imageSmall: 'ja.png', language: 'ZH_TW', cardNumber: 'OP01-001', rarity: null },
+    } as never)
 
-    await POST(makeRequest({ ...validBody, cardId: 'zhtw-c1' }), makeContext('b1'))
+    const res = await POST(makeRequest({ ...validBody, cardId: 'zhtw-c1' }), makeContext('b1'))
 
+    // UserCard / BinderSlot 以 canonical JA 儲存，但 displayCardId 記原始 ZH_TW alias
     expect(prisma.userCard.upsert).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({ userId_cardId_status: expect.objectContaining({ cardId: 'ja-c1' }) }),
+        create: expect.objectContaining({ cardId: 'ja-c1', displayCardId: 'zhtw-c1' }),
       }),
     )
     expect(prisma.binderSlot.create).toHaveBeenCalledWith(
-      expect.objectContaining({ data: expect.objectContaining({ cardId: 'ja-c1' }) }),
+      expect.objectContaining({ data: expect.objectContaining({ cardId: 'ja-c1', displayCardId: 'zhtw-c1' }) }),
     )
+    // 回傳以顯示身份（ZH_TW）呈現：card 為繁中、cardId 為 alias id
+    const data = await res.json()
+    expect(data.slot.card.language).toBe('ZH_TW')
+    expect(data.slot.card.name).toBe('魯夫')
+    expect(data.userCard.cardId).toBe('zhtw-c1')
   })
 
   it('canonical 卡不存在回傳 404', async () => {

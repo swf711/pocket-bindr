@@ -14,11 +14,12 @@ export type AddToBinderInput = {
 // CardWithCollectionStatus（含 canonicalCardId 欄位）完全滿足此型別
 
 async function postBinderCards(input: AddToBinderInput): Promise<AddToBinderResult> {
-  const resolvedCardId = resolveCollectionCardId(input.card)
+  // 送原始 cardId（不在前端預先 resolve），讓後端 resolve canonical 並記錄
+  // displayCardId 保留原始顯示語言（OPCG ZH_TW alias）。
   const res = await fetch(`/api/binders/${input.binderId}/cards`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ cardId: resolvedCardId, status: input.status, quantity: input.quantity }),
+    body: JSON.stringify({ cardId: input.card.id, status: input.status, quantity: input.quantity }),
   })
   if (!res.ok) {
     const err = await res.json().catch(() => ({}))

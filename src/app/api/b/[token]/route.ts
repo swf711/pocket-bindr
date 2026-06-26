@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma'
+import { slotDisplaySelect, toDisplaySlot } from '@/lib/slot-display'
 import type { BinderPublicData } from '@/types/binder'
 
 type RouteContext = { params: Promise<{ token: string }> }
@@ -13,24 +14,7 @@ export async function GET(_request: Request, context: RouteContext) {
       slots: {
         where: { cardId: { not: null } },
         orderBy: [{ pageNumber: 'asc' }, { slotIndex: 'asc' }],
-        select: {
-          id: true,
-          binderId: true,
-          cardId: true,
-          pageNumber: true,
-          slotIndex: true,
-          status: true,
-          card: {
-            select: {
-              id: true,
-              name: true,
-              imageSmall: true,
-              language: true,
-              cardNumber: true,
-              rarity: true,
-            },
-          },
-        },
+        select: slotDisplaySelect,
       },
     },
   })
@@ -50,7 +34,7 @@ export async function GET(_request: Request, context: RouteContext) {
     coverColor: binder.coverColor,
     description: binder.description ?? null,
     settings: { totalPages },
-    slots: binder.slots.filter((s) => s.cardId !== null) as BinderPublicData['slots'],
+    slots: binder.slots.map(toDisplaySlot),
     ownerName: binder.user.username ?? 'TCG 玩家',
   }
 

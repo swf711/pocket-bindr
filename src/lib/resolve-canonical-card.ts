@@ -30,3 +30,15 @@ export async function resolveCanonicalCardId(
 
   return { status: 'ok', resolvedCardId: cardId }
 }
+
+/**
+ * 寫入收藏／格位時保留原始顯示語言：當 alias 被 resolve 成 canonical
+ * （originalCardId ≠ resolvedCardId）時回傳 originalCardId 當 displayCardId；
+ * 純 canonical 直接加入則回 null（不記 displayCardId）。
+ */
+export function deriveDisplayCardId(
+  originalCardId: string,
+  resolvedCardId: string,
+): string | null {
+  return originalCardId !== resolvedCardId ? originalCardId : null
+}

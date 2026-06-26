@@ -94,6 +94,31 @@ describe('GET /api/binders/[id]', () => {
     expect(data.slots[0].card.name).toBe('Pikachu')
   })
 
+  it('OPCG ZH_TW alias 格位以顯示卡（ZH_TW）呈現，cardId 為顯示卡 id', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'user-1' } })
+    const aliasSlot = {
+      id: 'slot-2',
+      binderId: 'binder-1',
+      cardId: 'ja-1',
+      displayCardId: 'zh-1',
+      pageNumber: 1,
+      slotIndex: 1,
+      status: 'owned' as const,
+      card: { id: 'ja-1', name: 'ルフィ', imageSmall: 'ja.png', language: 'JA' as const, cardNumber: 'OP01-001', rarity: null },
+      displayCard: { id: 'zh-1', name: '魯夫', imageSmall: 'ja.png', language: 'ZH_TW' as const, cardNumber: 'OP01-001', rarity: null },
+    }
+    vi.mocked(prisma.binder.findUnique)
+      .mockResolvedValueOnce(mockBinder as never)
+      .mockResolvedValueOnce({ ...mockBinder, slots: [aliasSlot] } as never)
+    const res = await GET(new Request('http://localhost'), {
+      params: Promise.resolve({ id: 'binder-1' }),
+    })
+    const data = await res.json()
+    expect(data.slots[0].card.language).toBe('ZH_TW')
+    expect(data.slots[0].card.name).toBe('魯夫')
+    expect(data.slots[0].cardId).toBe('zh-1')
+  })
+
   it('slots 的 include 使用 pageNumber ASC, slotIndex ASC 排序', async () => {
     mockAuth.mockResolvedValue({ user: { id: 'user-1' } })
     vi.mocked(prisma.binder.findUnique)

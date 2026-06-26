@@ -2,7 +2,7 @@ import { CardStatus } from '@prisma/client'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { GRID_TYPE_SLOTS } from '@/types/binder'
-import { resolveCanonicalCardId } from '@/lib/resolve-canonical-card'
+import { resolveCanonicalCardId, deriveDisplayCardId } from '@/lib/resolve-canonical-card'
 import { revalidatePublicBinder } from '@/lib/binder-cache'
 
 type RouteContext = { params: Promise<{ id: string }> }
@@ -48,6 +48,8 @@ export async function POST(request: Request, context: RouteContext) {
   }
 
   const typedCardId = resolved.resolvedCardId
+  // 保留原始顯示語言（OPCG ZH_TW alias）；純 canonical 加入則 null
+  const displayCardId = deriveDisplayCardId(cardId as string, typedCardId)
   const typedStatus = status as CardStatus
   const typedQuantity = quantity as number
 
@@ -56,7 +58,7 @@ export async function POST(request: Request, context: RouteContext) {
   const result = await prisma.$transaction(async (tx) => {
     const userCard = await tx.userCard.upsert({
       where: { userId_cardId_status: { userId, cardId: typedCardId, status: typedStatus } },
-      create: { userId, cardId: typedCardId, status: typedStatus, quantity: typedQuantity },
+      create: { userId, cardId: typedCardId, status: typedStatus, quantity: typedQuantity, displayCardId },
       update: { quantity: { increment: typedQuantity } },
     })
 
@@ -74,7 +76,7 @@ export async function POST(request: Request, context: RouteContext) {
         emptySlots.map((slot) =>
           tx.binderSlot.update({
             where: { id: slot.id },
-            data: { cardId: typedCardId, status: typedStatus },
+            data: { cardId: typedCardId, status: typedStatus, displayCardId },
           }),
         ),
       )
@@ -103,6 +105,7 @@ export async function POST(request: Request, context: RouteContext) {
       const newSlots: {
         binderId: string
         cardId: string
+        displayCardId: string | null
         status: CardStatus
         pageNumber: number
         slotIndex: number
@@ -112,6 +115,7 @@ export async function POST(request: Request, context: RouteContext) {
         newSlots.push({
           binderId,
           cardId: typedCardId,
+          displayCardId,
           status: typedStatus,
           pageNumber: nextPage,
           slotIndex: nextIndex,

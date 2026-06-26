@@ -44,7 +44,8 @@ export async function PATCH(_request: Request, context: RouteContext) {
 
     await tx.userCard.upsert({
       where: { userId_cardId_status: { userId, cardId: slot.cardId!, status: newStatus } },
-      create: { userId, cardId: slot.cardId!, status: newStatus, quantity: 1 },
+      // 沿用格位的 displayCardId 保留原始顯示語言（OPCG ZH_TW alias）；首次寫入保留
+      create: { userId, cardId: slot.cardId!, status: newStatus, quantity: 1, displayCardId: slot.displayCardId },
       update: { quantity: { increment: 1 } },
     })
   })

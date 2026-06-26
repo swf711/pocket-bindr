@@ -1,9 +1,10 @@
 import { CardStatus } from '@prisma/client'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { resolveCanonicalCardId } from '@/lib/resolve-canonical-card'
+import { resolveCanonicalCardId, deriveDisplayCardId } from '@/lib/resolve-canonical-card'
 import { GRID_TYPE_SLOTS } from '@/types/binder'
 import { revalidatePublicBinder } from '@/lib/binder-cache'
+import { slotDisplaySelect, toDisplaySlot } from '@/lib/slot-display'
 
 type RouteContext = { params: Promise<{ id: string }> }
 
@@ -78,38 +79,37 @@ export async function POST(request: Request, context: RouteContext) {
       return Response.json({ error: 'Canonical card not found' }, { status: 404 })
     }
     const resolvedCardId = resolved.resolvedCardId
+    // 保留原始顯示語言（OPCG ZH_TW alias）；純 canonical 則 null
+    const displayCardId = deriveDisplayCardId(cardId, resolvedCardId)
 
     const result = await prisma.$transaction(async (tx) => {
       const userCard = await tx.userCard.upsert({
         where: { userId_cardId_status: { userId, cardId: resolvedCardId, status: typedStatus } },
-        create: { userId, cardId: resolvedCardId, status: typedStatus, quantity: 1 },
+        create: { userId, cardId: resolvedCardId, status: typedStatus, quantity: 1, displayCardId },
         update: { quantity: { increment: 1 } },
       })
 
       const createdSlot = await tx.binderSlot.create({
-        data: { binderId, pageNumber, slotIndex, cardId: resolvedCardId, status: typedStatus },
-        include: {
-          card: {
-            select: { id: true, name: true, imageSmall: true, language: true, cardNumber: true, rarity: true },
-          },
-        },
+        data: { binderId, pageNumber, slotIndex, cardId: resolvedCardId, status: typedStatus, displayCardId },
+        select: slotDisplaySelect,
       })
 
       return { userCard, createdSlot }
     })
 
+    const displaySlot = toDisplaySlot(result.createdSlot)
     revalidatePublicBinder(binder.shareToken)
     return Response.json({
       slot: {
-        id: result.createdSlot.id,
-        pageNumber: result.createdSlot.pageNumber,
-        slotIndex: result.createdSlot.slotIndex,
-        status: result.createdSlot.status,
-        card: result.createdSlot.card,
+        id: displaySlot.id,
+        pageNumber: displaySlot.pageNumber,
+        slotIndex: displaySlot.slotIndex,
+        status: displaySlot.status,
+        card: displaySlot.card,
       },
       userCard: {
         id: result.userCard.id,
-        cardId: result.userCard.cardId,
+        cardId: displaySlot.cardId,
         status: result.userCard.status,
         quantity: result.userCard.quantity,
       },

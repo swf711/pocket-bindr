@@ -7,16 +7,16 @@ datasource db {
 }
 
 model User {
-  id            String      @id @default(uuid())
-  email         String?     @unique
+  id            String     @id @default(uuid())
+  email         String?    @unique
   emailVerified DateTime?
-  username      String?     @unique
+  username      String?    @unique
   name          String?
   image         String?
   passwordHash  String?
   provider      String?
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
   accounts      Account[]
   sessions      Session[]
   userCards     UserCard[]
@@ -37,6 +37,7 @@ model Account {
   id_token          String? @db.Text
   session_state     String?
   user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@unique([provider, providerAccountId])
 }
 
@@ -63,29 +64,31 @@ model CardSet {
 }
 
 model Card {
-  id          String       @id @default(uuid())
-  externalId  String
-  language    Language     @default(EN)
-  game        Game         @default(PTCG)
-  name        String
-  supertype   String
-  subtypes    String[]
-  hp          Int?
-  types       String[]
-  setId       String
-  set         CardSet      @relation(fields: [setId], references: [id])
-  cardNumber  String
-  rarity      String?
-  imageSmall  String
-  imageLarge  String
-  syncedAt        DateTime     @default(now())
-  attributes      Json?
-  isCollectible   Boolean      @default(true)
-  canonicalCardId String?
-  canonicalCard   Card?        @relation("CardAlias", fields: [canonicalCardId], references: [id], onDelete: SetNull)
-  aliases         Card[]       @relation("CardAlias")
-  userCards       UserCard[]
-  binderSlots     BinderSlot[]
+  id                 String       @id @default(uuid())
+  externalId         String
+  language           Language     @default(EN)
+  game               Game         @default(PTCG)
+  name               String
+  supertype          String
+  subtypes           String[]
+  hp                 Int?
+  types              String[]
+  setId              String
+  set                CardSet      @relation(fields: [setId], references: [id])
+  cardNumber         String
+  rarity             String?
+  imageSmall         String
+  imageLarge         String
+  syncedAt           DateTime     @default(now())
+  attributes         Json?
+  isCollectible      Boolean      @default(true)
+  canonicalCardId    String?
+  canonicalCard      Card?        @relation("CardAlias", fields: [canonicalCardId], references: [id], onDelete: SetNull)
+  aliases            Card[]       @relation("CardAlias")
+  userCards          UserCard[]   @relation("UserCardCanonical")
+  binderSlots        BinderSlot[] @relation("BinderSlotCanonical")
+  displayUserCards   UserCard[]   @relation("UserCardDisplay")
+  displayBinderSlots BinderSlot[] @relation("BinderSlotDisplay")
 
   @@unique([game, language, externalId])
   @@index([setId, cardNumber])
@@ -93,17 +96,20 @@ model Card {
 }
 
 model UserCard {
-  id        String    @id @default(uuid())
-  userId    String
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  cardId    String
-  card      Card      @relation(fields: [cardId], references: [id])
-  status    CardStatus
-  quantity  Int       @default(1)
-  condition String?
-  notes     String?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  id            String     @id @default(uuid())
+  userId        String
+  user          User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cardId        String
+  card          Card       @relation("UserCardCanonical", fields: [cardId], references: [id])
+  displayCardId String?
+  displayCard   Card?      @relation("UserCardDisplay", fields: [displayCardId], references: [id], onDelete: SetNull)
+  status        CardStatus
+  quantity      Int        @default(1)
+  condition     String?
+  notes         String?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
   @@unique([userId, cardId, status])
 }
 
@@ -126,15 +132,18 @@ model Binder {
 }
 
 model BinderSlot {
-  id         String   @id @default(uuid())
-  binderId   String
-  binder     Binder   @relation(fields: [binderId], references: [id], onDelete: Cascade)
-  cardId     String?
-  card       Card?    @relation(fields: [cardId], references: [id])
-  status     CardStatus?
-  pageNumber Int
-  slotIndex  Int
-  createdAt  DateTime @default(now())
+  id            String      @id @default(uuid())
+  binderId      String
+  binder        Binder      @relation(fields: [binderId], references: [id], onDelete: Cascade)
+  cardId        String?
+  card          Card?       @relation("BinderSlotCanonical", fields: [cardId], references: [id])
+  displayCardId String?
+  displayCard   Card?       @relation("BinderSlotDisplay", fields: [displayCardId], references: [id], onDelete: SetNull)
+  status        CardStatus?
+  pageNumber    Int
+  slotIndex     Int
+  createdAt     DateTime    @default(now())
+
   @@unique([binderId, pageNumber, slotIndex])
 }
 

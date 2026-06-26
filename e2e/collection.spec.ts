@@ -124,7 +124,7 @@ test.describe('我的收藏頁', () => {
     await expect(page.getByTestId('card-grid')).toBeVisible({ timeout: 8000 })
 
     // 點擊卡牌開啟 Drawer
-    await page.getByTestId('card-grid').locator('[data-testid^="card-item-"]').first().click()
+    await page.getByTestId('card-grid').getByTestId('card-item').first().click()
     await expect(page.getByTestId('card-detail-drawer')).toBeVisible({ timeout: 5000 })
 
     // 加入卡冊

@@ -42,7 +42,7 @@ describe('useAddToBinder', () => {
     expect(body.cardId).toBe('en-001')
   })
 
-  it('OPCG ZH_TW alias カードは canonicalCardId で POST を送る', async () => {
+  it('OPCG ZH_TW alias カードは「元の alias id」で POST を送る（後端で resolve + displayCardId 記録）', async () => {
     const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
       new Response(JSON.stringify({ ...mockResult, userCard: { ...mockResult.userCard, cardId: 'ja-001' } }), { status: 200 }),
     )
@@ -53,8 +53,25 @@ describe('useAddToBinder', () => {
       await result.current.mutateAsync({ card: aliasCard, binderId: 'b-1', status: 'owned', quantity: 1 })
     })
 
+    // 前端不再預先 resolve：送原始 ZH_TW alias id，由後端記錄 displayCardId 保留顯示語言
     const body = JSON.parse((fetchSpy.mock.calls[0][1] as RequestInit).body as string)
-    expect(body.cardId).toBe('ja-001')
+    expect(body.cardId).toBe('zh-001')
+  })
+
+  it('alias カード：invalidate の collection.byCard キーは canonical（JA）で JA/ZH_TW バッジ同期', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
+      new Response(JSON.stringify({ ...mockResult, userCard: { ...mockResult.userCard, cardId: 'ja-001' } }), { status: 200 }),
+    )
+    const { Wrapper, qc } = makeWrapper()
+    const invalidateSpy = vi.spyOn(qc, 'invalidateQueries')
+    const { result } = renderHook(() => useAddToBinder(), { wrapper: Wrapper })
+
+    await act(async () => {
+      await result.current.mutateAsync({ card: aliasCard, binderId: 'b-1', status: 'owned', quantity: 1 })
+    })
+
+    const invalidatedKeys = invalidateSpy.mock.calls.map((c) => (c[0] as { queryKey: unknown }).queryKey)
+    expect(invalidatedKeys).toContainEqual(['collection', 'ja-001'])
   })
 
   it('成功後に cards.all / collection.byCard / binders.detail / binders.list を invalidate する', async () => {

@@ -84,6 +84,77 @@ test.describe('OPCG ZH_TW alias card canonicalization', () => {
     expect(userCard).not.toBeNull()
   })
 
+  test('加入 ZH_TW alias 至卡冊 → 卡冊檢視以 ZH_TW 顯示（displayCardId 還原顯示語言）', async ({ page }) => {
+    const aliasData = await getOpcgZhTwAliasCard()
+    if (!aliasData) {
+      test.skip()
+      return
+    }
+
+    await loginAs(page, USER)
+    const userId = await getUserIdByEmail(USER.email)
+    const binder = await prisma.binder.create({
+      data: { userId, name: 'E2E Display Binder', gridType: 'grid_3x3' },
+    })
+
+    // 送原始 ZH_TW alias id，後端 resolve canonical 並記錄 displayCardId
+    const addRes = await page.request.post(`/api/binders/${binder.id}/cards`, {
+      data: { cardId: aliasData.zhTwCardId, status: 'owned', quantity: 1 },
+    })
+    expect(addRes.ok()).toBeTruthy()
+
+    // BinderSlot.displayCardId 應記錄原始 ZH_TW alias id
+    const slot = await prisma.binderSlot.findFirst({
+      where: { binderId: binder.id, cardId: aliasData.jaCardId },
+    })
+    expect(slot?.displayCardId).toBe(aliasData.zhTwCardId)
+
+    // 卡冊 GET 以顯示身份（ZH_TW）回傳
+    const getRes = await page.request.get(`/api/binders/${binder.id}`)
+    expect(getRes.ok()).toBeTruthy()
+    const binderData = await getRes.json()
+    const displaySlot = binderData.slots.find((s: { cardId: string }) => s.cardId === aliasData.zhTwCardId)
+    expect(displaySlot).toBeTruthy()
+    expect(displaySlot.card.language).toBe('ZH_TW')
+  })
+
+  test('/collection 語言篩選：ZH_TW alias 收藏在「繁中」可見、「日文」不可見', async ({ page }) => {
+    const aliasData = await getOpcgZhTwAliasCard()
+    if (!aliasData) {
+      test.skip()
+      return
+    }
+
+    await loginAs(page, USER)
+    const userId = await getUserIdByEmail(USER.email)
+    const binder = await prisma.binder.create({
+      data: { userId, name: 'E2E Collection Binder', gridType: 'grid_3x3' },
+    })
+    // 經 alias 加入，UserCard.displayCardId = ZH_TW
+    const addRes = await page.request.post(`/api/binders/${binder.id}/cards`, {
+      data: { cardId: aliasData.zhTwCardId, status: 'owned', quantity: 1 },
+    })
+    expect(addRes.ok()).toBeTruthy()
+
+    // 繁中篩選撈到，且以 ZH_TW 身份呈現
+    const zhRes = await page.request.get('/api/collection?game=OPCG&language=ZH_TW')
+    expect(zhRes.ok()).toBeTruthy()
+    const zhData = await zhRes.json()
+    const inZh = zhData.cards.find((c: { id: string }) => c.id === aliasData.zhTwCardId)
+    expect(inZh).toBeTruthy()
+    expect(inZh.language).toBe('ZH_TW')
+    expect(inZh.collectionStatus.owned).toBe(1)
+
+    // 日文篩選不撈這筆 alias 收藏（顯示身份為 ZH_TW）
+    const jaRes = await page.request.get('/api/collection?game=OPCG&language=JA')
+    expect(jaRes.ok()).toBeTruthy()
+    const jaData = await jaRes.json()
+    const inJa = jaData.cards.find(
+      (c: { id: string }) => c.id === aliasData.jaCardId || c.id === aliasData.zhTwCardId,
+    )
+    expect(inJa).toBeFalsy()
+  })
+
   test('ZH_TW alias 搜尋結果顯示與 JA Card 相同的收藏數量', async ({ page }) => {
     const aliasData = await getOpcgZhTwAliasCard()
     if (!aliasData) {

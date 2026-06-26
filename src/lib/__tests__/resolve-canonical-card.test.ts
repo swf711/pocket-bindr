@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { resolveCanonicalCardId } from '../resolve-canonical-card'
+import { resolveCanonicalCardId, deriveDisplayCardId } from '../resolve-canonical-card'
 
 function mockClient(responses: unknown[]) {
   const findUnique = vi.fn()
@@ -36,5 +36,15 @@ describe('resolveCanonicalCardId', () => {
     ])
     const result = await resolveCanonicalCardId(client, 'zhtw-c1')
     expect(result).toEqual({ status: 'canonical_missing' })
+  })
+})
+
+describe('deriveDisplayCardId', () => {
+  it('alias（原 id ≠ resolved）時回傳原始 id 當 displayCardId', () => {
+    expect(deriveDisplayCardId('zhtw-c1', 'ja-c1')).toBe('zhtw-c1')
+  })
+
+  it('純 canonical（原 id = resolved）時回傳 null（不記 displayCardId）', () => {
+    expect(deriveDisplayCardId('c1', 'c1')).toBeNull()
   })
 })

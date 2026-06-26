@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { computeSlotMigration, decrementUserCardsForSlots } from '@/lib/binder-utils'
 import { GRID_TYPE_SLOTS } from '@/types/binder'
 import { revalidatePublicBinder } from '@/lib/binder-cache'
+import { slotDisplaySelect, toDisplaySlot } from '@/lib/slot-display'
 
 const HEX_COLOR_RE = /^#[0-9A-Fa-f]{6}$/
 
@@ -43,24 +44,7 @@ export async function GET(_request: Request, context: RouteContext) {
       slots: {
         where: { cardId: { not: null } },
         orderBy: [{ pageNumber: 'asc' }, { slotIndex: 'asc' }],
-        select: {
-          id: true,
-          binderId: true,
-          cardId: true,
-          pageNumber: true,
-          slotIndex: true,
-          status: true,
-          card: {
-            select: {
-              id: true,
-              name: true,
-              imageSmall: true,
-              language: true,
-              cardNumber: true,
-              rarity: true,
-            },
-          },
-        },
+        select: slotDisplaySelect,
       },
     },
   })
@@ -70,7 +54,7 @@ export async function GET(_request: Request, context: RouteContext) {
     name: binderWithSlots!.name,
     gridType: binderWithSlots!.gridType,
     coverColor: binderWithSlots!.coverColor,
-    slots: binderWithSlots!.slots,
+    slots: binderWithSlots!.slots.map(toDisplaySlot),
   })
 }
 
