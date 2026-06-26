@@ -39,6 +39,15 @@ export async function Header() {
                 我的卡冊
               </PendingLink>
             )}
+            {isLoggedIn && (
+              <PendingLink
+                href="/collection"
+                data-testid="nav-collection"
+                className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+              >
+                我的收藏
+              </PendingLink>
+            )}
           </nav>
         </div>
 

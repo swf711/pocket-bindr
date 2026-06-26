@@ -3,7 +3,7 @@ import Credentials from 'next-auth/providers/credentials'
 import Discord from 'next-auth/providers/discord'
 import Google from 'next-auth/providers/google'
 
-const protectedRoutes = ['/binders', '/settings']
+const protectedRoutes = ['/binders', '/settings', '/collection']
 
 // Edge-safe config: no PrismaAdapter, no PrismaClient
 export const authConfig: NextAuthConfig = {

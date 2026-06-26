@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { Menu, Home, Search, BookOpen, Settings, LogOut } from 'lucide-react'
+import { Menu, Home, Search, BookOpen, Library, Settings, LogOut } from 'lucide-react'
 import { signOut } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -72,6 +72,18 @@ export function MobileNav({ isLoggedIn, username, image }: MobileNavProps) {
                 >
                   <BookOpen className="size-4" />
                   我的卡冊
+                </Link>
+              </SheetClose>
+            )}
+            {isLoggedIn && (
+              <SheetClose asChild>
+                <Link
+                  href="/collection"
+                  data-testid="mobile-nav-collection"
+                  className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                >
+                  <Library className="size-4" />
+                  我的收藏
                 </Link>
               </SheetClose>
             )}
