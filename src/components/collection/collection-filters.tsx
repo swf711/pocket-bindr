@@ -1,16 +1,29 @@
 'use client'
 
-import { Input } from '@/components/ui/input'
+import { Search } from 'lucide-react'
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { SeriesCombobox } from '@/components/cards/series-combobox'
 import { SetGroup } from '@/types/card'
+
+const STATUS_OPTIONS = [
+  { value: 'all', label: '全部' },
+  { value: 'owned', label: '擁有' },
+  { value: 'wanted', label: '想要' },
+] as const
+
+const GAME_OPTIONS = [
+  { value: 'all', label: '全部' },
+  { value: 'PTCG', label: 'Pokemon TCG' },
+  { value: 'OPCG', label: 'One Piece TCG' },
+] as const
+
+const LANGUAGE_OPTIONS = [
+  { value: 'all', label: '全部' },
+  { value: 'ZH_TW', label: '繁體中文' },
+  { value: 'JA', label: '日本語' },
+  { value: 'EN', label: 'English' },
+] as const
 
 interface CollectionFiltersProps {
   status: 'all' | 'owned' | 'wanted'
@@ -43,57 +56,62 @@ export function CollectionFilters({
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex flex-wrap items-center gap-3">
+      {/* 桌面：全部 tabs + 搜尋框同一列；行動：wrap 換行 */}
+      <div className="flex flex-wrap items-center gap-3 lg:flex-nowrap">
         <Tabs value={status} onValueChange={v => onStatusChange(v as 'all' | 'owned' | 'wanted')}>
           <TabsList>
-            <TabsTrigger value="all" data-testid="status-filter-all">全部</TabsTrigger>
-            <TabsTrigger value="owned" data-testid="status-filter-owned">擁有</TabsTrigger>
-            <TabsTrigger value="wanted" data-testid="status-filter-wanted">想要</TabsTrigger>
+            {STATUS_OPTIONS.map(opt => (
+              <TabsTrigger key={opt.value} value={opt.value} data-testid={`status-filter-${opt.value}`}>
+                {opt.label}
+              </TabsTrigger>
+            ))}
           </TabsList>
         </Tabs>
 
-        <Select value={game || 'all'} onValueChange={v => onGameChange(v === 'all' ? '' : v)}>
-          <SelectTrigger className="w-32" data-testid="game-filter">
-            <SelectValue placeholder="全部遊戲" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">全部遊戲</SelectItem>
-            <SelectItem value="PTCG">PTCG</SelectItem>
-            <SelectItem value="OPCG">OPCG</SelectItem>
-          </SelectContent>
-        </Select>
+        <Tabs value={game || 'all'} onValueChange={v => onGameChange(v === 'all' ? '' : v)}>
+          <TabsList>
+            {GAME_OPTIONS.map(opt => (
+              <TabsTrigger key={opt.value} value={opt.value} data-testid={`game-filter-${opt.value}`}>
+                {opt.label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
 
-        <Select
-          value={language || 'all'}
-          onValueChange={v => onLanguageChange(v === 'all' ? '' : v)}
-        >
-          <SelectTrigger className="w-32" data-testid="language-filter">
-            <SelectValue placeholder="全部語言" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">全部語言</SelectItem>
-            <SelectItem value="ZH_TW">繁中</SelectItem>
-            <SelectItem value="JA">日文</SelectItem>
-            <SelectItem value="EN">英文</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+        <Tabs value={language || 'all'} onValueChange={v => onLanguageChange(v === 'all' ? '' : v)}>
+          <TabsList>
+            {LANGUAGE_OPTIONS.map(opt => (
+              <TabsTrigger key={opt.value} value={opt.value} data-testid={`language-filter-${opt.value}`}>
+                {opt.label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
 
-      <div className="flex flex-wrap items-center gap-3">
         {setEnabled && (
-          <SeriesCombobox
-            groups={groups}
-            selectedSetId={selectedSetId}
-            onSetChange={onSetChange}
-          />
+          <div className="flex flex-wrap items-center gap-3">
+            <SeriesCombobox
+              groups={groups}
+              selectedSetId={selectedSetId}
+              onSetChange={onSetChange}
+            />
+          </div>
         )}
-        <Input
-          className="w-full sm:w-72"
-          placeholder="搜尋卡牌名稱…"
-          value={query}
-          onChange={e => onQueryChange(e.target.value)}
-          data-testid="collection-search-input"
-        />
+
+        <div className="w-full lg:w-auto lg:flex-1 lg:ml-auto">
+          <InputGroup className="w-full">
+            <InputGroupAddon>
+              <Search />
+            </InputGroupAddon>
+            <InputGroupInput
+              type="text"
+              placeholder="搜尋卡牌名稱或型號..."
+              value={query}
+              onChange={e => onQueryChange(e.target.value)}
+              data-testid="collection-search-input"
+            />
+          </InputGroup>
+        </div>
       </div>
     </div>
   )

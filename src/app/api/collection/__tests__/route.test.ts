@@ -110,13 +110,14 @@ describe('GET /api/collection', () => {
     expect(w?.setId).toBe('set-1')
   })
 
-  it('q 以卡名 contains 篩選（insensitive）', async () => {
+  it('q 以卡名 contains 或型號前綴篩選（insensitive）', async () => {
     mockAuth.mockResolvedValue({ user: { id: 'u1' } })
     await GET(makeGetRequest({ q: 'Pikachu' }))
     const call = vi.mocked(prisma.card.findMany).mock.calls[0][0]
-    const w = call?.where as { name?: { contains: string; mode: string } }
-    expect(w?.name?.contains).toBe('Pikachu')
-    expect(w?.name?.mode).toBe('insensitive')
+    const w = call?.where as { OR?: Array<{ name?: { contains: string }; externalId?: { startsWith: string } }> }
+    expect(w?.OR).toBeDefined()
+    expect(w?.OR?.[0]?.name?.contains).toBe('Pikachu')
+    expect(w?.OR?.[1]?.externalId?.startsWith).toBe('Pikachu')
   })
 
   it('分頁：pageSize 上限 100、page 下限 1、totalPages 正確', async () => {

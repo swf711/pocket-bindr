@@ -95,8 +95,7 @@ test.describe('我的收藏頁', () => {
     await expect(page.getByTestId('collection-total')).toContainText('1', { timeout: 8000 })
 
     // 篩選 OPCG → 結果應為空
-    await page.getByTestId('game-filter').click()
-    await page.getByRole('option', { name: 'OPCG' }).click()
+    await page.getByTestId('game-filter-OPCG').click()
     await expect(page.getByTestId('collection-empty')).toBeVisible({ timeout: 5000 })
   })
 

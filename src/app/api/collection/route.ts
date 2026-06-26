@@ -47,7 +47,12 @@ export async function GET(req: NextRequest) {
     ...(gameParam ? { game: gameParam as Game } : {}),
     ...(language ? { language } : {}),
     ...(setId ? { setId } : {}),
-    ...(q ? { name: { contains: q, mode: 'insensitive' } } : {}),
+    ...(q ? {
+      OR: [
+        { name: { contains: q, mode: 'insensitive' as const } },
+        { externalId: { startsWith: q, mode: 'insensitive' as const } },
+      ],
+    } : {}),
   }
 
   const skip = (pageNum - 1) * pageSizeNum
