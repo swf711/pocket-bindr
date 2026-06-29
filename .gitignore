@@ -32,6 +32,8 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+# but keep the example template tracked for contributors
+!.env.example
 
 # vercel
 .vercel
@@ -57,5 +59,6 @@ scripts/
 /tmp/
 .cache/
 
-# Scripts 腳本說明文件
-docs/SCRIPTS.md
+# 內部開發文件（保留本機，不公開；對外文件改放根目錄與 .github/）
+/docs/
+/CLAUDE.md
