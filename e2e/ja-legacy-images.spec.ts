@@ -1,11 +1,10 @@
 import { test, expect } from '@playwright/test'
 
 /**
- * 對應 docs/BDD.md 卡牌瀏覽：PTCG JA 舊世代補圖（pcg-search → Supabase Storage 自存）。
+ * PTCG JA 舊世代卡牌的自存圖片（Supabase Storage）瀏覽驗證。
  *
- * 此 spec 需 DB 已由 scripts/backfill-ja-legacy-images.ts --apply 補圖
- *（依賴 SUPABASE_URL / SERVICE_ROLE_KEY）。若該 set 尚未補圖，第一張卡會顯示
- * 「無圖片」fallback，本測試自動 skip（見 docs/TECH_DEBT.md 條件式 E2E）。
+ * 此 spec 需 DB 已由內部維護腳本完成補圖（依賴 SUPABASE_URL / SERVICE_ROLE_KEY）。
+ * 若該 set 尚未補圖，第一張卡會顯示「無圖片」fallback，本測試自動 skip。
  */
 test.describe('PTCG JA 舊世代補圖', () => {
   test('neo1 舊卡顯示自存圖（Supabase URL，非 proxy）', async ({ page }) => {

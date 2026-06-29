@@ -1,9 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { PROXY_HOSTNAMES } from '@/lib/get-card-image-url'
+import { proxyImageIpLimiter } from '@/lib/rate-limit'
 
 const API_WHITELIST = [...PROXY_HOSTNAMES, 'images.pokemontcg.io']
 
 export async function GET(req: NextRequest) {
+  const ip = req.headers.get('x-forwarded-for') ?? '127.0.0.1'
+  const { success } = await proxyImageIpLimiter.limit(ip)
+  if (!success) {
+    return new NextResponse('Too Many Requests', { status: 429 })
+  }
+
   const rawUrl = req.nextUrl.searchParams.get('url')
   if (!rawUrl) {
     return new NextResponse('Missing url parameter', { status: 400 })

@@ -3,7 +3,6 @@
  *
  * Requires a real Upstash Redis connection (UPSTASH_REDIS_REST_URL).
  * All tests are skipped in CI environments that don't have Redis configured.
- * See docs/TECH_DEBT.md — "E2E rate limit 測試" for the trigger condition.
  */
 import { test, expect } from '@playwright/test'
 import { clearRateLimitKey } from './helpers/db'

@@ -64,3 +64,12 @@ export const linkUserLimiter = new Ratelimit({
   limiter: Ratelimit.slidingWindow(5, '60 m'),
   prefix: 'rl:link:user',
 })
+
+// Card image proxy: 300/min per IP. Generous enough for a full binder page load
+// (only un-self-hosted official images are proxied; most images are direct Supabase),
+// while capping abuse as a bandwidth relay for the whitelisted hosts.
+export const proxyImageIpLimiter = new Ratelimit({
+  redis,
+  limiter: Ratelimit.slidingWindow(300, '1 m'),
+  prefix: 'rl:proxy-img:ip',
+})

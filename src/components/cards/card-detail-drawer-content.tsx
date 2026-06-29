@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils"
 import { DrawerPortal, DrawerOverlay } from "@/components/ui/drawer"
 
 // 卡牌詳情 Drawer 專用：複製原生 DrawerContent 結構，僅 overlay 加 backdrop blur，
-// 不動原生 src/components/ui/drawer.tsx（見 docs/PATTERNS.md 卡牌詳情 Drawer 章節）。
+// 不動原生 src/components/ui/drawer.tsx。
 export function CardDetailDrawerContent({
   className,
   children,

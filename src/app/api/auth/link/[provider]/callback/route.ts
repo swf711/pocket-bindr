@@ -56,7 +56,7 @@ export async function GET(
     return redirectWithClearCookie('/settings?link_error=INVALID_STATE')
   }
 
-  const baseUrl = process.env.NEXTAUTH_URL ?? new URL(request.url).origin
+  const baseUrl = process.env.AUTH_URL ?? new URL(request.url).origin
   const redirectUri = getCallbackUrl(baseUrl, provider as SupportedOAuthProvider)
 
   let profile

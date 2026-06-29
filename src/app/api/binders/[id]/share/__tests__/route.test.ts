@@ -43,7 +43,7 @@ const mockBinder = {
 describe('POST /api/binders/[id]/share', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    process.env.NEXTAUTH_URL = 'https://example.com'
+    process.env.AUTH_URL = 'https://example.com'
   })
 
   it('未登入回傳 401', async () => {

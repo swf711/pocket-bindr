@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 vi.stubEnv('RESET_TOKEN_SECRET', 'test-reset-secret-32-chars-enough!')
-vi.stubEnv('NEXTAUTH_URL', 'http://localhost:3000')
+vi.stubEnv('AUTH_URL', 'http://localhost:3000')
 vi.stubEnv('RESEND_API_KEY', 'test')
 
 vi.mock('@/lib/prisma', () => ({

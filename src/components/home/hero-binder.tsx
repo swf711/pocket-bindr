@@ -74,7 +74,7 @@ export function HeroBinder({ cards }: HeroBinderProps) {
   const [activeId, setActiveId] = useState<string | null>(null)
   // Flatten on pointer-down (before dnd-kit's activation/measurement) so the grid
   // rects are measured in flat screen space — this keeps both collision detection
-  // and the sortable shift transforms accurate. See docs/PATTERNS.md.
+  // and the sortable shift transforms accurate.
   const [pressed, setPressed] = useState(false)
   // Tilt only on lg+ screens; default false so SSR/mobile hydrates without tilt.
   const [isDesktop, setIsDesktop] = useState(false)

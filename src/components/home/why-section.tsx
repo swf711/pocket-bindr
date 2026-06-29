@@ -1,6 +1,8 @@
 import Link from 'next/link'
 import { Mail } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar'
+import Image from 'next/image'
 
 function LinkedInIcon({ className }: { className?: string }) {
   return (
@@ -37,6 +39,14 @@ export function WhySection() {
       data-testid="why-section"
     >
       <div className="flex-1 flex flex-col items-center justify-center gap-8 container mx-auto px-4 py-16 text-center">
+        <Avatar className='size-32'>
+          <AvatarImage
+            src="https://github.com/swf711.png"
+            alt="@swf711"
+          />
+          <AvatarFallback>BR</AvatarFallback>
+        </Avatar>
+
         <div className="space-y-4 max-w-xl">
           <h2 className="text-3xl font-bold">關於</h2>
           <p className="text-muted-foreground leading-relaxed">
@@ -78,6 +88,20 @@ export function WhySection() {
       {/* Inline footer */}
       <footer className="shrink-0 border-t py-6" data-testid="inline-footer">
         <div className="container mx-auto px-4 text-center space-y-2">
+          <Image
+            src="/logo-light.svg"
+            alt='logo'
+            width={150}
+            height={100}
+            className="light:block dark:hidden mx-auto"
+          />
+          <Image
+            src="/logo-dark.svg"
+            alt='logo'
+            width={150}
+            height={100}
+            className="dark:block hidden mx-auto"
+          />
           <p className="text-sm text-muted-foreground">
             © 2026 TCG Binder, All rights reserved.
           </p>

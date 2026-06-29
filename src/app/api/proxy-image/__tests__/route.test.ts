@@ -2,11 +2,18 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { NextRequest } from 'next/server'
 import { GET } from '../route'
 
+const mockIpLimit = vi.fn()
+vi.mock('@/lib/rate-limit', () => ({
+  proxyImageIpLimiter: { limit: () => mockIpLimit() },
+}))
+
 const mockFetch = vi.fn()
 vi.stubGlobal('fetch', mockFetch)
 
 beforeEach(() => {
   mockFetch.mockReset()
+  mockIpLimit.mockReset()
+  mockIpLimit.mockResolvedValue({ success: true })
 })
 
 function makeRequest(urlParam?: string) {
@@ -17,6 +24,13 @@ function makeRequest(urlParam?: string) {
 }
 
 describe('GET /api/proxy-image', () => {
+  it('returns 429 when the IP rate limit is exceeded', async () => {
+    mockIpLimit.mockResolvedValue({ success: false })
+    const res = await GET(makeRequest('https://asia-tc.onepiece-cardgame.com/images/card.png'))
+    expect(res.status).toBe(429)
+    expect(mockFetch).not.toHaveBeenCalled()
+  })
+
   it('returns 400 when url param is missing', async () => {
     const res = await GET(makeRequest())
     expect(res.status).toBe(400)

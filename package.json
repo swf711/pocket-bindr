@@ -1,7 +1,13 @@
 {
   "name": "tcg-binder",
   "version": "0.1.0",
-  "private": true,
+  "private": false,
+  "license": "MIT",
+  "description": "線上 TCG 卡牌收藏管理網站：搜尋卡牌、標記擁有／想要、放入自訂格式卡冊。",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/swf711/tcg-binder.git"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",

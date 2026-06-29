@@ -33,6 +33,9 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
+      <head>
+        <meta name="apple-mobile-web-app-title" content="TCGBinder" />
+      </head>
       <body className="min-h-full flex flex-col">
         <TanstackQueryProvider>
           <SessionProvider>

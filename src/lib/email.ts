@@ -1,7 +1,7 @@
 import { Resend } from 'resend'
 
 function generateResetEmailHtml(token: string, username?: string): string {
-  const resetUrl = `${process.env.NEXTAUTH_URL}/reset-password?token=${encodeURIComponent(token)}`
+  const resetUrl = `${process.env.AUTH_URL}/reset-password?token=${encodeURIComponent(token)}`
   const greeting = username ? `您好，${username}` : '您好'
 
   return `<!DOCTYPE html>

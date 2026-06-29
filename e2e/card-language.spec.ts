@@ -1,7 +1,7 @@
 import { test, expect, type Page } from '@playwright/test'
 
 /**
- * 對應 docs/BDD.md 卡牌搜尋頁 Scenario 2b: 選擇語言
+ * 卡牌搜尋頁：選擇語言。
  * 語言選擇器為 Tabs；系列選擇器為 ComboBox（按鈕開 popover，選項為 role=option）。
  */
 

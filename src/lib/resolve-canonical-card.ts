@@ -9,8 +9,7 @@ export type ResolveCanonicalCardResult =
 
 /**
  * Resolves an OPCG ZH_TW alias card (isCollectible=false) to its canonical
- * (JA) cardId; non-alias cards resolve to themselves. See docs/PATTERNS.md
- * "Canonical Card Resolution".
+ * (JA) cardId; non-alias cards resolve to themselves.
  */
 export async function resolveCanonicalCardId(
   client: CardLookupClient,

@@ -71,8 +71,8 @@ export async function loginAsOAuthUser(
   const { userId } = await createOAuthUser(email, username, provider, providerAccountId)
   // App uses `session: { strategy: 'jwt' }`; auth() decodes a signed JWE cookie,
   // not a DB session row. Mint the same token the jwt callback would produce.
-  const secret = process.env.NEXTAUTH_SECRET
-  if (!secret) throw new Error('NEXTAUTH_SECRET is required to mint E2E session JWT')
+  const secret = process.env.AUTH_SECRET
+  if (!secret) throw new Error('AUTH_SECRET is required to mint E2E session JWT')
   const token = await encode({
     token: { sub: userId, name: username },
     secret,

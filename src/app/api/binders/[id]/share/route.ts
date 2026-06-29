@@ -27,7 +27,7 @@ export async function POST(_request: Request, context: RouteContext) {
   if (error) return error
 
   if (binder!.shareToken) {
-    const shareUrl = `${process.env.NEXTAUTH_URL}/b/${binder!.shareToken}`
+    const shareUrl = `${process.env.AUTH_URL}/b/${binder!.shareToken}`
     return Response.json({ shareToken: binder!.shareToken, shareUrl })
   }
 
@@ -35,7 +35,7 @@ export async function POST(_request: Request, context: RouteContext) {
   await prisma.binder.update({ where: { id }, data: { shareToken } })
   revalidatePublicBinder(shareToken)
 
-  const shareUrl = `${process.env.NEXTAUTH_URL}/b/${shareToken}`
+  const shareUrl = `${process.env.AUTH_URL}/b/${shareToken}`
   return Response.json({ shareToken, shareUrl })
 }
 

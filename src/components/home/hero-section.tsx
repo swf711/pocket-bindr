@@ -2,6 +2,8 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { HeroBinder } from './hero-binder'
 import type { ShowcaseCard } from '@/types/homepage'
+import Image from 'next/image'
+import { ArrowRight } from 'lucide-react'
 
 interface HeroSectionProps {
   isLoggedIn: boolean
@@ -19,16 +21,27 @@ export function HeroSection({ isLoggedIn, cards }: HeroSectionProps) {
           {/* Left: Text + CTA */}
           <div className="flex flex-col justify-center gap-6 text-center lg:text-left">
             <div>
-              <h1 className="text-5xl font-bold tracking-tight sm:text-6xl mb-4">
-                TCG Binder
-              </h1>
+              <Image
+                src="/logo-light.svg"
+                alt='logo'
+                width={320}
+                height={600}
+                className="light:block dark:hidden w-3xs sm:w-xs mx-auto lg:mx-0 mb-4"
+              />
+              <Image
+                src="/logo-dark.svg"
+                alt='logo'
+                width={320}
+                height={600}
+                className="dark:block hidden w-3xs sm:w-xs mx-auto lg:mx-0 mb-4"
+              />
               <p className="text-muted-foreground text-lg mx-auto lg:mx-0">
                 搜尋、收藏、整理你的集換式卡牌。建立專屬卡冊，隨時掌握收藏進度。
               </p>
             </div>
             <div className="flex gap-3 flex-wrap justify-center lg:justify-start">
               <Button asChild size="lg">
-                <Link href="/cards">開始搜尋 →</Link>
+                <Link href="/cards">開始搜尋 <ArrowRight /></Link>
               </Button>
               {isLoggedIn && (
                 <Button asChild size="lg" variant="outline">

@@ -5,6 +5,7 @@ import { UserMenu } from '@/components/layout/user-menu'
 import { MobileNav } from '@/components/layout/mobile-nav'
 import { PendingLink } from '@/components/layout/pending-link'
 import { ModeToggle } from './mode-toggle'
+import Image from 'next/image'
 
 export async function Header() {
   const session = await auth()
@@ -19,8 +20,21 @@ export async function Header() {
     >
       <div className="container mx-auto flex h-14 items-center justify-between px-4">
         <div className="flex items-center gap-6">
-          <Link href="/" className="text-lg font-bold tracking-tight">
-            TCG Binder
+          <Link href="/">
+            <Image
+              src="/logo-light-sm.svg"
+              alt='logo'
+              width={30}
+              height={30}
+              className="light:block dark:hidden"
+            />
+            <Image
+              src="/logo-dark-sm.svg"
+              alt='logo'
+              width={30}
+              height={30}
+              className="dark:block hidden"
+            />
           </Link>
           <nav className="hidden items-center gap-4 md:flex">
             <PendingLink

@@ -43,7 +43,7 @@ export async function POST(
     return Response.json({ error: 'ALREADY_LINKED' }, { status: 409 })
   }
 
-  const baseUrl = process.env.NEXTAUTH_URL ?? new URL(request.url).origin
+  const baseUrl = process.env.AUTH_URL ?? new URL(request.url).origin
   const redirectUri = getCallbackUrl(baseUrl, provider as SupportedOAuthProvider)
   const { state, nonce } = createLinkState(session.user.id)
 

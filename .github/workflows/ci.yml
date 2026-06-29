@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Unit tests
+        run: pnpm test
+
+      - name: Build
+        run: pnpm build
+        env:
+          # Placeholder values so build-time module init does not fail.
+          # No real services are contacted during build.
+          DATABASE_URL: postgresql://user:pass@localhost:5432/db
+          DIRECT_URL: postgresql://user:pass@localhost:5432/db
+          AUTH_SECRET: ci-placeholder-secret
+          AUTH_URL: http://localhost:3000
+          AUTH_TRUST_HOST: "true"
+          LINK_STATE_SECRET: ci-placeholder
+          RESET_TOKEN_SECRET: ci-placeholder
+          UPSTASH_REDIS_REST_URL: http://localhost
+          UPSTASH_REDIS_REST_TOKEN: ci-placeholder

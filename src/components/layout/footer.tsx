@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 
 export function Footer() {
@@ -16,6 +17,20 @@ export function Footer() {
   return (
     <footer className="border-t py-6 mt-auto" data-testid="site-footer">
       <div className="container mx-auto px-4 text-center space-y-2">
+        <Image
+          src="/logo-light.svg"
+          alt='logo'
+          width={150}
+            height={100}
+          className="light:block dark:hidden mx-auto"
+        />
+        <Image
+          src="/logo-dark.svg"
+          alt='logo'
+          width={150}
+            height={100}
+          className="dark:block hidden mx-auto"
+        />
         <p className="text-sm text-muted-foreground">
           © 2026 TCG Binder, All rights reserved.
         </p>
