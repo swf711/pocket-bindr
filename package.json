@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": false,
   "license": "MIT",
+  "author": "邵尉夫 Brian Shao",
   "description": "線上 TCG 卡牌收藏管理網站：搜尋卡牌、標記擁有／想要、放入自訂格式卡冊。",
   "repository": {
     "type": "git",
