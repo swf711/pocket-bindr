@@ -3,7 +3,7 @@ import { auth } from '@/lib/auth'
 import { Button } from '@/components/ui/button'
 import { UserMenu } from '@/components/layout/user-menu'
 import { MobileNav } from '@/components/layout/mobile-nav'
-import { PendingLink } from '@/components/layout/pending-link'
+import { MainNav } from '@/components/layout/main-nav'
 import { ModeToggle } from './mode-toggle'
 import Image from 'next/image'
 
@@ -16,73 +16,42 @@ export async function Header() {
   return (
     <header
       data-testid="app-header"
-      className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60"
+      className="sticky top-0 z-50 w-full bg-surface-container backdrop-blur supports-backdrop-filter:bg-surface-container/90"
     >
-      <div className="container mx-auto flex h-14 items-center justify-between px-4">
+      <div className="container mx-auto flex h-16 items-center justify-between px-4">
         <div className="flex items-center gap-6">
           <Link href="/">
             <Image
               src="/logo-light-sm.svg"
               alt='logo'
-              width={30}
-              height={30}
+              width={40}
+              height={40}
               className="light:block dark:hidden"
             />
             <Image
               src="/logo-dark-sm.svg"
               alt='logo'
-              width={30}
-              height={30}
+              width={40}
+              height={40}
               className="dark:block hidden"
             />
           </Link>
-          <nav className="hidden items-center gap-4 md:flex">
-            <PendingLink
-              href="/cards"
-              data-testid="nav-cards"
-              className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-            >
-              卡牌搜尋
-            </PendingLink>
-            {isLoggedIn && (
-              <PendingLink
-                href="/binders"
-                data-testid="nav-binders"
-                className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-              >
-                我的卡冊
-              </PendingLink>
-            )}
-            {isLoggedIn && (
-              <PendingLink
-                href="/collection"
-                data-testid="nav-collection"
-                className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-              >
-                我的收藏
-              </PendingLink>
-            )}
-          </nav>
+          <MainNav isLoggedIn={isLoggedIn} />
         </div>
 
         <div className="flex items-center gap-2">
+          <ModeToggle />
           <div className="hidden md:flex md:items-center md:gap-2">
             {isLoggedIn ? (
               <UserMenu username={username} image={session?.user?.image ?? null} />
             ) : (
-              <>
-                <Button variant="ghost" asChild>
-                  <Link href="/login" data-testid="nav-login">
-                    登入
-                  </Link>
-                </Button>
-                <Button variant="default" asChild>
-                  <Link href="/register">註冊</Link>
-                </Button>
-              </>
+              <Button variant="default" className="h-10 rounded-3xl" asChild>
+                <Link href="/login" data-testid="nav-login">
+                  登入
+                </Link>
+              </Button>
             )}
           </div>
-          <ModeToggle />
           <MobileNav
             isLoggedIn={isLoggedIn}
             username={username}

@@ -3,7 +3,8 @@ import { useState, useEffect } from 'react'
 import { CardStatus } from '@prisma/client'
 import { toast } from 'sonner'
 import {
-  Drawer, DrawerHeader, DrawerTitle, DrawerPortal
+  Drawer, DrawerHeader, DrawerTitle, DrawerPortal,
+  DrawerClose
 } from '@/components/ui/drawer'
 import { CardDetailDrawerContent } from '@/components/cards/card-detail-drawer-content'
 import { Button } from '@/components/ui/button'
@@ -17,7 +18,7 @@ import {
   SelectTrigger, SelectValue
 } from '@/components/ui/select'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { ChevronLeft, ChevronRight, BookCheck, Bookmark } from 'lucide-react'
+import { ChevronLeft, ChevronRight, BookCheck, Bookmark, X } from 'lucide-react'
 import { CardWithCollectionStatus } from '@/types/card'
 import { getCardImageUrl } from '@/lib/get-card-image-url'
 import { BinderSummary } from '@/types/binder'
@@ -209,7 +210,7 @@ export function CardDetailDrawer({ card, open, onClose, onAddToBinder, onLoginSu
     >
       <CardDetailDrawerContent
         data-testid="card-detail-drawer"
-        className="data-[vaul-drawer-direction=right]:w-full data-[vaul-drawer-direction=right]:sm:max-w-xs data-[vaul-drawer-direction=right]:justify-center"
+        className="data-[vaul-drawer-direction=right]:w-full data-[vaul-drawer-direction=right]:sm:max-w-xs"
       >
         <DrawerHeader>
           {isMobile ? (
@@ -219,9 +220,14 @@ export function CardDetailDrawer({ card, open, onClose, onAddToBinder, onLoginSu
               {NextButton}
             </div>
           ) : (
-            <DrawerTitle className="text-2xl truncate" title={card.name}>
-              {card.name}
-            </DrawerTitle>
+            <div className='flex justify-between items-center pr-2'>
+              <DrawerTitle className="text-2xl truncate" title={card.name}>
+                {card.name}
+              </DrawerTitle>
+              <DrawerClose>
+                  <X className="size-5" />
+              </DrawerClose>
+            </div>
           )}
         </DrawerHeader>
         {isMobile ? (
@@ -340,7 +346,7 @@ function AddToBinderSection({
           else setSelectedBinderId(list.find(b => b.id === currentBinderId)?.id ?? list[0].id)
         }
       })
-      .catch(() => {})
+      .catch(() => { })
   }, [card.id, currentBinderId])
 
   const [loginModalOpen, setLoginModalOpen] = useState(false)

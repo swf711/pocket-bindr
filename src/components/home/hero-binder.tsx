@@ -166,13 +166,12 @@ export function HeroBinder({ cards }: HeroBinderProps) {
 
         <div
           style={{ touchAction: 'none' }}
-          className="dark relative bg-black/80 border-2 border-muted rounded-xl p-3 shadow-inner"
+          className="dark relative bg-background border-2 border-muted rounded-xl p-3 shadow-inner"
           data-testid="hero-binder"
           onPointerDown={() => setPressed(true)}
         >
           {/* Binder spine decoration */}
-          <div className="absolute left-0 top-0 bottom-0 w-3 bg-muted/60 rounded-l-xl border-r border-muted" />
-          <div className="pl-3">
+          <div>
             <DndContext
               id="hero-binder-dnd"
               sensors={sensors}

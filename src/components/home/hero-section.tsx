@@ -19,7 +19,7 @@ export function HeroSection({ isLoggedIn, cards }: HeroSectionProps) {
       <div className="container mx-auto px-4 lg:px-16 pt-16 pb-12 overflow-visible">
         <div className="grid grid-cols-1 lg:grid-cols-2 overflow-visible gap-10 lg:gap-0">
           {/* Left: Text + CTA */}
-          <div className="flex flex-col justify-center gap-6 text-center lg:text-left">
+          <div className="flex flex-col justify-center gap-4 text-center lg:text-left">
             <div>
               <Image
                 src="/logo-light.svg"
@@ -40,11 +40,11 @@ export function HeroSection({ isLoggedIn, cards }: HeroSectionProps) {
               </p>
             </div>
             <div className="flex gap-3 flex-wrap justify-center lg:justify-start">
-              <Button asChild size="lg">
-                <Link href="/cards">開始搜尋 <ArrowRight /></Link>
+              <Button variant="default" className="h-14 px-6 rounded-3xl" asChild>
+                <Link href="/cards">開始搜尋</Link>
               </Button>
               {isLoggedIn && (
-                <Button asChild size="lg" variant="outline">
+                <Button variant="accent" className="h-14 px-6 rounded-3xl" asChild>
                   <Link href="/binders">我的卡冊</Link>
                 </Button>
               )}

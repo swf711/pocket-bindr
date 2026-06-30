@@ -47,7 +47,7 @@ export function FeaturePlatformSection() {
         </div>
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
           {FEATURES.map(({ icon: Icon, title, description }) => (
-            <Card key={title} className="[--card-spacing:--spacing(3)] sm:[--card-spacing:--spacing(6)]">
+            <Card key={title} className="[--card-spacing:--spacing(3)] sm:[--card-spacing:--spacing(6)] bg-primary-container text-on-primary-container">
               <CardHeader>
                 <CardTitle>
                   <div className="flex sm:flex-col items-center sm:items-start gap-3 sm:gap-5">

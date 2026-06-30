@@ -1,8 +1,12 @@
 'use client'
 
 import Link from 'next/link'
-import { Menu, Home, Search, BookOpen, Library, Settings, LogOut } from 'lucide-react'
+import { usePathname } from 'next/navigation'
+import { Menu, Settings, LogOut, X } from 'lucide-react'
 import { signOut } from 'next-auth/react'
+import { cn } from '@/lib/utils'
+import { isActiveNavLink, NAV_ACTIVE_CLASS } from '@/lib/nav-utils'
+import { NAV_ITEMS } from '@/components/layout/nav-items'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Separator } from '@/components/ui/separator'
@@ -23,6 +27,19 @@ interface MobileNavProps {
 
 export function MobileNav({ isLoggedIn, username, image }: MobileNavProps) {
   const initial = username.charAt(0).toUpperCase()
+  const pathname = usePathname()
+
+  const navLinkClass = (href: string) =>
+    cn(
+      'flex items-center gap-3 rounded-3xl p-4 text-sm font-medium transition-colors',
+      isActiveNavLink(pathname, href)
+        ? NAV_ACTIVE_CLASS
+        : 'text-muted-foreground hover:bg-surface-container-highest'
+    )
+  const navAriaCurrent = (href: string) =>
+    isActiveNavLink(pathname, href) ? ('page' as const) : undefined
+  const navIconFill = (href: string) =>
+    isActiveNavLink(pathname, href) ? 'currentColor' : 'none'
 
   return (
     <div className="md:hidden">
@@ -37,66 +54,57 @@ export function MobileNav({ isLoggedIn, username, image }: MobileNavProps) {
             <Menu className="size-5" />
           </Button>
         </SheetTrigger>
-        <SheetContent side="right" className="w-64">
-          <SheetHeader>
-            <SheetTitle>選單</SheetTitle>
+        <SheetContent side="right" showCloseButton={false} className="w-64 gap-0 bg-surface-container-low rounded-2xl">
+          <SheetHeader className='p-0'>
+            <SheetTitle></SheetTitle>
           </SheetHeader>
 
-          <nav className="flex flex-col gap-1">
+          <div className='px-7 flex justify-between items-center'>
+            <div className="text-muted-foreground text-sm py-4">
+              選單
+            </div>
             <SheetClose asChild>
-              <Link
-                href="/"
-                data-testid="mobile-nav-home"
-                className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+              <Button
+                variant="ghost"
+                size="icon-xs"
               >
-                <Home className="size-4" />
-                首頁
-              </Link>
+                <X className="size-5" />
+              </Button>
             </SheetClose>
-            <SheetClose asChild>
-              <Link
-                href="/cards"
-                data-testid="mobile-nav-cards"
-                className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-              >
-                <Search className="size-4" />
-                卡牌搜尋
-              </Link>
-            </SheetClose>
-            {isLoggedIn && (
-              <SheetClose asChild>
-                <Link
-                  href="/binders"
-                  data-testid="mobile-nav-binders"
-                  className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-                >
-                  <BookOpen className="size-4" />
-                  我的卡冊
-                </Link>
-              </SheetClose>
-            )}
-            {isLoggedIn && (
-              <SheetClose asChild>
-                <Link
-                  href="/collection"
-                  data-testid="mobile-nav-collection"
-                  className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-                >
-                  <Library className="size-4" />
-                  我的收藏
-                </Link>
-              </SheetClose>
-            )}
+          </div>
+
+          <nav className="flex flex-col px-3">
+            {NAV_ITEMS.filter((item) => !item.requiresAuth || isLoggedIn).map((item) => {
+              const Icon = item.icon
+              return (
+                <SheetClose asChild key={item.href}>
+                  <Link
+                    href={item.href}
+                    data-testid={`mobile-${item.testId}`}
+                    aria-current={navAriaCurrent(item.href)}
+                    className={navLinkClass(item.href)}
+                  >
+                    <Icon className="size-6" fill={navIconFill(item.href)} />
+                    {item.label}
+                  </Link>
+                </SheetClose>
+              )
+            })}
           </nav>
 
-          <Separator />
+          <div className='px-7'>
+            <Separator />
+            <div className="text-muted-foreground text-sm py-4">
+              使用者
+            </div>
+          </div>
 
           {isLoggedIn ? (
-            <div className="flex flex-col gap-1">
-              <div className="flex items-center gap-3 px-3 py-2">
-                <Avatar className="size-7">
+            <div className="flex flex-col px-3">
+              <div className="flex items-center gap-3 p-4">
+                <Avatar size="lg">
                   {image && <AvatarImage src={image} alt={username} />}
-                  <AvatarFallback>{initial}</AvatarFallback>
+                  <AvatarFallback className='bg-accent text-accent-foreground'>{initial}</AvatarFallback>
                 </Avatar>
                 <span className="max-w-36 truncate text-sm font-medium">
                   {username}
@@ -105,9 +113,10 @@ export function MobileNav({ isLoggedIn, username, image }: MobileNavProps) {
               <SheetClose asChild>
                 <Link
                   href="/settings"
-                  className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                  aria-current={navAriaCurrent('/settings')}
+                  className={navLinkClass('/settings')}
                 >
-                  <Settings className="size-4" />
+                  <Settings className="size-6" fill={navIconFill('/settings')} />
                   設定
                 </Link>
               </SheetClose>
@@ -115,9 +124,9 @@ export function MobileNav({ isLoggedIn, username, image }: MobileNavProps) {
                 <button
                   data-testid="menu-logout"
                   onClick={() => signOut({ callbackUrl: '/' })}
-                  className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                  className="flex w-full items-center gap-3 rounded-3xl p-4 text-sm font-medium transition-colors text-muted-foreground hover:bg-surface-container-highest"
                 >
-                  <LogOut className="size-4" />
+                  <LogOut className="size-6" />
                   登出
                 </button>
               </SheetClose>
@@ -125,13 +134,8 @@ export function MobileNav({ isLoggedIn, username, image }: MobileNavProps) {
           ) : (
             <div className="flex flex-col gap-2 px-3">
               <SheetClose asChild>
-                <Button variant="ghost" asChild className="w-full justify-start">
+                <Button variant="default" asChild className="w-full h-14 rounded-3xl">
                   <Link href="/login">登入</Link>
-                </Button>
-              </SheetClose>
-              <SheetClose asChild>
-                <Button variant="default" asChild className="w-full">
-                  <Link href="/register">註冊</Link>
                 </Button>
               </SheetClose>
             </div>

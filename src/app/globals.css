@@ -8,18 +8,18 @@
   --radius: 0.625rem;
   --background: oklch(98.1% 0.014 110.9);
   --foreground: oklch(22.2% 0.012 122.4);
-  --card: oklch(100.0% 0 0);
+  --card: oklch(98.1% 0.014 110.9);
   --card-foreground: oklch(22.2% 0.012 122.4);
   --popover: oklch(100.0% 0 0);
   --popover-foreground: oklch(22.2% 0.012 122.4);
   --primary: oklch(48.0% 0.088 248.7);
   --primary-foreground: oklch(100.0% 0 0);
-  --secondary: oklch(91.4% 0.030 256.0);
-  --secondary-foreground: oklch(39.6% 0.031 252.2);
+  --secondary: oklch(48.3% 0.0311 251.91);
+  --secondary-foreground: oklch(100.0% 0 0);
   --muted: oklch(93.0% 0.015 110.9);
   --muted-foreground: oklch(39.6% 0.014 256.8);
-  --accent: oklch(39.6% 0.082 97.0);
-  --accent-foreground: oklch(39.6% 0.082 97.0);
+  --accent: oklch(48.2% 0.0937 97.44);
+  --accent-foreground: oklch(100.0% 0 0);
   --destructive: oklch(50.6% 0.193 27.7);
   --destructive-foreground: oklch(100.0% 0 0);
   --border: oklch(82.9% 0.012 264.5);
@@ -38,23 +38,39 @@
   --sidebar-accent-foreground: oklch(39.6% 0.082 97.0);
   --sidebar-border: oklch(82.9% 0.012 264.5);
   --sidebar-ring: oklch(48.0% 0.088 248.7);
+
+  /* custom */
+  --surface-dim: oklch(88.8% 0.015 110.9);
+  --surface: oklch(98.1% 0.014 110.9);
+  --surface-bright: oklch(98.1% 0.014 110.9);
+  --surface-container-lowest: oklch(100.0% 0 0);
+  --surface-container-low: oklch(96.3% 0.015 110.9);
+  --surface-container: oklch(94.8% 0.016 110.6);
+  --surface-container-high: oklch(93.0% 0.015 110.9);
+  --surface-container-highest: oklch(91.2% 0.015 110.9);
+  --primary-container: oklch(91.2% 0.043 255.9);
+  --on-primary-container: oklch(39.4% 0.091 247.6);
+  --secondary-container: oklch(91.4% 0.030 256.0);
+  --on-secondary-container: oklch(39.6% 0.031 252.2);
+  --tertiary-container: oklch(91.2% 0.113 96.0);
+  --on-tertiary-container: oklch(39.6% 0.082 97.0);
 }
 
 .dark {
   --background: oklch(18.7% 0.012 122.6);
   --foreground: oklch(91.2% 0.015 110.9);
-  --card: oklch(22.2% 0.012 122.4);
+  --card: oklch(18.7% 0.012 122.6);
   --card-foreground: oklch(91.2% 0.015 110.9);
   --popover: oklch(22.2% 0.012 122.4);
   --popover-foreground: oklch(91.2% 0.015 110.9);
   --primary: oklch(82.6% 0.085 252.0);
   --primary-foreground: oklch(31.1% 0.080 245.9);
-  --secondary: oklch(39.6% 0.031 252.2);
-  --secondary-foreground: oklch(91.4% 0.030 256.0);
+  --secondary: oklch(82.8% 0.0308 256.02);
+  --secondary-foreground: oklch(31.09% 0.0315 248.87);
   --muted: oklch(28.4% 0.013 126.2);
   --muted-foreground: oklch(82.9% 0.012 264.5);
-  --accent: oklch(39.6% 0.082 97.0);
-  --accent-foreground: oklch(91.2% 0.113 96.0);
+  --accent: oklch(91.2% 0.113 96.0);
+  --accent-foreground: oklch(39.6% 0.082 97.0);
   --destructive: oklch(83.8% 0.089 26.8);
   --destructive-foreground: oklch(32.8% 0.134 27.3);
   --border: oklch(39.6% 0.014 256.8);
@@ -73,6 +89,22 @@
   --sidebar-accent-foreground: oklch(91.2% 0.113 96.0);
   --sidebar-border: oklch(39.6% 0.014 256.8);
   --sidebar-ring: oklch(82.6% 0.085 252.0);
+
+  /* custom */
+  --surface-dim: oklch(18.7% 0.012 122.6);
+  --surface: oklch(18.7% 0.012 122.6);
+  --surface-bright: oklch(34.4% 0.014 118.5);
+  --surface-container-lowest: oklch(16.3% 0.013 129.3);
+  --surface-container-low: oklch(22.2% 0.012 122.4);
+  --surface-container: oklch(23.9% 0.012 122.3);
+  --surface-container-high: oklch(28.4% 0.013 126.2);
+  --surface-container-highest: oklch(32.7% 0.014 124.0);
+  --primary-container: oklch(39.4% 0.091 247.6);
+  --on-primary-container: oklch(91.2% 0.043 255.9);
+  --secondary-container: oklch(39.6% 0.031 252.2);
+  --on-secondary-container: oklch(91.4% 0.030 256.0);
+  --tertiary-container: oklch(39.6% 0.082 97.0);
+  --on-tertiary-container: oklch(91.2% 0.113 96.0);
 }
 
 @theme inline {
@@ -111,6 +143,22 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+
+  /* custom */
+  --color-surface-dim: var(--surface-dim);
+  --color-surface: var(--surface);
+  --color-surface-bright: var(--surface-bright);
+  --color-surface-container-lowest: var(--surface-container-lowest);
+  --color-surface-container-low: var(--surface-container-low);
+  --color-surface-container: var(--surface-container);
+  --color-surface-container-high: var(--surface-container-high);
+  --color-surface-container-highest: var(--surface-container-highest);
+  --color-primary-container: var(--primary-container);
+  --color-on-primary-container: var(--on-primary-container);
+  --color-secondary-container: var(--secondary-container);
+  --color-on-secondary-container: var(--on-secondary-container);
+  --color-tertiary-container: var(--tertiary-container);
+  --color-on-tertiary-container: var(--on-tertiary-container);
 }
 
 @layer base {
@@ -131,12 +179,12 @@
 /*
  * 首頁全螢幕 snap scroll：真正的捲動容器是 window（<html>），不是內層 div
  * （body 為 min-h-full 會隨內容撐高）。由 HomeSnapScroll 於首頁掛載時加上此 class，
- * scroll-padding-top 抵銷 sticky header（h-14 = 3.5rem）使各區塊對齊於 header 下方。
+ * scroll-padding-top 抵銷 sticky header（h-16 = 4rem）使各區塊對齊於 header 下方。
  */
 html.home-snap-scroll {
   scroll-snap-type: y proximity;
   scroll-behavior: smooth;
-  scroll-padding-top: 3.5rem;
+  scroll-padding-top: 4rem;
 }
 
 /* Disable snap while any overlay/sheet/drawer is open (detects via [data-state="open"]).

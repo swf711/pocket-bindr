@@ -27,33 +27,37 @@ export function UserMenu({ username, image }: UserMenuProps) {
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
+          size="icon-lg"
           data-testid="user-menu-trigger"
-          className="flex items-center gap-2 px-2"
+          className='rounded-full'
         >
-          <Avatar className="size-7">
+          <Avatar size="lg">
             {image && <AvatarImage src={image} alt={username} />}
-            <AvatarFallback>{initial}</AvatarFallback>
+            <AvatarFallback className='bg-accent text-accent-foreground'>{initial}</AvatarFallback>
           </Avatar>
-          <span className="max-w-32 truncate text-sm font-medium">
-            {username}
-          </span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-48">
-        <DropdownMenuLabel className="truncate">{username}</DropdownMenuLabel>
-        <DropdownMenuSeparator />
+      <DropdownMenuContent align="end" className="w-48 border-none bg-surface-container-low shadow/30">
+        <DropdownMenuLabel className="h-12 px-3 flex items-center gap-2">
+          <Avatar size="lg">
+            {image && <AvatarImage src={image} alt={username} />}
+            <AvatarFallback className='bg-accent text-accent-foreground'>{initial}</AvatarFallback>
+          </Avatar>
+          <span className='w-full truncate text-foreground text-base'>{username}</span>
+        </DropdownMenuLabel>
+        <DropdownMenuSeparator className='mx-1' />
         <DropdownMenuItem asChild>
-          <Link href="/settings">
-            <Settings className="size-4" />
+          <Link href="/settings" className="rounded-md px-3 h-12 text-muted-foreground focus:bg-foreground/10 focus:text-muted-foreground cursor-pointer">
+            <Settings />
             設定
           </Link>
         </DropdownMenuItem>
-        <DropdownMenuSeparator />
         <DropdownMenuItem
           data-testid="menu-logout"
+          className="rounded-md px-3 h-12 text-muted-foreground focus:bg-foreground/10 focus:text-muted-foreground cursor-pointer"
           onClick={() => signOut({ callbackUrl: '/' })}
         >
-          <LogOut className="size-4" />
+          <LogOut />
           登出
         </DropdownMenuItem>
       </DropdownMenuContent>
