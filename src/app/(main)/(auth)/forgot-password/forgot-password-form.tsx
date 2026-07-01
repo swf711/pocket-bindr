@@ -41,7 +41,7 @@ export function ForgotPasswordForm() {
     <div className="flex flex-col gap-6">
       <Card>
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl">{t('forgot.title')}</CardTitle>
+          <CardTitle className="text-2xl" role="heading" aria-level={1}>{t('forgot.title')}</CardTitle>
           <CardDescription>
             {t('forgot.subtitle')}
           </CardDescription>

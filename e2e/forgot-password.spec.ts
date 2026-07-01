@@ -25,11 +25,12 @@ test.describe('忘記密碼頁面', () => {
     await expect(page.getByRole('button', { name: '送出重設連結' })).toBeVisible()
   })
 
-  test('已登入訪問 /forgot-password → redirect 至 /settings', async ({ page }) => {
+  test('已登入訪問 /forgot-password → redirect 至 /cards', async ({ page }) => {
+    // The (auth) layout redirects any logged-in user to /cards.
     await loginAs(page, user)
     await page.goto('/forgot-password')
-    await page.waitForURL('**/settings**')
-    expect(page.url()).toContain('/settings')
+    await page.waitForURL('**/cards**')
+    expect(page.url()).toContain('/cards')
   })
 
   test('提交任意 email 後顯示統一成功訊息（防 enumeration）', async ({ page }) => {
@@ -49,11 +50,12 @@ test.describe('忘記密碼頁面', () => {
 })
 
 test.describe('重設密碼頁面 — token 流程', () => {
-  test('已登入訪問 /reset-password → redirect 至 /settings', async ({ page }) => {
+  test('已登入訪問 /reset-password → redirect 至 /cards', async ({ page }) => {
+    // The (auth) layout redirects any logged-in user to /cards.
     await loginAs(page, user)
     await page.goto('/reset-password')
-    await page.waitForURL('**/settings**')
-    expect(page.url()).toContain('/settings')
+    await page.waitForURL('**/cards**')
+    expect(page.url()).toContain('/cards')
   })
 
   test('無 token 參數 → 顯示「連結無效」錯誤', async ({ page }) => {

@@ -47,7 +47,7 @@ test.describe('卡冊格位檢視頁', () => {
     ])
     try {
       await page.goto(`/binders/${binder.id}`)
-      const cardImg = page.locator('img').first()
+      const cardImg = page.locator('[data-testid="binder-spread-view"] img').first()
       await expect(cardImg).toBeVisible()
       const classes = await cardImg.getAttribute('class') ?? ''
       expect(classes).not.toContain('grayscale')
@@ -65,7 +65,7 @@ test.describe('卡冊格位檢視頁', () => {
     ])
     try {
       await page.goto(`/binders/${binder.id}`)
-      const cardImg = page.locator('img').first()
+      const cardImg = page.locator('[data-testid="binder-spread-view"] img').first()
       await expect(cardImg).toBeVisible()
       const classes = await cardImg.getAttribute('class') ?? ''
       expect(classes).toContain('grayscale')
@@ -107,7 +107,7 @@ test.describe('卡冊格位檢視頁', () => {
       await page.getByRole('button', { name: '取消' }).click()
       await expect(page.getByRole('alertdialog')).not.toBeVisible()
       // Card image still present
-      await expect(page.locator('img').first()).toBeVisible()
+      await expect(page.locator('[data-testid="binder-spread-view"] img').first()).toBeVisible()
     } finally {
       await cleanupBinder(binder.id)
     }
@@ -128,7 +128,7 @@ test.describe('卡冊格位檢視頁', () => {
       await deleteBtn.click()
       await page.getByRole('button', { name: '確認移除' }).click()
       // After delete, the slot becomes empty (no img)
-      await expect(page.locator('img')).toHaveCount(0)
+      await expect(page.locator('[data-testid="binder-spread-view"] img')).toHaveCount(0)
     } finally {
       await cleanupBinder(binder.id)
     }

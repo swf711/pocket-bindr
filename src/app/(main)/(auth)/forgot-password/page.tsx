@@ -1,11 +1,8 @@
-import { auth } from '@/lib/auth'
-import { redirect } from 'next/navigation'
 import { ForgotPasswordForm } from './forgot-password-form'
 
-export default async function ForgotPasswordPage() {
-  const session = await auth()
-  if (session) redirect('/settings')
-
+// Logged-in users are redirected away by the (auth) layout (→ /cards); no
+// page-level session guard needed here.
+export default function ForgotPasswordPage() {
   return (
     <div className="w-full max-w-md">
       <ForgotPasswordForm />

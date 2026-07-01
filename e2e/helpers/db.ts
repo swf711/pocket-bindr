@@ -1,4 +1,9 @@
-import 'dotenv/config'
+import { config } from 'dotenv'
+// Load .env then .env.local (override), matching Next.js precedence — some vars
+// (e.g. RESET_TOKEN_SECRET, consumed by ../../src/lib/reset-password) live only
+// in .env.local, which bare `dotenv/config` (reads .env only) would miss.
+config({ path: '.env' })
+config({ path: '.env.local', override: true })
 import bcrypt from 'bcryptjs'
 import { prisma } from '../../src/lib/prisma'
 import { createResetToken } from '../../src/lib/reset-password'

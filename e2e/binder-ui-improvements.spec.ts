@@ -64,8 +64,11 @@ test.describe('卡冊內頁 UI 改動', () => {
 
     await expect(page.getByTestId('card-detail-drawer')).toBeVisible()
     await expect(page.getByText(card.name)).toBeVisible()
-    await expect(page.getByTestId('modal-binder-select')).toHaveCount(0)
-    await expect(page.getByTestId('modal-add-btn')).toHaveCount(0)
+    // The binder-detail drawer now exposes the add-to-binder section with
+    // "this binder" preselected (add-to-binder-from-card-view feature); the
+    // add flow itself is covered by add-to-binder-from-card-view.spec.ts.
+    await expect(page.getByTestId('modal-binder-select')).toBeVisible()
+    await expect(page.getByTestId('modal-add-btn')).toBeVisible()
   })
 
   test('封面面板搜尋卡冊內卡牌並跳頁＋highlight', async ({ page }) => {

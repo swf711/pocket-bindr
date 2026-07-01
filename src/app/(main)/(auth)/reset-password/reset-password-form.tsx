@@ -91,7 +91,7 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
     <div className="flex flex-col gap-6">
       <Card>
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl">{t('reset.title')}</CardTitle>
+          <CardTitle className="text-2xl" role="heading" aria-level={1}>{t('reset.title')}</CardTitle>
           <CardDescription>{t('reset.subtitle')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
