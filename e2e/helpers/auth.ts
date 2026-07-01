@@ -21,7 +21,7 @@ export function getTestUser(specName: string): TestUser {
     throw new Error(`getTestUser: specName 只允許 [a-z0-9]，收到 "${specName}"`)
   }
   return {
-    email: `e2e-${specName}@tcgbinder.com`,
+    email: `e2e-${specName}@pocketbindr.com`,
     username: `e2e${specName}`,
     password: 'E2eTest1234!',
   }
@@ -94,7 +94,7 @@ export async function loginAsOAuthUser(
 // ---- 舊 API（保留為 wrapper，未遷移的呼叫點繼續可用）----
 
 export const TEST_USER: TestUser = {
-  email: 'e2e@tcgbinder.com',
+  email: 'e2e@pocketbindr.com',
   username: 'e2euser',
   password: 'E2eTest1234!',
 }

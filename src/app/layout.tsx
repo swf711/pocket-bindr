@@ -41,7 +41,7 @@ export default async function RootLayout({
       suppressHydrationWarning
     >
       <head>
-        <meta name="apple-mobile-web-app-title" content="TCGBinder" />
+        <meta name="apple-mobile-web-app-title" content="PocketBindr" />
       </head>
       <body className="min-h-full flex flex-col">
         <NextIntlClientProvider locale={locale} messages={messages}>

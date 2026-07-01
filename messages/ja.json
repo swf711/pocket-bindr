@@ -1,6 +1,6 @@
 {
   "common": {
-    "appName": "TCG Binder",
+    "appName": "PocketBindr",
     "login": "ログイン",
     "settings": "設定",
     "logout": "ログアウト",
@@ -16,7 +16,7 @@
     "userSection": "アカウント"
   },
   "footer": {
-    "rights": "© 2026 TCG Binder, All rights reserved.",
+    "rights": "© 2026 PocketBindr, All rights reserved.",
     "disclaimer": "本サイトは任天堂、株式会社ポケモン、バンダイおよび関連商標権者とは一切関係ありません。カード画像の著作権は各権利者に帰属し、コレクション整理の参考用途でのみ提供されます。"
   },
   "home": {
@@ -40,7 +40,7 @@
       "more": { "title": "その他の機能", "description": "開発を継続中。今後の便利な機能にご期待ください。" }
     },
     "aboutTitle": "について",
-    "aboutBody": "TCG Binder は私が一人で開発しています。カードプレイヤーのために、最も直感的で使いやすいコレクション管理ツールを目指しています。ご意見やご質問があれば、以下の方法でお気軽にご連絡ください。"
+    "aboutBody": "PocketBindr は私が一人で開発しています。カードプレイヤーのために、最も直感的で使いやすいコレクション管理ツールを目指しています。ご意見やご質問があれば、以下の方法でお気軽にご連絡ください。"
   },
   "auth": {
     "email": "メールアドレス",
@@ -62,7 +62,7 @@
     },
     "login": {
       "title": "おかえりなさい",
-      "subtitle": "TCG Binder アカウントにログインして、すべてのバインダー機能を利用しましょう",
+      "subtitle": "PocketBindr アカウントにログインして、すべてのバインダー機能を利用しましょう",
       "submit": "ログイン",
       "submitting": "ログイン中...",
       "passwordResetAlert": "パスワードがリセットされました。新しいパスワードでログインしてください。",
@@ -79,7 +79,7 @@
     },
     "register": {
       "title": "アカウント作成",
-      "subtitle": "情報を入力して TCG Binder アカウントを作成",
+      "subtitle": "情報を入力して PocketBindr アカウントを作成",
       "username": "ユーザー名",
       "submit": "登録",
       "submitting": "登録中...",
@@ -173,7 +173,7 @@
     "toggle": "言語を変更"
   },
   "metadata": {
-    "title": "TCG Binder",
+    "title": "PocketBindr",
     "description": "オンラインTCGカードコレクション管理——カードを検索し、所有／欲しいを記録し、カスタムバインダーに整理。"
   },
   "binder": {

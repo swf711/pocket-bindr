@@ -11,7 +11,7 @@ const hasRedis = !!process.env.UPSTASH_REDIS_REST_URL
 
 // Localhost requests arrive as 127.0.0.1 at the Next.js server in E2E
 const TEST_IP = '127.0.0.1'
-const TEST_EMAIL = 'ratelimit-e2e@tcgbinder.com'
+const TEST_EMAIL = 'ratelimit-e2e@pocketbindr.com'
 
 test.describe('Rate limit — POST /api/auth/forgot-password', () => {
   test.skip(!hasRedis, 'Requires UPSTASH_REDIS_REST_URL (real Redis)')
@@ -65,7 +65,7 @@ test.describe('Rate limit — POST /api/auth/register', () => {
     // Send 10 register attempts — all hit IP limit check first (will fail for other reasons but count toward limit)
     for (let i = 0; i < 10; i++) {
       const res = await request.post('/api/auth/register', {
-        data: { email: `rl-reg-${i}@tcgbinder.com`, username: `rlreg${i}`, password: 'TestPass1!' },
+        data: { email: `rl-reg-${i}@pocketbindr.com`, username: `rlreg${i}`, password: 'TestPass1!' },
       })
       // Each request passes the IP rate limit (returns non-429)
       expect(res.status(), `request ${i + 1} should not be rate limited`).not.toBe(429)
@@ -73,7 +73,7 @@ test.describe('Rate limit — POST /api/auth/register', () => {
 
     // 11th request — should be rate limited at IP level
     const res = await request.post('/api/auth/register', {
-      data: { email: 'rl-reg-over@tcgbinder.com', username: 'rlregover', password: 'TestPass1!' },
+      data: { email: 'rl-reg-over@pocketbindr.com', username: 'rlregover', password: 'TestPass1!' },
     })
     expect(res.status()).toBe(429)
     const body = await res.json()

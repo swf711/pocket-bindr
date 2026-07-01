@@ -50,9 +50,9 @@ export async function sendResetPasswordEmail(
 
   const resend = new Resend(process.env.RESEND_API_KEY)
   const { error } = await resend.emails.send({
-    from: 'TCG Binder <noreply@tcgbinder.app>',
+    from: process.env.EMAIL_FROM ?? 'PocketBindr <noreply@send.pocketbindr.app>',
     to,
-    subject: '重設您的 TCG Binder 密碼',
+    subject: '重設您的 PocketBindr 密碼',
     html: generateResetEmailHtml(token, username),
   })
 

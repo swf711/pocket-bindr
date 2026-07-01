@@ -27,14 +27,14 @@ export async function HeroSection({ isLoggedIn, cards }: HeroSectionProps) {
                 alt='logo'
                 width={320}
                 height={600}
-                className="light:block dark:hidden w-3xs sm:w-xs mx-auto lg:mx-0 mb-4"
+                className="light:block dark:hidden w-sm sm:w-lg mx-auto lg:mx-0 mb-4"
               />
               <Image
                 src="/logo-dark.svg"
                 alt='logo'
                 width={320}
                 height={600}
-                className="dark:block hidden w-3xs sm:w-xs mx-auto lg:mx-0 mb-4"
+                className="dark:block hidden w-sm sm:w-lg mx-auto lg:mx-0 mb-4"
               />
               <p className="text-muted-foreground text-lg mx-auto lg:mx-0">
                 {t('tagline')}

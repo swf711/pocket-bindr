@@ -64,7 +64,7 @@ describe('Footer', () => {
   it('包含版權文字', () => {
     vi.mocked(usePathname).mockReturnValue('/cards')
     render(<Footer />)
-    expect(screen.getByTestId('site-footer')).toHaveTextContent('© 2026 TCG Binder')
+    expect(screen.getByTestId('site-footer')).toHaveTextContent('© 2026 PocketBindr')
   })
 
   it('包含免責聲明', () => {

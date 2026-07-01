@@ -1,6 +1,6 @@
 {
   "common": {
-    "appName": "TCG Binder",
+    "appName": "PocketBindr",
     "login": "Log in",
     "settings": "Settings",
     "logout": "Log out",
@@ -16,7 +16,7 @@
     "userSection": "Account"
   },
   "footer": {
-    "rights": "© 2026 TCG Binder, All rights reserved.",
+    "rights": "© 2026 PocketBindr, All rights reserved.",
     "disclaimer": "This site is not affiliated with Nintendo, The Pokémon Company, Bandai, or any related trademark holders. Card images are copyright of their respective owners and are provided for collection reference only."
   },
   "home": {
@@ -40,7 +40,7 @@
       "more": { "title": "More Features", "description": "Under active development — stay tuned for more useful features." }
     },
     "aboutTitle": "About",
-    "aboutBody": "TCG Binder is developed solo by me, aiming to build the most intuitive and easy-to-use collection management tool for card players. If you have any suggestions or questions, feel free to reach out through the channels below."
+    "aboutBody": "PocketBindr is developed solo by me, aiming to build the most intuitive and easy-to-use collection management tool for card players. If you have any suggestions or questions, feel free to reach out through the channels below."
   },
   "auth": {
     "email": "Email",
@@ -62,7 +62,7 @@
     },
     "login": {
       "title": "Welcome back",
-      "subtitle": "Sign in to your TCG Binder account to use all binder features",
+      "subtitle": "Sign in to your PocketBindr account to use all binder features",
       "submit": "Log in",
       "submitting": "Logging in...",
       "passwordResetAlert": "Your password has been reset. Please log in with your new password.",
@@ -79,7 +79,7 @@
     },
     "register": {
       "title": "Create account",
-      "subtitle": "Fill in your details to create a TCG Binder account",
+      "subtitle": "Fill in your details to create a PocketBindr account",
       "username": "Username",
       "submit": "Sign up",
       "submitting": "Signing up...",
@@ -173,7 +173,7 @@
     "toggle": "Change language"
   },
   "metadata": {
-    "title": "TCG Binder",
+    "title": "PocketBindr",
     "description": "Online TCG card collection manager — search cards, mark owned/wanted, and organize them into custom binders."
   },
   "binder": {

@@ -126,7 +126,7 @@ test('刪除帳號 dialog：輸入 DELETE 後確認按鈕 enabled（不點擊確
 
 // ---- 解綁防鎖死（OAuth-only user）----
 
-const OAUTH_ONLY_EMAIL = 'e2e-oauthonly@tcgbinder.com'
+const OAUTH_ONLY_EMAIL = 'e2e-oauthonly@pocketbindr.com'
 const OAUTH_ONLY_USERNAME = 'e2eoauthonly'
 const OAUTH_ONLY_PROVIDER_ID = 'mock-e2e-provider-001'
 
@@ -152,7 +152,7 @@ test.describe('解綁防鎖死', () => {
 
 // ---- 純 OAuth 使用者設定密碼 ----
 
-const SET_PW_EMAIL = 'e2e-setpw@tcgbinder.com'
+const SET_PW_EMAIL = 'e2e-setpw@pocketbindr.com'
 const SET_PW_USERNAME = 'e2esetpw'
 const SET_PW_PROVIDER_ID = 'mock-e2e-setpw-001'
 

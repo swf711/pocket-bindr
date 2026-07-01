@@ -1,4 +1,4 @@
-# TCG Binder
+# PocketBindr
 
 線上 TCG 卡牌收藏管理網站。訪客可搜尋卡牌；登入後可標記**擁有／想要**並放入自訂格式的**卡冊（binder）**，
 支援雙頁展開瀏覽、拖拉排列格位，以及唯讀公開分享連結。目前涵蓋 Pokémon TCG 與 One Piece TCG
@@ -6,11 +6,12 @@
 
 ## 技術棧
 
-- **Next.js 15**（App Router, TypeScript）
+- **Next.js 16**（App Router, TypeScript）
 - **Prisma** + **PostgreSQL**（Supabase）
 - **NextAuth.js v5**（Email/密碼 ＋ Google / Discord OAuth）
 - **Upstash Redis**（rate limiting）
 - **Tailwind CSS** + **shadcn/ui**
+- **next-intl**（UI 多語言：繁中 / 英 / 日）
 - **Vitest**（單元）＋ **Playwright**（E2E）
 - **pnpm**
 

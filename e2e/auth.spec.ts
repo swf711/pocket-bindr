@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test'
 
-const TEST_EMAIL = `e2e-${Date.now()}@tcgbinder.com`
+const TEST_EMAIL = `e2e-${Date.now()}@pocketbindr.com`
 const TEST_USERNAME = `e2euser${Date.now()}`
 const TEST_PASSWORD = 'Test1234!'
 
@@ -113,7 +113,7 @@ test.describe.serial('Auth Flow', () => {
     await page.goto('/register')
     await page.waitForLoadState('networkidle')
 
-    await page.getByLabel('Email').fill(`weak-${Date.now()}@tcgbinder.com`)
+    await page.getByLabel('Email').fill(`weak-${Date.now()}@pocketbindr.com`)
     await page.getByLabel('使用者名稱').fill(`weak${Date.now()}`)
     await page.getByLabel('密碼', { exact: true }).fill('short')
     await page.getByLabel('確認密碼').fill('short')
@@ -127,7 +127,7 @@ test.describe.serial('Auth Flow', () => {
     await page.goto('/register')
     await page.waitForLoadState('networkidle')
 
-    await page.getByLabel('Email').fill(`mismatch-${Date.now()}@tcgbinder.com`)
+    await page.getByLabel('Email').fill(`mismatch-${Date.now()}@pocketbindr.com`)
     await page.getByLabel('使用者名稱').fill(`mismatch${Date.now()}`)
     await page.getByLabel('密碼', { exact: true }).fill('password123')
     await page.getByLabel('確認密碼').fill('password999')

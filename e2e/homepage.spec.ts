@@ -114,7 +114,7 @@ test.describe('首頁', () => {
 
     // 首頁第四區塊的 inline footer 出現
     await expect(page.getByTestId('inline-footer')).toBeVisible()
-    await expect(page.getByTestId('inline-footer')).toContainText('TCG Binder')
+    await expect(page.getByTestId('inline-footer')).toContainText('PocketBindr')
   })
 
   test('Scenario 9: 平台功能區塊包含「分享」相關文字', async ({ page }) => {
