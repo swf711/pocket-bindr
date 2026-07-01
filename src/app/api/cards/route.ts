@@ -7,6 +7,7 @@ import { Game, Language, Prisma } from '@prisma/client'
 import { groupAndSortSets } from '@/lib/sort-card-sets'
 import { getCollectionStatusMap, resolveCollectionLookupId } from '@/lib/card-collection-status'
 import { parseSetCardQuery, buildSetCardPrismaWhere, buildSetCardSql } from '@/lib/parse-set-card-query'
+import { buildCrossLangExpansion } from '@/lib/cross-language-search'
 
 export async function GET(req: NextRequest) {
   try {
@@ -31,6 +32,7 @@ function fetchCardPage(
     async () => {
       const lang = language as Language
       const parsed = q ? parseSetCardQuery(q) : null
+      const { nameTerms, cardIds } = await buildCrossLangExpansion(prisma, game as Game, lang, q)
       const where = {
         game: game as Game,
         language: lang,
@@ -39,6 +41,8 @@ function fetchCardPage(
             { name: { contains: q, mode: 'insensitive' as const } },
             { externalId: { startsWith: q, mode: 'insensitive' as const } },
             ...(parsed ? [buildSetCardPrismaWhere(parsed)] : []),
+            ...nameTerms.map(term => ({ name: { contains: term, mode: 'insensitive' as const } })),
+            ...(cardIds.length ? [{ id: { in: cardIds } }] : []),
           ],
         }),
         ...(setId && { setId }),
@@ -72,12 +76,15 @@ function fetchCardPage(
           Prisma.sql`"language"::text = ${language}`,
         ]
         if (q) {
-          const baseSql = Prisma.sql`("name" ILIKE ${'%' + q + '%'} OR "externalId" ILIKE ${q + '%'})`
-          if (parsed) {
-            conds.push(Prisma.sql`(${baseSql} OR ${buildSetCardSql(parsed)})`)
-          } else {
-            conds.push(baseSql)
+          const orParts = [Prisma.sql`"name" ILIKE ${'%' + q + '%'}`, Prisma.sql`"externalId" ILIKE ${q + '%'}`]
+          if (parsed) orParts.push(buildSetCardSql(parsed))
+          for (const term of nameTerms) {
+            orParts.push(Prisma.sql`"name" ILIKE ${'%' + term + '%'}`)
           }
+          if (cardIds.length) {
+            orParts.push(Prisma.sql`"id" = ANY(${cardIds}::text[])`)
+          }
+          conds.push(Prisma.sql`(${Prisma.join(orParts, ' OR ')})`)
         }
         const whereSql = Prisma.join(conds, ' AND ')
         const [idRows, count] = await Promise.all([

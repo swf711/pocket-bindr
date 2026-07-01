@@ -2,10 +2,23 @@
  * @vitest-environment jsdom
  */
 import '@testing-library/jest-dom/vitest'
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render as baseRender, screen, fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { TooltipProvider } from '@/components/ui/tooltip'
+
+// CardDetailDrawer 內部無條件呼叫 new ResizeObserver()（量測 overlay 高度），
+// jsdom 本身不提供此 API，需手動 stub（同 use-scale-fit.test.ts 慣例）。
+beforeEach(() => {
+  vi.stubGlobal(
+    'ResizeObserver',
+    vi.fn().mockImplementation(() => ({ observe: vi.fn(), disconnect: vi.fn(), unobserve: vi.fn() })),
+  )
+})
+
+afterEach(() => {
+  vi.unstubAllGlobals()
+})
 
 // icon-only 導航按鈕已改用 Tooltip，需 TooltipProvider context（正式環境由 root layout 提供）
 const render = ((ui: Parameters<typeof baseRender>[0]) =>
