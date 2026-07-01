@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { toast } from 'sonner'
+import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { PasswordInput } from '@/components/auth/password-input'
@@ -10,6 +11,8 @@ import { FieldDescription } from '@/components/ui/field'
 import { getPasswordStrength } from '@/lib/password-policy'
 
 export function PasswordForm() {
+  const t = useTranslations('settings.changePassword')
+  const tAuth = useTranslations('auth')
   const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -30,19 +33,19 @@ export function PasswordForm() {
       if (!res.ok) {
         const data = await res.json().catch(() => ({}))
         if (data?.error === 'WRONG_PASSWORD') {
-          setError('目前密碼不正確')
+          setError(t('wrongPassword'))
         } else if (data?.error === 'INVALID_NEW_PASSWORD') {
-          setError('新密碼至少需要 8 個字元')
+          setError(t('newPasswordTooShort'))
         } else {
-          toast.error('更新失敗')
+          toast.error(t('updateFailed'))
         }
         return
       }
-      toast('密碼已更新')
+      toast(t('updateSuccess'))
       setCurrentPassword('')
       setNewPassword('')
     } catch {
-      toast.error('更新失敗')
+      toast.error(t('updateFailed'))
     } finally {
       setLoading(false)
     }
@@ -51,7 +54,7 @@ export function PasswordForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
       <div className="space-y-1.5">
-        <Label htmlFor="current-password">目前密碼</Label>
+        <Label htmlFor="current-password">{t('currentPasswordLabel')}</Label>
         <PasswordInput
           id="current-password"
           data-testid="current-password-input"
@@ -64,7 +67,7 @@ export function PasswordForm() {
         />
       </div>
       <div className="space-y-1.5">
-        <Label htmlFor="new-password">新密碼</Label>
+        <Label htmlFor="new-password">{t('newPasswordLabel')}</Label>
         <PasswordInput
           id="new-password"
           data-testid="new-password-input"
@@ -74,12 +77,12 @@ export function PasswordForm() {
             setError(null)
           }}
           autoComplete="new-password"
-          placeholder="最少 8 個字元"
+          placeholder={t('newPasswordPlaceholder')}
         />
         {newPassword.length > 0 && (
           <div className="space-y-1" data-testid="password-strength">
             <Progress value={((strength.score + 1) / 4) * 100} className="h-1.5" />
-            <FieldDescription>密碼強度：{strength.label}</FieldDescription>
+            <FieldDescription>{tAuth('strength.label', { level: tAuth(`strength.${strength.score}`) })}</FieldDescription>
           </div>
         )}
         {error && (
@@ -93,7 +96,7 @@ export function PasswordForm() {
         data-testid="save-password-btn"
         disabled={loading}
       >
-        {loading ? '更新中…' : '修改密碼'}
+        {loading ? t('updating') : t('submit')}
       </Button>
     </form>
   )

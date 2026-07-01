@@ -7,6 +7,10 @@ export default defineConfig({
   workers: 1,
   use: {
     baseURL: 'http://localhost:3000',
+    // Pin the browser's Accept-Language to zh-TW so first-visit locale detection
+    // (src/i18n/locale.ts resolveLocale) resolves to the source locale — existing
+    // specs assert on Chinese text and must not be affected by CI runner locale.
+    locale: 'zh-TW',
   },
   webServer: {
     // Run E2E against a production build (next start), not `next dev`.

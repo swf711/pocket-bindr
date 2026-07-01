@@ -1,6 +1,7 @@
 'use client'
 
 import { signIn } from 'next-auth/react'
+import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 
 interface GoogleLinkSectionProps {
@@ -8,13 +9,15 @@ interface GoogleLinkSectionProps {
 }
 
 export function GoogleLinkSection({ isGoogleLinked }: GoogleLinkSectionProps) {
+  const t = useTranslations('settings.oauth')
+
   if (isGoogleLinked) {
     return (
       <p
         data-testid="google-linked-badge"
         className="text-sm text-muted-foreground"
       >
-        ✓ 已連結 Google 帳號
+        {t('googleLinkedBadge')}
       </p>
     )
   }
@@ -25,7 +28,7 @@ export function GoogleLinkSection({ isGoogleLinked }: GoogleLinkSectionProps) {
       data-testid="google-link-btn"
       onClick={() => signIn('google', { callbackUrl: '/settings' })}
     >
-      連結 Google 帳號
+      {t('linkGoogle')}
     </Button>
   )
 }

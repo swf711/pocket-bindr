@@ -1,6 +1,7 @@
 'use client'
 
 import { Search } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group'
 import { SeriesCombobox } from './series-combobox'
 import { SetGroup } from '@/types/card'
@@ -23,6 +24,7 @@ export function CardFilters({
   onSetChange,
   className,
 }: CardFiltersProps) {
+  const t = useTranslations('cards')
   return (
     <div className={cn('flex flex-col sm:flex-row gap-3', className)}>
       <SeriesCombobox
@@ -37,7 +39,7 @@ export function CardFilters({
         <InputGroupInput
           data-testid="search-input"
           type="text"
-          placeholder="搜尋卡牌名稱或型號..."
+          placeholder={t('searchPlaceholder')}
           value={query}
           onChange={(e) => onQueryChange(e.target.value)}
         />

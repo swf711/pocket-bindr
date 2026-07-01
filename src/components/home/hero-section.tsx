@@ -1,16 +1,17 @@
 import Link from 'next/link'
+import { getTranslations } from 'next-intl/server'
 import { Button } from '@/components/ui/button'
 import { HeroBinder } from './hero-binder'
 import type { ShowcaseCard } from '@/types/homepage'
 import Image from 'next/image'
-import { ArrowRight } from 'lucide-react'
 
 interface HeroSectionProps {
   isLoggedIn: boolean
   cards: ShowcaseCard[]
 }
 
-export function HeroSection({ isLoggedIn, cards }: HeroSectionProps) {
+export async function HeroSection({ isLoggedIn, cards }: HeroSectionProps) {
+  const t = await getTranslations('home')
   return (
     <section
       className="h-screen snap-start flex items-start"
@@ -36,21 +37,21 @@ export function HeroSection({ isLoggedIn, cards }: HeroSectionProps) {
                 className="dark:block hidden w-3xs sm:w-xs mx-auto lg:mx-0 mb-4"
               />
               <p className="text-muted-foreground text-lg mx-auto lg:mx-0">
-                搜尋、收藏、整理你的集換式卡牌。建立專屬卡冊，隨時掌握收藏進度。
+                {t('tagline')}
               </p>
             </div>
             <div className="flex gap-3 flex-wrap justify-center lg:justify-start">
               <Button variant="default" className="h-14 px-6 rounded-3xl" asChild>
-                <Link href="/cards">開始搜尋</Link>
+                <Link href="/cards">{t('startSearch')}</Link>
               </Button>
               {isLoggedIn && (
                 <Button variant="accent" className="h-14 px-6 rounded-3xl" asChild>
-                  <Link href="/binders">我的卡冊</Link>
+                  <Link href="/binders">{t('myBinders')}</Link>
                 </Button>
               )}
             </div>
             <p className="text-sm text-muted-foreground">
-              支援 Pokémon TCG・One Piece TCG・繁中／日文／英文
+              {t('supports')}
             </p>
           </div>
 

@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { Mail } from 'lucide-react'
+import { getTranslations } from 'next-intl/server'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar'
 import Image from 'next/image'
@@ -32,7 +33,9 @@ function GitHubIcon({ className }: { className?: string }) {
   )
 }
 
-export function WhySection() {
+export async function WhySection() {
+  const t = await getTranslations('home')
+  const tFooter = await getTranslations('footer')
   return (
     <section
       className="min-h-screen snap-start flex flex-col"
@@ -48,10 +51,9 @@ export function WhySection() {
         </Avatar>
 
         <div className="space-y-4 max-w-xl">
-          <h2 className="text-3xl font-bold">關於</h2>
+          <h2 className="text-3xl font-bold">{t('aboutTitle')}</h2>
           <p className="text-muted-foreground leading-relaxed">
-            TCG Binder 由我一人獨立開發，希望為卡牌玩家打造最直覺、好用的收藏管理工具。
-            如果你有任何建議或問題，歡迎透過以下方式聯絡我。
+            {t('aboutBody')}
           </p>
         </div>
 
@@ -103,11 +105,10 @@ export function WhySection() {
             className="dark:block hidden mx-auto"
           />
           <p className="text-sm text-muted-foreground">
-            © 2026 TCG Binder, All rights reserved.
+            {tFooter('rights')}
           </p>
           <p className="text-xs text-muted-foreground max-w-2xl mx-auto">
-            本站與 Nintendo、The Pokémon Company、Bandai 及相關商標持有人無任何關聯。
-            卡牌圖片版權歸原版權方所有，僅供收藏整理參考用途。
+            {tFooter('disclaimer')}
           </p>
         </div>
       </footer>

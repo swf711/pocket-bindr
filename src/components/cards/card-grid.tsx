@@ -1,5 +1,6 @@
 'use client'
 
+import { useTranslations } from 'next-intl'
 import { Skeleton } from '@/components/ui/skeleton'
 import { CardWithCollectionStatus } from '@/types/card'
 import { CardItem } from './card-item'
@@ -14,6 +15,7 @@ export const cardGridClassName =
   'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4'
 
 export function CardGrid({ cards, onCardClick, loading = false }: CardGridProps) {
+  const t = useTranslations('cards')
   if (loading) {
     return (
       <div data-testid="card-grid-loading" className={cardGridClassName}>
@@ -27,7 +29,7 @@ export function CardGrid({ cards, onCardClick, loading = false }: CardGridProps)
   }
 
   if (cards.length === 0) {
-    return <div className="text-center py-12 text-muted-foreground">沒有找到卡牌</div>
+    return <div className="text-center py-12 text-muted-foreground">{t('noResults')}</div>
   }
 
   return (

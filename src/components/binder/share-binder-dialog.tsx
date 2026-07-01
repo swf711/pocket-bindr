@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { Copy, Share2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -29,6 +30,7 @@ export function ShareBinderDialog({
   onOpenChange,
   onTokenChange,
 }: ShareBinderDialogProps) {
+  const t = useTranslations('binder.shareDialog')
   const [token, setToken] = useState<string | null>(initialToken)
   const [loading, setLoading] = useState(false)
 
@@ -42,9 +44,9 @@ export function ShareBinderDialog({
       const data = await res.json()
       setToken(data.shareToken)
       onTokenChange(data.shareToken)
-      toast('已啟用公開分享')
+      toast(t('enableSuccess'))
     } catch {
-      toast.error('啟用失敗，請再試一次')
+      toast.error(t('enableFailed'))
     } finally {
       setLoading(false)
     }
@@ -57,9 +59,9 @@ export function ShareBinderDialog({
       if (!res.ok) throw new Error()
       setToken(null)
       onTokenChange(null)
-      toast('已撤銷公開分享')
+      toast(t('revokeSuccess'))
     } catch {
-      toast.error('撤銷失敗，請再試一次')
+      toast.error(t('revokeFailed'))
     } finally {
       setLoading(false)
     }
@@ -67,7 +69,7 @@ export function ShareBinderDialog({
 
   async function handleCopy() {
     await navigator.clipboard.writeText(shareUrl)
-    toast('已複製連結')
+    toast(t('linkCopied'))
   }
 
   return (
@@ -76,19 +78,17 @@ export function ShareBinderDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Share2 className="h-4 w-4" />
-            公開分享卡冊
+            {t('title')}
           </DialogTitle>
           <DialogDescription>
-            {token
-              ? '任何持有此連結的人皆可瀏覽（純唯讀，無法編輯）'
-              : '啟用後產生公開連結，任何人皆可瀏覽此卡冊（純唯讀）'}
+            {token ? t('descriptionEnabled') : t('descriptionDisabled')}
           </DialogDescription>
         </DialogHeader>
 
         {token ? (
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label>公開連結</Label>
+              <Label>{t('publicLink')}</Label>
               <div className="flex gap-2">
                 <Input
                   readOnly
@@ -100,7 +100,7 @@ export function ShareBinderDialog({
                   variant="outline"
                   size="icon"
                   onClick={handleCopy}
-                  aria-label="複製連結"
+                  aria-label={t('copyLink')}
                   data-testid="copy-share-url-btn"
                 >
                   <Copy className="h-4 w-4" />
@@ -115,7 +115,7 @@ export function ShareBinderDialog({
               disabled={loading}
               data-testid="revoke-share-btn"
             >
-              撤銷分享
+              {t('revokeShare')}
             </Button>
           </div>
         ) : (
@@ -125,7 +125,7 @@ export function ShareBinderDialog({
             disabled={loading}
             data-testid="enable-share-btn"
           >
-            啟用公開分享
+            {t('enableShare')}
           </Button>
         )}
       </DialogContent>

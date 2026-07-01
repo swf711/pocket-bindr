@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { signIn } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -27,6 +28,7 @@ interface LoginModalProps {
 
 export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
   const router = useRouter()
+  const t = useTranslations('auth')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -42,7 +44,7 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
       router.refresh()
       onSuccess()
     } else {
-      setError('登入失敗，請確認帳號密碼')
+      setError(t('modal.failed'))
     }
   }
 
@@ -50,12 +52,12 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
     <Dialog open={isOpen} onOpenChange={open => { if (!open) onClose() }}>
       <DialogContent data-testid="login-modal" className="sm:max-w-sm">
         <DialogHeader>
-          <DialogTitle>登入以繼續</DialogTitle>
+          <DialogTitle>{t('modal.title')}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <FieldGroup>
             <Field>
-              <FieldLabel htmlFor="modal-email">Email</FieldLabel>
+              <FieldLabel htmlFor="modal-email">{t('email')}</FieldLabel>
               <Input
                 id="modal-email"
                 type="email"
@@ -66,7 +68,7 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
             </Field>
 
             <Field>
-              <FieldLabel htmlFor="modal-password">密碼</FieldLabel>
+              <FieldLabel htmlFor="modal-password">{t('password')}</FieldLabel>
               <PasswordInput
                 id="modal-password"
                 value={password}
@@ -80,12 +82,12 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
 
             <Field>
               <Button type="submit" disabled={loading}>
-                {loading ? '登入中...' : '登入'}
+                {loading ? t('login.submitting') : t('login.submit')}
               </Button>
             </Field>
 
             <FieldSeparator className="*:data-[slot=field-separator-content]:bg-background">
-              或以下方式登入
+              {t('login.orLoginWith')}
             </FieldSeparator>
 
             <Field className="grid grid-cols-2 gap-4">
@@ -96,7 +98,7 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
                     fill="currentColor"
                   />
                 </svg>
-                <span className="sr-only">以 Google 登入</span>
+                <span className="sr-only">{t('loginWithGoogle')}</span>
               </Button>
 
               <Button variant="outline" type="button" onClick={() => signIn('discord')}>
@@ -106,7 +108,7 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
                     fill="currentColor"
                   />
                 </svg>
-                <span className="sr-only">以 Discord 登入</span>
+                <span className="sr-only">{t('loginWithDiscord')}</span>
               </Button>
             </Field>
           </FieldGroup>

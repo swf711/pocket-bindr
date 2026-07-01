@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { Check, ChevronsUpDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -31,6 +32,7 @@ interface SeriesComboboxProps {
 
 export function SeriesCombobox({ groups, selectedSetId, onSetChange }: SeriesComboboxProps) {
   const [open, setOpen] = useState(false)
+  const t = useTranslations('cards')
 
   const selectedSet = groups
     .flatMap(g => g.sets)
@@ -58,7 +60,7 @@ export function SeriesCombobox({ groups, selectedSetId, onSetChange }: SeriesCom
                 <span className="text-muted-foreground">{selectedSet.externalId}</span>
               </>
             ) : (
-              '所有系列'
+              t('allSets')
             )}
           </span>
           <ChevronsUpDown className="opacity-50" />
@@ -69,16 +71,16 @@ export function SeriesCombobox({ groups, selectedSetId, onSetChange }: SeriesCom
         align="end"
       >
         <Command>
-          <CommandInput placeholder="搜尋系列..." />
+          <CommandInput placeholder={t('searchSets')} />
           <CommandList className="max-h-[60vh]">
-            <CommandEmpty>找不到系列</CommandEmpty>
+            <CommandEmpty>{t('noSetsFound')}</CommandEmpty>
             <CommandGroup>
               <CommandItem
-                value="所有系列"
+                value={t('allSets')}
                 onSelect={() => handleSelect(null)}
                 className={cn('justify-between text-left', !selectedSetId && 'bg-accent text-accent-foreground font-medium')}
               >
-                所有系列
+                {t('allSets')}
                 <Check className={cn('ml-2 shrink-0', !selectedSetId ? 'opacity-100' : 'opacity-0')} />
               </CommandItem>
             </CommandGroup>

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { EyeIcon, EyeOffIcon } from 'lucide-react'
 import {
   InputGroup,
@@ -15,7 +16,8 @@ import {
  */
 export function PasswordInput(props: Omit<React.ComponentProps<'input'>, 'type'>) {
   const [visible, setVisible] = useState(false)
-  const label = visible ? '隱藏密碼' : '顯示密碼'
+  const t = useTranslations('auth')
+  const label = visible ? t('hidePassword') : t('showPassword')
 
   return (
     <InputGroup>

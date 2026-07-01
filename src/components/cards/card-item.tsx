@@ -1,4 +1,5 @@
 'use client'
+import { useTranslations } from 'next-intl'
 import { CardWithCollectionStatus } from '@/types/card'
 import { getCardImageUrl } from '@/lib/get-card-image-url'
 
@@ -8,6 +9,7 @@ interface CardItemProps {
 }
 
 export function CardItem({ card, onClick }: CardItemProps) {
+  const t = useTranslations('cards')
   const displayImageSmall = !card.isCollectible && card.canonicalCard
     ? card.canonicalCard.imageSmall
     : card.imageSmall
@@ -34,7 +36,7 @@ export function CardItem({ card, onClick }: CardItemProps) {
                      justify-center bg-muted text-muted-foreground"
         >
           <span className="text-xs">{card.name}</span>
-          <span className="text-xs">無圖片</span>
+          <span className="text-xs">{t('noImage')}</span>
         </div>
       )}
     </button>

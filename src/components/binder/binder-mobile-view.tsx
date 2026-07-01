@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 import { GridType } from '@prisma/client'
 import {
   DndContext,
@@ -80,6 +81,7 @@ export function BinderMobileView({
   onAddPage,
   settingsSlot,
 }: BinderMobileViewProps) {
+  const t = useTranslations('binder')
   const content = mobilePages[pageIndex]
   const isLastMobilePage = pageIndex === mobilePages.length - 1
 
@@ -207,9 +209,9 @@ export function BinderMobileView({
             >
               <div className="flex items-center gap-1">
                 <Button variant="outline" size="sm" className="mr-2" asChild>
-                  <Link href="/binders" aria-label="返回卡冊列表" data-testid="back-to-binders-mobile">
+                  <Link href="/binders" aria-label={t('backToList')} data-testid="back-to-binders-mobile">
                     <ChevronLeft className="h-4 w-4" />
-                    <span>返回</span>
+                    <span>{t('back')}</span>
                   </Link>
                 </Button>
                 <h1 className="text-xl font-bold">{binderName}</h1>
@@ -254,7 +256,7 @@ export function BinderMobileView({
                       className="text-xs text-muted-foreground text-center"
                       style={{ transform: `scale(${counterScale})`, transformOrigin: 'top center', display: 'block' }}
                     >
-                      第 {content.pageNumber} 頁
+                      {t('pageLabel', { page: content.pageNumber })}
                     </p>
                   </div>
                   <BinderGridSlots
@@ -284,7 +286,7 @@ export function BinderMobileView({
               style={{ position: 'absolute', left: offsetX - 44, top: '50%', transform: 'translateY(-50%)' }}
               className="z-20"
               onClick={() => onPageChange(pageIndex - 1)}
-              aria-label="上一頁"
+              aria-label={t('prevPage')}
               data-testid="mobile-side-prev-btn"
             >
               <ChevronLeft />
@@ -298,7 +300,7 @@ export function BinderMobileView({
               style={{ position: 'absolute', right: offsetX - 44, top: '50%', transform: 'translateY(-50%)' }}
               className="z-20"
               onClick={isLastMobilePage ? onAddPage : () => onPageChange(pageIndex + 1)}
-              aria-label={isLastMobilePage ? '新增內頁' : '下一頁'}
+              aria-label={isLastMobilePage ? t('addPage') : t('nextPage')}
               data-testid="mobile-side-next-btn"
             >
               {isLastMobilePage ? <Plus /> : <ChevronRight />}
@@ -316,7 +318,7 @@ export function BinderMobileView({
               <span
                 style={{ writingMode: 'vertical-rl' }}
               >
-                拖到此處翻頁
+                {t('dragToFlip')}
               </span>
               <ChevronLeft />
             </div>
@@ -331,7 +333,7 @@ export function BinderMobileView({
               <span
                 style={{ writingMode: 'vertical-rl' }}
               >
-                拖到此處翻頁
+                {t('dragToFlip')}
               </span>
               <ChevronRight />
             </div>
@@ -358,7 +360,7 @@ export function BinderMobileView({
                   data-testid="mobile-first-btn"
                   onClick={() => onPageChange(0)}
                   disabled={pageIndex === 0}
-                  tooltip="第一頁"
+                  tooltip={t('firstPage')}
                 >
                   <ChevronsLeft />
                 </IconTooltipButton>
@@ -369,7 +371,7 @@ export function BinderMobileView({
                   onClick={() => onPageChange(pageIndex - 1)}
                   disabled={pageIndex === 0}
                   className="gap-1 px-2.5"
-                  tooltip="上一頁"
+                  tooltip={t('prevPage')}
                 >
                   <ChevronLeft />
                 </IconTooltipButton>
@@ -387,7 +389,7 @@ export function BinderMobileView({
                     variant="outline"
                     data-testid="mobile-add-page-btn"
                     onClick={onAddPage}
-                    aria-label="新增內頁"
+                    aria-label={t('addPage')}
                   >
                     <PlusCircle />
                   </Button>
@@ -398,7 +400,7 @@ export function BinderMobileView({
                     data-testid="mobile-next-btn"
                     onClick={() => onPageChange(pageIndex + 1)}
                     className="gap-1 px-2.5"
-                    tooltip="下一頁"
+                    tooltip={t('nextPage')}
                   >
                     <ChevronRight />
                   </IconTooltipButton>
@@ -409,7 +411,7 @@ export function BinderMobileView({
                   data-testid="mobile-last-btn"
                   onClick={() => onPageChange(mobilePages.length - 1)}
                   disabled={isLastMobilePage}
-                  tooltip="最後一頁"
+                  tooltip={t('lastPage')}
                 >
                   <ChevronsRight />
                 </IconTooltipButton>

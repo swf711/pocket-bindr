@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 import { CardStatus } from '@prisma/client'
 import { toast } from 'sonner'
 import {
@@ -42,6 +43,7 @@ interface CardDetailDrawerProps {
 }
 
 export function CardDetailDrawer({ card, open, onClose, onAddToBinder, onLoginSuccess, cards, currentIndex, onNavigate, hideAddToBinder = false, currentBinderId }: CardDetailDrawerProps) {
+  const t = useTranslations('cardDetail')
   const isMobile = useIsMobile()
   const { containerRef: tiltRef, transformerStyle, shineStyle, handlers: tiltHandlers } = useCardTilt({
     maxRotateDeg: 15,
@@ -123,7 +125,7 @@ export function CardDetailDrawer({ card, open, onClose, onAddToBinder, onLoginSu
       className="rounded-full md:scale-130 md:hover:scale-140 active:scale-90 md:active:scale-130 transition-transform"
       disabled={atStart}
       onClick={() => onNavigate(currentIndex! - 1)}
-      tooltip="上一張"
+      tooltip={t('prev')}
     >
       <ChevronLeft />
     </IconTooltipButton>
@@ -137,7 +139,7 @@ export function CardDetailDrawer({ card, open, onClose, onAddToBinder, onLoginSu
       className="rounded-full md:scale-130 md:hover:scale-140 active:scale-90 md:active:scale-130 transition-transform"
       disabled={atEnd}
       onClick={() => onNavigate(currentIndex! + 1)}
-      tooltip="下一張"
+      tooltip={t('next')}
     >
       <ChevronRight />
     </IconTooltipButton>
@@ -146,25 +148,25 @@ export function CardDetailDrawer({ card, open, onClose, onAddToBinder, onLoginSu
   const infoBlock = (
     <div className="flex flex-col gap-4">
       <div className="grid grid-cols-[auto_1fr] items-center gap-x-4 gap-y-2 text-sm">
-        <span className="text-muted-foreground">系列</span>
+        <span className="text-muted-foreground">{t('series')}</span>
         <span>
           {card.set.name}{' '}
           <span className="text-muted-foreground">{card.set.externalId}</span>
         </span>
 
-        <span className="text-muted-foreground">卡號</span>
+        <span className="text-muted-foreground">{t('cardNumber')}</span>
         <span>{card.cardNumber}</span>
 
         {card.set.releaseDate && (
           <>
-            <span className="text-muted-foreground">發售日</span>
+            <span className="text-muted-foreground">{t('releaseDate')}</span>
             <span>{card.set.releaseDate.slice(0, 10)}</span>
           </>
         )}
 
         {card.rarity && (
           <>
-            <span className="text-muted-foreground">稀有度</span>
+            <span className="text-muted-foreground">{t('rarity')}</span>
             <span><Badge variant="outline">{card.rarity}</Badge></span>
           </>
         )}
@@ -178,7 +180,7 @@ export function CardDetailDrawer({ card, open, onClose, onAddToBinder, onLoginSu
 
         {card.types.length > 0 && (
           <>
-            <span className="text-muted-foreground">屬性</span>
+            <span className="text-muted-foreground">{t('types')}</span>
             <span className="flex flex-wrap gap-1">
               {card.types.map(t => <Badge key={t} variant="secondary">{t}</Badge>)}
             </span>
@@ -324,6 +326,7 @@ function AddToBinderSection({
   onLoginSuccess?: CardDetailDrawerProps['onLoginSuccess']
   currentBinderId?: string
 }) {
+  const t = useTranslations('cardDetail')
   const [binders, setBinders] = useState<BinderSummary[]>([])
   const [isGuest, setIsGuest] = useState(false)
   const [noBinders, setNoBinders] = useState(false)
@@ -354,12 +357,12 @@ function AddToBinderSection({
   if (isGuest) {
     return (
       <div className="flex flex-col gap-3" onPointerDown={(e) => e.stopPropagation()}>
-        <p className="text-sm text-muted-foreground">請先登入以加入卡冊</p>
+        <p className="text-sm text-muted-foreground">{t('loginRequired')}</p>
         <Button
           data-testid="modal-add-btn"
           onClick={() => setLoginModalOpen(true)}
         >
-          加入卡冊
+          {t('addToBinder')}
         </Button>
         <LoginModal
           isOpen={loginModalOpen}
@@ -389,8 +392,8 @@ function AddToBinderSection({
       // （負載下偶發，致「建立卡冊」未開啟巢狀 CreateBinderDialog）。stopPropagation
       // 阻止 vaul 接到此互動區的 pointerdown，與卡圖 overlay（見上方）同一 pattern。
       <div className="flex flex-col gap-3" onPointerDown={(e) => e.stopPropagation()}>
-        <p className="text-sm text-muted-foreground">尚無卡冊</p>
-        <Button onClick={() => setCreateOpen(true)}>建立卡冊</Button>
+        <p className="text-sm text-muted-foreground">{t('noBinders')}</p>
+        <Button onClick={() => setCreateOpen(true)}>{t('createBinder')}</Button>
         <CreateBinderDialog
           open={createOpen}
           onOpenChange={setCreateOpen}
@@ -410,9 +413,9 @@ function AddToBinderSection({
     try {
       await onAddToBinder(selectedBinderId, selectedStatus, quantity)
       setQuantity(1)
-      toast.success(`已加入 ${quantity} 張到卡冊`)
+      toast.success(t('addedSuccess', { quantity }))
     } catch {
-      toast.error('加入失敗，請重試')
+      toast.error(t('addFailed'))
     } finally {
       setLoading(false)
     }
@@ -421,10 +424,10 @@ function AddToBinderSection({
   return (
     <div className="flex flex-col gap-3" onPointerDown={(e) => e.stopPropagation()}>
       <div>
-        <p className="text-xs text-muted-foreground mb-1">卡冊</p>
+        <p className="text-xs text-muted-foreground mb-1">{t('binder')}</p>
         <Select value={selectedBinderId} onValueChange={setSelectedBinderId}>
           <SelectTrigger data-testid="modal-binder-select" className="w-full">
-            <SelectValue placeholder="選擇卡冊" />
+            <SelectValue placeholder={t('selectBinder')} />
           </SelectTrigger>
           <SelectContent>
             {binders.map(b => (
@@ -434,20 +437,20 @@ function AddToBinderSection({
         </Select>
       </div>
       <div>
-        <p className="text-xs text-muted-foreground mb-1">狀態</p>
+        <p className="text-xs text-muted-foreground mb-1">{t('status')}</p>
         <Tabs value={selectedStatus} onValueChange={(v) => setSelectedStatus(v as CardStatus)}>
           <TabsList className="w-full">
             <TabsTrigger data-testid="modal-status-owned" value="owned" className="flex-1">
-              <BookCheck /> 擁有
+              <BookCheck /> {t('owned')}
             </TabsTrigger>
             <TabsTrigger data-testid="modal-status-wanted" value="wanted" className="flex-1">
-              <Bookmark /> 想要
+              <Bookmark /> {t('wanted')}
             </TabsTrigger>
           </TabsList>
         </Tabs>
       </div>
       <div>
-        <p className="text-xs text-muted-foreground mb-1">數量</p>
+        <p className="text-xs text-muted-foreground mb-1">{t('quantity')}</p>
         <ButtonGroup className="w-full">
           <Button
             data-testid="modal-qty-minus"
@@ -487,9 +490,9 @@ function AddToBinderSection({
         className="mt-2"
         onClick={handleAdd}
         disabled={!onAddToBinder || loading || !selectedBinderId}
-        title={!onAddToBinder ? '即將推出' : undefined}
+        title={!onAddToBinder ? t('comingSoon') : undefined}
       >
-        {loading ? '加入中...' : '加入卡冊'}
+        {loading ? t('adding') : t('addToBinder')}
       </Button>
     </div>
   )

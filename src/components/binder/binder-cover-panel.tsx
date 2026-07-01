@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { Search } from 'lucide-react'
 import { GridType } from '@prisma/client'
 import { Input } from '@/components/ui/input'
@@ -36,6 +37,7 @@ export function BinderCoverPanel({
   onJumpToSlot,
   counterScale = 1,
 }: BinderCoverPanelProps) {
+  const t = useTranslations('binder.coverPanel')
   const [searchQuery, setSearchQuery] = useState('')
 
   const { ownedCount, wantedCount, totalSlots } = computeBinderStats(slots, gridType, totalPages)
@@ -100,10 +102,10 @@ export function BinderCoverPanel({
             }}
           >
             <div className="flex items-center justify-between text-xs mb-1.5">
-              <span>內頁</span>
+              <span>{t('pages')}</span>
               <div>
                 <span>{totalPages}</span>
-                <span className="text-muted-foreground"> / {MAX_PAGES_PER_BINDER} 頁</span>
+                <span className="text-muted-foreground"> / {MAX_PAGES_PER_BINDER} {t('pagesUnit')}</span>
               </div>
             </div>
             <Progress value={pagesProgress} />
@@ -121,10 +123,10 @@ export function BinderCoverPanel({
             }}
           >
             <div className="flex items-center justify-between text-xs mb-1.5">
-              <span>卡片</span>
+              <span>{t('cards')}</span>
               <div>
                 <span>{slots.length}</span>
-                <span className="text-muted-foreground"> / {totalSlots} 格卡槽</span>
+                <span className="text-muted-foreground"> / {totalSlots} {t('cardsUnit')}</span>
               </div>
             </div>
             <Progress
@@ -145,8 +147,8 @@ export function BinderCoverPanel({
             }}
           >
             <div className="flex items-center justify-between text-xs mb-1.5">
-              <span>收藏狀態</span>
-              <span>擁有 {ownedCount} / 想要 {wantedCount}</span>
+              <span>{t('collectionStatus')}</span>
+              <span>{t('ownedWanted', { owned: ownedCount, wanted: wantedCount })}</span>
             </div>
             <Progress
               value={collectionProgress}
@@ -170,7 +172,7 @@ export function BinderCoverPanel({
               <Input
                 data-testid="cover-slot-search"
                 type="text"
-                placeholder="搜尋卡牌..."
+                placeholder={t('searchPlaceholder')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-7 h-7 text-xs bg-white/10 border-white/20 text-white placeholder:text-white/40 focus-visible:ring-white/30"
@@ -186,7 +188,7 @@ export function BinderCoverPanel({
             data-testid="cover-slot-search-results"
           >
             {searchResults.length === 0 ? (
-              <p className="text-xs text-white/50 px-1">查無符合的卡牌</p>
+              <p className="text-xs text-white/50 px-1">{t('noResults')}</p>
             ) : (
               searchResults.map((slot) => (
                 <button
@@ -203,7 +205,7 @@ export function BinderCoverPanel({
                   />
                   <span className="text-xs text-white/90 truncate">{slot.card.name}</span>
                   <span className="text-xs text-white/50 ml-auto shrink-0">
-                    第 {slot.pageNumber} 頁
+                    {t('pageLabel', { page: slot.pageNumber })}
                   </span>
                 </button>
               ))

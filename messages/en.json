@@ -1,0 +1,438 @@
+{
+  "common": {
+    "appName": "TCG Binder",
+    "login": "Log in",
+    "settings": "Settings",
+    "logout": "Log out",
+    "defaultUsername": "User"
+  },
+  "nav": {
+    "home": "Home",
+    "cards": "Search Cards",
+    "binders": "My Binders",
+    "collection": "My Collection",
+    "menu": "Menu",
+    "openMenu": "Open menu",
+    "userSection": "Account"
+  },
+  "footer": {
+    "rights": "© 2026 TCG Binder, All rights reserved.",
+    "disclaimer": "This site is not affiliated with Nintendo, The Pokémon Company, Bandai, or any related trademark holders. Card images are copyright of their respective owners and are provided for collection reference only."
+  },
+  "home": {
+    "tagline": "Search, collect, and organize your trading cards. Build your own binders and track your collection anytime.",
+    "startSearch": "Start Searching",
+    "myBinders": "My Binders",
+    "supports": "Supports Pokémon TCG · One Piece TCG · Traditional Chinese / Japanese / English",
+    "statsLabel": "All series synced in real time",
+    "cardsUnit": "cards",
+    "statsCoverage": "Covering Pokémon TCG and One Piece TCG, continuously updated in Traditional Chinese, Japanese, and English",
+    "carouselHint": "Click a card to view details",
+    "dragToReorder": "Drag cards to rearrange",
+    "featuresTitle": "Platform Features",
+    "featuresSubtitle": "Every card collection tool you need, all in one place",
+    "features": {
+      "search": { "title": "Search Cards", "description": "Multilingual card search for PTCG and OPCG — quickly find target cards by series and rarity." },
+      "binder": { "title": "Build Binders", "description": "Customize formats and covers to organize your collection into beautiful virtual binders, with drag-and-drop sorting." },
+      "collection": { "title": "Manage Collection", "description": "Mark cards as owned or wanted, track collection progress for each series, with support for various binder sizes." },
+      "sync": { "title": "Device Sync", "description": "Your account data syncs to the cloud, so you can organize your collection on any device, anytime." },
+      "share": { "title": "Share Your Binders", "description": "Create a binder link and easily share your collection with friends. (Coming soon)" },
+      "more": { "title": "More Features", "description": "Under active development — stay tuned for more useful features." }
+    },
+    "aboutTitle": "About",
+    "aboutBody": "TCG Binder is developed solo by me, aiming to build the most intuitive and easy-to-use collection management tool for card players. If you have any suggestions or questions, feel free to reach out through the channels below."
+  },
+  "auth": {
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "newPassword": "New Password",
+    "passwordMismatch": "The two passwords do not match",
+    "weakPassword": "Password must be at least {min} characters",
+    "loginWithGoogle": "Sign in with Google",
+    "loginWithDiscord": "Sign in with Discord",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "strength": {
+      "label": "Password strength: {level}",
+      "0": "Too short",
+      "1": "Weak",
+      "2": "Medium",
+      "3": "Strong"
+    },
+    "login": {
+      "title": "Welcome back",
+      "subtitle": "Sign in to your TCG Binder account to use all binder features",
+      "submit": "Log in",
+      "submitting": "Logging in...",
+      "passwordResetAlert": "Your password has been reset. Please log in with your new password.",
+      "accountDeletedAlert": "Your account has been deleted. Thank you for using our service.",
+      "invalidCredentials": "Incorrect email or password",
+      "genericOauthError": "An error occurred during sign in. Please try again.",
+      "forgotPassword": "Forgot password?",
+      "orLoginWith": "Or sign in with",
+      "noAccount": "Don't have an account?",
+      "registerLink": "Sign up"
+    },
+    "oauthErrors": {
+      "OAuthAccountNotLinked": "This email already has an account but isn't linked to this social login. Please sign in with your original method, then link the social account in Settings."
+    },
+    "register": {
+      "title": "Create account",
+      "subtitle": "Fill in your details to create a TCG Binder account",
+      "username": "Username",
+      "submit": "Sign up",
+      "submitting": "Signing up...",
+      "orRegisterWith": "Or sign up with",
+      "haveAccount": "Already have an account?",
+      "loginLink": "Log in",
+      "genericError": "Registration failed",
+      "errors": {
+        "EMAIL_TAKEN": "This email is already in use",
+        "USERNAME_TAKEN": "This username is already taken",
+        "INVALID_INPUT": "Please fill in all fields",
+        "SERVER_ERROR": "Server error, please try again later"
+      }
+    },
+    "modal": {
+      "title": "Log in to continue",
+      "failed": "Login failed. Please check your credentials."
+    },
+    "forgot": {
+      "title": "Forgot password",
+      "subtitle": "Enter your email, and if an account exists you'll receive a password reset link",
+      "rateLimited": "Too many requests. Please try again later.",
+      "successAlert": "If an account exists for this email, you'll receive a reset email within a few minutes. Please also check your spam folder.",
+      "submit": "Send reset link",
+      "submitting": "Sending...",
+      "backToLogin": "Back to login"
+    },
+    "reset": {
+      "title": "Set a new password",
+      "subtitle": "Enter your new password. This link is valid for 15 minutes.",
+      "invalidLink": "Invalid link. Please request a new one.",
+      "reapply": "Request a new reset link",
+      "submit": "Set new password",
+      "submitting": "Setting...",
+      "tokenExpired": "This link has expired. Please request a new one.",
+      "tokenInvalid": "This link is invalid or has already been used. Please request a new one.",
+      "genericError": "An error occurred. Please try again later."
+    }
+  },
+  "cards": {
+    "title": "Search Cards",
+    "loadFailed": "Failed to load, please try again later",
+    "resultPrefix": "Found",
+    "resultSuffix": "results",
+    "noResults": "No cards found",
+    "noImage": "No image",
+    "searchPlaceholder": "Search by card name or number...",
+    "allSets": "All Series",
+    "searchSets": "Search series...",
+    "noSetsFound": "No series found",
+    "games": {
+      "PTCG": "Pokemon TCG",
+      "OPCG": "One Piece TCG"
+    },
+    "moreComingSoon": "More TCGs coming soon",
+    "languages": {
+      "ZH_TW": "Traditional Chinese",
+      "JA": "Japanese",
+      "EN": "English"
+    }
+  },
+  "cardDetail": {
+    "prev": "Previous",
+    "next": "Next",
+    "series": "Series",
+    "cardNumber": "Card No.",
+    "releaseDate": "Release Date",
+    "rarity": "Rarity",
+    "types": "Types",
+    "loginRequired": "Please log in to add to a binder",
+    "addToBinder": "Add to Binder",
+    "noBinders": "No binders yet",
+    "createBinder": "Create Binder",
+    "binder": "Binder",
+    "selectBinder": "Select binder",
+    "status": "Status",
+    "owned": "Owned",
+    "wanted": "Wanted",
+    "quantity": "Quantity",
+    "addedSuccess": "Added {quantity} card(s) to binder",
+    "addFailed": "Failed to add, please try again",
+    "comingSoon": "Coming soon",
+    "adding": "Adding...",
+    "ownedCount": "Owned {count}",
+    "wantedCount": "Wanted {count}"
+  },
+  "theme": {
+    "toggle": "Toggle theme"
+  },
+  "language": {
+    "toggle": "Change language"
+  },
+  "metadata": {
+    "title": "TCG Binder",
+    "description": "Online TCG card collection manager — search cards, mark owned/wanted, and organize them into custom binders."
+  },
+  "binder": {
+    "back": "Back",
+    "backToList": "Back to binder list",
+    "prevPage": "Previous page",
+    "nextPage": "Next page",
+    "firstPage": "First page",
+    "lastPage": "Last page",
+    "addPage": "Add page",
+    "pageLabel": "Page {page}",
+    "pageMax": "Binders can have up to 100 pages",
+    "loadCardFailed": "Failed to load card data",
+    "dragToFlip": "Drag here to flip page",
+    "addedCard": "Card added",
+    "addCardFailed": "Failed to add, please try again",
+    "copiedCard": "Card copied",
+    "copyCardFailed": "Failed to copy, please try again",
+    "slotCard": {
+      "switchToWanted": "Mark as wanted",
+      "switchToOwned": "Mark as owned",
+      "copyToEmptySlot": "Copy to empty slot",
+      "viewCard": "View card",
+      "removeCard": "Remove card",
+      "removeCardConfirm": "Are you sure you want to remove {cardName} from this binder?",
+      "cancel": "Cancel",
+      "confirmRemove": "Confirm removal"
+    },
+    "pickerDialog": {
+      "selectStatus": "Select collection status",
+      "selectCard": "Select a card to add",
+      "loadFailed": "Failed to load, please try again later",
+      "resultCount": "{count} results found",
+      "backToSelectCard": "Back to card selection",
+      "owned": "Owned",
+      "wanted": "Wanted",
+      "adding": "Adding...",
+      "addCard": "Add Card"
+    },
+    "settingsDrawer": {
+      "dragPage": "Drag page {page}",
+      "deletePage": "Delete page {page}",
+      "deleteThisPage": "Delete this page",
+      "deletePageConfirmTitle": "Delete page {page}?",
+      "deletePageConfirmDescription": "All cards on this page will be removed from the binder, and subsequent page numbers will be automatically renumbered.",
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "updateFailed": "Update failed",
+      "formatUpdated": "Format updated — {count} card(s) moved to pages {from}–{to}",
+      "settingsSaved": "Settings saved",
+      "enableShareSuccess": "Public sharing enabled",
+      "enableShareFailed": "Failed to enable, please try again",
+      "revokeShareSuccess": "Public sharing revoked",
+      "revokeShareFailed": "Failed to revoke, please try again",
+      "linkCopied": "Link copied",
+      "reorderFailed": "Reorder failed",
+      "deletePageFailed": "Delete failed",
+      "pageDeleted": "Page {page} deleted",
+      "binderSettings": "Binder Settings",
+      "name": "Name",
+      "description": "Description (optional)",
+      "descriptionPlaceholder": "Optional, up to 150 characters",
+      "format": "Format",
+      "coverColor": "Cover Color",
+      "saving": "Saving…",
+      "saveSettings": "Save Settings",
+      "publicShare": "Public Sharing",
+      "shareEnabledHint": "Anyone with this link can view it (read-only)",
+      "copyLink": "Copy link",
+      "revokeShare": "Revoke Sharing",
+      "shareDisabledHint": "Enable to generate a public link anyone can use to view this binder",
+      "enableShare": "Enable Public Sharing",
+      "pageManagement": "Page Management"
+    },
+    "shareDialog": {
+      "title": "Share Binder Publicly",
+      "descriptionEnabled": "Anyone with this link can view it (read-only, cannot edit)",
+      "descriptionDisabled": "Enable to generate a public link anyone can use to view this binder (read-only)",
+      "publicLink": "Public Link",
+      "copyLink": "Copy link",
+      "revokeShare": "Revoke Sharing",
+      "enableShare": "Enable Public Sharing",
+      "enableSuccess": "Public sharing enabled",
+      "enableFailed": "Failed to enable, please try again",
+      "revokeSuccess": "Public sharing revoked",
+      "revokeFailed": "Failed to revoke, please try again",
+      "linkCopied": "Link copied"
+    },
+    "coverPanel": {
+      "pages": "Pages",
+      "pagesUnit": "pages",
+      "cards": "Cards",
+      "cardsUnit": "slots",
+      "collectionStatus": "Collection Status",
+      "ownedWanted": "Owned {owned} / Wanted {wanted}",
+      "searchPlaceholder": "Search cards...",
+      "noResults": "No matching cards found",
+      "pageLabel": "Page {page}"
+    },
+    "publicView": {
+      "ownerBinder": "{ownerName}'s Binder"
+    },
+    "notFound": {
+      "title": "Binder Not Found",
+      "description": "This share link is invalid or has been revoked.",
+      "backHome": "Back to Home"
+    },
+    "defaultOwnerName": "TCG Player"
+  },
+  "binderList": {
+    "title": "My Binders",
+    "countUnit": "binders",
+    "emptyTitle": "No binders yet",
+    "emptyDescription": "Create your first binder to organize your collection",
+    "createFirst": "Create Your First Binder",
+    "created": "Binder created",
+    "updated": "Binder updated",
+    "deleted": "Binder deleted",
+    "reorderFailed": "Failed to save order, please try again",
+    "coverCard": {
+      "cardCount": "{count} cards",
+      "enterBinder": "Enter Binder",
+      "enterBinderAriaLabel": "Enter binder: {name}",
+      "moreActions": "More actions",
+      "edit": "Edit",
+      "share": "Share",
+      "delete": "Delete"
+    },
+    "createDialog": {
+      "title": "New Binder",
+      "name": "Name",
+      "namePlaceholder": "Binder name",
+      "description": "Description (optional)",
+      "descriptionPlaceholder": "Optional, up to 150 characters",
+      "format": "Format",
+      "coverColor": "Cover Color",
+      "creating": "Creating…",
+      "create": "Create",
+      "limitReached": "Binder limit reached ({max} binders)",
+      "createFailed": "Failed to create"
+    },
+    "editDialog": {
+      "title": "Edit Binder",
+      "name": "Name",
+      "namePlaceholder": "Binder name",
+      "description": "Description (optional)",
+      "descriptionPlaceholder": "Optional, up to 150 characters",
+      "format": "Format",
+      "coverColor": "Cover Color",
+      "saving": "Saving…",
+      "save": "Save",
+      "updateFailed": "Update failed",
+      "formatUpdated": "Format updated — {count} card(s) moved to a new page"
+    },
+    "deleteDialog": {
+      "title": "Delete Binder",
+      "description": "This cannot be undone. The {count} slot(s) in this binder will also be removed.",
+      "cancel": "Cancel",
+      "deleting": "Deleting…",
+      "confirmDelete": "Confirm Delete",
+      "deleteFailed": "Delete failed"
+    },
+    "coverColorPicker": {
+      "label": "Cover Color"
+    },
+    "addSlot": {
+      "label": "New Binder"
+    },
+    "sortableCard": {
+      "ariaLabel": "Binder: {name}"
+    }
+  },
+  "settings": {
+    "title": "Account Settings",
+    "profile": {
+      "title": "Profile",
+      "emailNotSet": "(Not set)",
+      "usernameLabel": "Username",
+      "usernamePlaceholder": "3–20 characters, letters, numbers, _ or -",
+      "usernameTaken": "This username is already taken",
+      "usernameInvalid": "Invalid username format (3–20 characters, letters, numbers, _ or -)",
+      "updateFailed": "Update failed",
+      "updateSuccess": "Updated successfully",
+      "saving": "Updating…",
+      "save": "Save"
+    },
+    "changePassword": {
+      "title": "Change Password",
+      "currentPasswordLabel": "Current Password",
+      "newPasswordLabel": "New Password",
+      "newPasswordPlaceholder": "At least 8 characters",
+      "wrongPassword": "Current password is incorrect",
+      "newPasswordTooShort": "New password must be at least 8 characters",
+      "updateFailed": "Update failed",
+      "updateSuccess": "Password updated",
+      "updating": "Updating…",
+      "submit": "Change Password"
+    },
+    "setPassword": {
+      "title": "Set Password",
+      "subtitle": "Once set, you can log in with Email + password",
+      "emailRequiredSubtitle": "An email is required before you can set a password",
+      "emailRequiredBody": "Your account currently has no email, so you can't log in with a password. Please link a social account that has an email first.",
+      "newPasswordLabel": "New Password",
+      "newPasswordPlaceholder": "At least 8 characters",
+      "confirmPasswordLabel": "Confirm Password",
+      "minLength": "Password must be at least {min} characters",
+      "passwordMismatch": "The two passwords do not match",
+      "setFailed": "Failed to set password",
+      "setSuccess": "Password set",
+      "setting": "Setting…",
+      "submit": "Set Password"
+    },
+    "oauth": {
+      "title": "Social Accounts",
+      "subtitle": "Once linked, you can log in with the corresponding social account",
+      "linkedBadge": "✓ Linked",
+      "googleLinkedBadge": "✓ Google account linked",
+      "linkGoogle": "Link Google Account",
+      "unlink": "Unlink",
+      "unlinkDisabledTitle": "This is currently your only login method and cannot be unlinked",
+      "unlinked": "Unlinked",
+      "unlinkLastMethodError": "Cannot unlink: this is your only login method",
+      "unlinkFailed": "Failed to unlink, please try again",
+      "link": "Link",
+      "linking": "Linking...",
+      "alreadyLinked": "This account is already linked to this social account",
+      "linkFailed": "Failed to link, please try again"
+    },
+    "dangerZone": {
+      "title": "Danger Zone",
+      "subtitle": "Deleting your account will permanently erase all data and cannot be undone",
+      "deleteAccount": "Delete Account",
+      "confirmTitle": "Confirm account deletion?",
+      "confirmDescription": "This cannot be undone. Your account, collected cards, and binders will be permanently deleted. Type \"DELETE\" below to confirm.",
+      "confirmPlaceholder": "Type DELETE to confirm",
+      "cancel": "Cancel",
+      "deleting": "Deleting...",
+      "confirmDelete": "Confirm Delete"
+    },
+    "linkSuccess": "Successfully linked {provider} account",
+    "linkErrors": {
+      "ALREADY_LINKED": "This social account is already linked to your account",
+      "PROVIDER_ACCOUNT_TAKEN": "This social account is already used by another user",
+      "OAUTH_FAILED": "Social account verification failed, please try again",
+      "INVALID_STATE": "The link request is invalid or has expired, please try again",
+      "generic": "Failed to link, please try again"
+    }
+  },
+  "collection": {
+    "title": "My Collection",
+    "loadFailed": "Failed to load, please try again later",
+    "emptyNoCollection": "No collection yet — head to card search to mark some cards!",
+    "emptyNoMatch": "No cards match your filters",
+    "totalPrefix": "Total",
+    "totalSuffix": "cards",
+    "filters": {
+      "all": "All",
+      "searchPlaceholder": "Search by card name or number..."
+    }
+  }
+}

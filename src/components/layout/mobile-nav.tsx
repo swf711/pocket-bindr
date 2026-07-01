@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { Menu, Settings, LogOut, X } from 'lucide-react'
 import { signOut } from 'next-auth/react'
 import { cn } from '@/lib/utils'
@@ -28,6 +29,8 @@ interface MobileNavProps {
 export function MobileNav({ isLoggedIn, username, image }: MobileNavProps) {
   const initial = username.charAt(0).toUpperCase()
   const pathname = usePathname()
+  const t = useTranslations('nav')
+  const tCommon = useTranslations('common')
 
   const navLinkClass = (href: string) =>
     cn(
@@ -49,7 +52,7 @@ export function MobileNav({ isLoggedIn, username, image }: MobileNavProps) {
             variant="ghost"
             size="icon"
             data-testid="mobile-nav-trigger"
-            aria-label="開啟選單"
+            aria-label={t('openMenu')}
           >
             <Menu className="size-5" />
           </Button>
@@ -61,7 +64,7 @@ export function MobileNav({ isLoggedIn, username, image }: MobileNavProps) {
 
           <div className='px-7 flex justify-between items-center'>
             <div className="text-muted-foreground text-sm py-4">
-              選單
+              {t('menu')}
             </div>
             <SheetClose asChild>
               <Button
@@ -85,7 +88,7 @@ export function MobileNav({ isLoggedIn, username, image }: MobileNavProps) {
                     className={navLinkClass(item.href)}
                   >
                     <Icon className="size-6" fill={navIconFill(item.href)} />
-                    {item.label}
+                    {t(item.labelKey)}
                   </Link>
                 </SheetClose>
               )
@@ -95,7 +98,7 @@ export function MobileNav({ isLoggedIn, username, image }: MobileNavProps) {
           <div className='px-7'>
             <Separator />
             <div className="text-muted-foreground text-sm py-4">
-              使用者
+              {t('userSection')}
             </div>
           </div>
 
@@ -117,7 +120,7 @@ export function MobileNav({ isLoggedIn, username, image }: MobileNavProps) {
                   className={navLinkClass('/settings')}
                 >
                   <Settings className="size-6" fill={navIconFill('/settings')} />
-                  設定
+                  {tCommon('settings')}
                 </Link>
               </SheetClose>
               <SheetClose asChild>
@@ -127,7 +130,7 @@ export function MobileNav({ isLoggedIn, username, image }: MobileNavProps) {
                   className="flex w-full items-center gap-3 rounded-3xl p-4 text-sm font-medium transition-colors text-muted-foreground hover:bg-surface-container-highest"
                 >
                   <LogOut className="size-6" />
-                  登出
+                  {tCommon('logout')}
                 </button>
               </SheetClose>
             </div>
@@ -135,7 +138,7 @@ export function MobileNav({ isLoggedIn, username, image }: MobileNavProps) {
             <div className="flex flex-col gap-2 px-3">
               <SheetClose asChild>
                 <Button variant="default" asChild className="w-full h-14 rounded-3xl">
-                  <Link href="/login">登入</Link>
+                  <Link href="/login">{tCommon('login')}</Link>
                 </Button>
               </SheetClose>
             </div>

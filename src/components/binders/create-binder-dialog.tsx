@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { toast } from 'sonner'
 import { GridType } from '@prisma/client'
 import { Button } from '@/components/ui/button'
@@ -29,6 +30,7 @@ export function CreateBinderDialog({
   onOpenChange,
   onCreated,
 }: CreateBinderDialogProps) {
+  const t = useTranslations('binderList.createDialog')
   const [name, setName] = useState('')
   const [gridType, setGridType] = useState<GridType>('grid_3x3')
   const [coverColor, setCoverColor] = useState(DEFAULT_COVER_COLOR)
@@ -47,10 +49,10 @@ export function CreateBinderDialog({
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
         if (res.status === 409 && err?.error === 'binderLimitReached') {
-          toast.error(`已達卡冊上限（${err.max} 本）`)
+          toast.error(t('limitReached', { max: err.max }))
           return
         }
-        throw new Error(err?.error ?? '建立失敗')
+        throw new Error(err?.error ?? t('createFailed'))
       }
       const data: BinderSummary = await res.json()
       onCreated(data)
@@ -70,14 +72,14 @@ export function CreateBinderDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>新增卡冊</DialogTitle>
+          <DialogTitle>{t('title')}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4 mt-2">
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="binder-name">名稱</Label>
+            <Label htmlFor="binder-name">{t('name')}</Label>
             <Input
               id="binder-name"
-              placeholder="卡冊名稱"
+              placeholder={t('namePlaceholder')}
               maxLength={50}
               value={name}
               onChange={e => setName(e.target.value)}
@@ -86,10 +88,10 @@ export function CreateBinderDialog({
             />
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="binder-description">描述（選填）</Label>
+            <Label htmlFor="binder-description">{t('description')}</Label>
             <Textarea
               id="binder-description"
-              placeholder="選填，最多 150 字"
+              placeholder={t('descriptionPlaceholder')}
               maxLength={150}
               rows={2}
               value={description}
@@ -98,7 +100,7 @@ export function CreateBinderDialog({
             />
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label>格式</Label>
+            <Label>{t('format')}</Label>
             <Tabs
               value={gridType}
               onValueChange={v => setGridType(v as GridType)}
@@ -119,7 +121,7 @@ export function CreateBinderDialog({
             </Tabs>
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label>封面顏色</Label>
+            <Label>{t('coverColor')}</Label>
             <CoverColorPicker value={coverColor} onChange={setCoverColor} />
           </div>
           <Button
@@ -127,7 +129,7 @@ export function CreateBinderDialog({
             disabled={loading}
             data-testid="create-binder-submit"
           >
-            {loading ? '建立中…' : '建立'}
+            {loading ? t('creating') : t('create')}
           </Button>
         </form>
       </DialogContent>

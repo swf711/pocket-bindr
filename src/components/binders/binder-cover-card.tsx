@@ -1,5 +1,6 @@
 'use client'
 
+import { useTranslations } from 'next-intl'
 import { ArrowRight, EllipsisVertical, Pencil, Share2, Trash2 } from 'lucide-react'
 import { PendingLink } from '@/components/layout/pending-link'
 import { Button } from '@/components/ui/button'
@@ -35,6 +36,7 @@ interface BinderCoverCardProps {
 }
 
 export function BinderCoverCard({ binder, onEdit, onDelete, onShare, isTapped }: BinderCoverCardProps) {
+  const t = useTranslations('binderList.coverCard')
   const textColor = getTextColor(binder.coverColor)
   const colorScheme = isLightBackground(binder.coverColor) ? 'light' : 'dark'
   const gridLabel = GRID_SHORT_LABELS[binder.gridType as GridType]
@@ -78,7 +80,7 @@ export function BinderCoverCard({ binder, onEdit, onDelete, onShare, isTapped }:
             data-testid="binder-info"
             className="pointer-events-none opacity-60 text-sm font-medium"
           >
-            {gridLabel} · {slotCount} 張卡
+            {gridLabel} · {t('cardCount', { count: slotCount })}
           </div>
 
           {/* 建立日期 */}
@@ -113,10 +115,10 @@ export function BinderCoverCard({ binder, onEdit, onDelete, onShare, isTapped }:
               <PendingLink
                 href={`/binders/${binder.id}`}
                 data-testid="enter-binder-btn"
-                aria-label={`進入卡冊：${binder.name}`}
+                aria-label={t('enterBinderAriaLabel', { name: binder.name })}
               >
                 <ArrowRight className="h-3 w-3" />
-                進入卡冊
+                {t('enterBinder')}
               </PendingLink>
             </Button>
 
@@ -131,14 +133,14 @@ export function BinderCoverCard({ binder, onEdit, onDelete, onShare, isTapped }:
                       className="h-7 w-7 shrink-0 active:not-aria-[haspopup]:translate-y-px"
                       style={{ color: textColor }}
                       data-testid="binder-more-btn"
-                      aria-label="更多操作"
+                      aria-label={t('moreActions')}
                     >
                       <EllipsisVertical className="h-3 w-3" />
                     </Button>
                   </DropdownMenuTrigger>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>更多操作</p>
+                  <p>{t('moreActions')}</p>
                 </TooltipContent>
               </Tooltip>
               <DropdownMenuContent align="end" className="min-w-[120px]">
@@ -147,14 +149,14 @@ export function BinderCoverCard({ binder, onEdit, onDelete, onShare, isTapped }:
                   data-testid="edit-binder-btn"
                 >
                   <Pencil className="h-3 w-3 mr-2" />
-                  編輯
+                  {t('edit')}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => onShare(binder)}
                   data-testid="share-binder-btn"
                 >
                   <Share2 className="h-3 w-3 mr-2" />
-                  分享
+                  {t('share')}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
@@ -163,7 +165,7 @@ export function BinderCoverCard({ binder, onEdit, onDelete, onShare, isTapped }:
                   className="text-destructive focus:text-destructive"
                 >
                   <Trash2 className="h-3 w-3 mr-2" />
-                  刪除
+                  {t('delete')}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

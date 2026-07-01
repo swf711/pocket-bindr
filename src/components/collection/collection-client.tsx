@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { CardStatus } from '@prisma/client'
 import { CardGrid } from '@/components/cards/card-grid'
 import { CardPagination } from '@/components/cards/card-pagination'
@@ -33,6 +34,7 @@ export function CollectionClient({ initialParams }: CollectionClientProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const qc = useQueryClient()
+  const t = useTranslations('collection')
 
   const [status, setStatus] = useState<'all' | 'owned' | 'wanted'>(parseStatus(initialParams.status))
   const [game, setGame] = useState(initialParams.game ?? '')
@@ -138,7 +140,7 @@ export function CollectionClient({ initialParams }: CollectionClientProps) {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6">我的收藏</h1>
+      <h1 className="text-2xl font-bold mb-6">{t('title')}</h1>
 
       <div className="space-y-6">
         <CollectionFilters
@@ -159,17 +161,17 @@ export function CollectionClient({ initialParams }: CollectionClientProps) {
           <CardGrid cards={[]} onCardClick={() => {}} loading />
         ) : isError ? (
           <div className="text-center py-12 text-destructive">
-            {(error as Error)?.message ?? '載入失敗，請稍後再試'}
+            {(error as Error)?.message ?? t('loadFailed')}
           </div>
         ) : cards.length === 0 ? (
           <div className="text-center py-12 text-muted-foreground" data-testid="collection-empty">
-            {total === 0 ? '還沒有任何收藏，前往卡牌搜尋頁標記卡牌吧！' : '沒有符合條件的卡牌'}
+            {total === 0 ? t('emptyNoCollection') : t('emptyNoMatch')}
           </div>
         ) : (
           <>
             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
               <p data-testid="collection-total" className="text-center">
-                共 <span className="md:text-2xl font-bold">{total}</span> 張
+                {t('totalPrefix')} <span className="md:text-2xl font-bold">{total}</span> {t('totalSuffix')}
               </p>
               <CardPagination
                 data-testid="collection-pagination-top"

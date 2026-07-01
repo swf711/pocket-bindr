@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { useTranslations } from 'next-intl'
 import {
   DndContext,
   KeyboardSensor,
@@ -70,6 +71,7 @@ interface HeroBinderProps {
 }
 
 export function HeroBinder({ cards }: HeroBinderProps) {
+  const t = useTranslations('home')
   const [items, setItems] = useState(cards)
   const [activeId, setActiveId] = useState<string | null>(null)
   // Flatten on pointer-down (before dnd-kit's activation/measurement) so the grid
@@ -160,7 +162,7 @@ export function HeroBinder({ cards }: HeroBinderProps) {
         }}
       >
         <div className="flex justify-center items-center gap-1 text-muted-foreground mb-3">
-          <span>拖拉卡牌來重新排列</span>
+          <span>{t('dragToReorder')}</span>
           <Move className="size-4" />
         </div>
 

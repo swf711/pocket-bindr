@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { HexColorPicker } from 'react-colorful'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Button } from '@/components/ui/button'
@@ -15,6 +16,7 @@ interface CoverColorPickerProps {
 }
 
 export function CoverColorPicker({ value, onChange }: CoverColorPickerProps) {
+  const t = useTranslations('binderList.coverColorPicker')
   const [open, setOpen] = useState(false)
   const [inputValue, setInputValue] = useState(value)
 
@@ -43,7 +45,7 @@ export function CoverColorPicker({ value, onChange }: CoverColorPickerProps) {
             className="inline-block w-5 h-5 rounded-sm border border-border"
             style={{ backgroundColor: value }}
           />
-          封面顏色
+          {t('label')}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-3 space-y-3">

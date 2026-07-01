@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import {
@@ -28,6 +29,8 @@ export function DeleteBinderDialog({
   binder,
   onDeleted,
 }: DeleteBinderDialogProps) {
+  const t = useTranslations('binderList.deleteDialog')
+  const tList = useTranslations('binderList')
   const [loading, setLoading] = useState(false)
 
   async function handleConfirm() {
@@ -39,10 +42,10 @@ export function DeleteBinderDialog({
       })
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
-        throw new Error(err?.error ?? '刪除失敗')
+        throw new Error(err?.error ?? t('deleteFailed'))
       }
       onDeleted(binder.id)
-      toast('卡冊已刪除')
+      toast(tList('deleted'))
       onOpenChange(false)
     } catch (err) {
       toast((err as Error).message)
@@ -55,13 +58,13 @@ export function DeleteBinderDialog({
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>刪除卡冊</AlertDialogTitle>
+          <AlertDialogTitle>{t('title')}</AlertDialogTitle>
           <AlertDialogDescription>
-            刪除後無法復原，此卡冊的 {binder?._count.slots ?? 0} 個格位將一併移除
+            {t('description', { count: binder?._count.slots ?? 0 })}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={loading}>取消</AlertDialogCancel>
+          <AlertDialogCancel disabled={loading}>{t('cancel')}</AlertDialogCancel>
           <AlertDialogAction asChild>
             <Button
               variant="destructive"
@@ -69,7 +72,7 @@ export function DeleteBinderDialog({
               disabled={loading}
               data-testid="confirm-delete-binder"
             >
-              {loading ? '刪除中…' : '確認刪除'}
+              {loading ? t('deleting') : t('confirmDelete')}
             </Button>
           </AlertDialogAction>
         </AlertDialogFooter>

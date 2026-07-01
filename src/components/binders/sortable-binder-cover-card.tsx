@@ -1,5 +1,6 @@
 'use client'
 
+import { useTranslations } from 'next-intl'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { BinderSummary } from '@/types/binder'
@@ -15,6 +16,7 @@ interface SortableBinderCoverCardProps {
 }
 
 export function SortableBinderCoverCard({ binder, onEdit, onDelete, onShare, isTapped, onTap }: SortableBinderCoverCardProps) {
+  const t = useTranslations('binderList.sortableCard')
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: binder.id,
   })
@@ -36,7 +38,7 @@ export function SortableBinderCoverCard({ binder, onEdit, onDelete, onShare, isT
       {...listeners}
       onClick={!isDragging && onTap ? (e) => { e.stopPropagation(); onTap() } : undefined}
       className="relative cursor-grab active:cursor-grabbing select-none"
-      aria-label={`卡冊：${binder.name}`}
+      aria-label={t('ariaLabel', { name: binder.name })}
       data-testid={`binder-sortable-${binder.id}`}
     >
       <BinderCoverCard

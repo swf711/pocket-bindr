@@ -1,5 +1,6 @@
 import { unstable_cache } from 'next/cache'
 import { notFound } from 'next/navigation'
+import { getTranslations } from 'next-intl/server'
 import { prisma } from '@/lib/prisma'
 import { publicBinderTag } from '@/lib/binder-cache'
 import { BinderPublicView } from '@/components/binder/binder-public-view'
@@ -27,6 +28,7 @@ function fetchPublicBinder(token: string) {
 
 export default async function PublicBinderPage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params
+  const t = await getTranslations('binder')
 
   const binder = await fetchPublicBinder(token)
 
@@ -44,7 +46,7 @@ export default async function PublicBinderPage({ params }: { params: Promise<{ t
     description: binder.description ?? null,
     settings: { totalPages },
     slots: binder.slots.map(toDisplaySlot),
-    ownerName: binder.user.username ?? 'TCG 玩家',
+    ownerName: binder.user.username ?? t('defaultOwnerName'),
   }
 
   return <BinderPublicView binder={data} />

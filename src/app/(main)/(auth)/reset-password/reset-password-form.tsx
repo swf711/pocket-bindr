@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Field, FieldGroup, FieldLabel } from '@/components/ui/field'
@@ -19,9 +20,13 @@ interface ResetPasswordFormProps {
 
 export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
   const router = useRouter()
+  const t = useTranslations('auth')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
+  // Tracks whether the current error is a token issue (expired/invalid) so we can
+  // offer the "request a new link" affordance without substring-matching localized text.
+  const [canReapply, setCanReapply] = useState(false)
   const [loading, setLoading] = useState(false)
 
   const strength = getPasswordStrength(password)
@@ -31,10 +36,10 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
       <Card>
         <CardContent className="pt-6 space-y-4">
           <Alert variant="destructive" data-testid="reset-invalid-alert">
-            <AlertDescription>連結無效，請重新申請。</AlertDescription>
+            <AlertDescription>{t('reset.invalidLink')}</AlertDescription>
           </Alert>
           <Button asChild className="w-full">
-            <Link href="/forgot-password">重新申請重設連結</Link>
+            <Link href="/forgot-password">{t('reset.reapply')}</Link>
           </Button>
         </CardContent>
       </Card>
@@ -44,13 +49,14 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
+    setCanReapply(false)
 
     if (!isPasswordValid(password)) {
-      setError(`密碼至少需 ${MIN_PASSWORD_LENGTH} 個字元`)
+      setError(t('weakPassword', { min: MIN_PASSWORD_LENGTH }))
       return
     }
     if (password !== confirmPassword) {
-      setError('兩次輸入的密碼不一致')
+      setError(t('passwordMismatch'))
       return
     }
 
@@ -69,13 +75,15 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
 
     const data = await res.json() as { error?: string }
     if (data.error === 'TOKEN_EXPIRED') {
-      setError('連結已過期，請重新申請。')
+      setError(t('reset.tokenExpired'))
+      setCanReapply(true)
     } else if (data.error === 'TOKEN_INVALID') {
-      setError('連結無效或已被使用，請重新申請。')
+      setError(t('reset.tokenInvalid'))
+      setCanReapply(true)
     } else if (data.error === 'INVALID_NEW_PASSWORD') {
-      setError(`密碼至少需 ${MIN_PASSWORD_LENGTH} 個字元`)
+      setError(t('weakPassword', { min: MIN_PASSWORD_LENGTH }))
     } else {
-      setError('發生錯誤，請稍後再試。')
+      setError(t('reset.genericError'))
     }
   }
 
@@ -83,8 +91,8 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
     <div className="flex flex-col gap-6">
       <Card>
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl">設定新密碼</CardTitle>
-          <CardDescription>請輸入您的新密碼，連結 15 分鐘內有效</CardDescription>
+          <CardTitle className="text-2xl">{t('reset.title')}</CardTitle>
+          <CardDescription>{t('reset.subtitle')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {error && (
@@ -95,7 +103,7 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
           <form onSubmit={handleSubmit} className="space-y-4">
             <FieldGroup>
               <Field>
-                <FieldLabel htmlFor="new-password">新密碼</FieldLabel>
+                <FieldLabel htmlFor="new-password">{t('newPassword')}</FieldLabel>
                 <PasswordInput
                   id="new-password"
                   value={password}
@@ -109,12 +117,12 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
                       value={(strength.score / 3) * 100}
                       className={`h-1 [&>div]:${STRENGTH_COLORS[strength.score]}`}
                     />
-                    <p className="text-xs text-muted-foreground">{strength.label}</p>
+                    <p className="text-xs text-muted-foreground">{t(`strength.${strength.score}`)}</p>
                   </div>
                 )}
               </Field>
               <Field>
-                <FieldLabel htmlFor="confirm-password">確認密碼</FieldLabel>
+                <FieldLabel htmlFor="confirm-password">{t('confirmPassword')}</FieldLabel>
                 <PasswordInput
                   id="confirm-password"
                   value={confirmPassword}
@@ -125,15 +133,15 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
               </Field>
               <Field>
                 <Button type="submit" disabled={loading}>
-                  {loading ? '設定中...' : '設定新密碼'}
+                  {loading ? t('reset.submitting') : t('reset.submit')}
                 </Button>
               </Field>
             </FieldGroup>
           </form>
-          {(error?.includes('過期') || error?.includes('無效')) && (
+          {canReapply && (
             <div className="text-center">
               <Link href="/forgot-password" className="text-sm text-muted-foreground hover:text-foreground underline-offset-4 hover:underline">
-                重新申請重設連結
+                {t('reset.reapply')}
               </Link>
             </div>
           )}

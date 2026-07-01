@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { CardStatus } from '@prisma/client'
 import { GameSelector } from './game-selector'
 import { LanguageTabs } from './language-tabs'
@@ -31,6 +32,7 @@ interface CardSearchClientProps {
 export function CardSearchClient({ initialParams }: CardSearchClientProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const t = useTranslations('cards')
 
   const [game, setGame] = useState<string | null>(initialParams.game ?? null)
   const [query, setQuery] = useState(initialParams.q ?? '')
@@ -146,7 +148,7 @@ export function CardSearchClient({ initialParams }: CardSearchClientProps) {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6">卡牌搜尋</h1>
+      <h1 className="text-2xl font-bold mb-6">{t('title')}</h1>
 
       <div className="space-y-6">
         {!game && <GameSelector selected={game} onSelect={handleGameChange} />}
@@ -173,13 +175,13 @@ export function CardSearchClient({ initialParams }: CardSearchClientProps) {
               <CardGrid cards={[]} onCardClick={() => {}} loading />
             ) : isError ? (
               <div className="text-center py-12 text-destructive">
-                {(error as Error)?.message ?? '載入失敗，請稍後再試'}
+                {(error as Error)?.message ?? t('loadFailed')}
               </div>
             ) : (
               <>
                 <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                   <p data-testid="result-total" className="text-center">
-                    搜尋結果 <span className="md:text-2xl font-bold">{total}</span> 張
+                    {t('resultPrefix')} <span className="md:text-2xl font-bold">{total}</span> {t('resultSuffix')}
                   </p>
                   <CardPagination
                     data-testid="card-pagination-top"

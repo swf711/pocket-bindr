@@ -1,12 +1,9 @@
 'use client'
 
+import { useTranslations } from 'next-intl'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
-const LANGUAGE_OPTIONS = [
-  { value: 'ZH_TW', label: '繁體中文' },
-  { value: 'JA', label: '日本語' },
-  { value: 'EN', label: 'English' },
-] as const
+const LANGUAGE_VALUES = ['ZH_TW', 'JA', 'EN'] as const
 
 interface LanguageTabsProps {
   language: string
@@ -14,6 +11,8 @@ interface LanguageTabsProps {
 }
 
 export function LanguageTabs({ language, onLanguageChange }: LanguageTabsProps) {
+  const t = useTranslations('cards')
+  const LANGUAGE_OPTIONS = LANGUAGE_VALUES.map((value) => ({ value, label: t(`languages.${value}`) }))
   return (
     <Tabs
       data-testid="language-tabs"

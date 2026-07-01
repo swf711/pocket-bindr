@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { signOut } from 'next-auth/react'
+import { useTranslations } from 'next-intl'
 import { LogOut, Settings } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
@@ -21,6 +22,7 @@ interface UserMenuProps {
 
 export function UserMenu({ username, image }: UserMenuProps) {
   const initial = username.charAt(0).toUpperCase()
+  const t = useTranslations('common')
 
   return (
     <DropdownMenu>
@@ -49,7 +51,7 @@ export function UserMenu({ username, image }: UserMenuProps) {
         <DropdownMenuItem asChild>
           <Link href="/settings" className="rounded-md px-3 h-12 text-muted-foreground focus:bg-foreground/10 focus:text-muted-foreground cursor-pointer">
             <Settings />
-            設定
+            {t('settings')}
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem
@@ -58,7 +60,7 @@ export function UserMenu({ username, image }: UserMenuProps) {
           onClick={() => signOut({ callbackUrl: '/' })}
         >
           <LogOut />
-          登出
+          {t('logout')}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

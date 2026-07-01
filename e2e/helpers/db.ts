@@ -1,6 +1,7 @@
 import 'dotenv/config'
 import bcrypt from 'bcryptjs'
 import { prisma } from '../../src/lib/prisma'
+import { createResetToken } from '../../src/lib/reset-password'
 import { TEST_USER } from './auth'
 
 // Only import Redis when UPSTASH_REDIS_REST_URL is set (CI may not have it).
@@ -330,7 +331,6 @@ export async function createPasswordUser(
  * 供 E2E 測試直接導航至 /reset-password?token=... 驗收完整重設流程。
  */
 export async function createValidResetToken(email: string): Promise<string> {
-  const { createResetToken } = await import('../../src/lib/reset-password')
   const user = await prisma.user.findUniqueOrThrow({
     where: { email },
     select: { id: true, email: true, passwordHash: true },

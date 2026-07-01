@@ -1,0 +1,438 @@
+{
+  "common": {
+    "appName": "TCG Binder",
+    "login": "ログイン",
+    "settings": "設定",
+    "logout": "ログアウト",
+    "defaultUsername": "ユーザー"
+  },
+  "nav": {
+    "home": "ホーム",
+    "cards": "カード検索",
+    "binders": "マイバインダー",
+    "collection": "マイコレクション",
+    "menu": "メニュー",
+    "openMenu": "メニューを開く",
+    "userSection": "アカウント"
+  },
+  "footer": {
+    "rights": "© 2026 TCG Binder, All rights reserved.",
+    "disclaimer": "本サイトは任天堂、株式会社ポケモン、バンダイおよび関連商標権者とは一切関係ありません。カード画像の著作権は各権利者に帰属し、コレクション整理の参考用途でのみ提供されます。"
+  },
+  "home": {
+    "tagline": "トレーディングカードを検索・収集・整理。自分だけのバインダーを作り、いつでもコレクションの進捗を把握。",
+    "startSearch": "検索を始める",
+    "myBinders": "マイバインダー",
+    "supports": "Pokémon TCG・One Piece TCG・繁体中国語／日本語／英語に対応",
+    "statsLabel": "すべてのシリーズをリアルタイム同期",
+    "cardsUnit": "枚のカード",
+    "statsCoverage": "Pokémon TCG と One Piece TCG を網羅し、繁体中国語・日本語・英語の3言語で継続更新",
+    "carouselHint": "カードをクリックして詳細を表示",
+    "dragToReorder": "カードをドラッグして並べ替え",
+    "featuresTitle": "プラットフォーム機能",
+    "featuresSubtitle": "必要なカードコレクションツールをすべて一箇所に",
+    "features": {
+      "search": { "title": "カード検索", "description": "PTCG・OPCG の多言語カード検索に対応。シリーズやレアリティから目的のカードをすばやく見つけられます。" },
+      "binder": { "title": "バインダー作成", "description": "フォーマットとカバーをカスタマイズし、コレクションを美しいバーチャルバインダーに整理。ドラッグ＆ドロップ並べ替えに対応。" },
+      "collection": { "title": "コレクション管理", "description": "所有・欲しいカードを記録し、各シリーズの収集進捗を追跡。さまざまなサイズのバインダーに対応。" },
+      "sync": { "title": "デバイス同期", "description": "アカウントデータはクラウド同期。いつでもどこでも、どのデバイスからでもコレクションを整理できます。" },
+      "share": { "title": "バインダーを共有", "description": "バインダーのリンクを作成して、コレクションを友達と簡単に共有。（近日公開）" },
+      "more": { "title": "その他の機能", "description": "開発を継続中。今後の便利な機能にご期待ください。" }
+    },
+    "aboutTitle": "について",
+    "aboutBody": "TCG Binder は私が一人で開発しています。カードプレイヤーのために、最も直感的で使いやすいコレクション管理ツールを目指しています。ご意見やご質問があれば、以下の方法でお気軽にご連絡ください。"
+  },
+  "auth": {
+    "email": "メールアドレス",
+    "password": "パスワード",
+    "confirmPassword": "パスワード（確認）",
+    "newPassword": "新しいパスワード",
+    "passwordMismatch": "パスワードが一致しません",
+    "weakPassword": "パスワードは{min}文字以上必要です",
+    "loginWithGoogle": "Google でログイン",
+    "loginWithDiscord": "Discord でログイン",
+    "showPassword": "パスワードを表示",
+    "hidePassword": "パスワードを非表示",
+    "strength": {
+      "label": "パスワード強度：{level}",
+      "0": "短すぎます",
+      "1": "弱い",
+      "2": "普通",
+      "3": "強い"
+    },
+    "login": {
+      "title": "おかえりなさい",
+      "subtitle": "TCG Binder アカウントにログインして、すべてのバインダー機能を利用しましょう",
+      "submit": "ログイン",
+      "submitting": "ログイン中...",
+      "passwordResetAlert": "パスワードがリセットされました。新しいパスワードでログインしてください。",
+      "accountDeletedAlert": "アカウントが削除されました。ご利用ありがとうございました。",
+      "invalidCredentials": "メールアドレスまたはパスワードが正しくありません",
+      "genericOauthError": "ログイン中にエラーが発生しました。もう一度お試しください。",
+      "forgotPassword": "パスワードをお忘れですか？",
+      "orLoginWith": "または以下の方法でログイン",
+      "noAccount": "アカウントをお持ちでないですか？",
+      "registerLink": "新規登録"
+    },
+    "oauthErrors": {
+      "OAuthAccountNotLinked": "このメールアドレスには既にアカウントがありますが、このソーシャルログインには連携されていません。元の方法でログインし、設定ページで連携してください。"
+    },
+    "register": {
+      "title": "アカウント作成",
+      "subtitle": "情報を入力して TCG Binder アカウントを作成",
+      "username": "ユーザー名",
+      "submit": "登録",
+      "submitting": "登録中...",
+      "orRegisterWith": "または以下の方法で登録",
+      "haveAccount": "既にアカウントをお持ちですか？",
+      "loginLink": "ログイン",
+      "genericError": "登録に失敗しました",
+      "errors": {
+        "EMAIL_TAKEN": "このメールアドレスは既に使用されています",
+        "USERNAME_TAKEN": "このユーザー名は既に使用されています",
+        "INVALID_INPUT": "すべての項目を入力してください",
+        "SERVER_ERROR": "サーバーエラーが発生しました。しばらくしてからお試しください"
+      }
+    },
+    "modal": {
+      "title": "続けるにはログイン",
+      "failed": "ログインに失敗しました。認証情報をご確認ください。"
+    },
+    "forgot": {
+      "title": "パスワードをお忘れの方",
+      "subtitle": "メールアドレスを入力してください。アカウントがあればパスワードリセットリンクをお送りします",
+      "rateLimited": "リクエストが多すぎます。しばらくしてからお試しください。",
+      "successAlert": "このメールアドレスにアカウントがある場合、数分以内にリセットメールが届きます。迷惑メールフォルダもご確認ください。",
+      "submit": "リセットリンクを送信",
+      "submitting": "送信中...",
+      "backToLogin": "ログインに戻る"
+    },
+    "reset": {
+      "title": "新しいパスワードを設定",
+      "subtitle": "新しいパスワードを入力してください。このリンクは15分間有効です。",
+      "invalidLink": "無効なリンクです。もう一度お申し込みください。",
+      "reapply": "リセットリンクを再申請",
+      "submit": "新しいパスワードを設定",
+      "submitting": "設定中...",
+      "tokenExpired": "このリンクは期限切れです。もう一度お申し込みください。",
+      "tokenInvalid": "このリンクは無効か、既に使用されています。もう一度お申し込みください。",
+      "genericError": "エラーが発生しました。しばらくしてからお試しください。"
+    }
+  },
+  "cards": {
+    "title": "カード検索",
+    "loadFailed": "読み込みに失敗しました。しばらくしてからお試しください",
+    "resultPrefix": "検索結果",
+    "resultSuffix": "件",
+    "noResults": "カードが見つかりません",
+    "noImage": "画像なし",
+    "searchPlaceholder": "カード名または型番で検索...",
+    "allSets": "すべてのシリーズ",
+    "searchSets": "シリーズを検索...",
+    "noSetsFound": "シリーズが見つかりません",
+    "games": {
+      "PTCG": "Pokemon TCG",
+      "OPCG": "One Piece TCG"
+    },
+    "moreComingSoon": "その他のTCGも近日公開",
+    "languages": {
+      "ZH_TW": "繁体中国語",
+      "JA": "日本語",
+      "EN": "English"
+    }
+  },
+  "cardDetail": {
+    "prev": "前へ",
+    "next": "次へ",
+    "series": "シリーズ",
+    "cardNumber": "カード番号",
+    "releaseDate": "発売日",
+    "rarity": "レアリティ",
+    "types": "タイプ",
+    "loginRequired": "バインダーに追加するにはログインしてください",
+    "addToBinder": "バインダーに追加",
+    "noBinders": "バインダーがありません",
+    "createBinder": "バインダーを作成",
+    "binder": "バインダー",
+    "selectBinder": "バインダーを選択",
+    "status": "ステータス",
+    "owned": "所有",
+    "wanted": "欲しい",
+    "quantity": "枚数",
+    "addedSuccess": "{quantity}枚をバインダーに追加しました",
+    "addFailed": "追加に失敗しました。もう一度お試しください",
+    "comingSoon": "近日公開",
+    "adding": "追加中...",
+    "ownedCount": "所有 {count}",
+    "wantedCount": "欲しい {count}"
+  },
+  "theme": {
+    "toggle": "テーマを切り替え"
+  },
+  "language": {
+    "toggle": "言語を変更"
+  },
+  "metadata": {
+    "title": "TCG Binder",
+    "description": "オンラインTCGカードコレクション管理——カードを検索し、所有／欲しいを記録し、カスタムバインダーに整理。"
+  },
+  "binder": {
+    "back": "戻る",
+    "backToList": "バインダー一覧に戻る",
+    "prevPage": "前のページ",
+    "nextPage": "次のページ",
+    "firstPage": "最初のページ",
+    "lastPage": "最後のページ",
+    "addPage": "ページを追加",
+    "pageLabel": "{page} ページ目",
+    "pageMax": "バインダーは最大100ページです",
+    "loadCardFailed": "カードデータの読み込みに失敗しました",
+    "dragToFlip": "ここにドラッグしてページをめくる",
+    "addedCard": "カードを追加しました",
+    "addCardFailed": "追加に失敗しました。もう一度お試しください",
+    "copiedCard": "カードを複製しました",
+    "copyCardFailed": "複製に失敗しました。もう一度お試しください",
+    "slotCard": {
+      "switchToWanted": "欲しいに切り替え",
+      "switchToOwned": "所有に切り替え",
+      "copyToEmptySlot": "空きスロットに複製",
+      "viewCard": "カードを見る",
+      "removeCard": "カードを削除",
+      "removeCardConfirm": "{cardName} をバインダーから削除してもよろしいですか？",
+      "cancel": "キャンセル",
+      "confirmRemove": "削除を確定"
+    },
+    "pickerDialog": {
+      "selectStatus": "コレクション状態を選択",
+      "selectCard": "追加するカードを選択",
+      "loadFailed": "読み込みに失敗しました。しばらくしてからお試しください",
+      "resultCount": "検索結果 {count} 件",
+      "backToSelectCard": "カード選択に戻る",
+      "owned": "所有",
+      "wanted": "欲しい",
+      "adding": "追加中...",
+      "addCard": "カードを追加"
+    },
+    "settingsDrawer": {
+      "dragPage": "{page} ページ目をドラッグ",
+      "deletePage": "{page} ページ目を削除",
+      "deleteThisPage": "このページを削除",
+      "deletePageConfirmTitle": "{page} ページ目を削除しますか？",
+      "deletePageConfirmDescription": "このページ上のすべてのカードがバインダーから削除され、以降のページ番号は自動的に振り直されます。",
+      "cancel": "キャンセル",
+      "delete": "削除",
+      "updateFailed": "更新に失敗しました",
+      "formatUpdated": "フォーマットを更新しました。{count} 枚のカードが {from}〜{to} ページ目に移動しました",
+      "settingsSaved": "設定を保存しました",
+      "enableShareSuccess": "公開共有を有効にしました",
+      "enableShareFailed": "有効化に失敗しました。もう一度お試しください",
+      "revokeShareSuccess": "公開共有を無効にしました",
+      "revokeShareFailed": "無効化に失敗しました。もう一度お試しください",
+      "linkCopied": "リンクをコピーしました",
+      "reorderFailed": "並べ替えに失敗しました",
+      "deletePageFailed": "削除に失敗しました",
+      "pageDeleted": "{page} ページ目を削除しました",
+      "binderSettings": "バインダー設定",
+      "name": "名前",
+      "description": "説明（任意）",
+      "descriptionPlaceholder": "任意、最大150文字",
+      "format": "フォーマット",
+      "coverColor": "カバーカラー",
+      "saving": "保存中…",
+      "saveSettings": "設定を保存",
+      "publicShare": "公開共有",
+      "shareEnabledHint": "このリンクを持つ人は誰でも閲覧できます（読み取り専用）",
+      "copyLink": "リンクをコピー",
+      "revokeShare": "共有を無効化",
+      "shareDisabledHint": "有効にすると公開リンクが生成され、誰でもこのバインダーを閲覧できます",
+      "enableShare": "公開共有を有効化",
+      "pageManagement": "ページ管理"
+    },
+    "shareDialog": {
+      "title": "バインダーを公開共有",
+      "descriptionEnabled": "このリンクを持つ人は誰でも閲覧できます（読み取り専用、編集不可）",
+      "descriptionDisabled": "有効にすると公開リンクが生成され、誰でもこのバインダーを閲覧できます（読み取り専用）",
+      "publicLink": "公開リンク",
+      "copyLink": "リンクをコピー",
+      "revokeShare": "共有を無効化",
+      "enableShare": "公開共有を有効化",
+      "enableSuccess": "公開共有を有効にしました",
+      "enableFailed": "有効化に失敗しました。もう一度お試しください",
+      "revokeSuccess": "公開共有を無効にしました",
+      "revokeFailed": "無効化に失敗しました。もう一度お試しください",
+      "linkCopied": "リンクをコピーしました"
+    },
+    "coverPanel": {
+      "pages": "ページ",
+      "pagesUnit": "ページ",
+      "cards": "カード",
+      "cardsUnit": "スロット",
+      "collectionStatus": "コレクション状態",
+      "ownedWanted": "所有 {owned} / 欲しい {wanted}",
+      "searchPlaceholder": "カードを検索...",
+      "noResults": "該当するカードが見つかりません",
+      "pageLabel": "{page} ページ目"
+    },
+    "publicView": {
+      "ownerBinder": "{ownerName} のバインダー"
+    },
+    "notFound": {
+      "title": "バインダーが見つかりません",
+      "description": "この共有リンクは無効か、既に取り消されています。",
+      "backHome": "ホームに戻る"
+    },
+    "defaultOwnerName": "TCGプレイヤー"
+  },
+  "binderList": {
+    "title": "マイバインダー",
+    "countUnit": "冊",
+    "emptyTitle": "まだバインダーがありません",
+    "emptyDescription": "最初のバインダーを作成してコレクションを整理しましょう",
+    "createFirst": "最初のバインダーを作成",
+    "created": "バインダーを作成しました",
+    "updated": "バインダーを更新しました",
+    "deleted": "バインダーを削除しました",
+    "reorderFailed": "並べ替えの保存に失敗しました。もう一度お試しください",
+    "coverCard": {
+      "cardCount": "{count} 枚",
+      "enterBinder": "バインダーを開く",
+      "enterBinderAriaLabel": "バインダーを開く：{name}",
+      "moreActions": "その他の操作",
+      "edit": "編集",
+      "share": "共有",
+      "delete": "削除"
+    },
+    "createDialog": {
+      "title": "バインダーを追加",
+      "name": "名前",
+      "namePlaceholder": "バインダー名",
+      "description": "説明（任意）",
+      "descriptionPlaceholder": "任意、最大150文字",
+      "format": "フォーマット",
+      "coverColor": "カバーカラー",
+      "creating": "作成中…",
+      "create": "作成",
+      "limitReached": "バインダーの上限に達しました（{max} 冊）",
+      "createFailed": "作成に失敗しました"
+    },
+    "editDialog": {
+      "title": "バインダーを編集",
+      "name": "名前",
+      "namePlaceholder": "バインダー名",
+      "description": "説明（任意）",
+      "descriptionPlaceholder": "任意、最大150文字",
+      "format": "フォーマット",
+      "coverColor": "カバーカラー",
+      "saving": "保存中…",
+      "save": "保存",
+      "updateFailed": "更新に失敗しました",
+      "formatUpdated": "フォーマットを更新しました。{count} 枚のカードが新しいページに移動しました"
+    },
+    "deleteDialog": {
+      "title": "バインダーを削除",
+      "description": "削除すると元に戻せません。このバインダーの {count} 個のスロットも一緒に削除されます",
+      "cancel": "キャンセル",
+      "deleting": "削除中…",
+      "confirmDelete": "削除を確定",
+      "deleteFailed": "削除に失敗しました"
+    },
+    "coverColorPicker": {
+      "label": "カバーカラー"
+    },
+    "addSlot": {
+      "label": "バインダーを追加"
+    },
+    "sortableCard": {
+      "ariaLabel": "バインダー：{name}"
+    }
+  },
+  "settings": {
+    "title": "アカウント設定",
+    "profile": {
+      "title": "ユーザー情報",
+      "emailNotSet": "（未設定）",
+      "usernameLabel": "ユーザー名",
+      "usernamePlaceholder": "3〜20文字、英数字、_ または -",
+      "usernameTaken": "このユーザー名は既に使用されています",
+      "usernameInvalid": "ユーザー名の形式が正しくありません（3〜20文字、英数字、_ または -）",
+      "updateFailed": "更新に失敗しました",
+      "updateSuccess": "更新しました",
+      "saving": "更新中…",
+      "save": "保存"
+    },
+    "changePassword": {
+      "title": "パスワードを変更",
+      "currentPasswordLabel": "現在のパスワード",
+      "newPasswordLabel": "新しいパスワード",
+      "newPasswordPlaceholder": "8文字以上",
+      "wrongPassword": "現在のパスワードが正しくありません",
+      "newPasswordTooShort": "新しいパスワードは8文字以上必要です",
+      "updateFailed": "更新に失敗しました",
+      "updateSuccess": "パスワードを更新しました",
+      "updating": "更新中…",
+      "submit": "パスワードを変更"
+    },
+    "setPassword": {
+      "title": "パスワードを設定",
+      "subtitle": "設定後は Email とパスワードでログインできます",
+      "emailRequiredSubtitle": "パスワードを設定するには先に Email が必要です",
+      "emailRequiredBody": "現在このアカウントに Email が登録されていないため、パスワードでログインできません。先に Email を持つソーシャルアカウントを連携してください。",
+      "newPasswordLabel": "新しいパスワード",
+      "newPasswordPlaceholder": "8文字以上",
+      "confirmPasswordLabel": "パスワード（確認）",
+      "minLength": "パスワードは{min}文字以上必要です",
+      "passwordMismatch": "パスワードが一致しません",
+      "setFailed": "設定に失敗しました",
+      "setSuccess": "パスワードを設定しました",
+      "setting": "設定中…",
+      "submit": "パスワードを設定"
+    },
+    "oauth": {
+      "title": "ソーシャルアカウント",
+      "subtitle": "連携すると対応するソーシャルアカウントでログインできます",
+      "linkedBadge": "✓ 連携済み",
+      "googleLinkedBadge": "✓ Google アカウント連携済み",
+      "linkGoogle": "Google アカウントを連携",
+      "unlink": "連携解除",
+      "unlinkDisabledTitle": "これは現在唯一のログイン方法のため、連携を解除できません",
+      "unlinked": "連携を解除しました",
+      "unlinkLastMethodError": "解除できません：これは唯一のログイン方法です",
+      "unlinkFailed": "連携解除に失敗しました。もう一度お試しください",
+      "link": "連携",
+      "linking": "連携中...",
+      "alreadyLinked": "このアカウントは既にこのソーシャルアカウントと連携済みです",
+      "linkFailed": "連携に失敗しました。もう一度お試しください"
+    },
+    "dangerZone": {
+      "title": "危険な操作",
+      "subtitle": "アカウントを削除すると、すべてのデータが完全に消去され元に戻せません",
+      "deleteAccount": "アカウントを削除",
+      "confirmTitle": "アカウントを削除しますか？",
+      "confirmDescription": "この操作は元に戻せません。アカウント、収集したカード、バインダーはすべて完全に削除されます。 確認のため、下に「DELETE」と入力してください。",
+      "confirmPlaceholder": "確認のため DELETE と入力",
+      "cancel": "キャンセル",
+      "deleting": "削除中...",
+      "confirmDelete": "削除を確定"
+    },
+    "linkSuccess": "{provider} アカウントの連携に成功しました",
+    "linkErrors": {
+      "ALREADY_LINKED": "このソーシャルアカウントは既にあなたのアカウントに連携されています",
+      "PROVIDER_ACCOUNT_TAKEN": "このソーシャルアカウントは既に他のユーザーが使用しています",
+      "OAUTH_FAILED": "ソーシャルアカウントの認証に失敗しました。もう一度お試しください",
+      "INVALID_STATE": "連携リクエストが無効か期限切れです。もう一度お試しください",
+      "generic": "連携に失敗しました。もう一度お試しください"
+    }
+  },
+  "collection": {
+    "title": "マイコレクション",
+    "loadFailed": "読み込みに失敗しました。しばらくしてからお試しください",
+    "emptyNoCollection": "まだコレクションがありません。カード検索ページでカードを記録しましょう！",
+    "emptyNoMatch": "条件に一致するカードがありません",
+    "totalPrefix": "合計",
+    "totalSuffix": "枚",
+    "filters": {
+      "all": "すべて",
+      "searchPlaceholder": "カード名または型番で検索..."
+    }
+  }
+}

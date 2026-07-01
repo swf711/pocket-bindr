@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { toast } from 'sonner'
 import { GridType } from '@prisma/client'
 import { Button } from '@/components/ui/button'
@@ -31,6 +32,7 @@ export function EditBinderDialog({
   binder,
   onUpdated,
 }: EditBinderDialogProps) {
+  const t = useTranslations('binderList.editDialog')
   const [name, setName] = useState('')
   const [gridType, setGridType] = useState<GridType>('grid_3x3')
   const [coverColor, setCoverColor] = useState(DEFAULT_COVER_COLOR)
@@ -58,11 +60,11 @@ export function EditBinderDialog({
       })
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
-        throw new Error(err?.error ?? '更新失敗')
+        throw new Error(err?.error ?? t('updateFailed'))
       }
       const data: PatchBinderResponse = await res.json()
       if (data.affectedSlotsCount && data.affectedSlotsCount > 0) {
-        toast(`格式已更新，${data.affectedSlotsCount} 張卡牌已搬移至新頁`)
+        toast(t('formatUpdated', { count: data.affectedSlotsCount }))
       }
       onUpdated(data as unknown as BinderSummary)
       onOpenChange(false)
@@ -77,14 +79,14 @@ export function EditBinderDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent data-testid="edit-binder-dialog">
         <DialogHeader>
-          <DialogTitle>編輯卡冊</DialogTitle>
+          <DialogTitle>{t('title')}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4 mt-2">
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="edit-binder-name">名稱</Label>
+            <Label htmlFor="edit-binder-name">{t('name')}</Label>
             <Input
               id="edit-binder-name"
-              placeholder="卡冊名稱"
+              placeholder={t('namePlaceholder')}
               maxLength={50}
               value={name}
               onChange={e => setName(e.target.value)}
@@ -93,10 +95,10 @@ export function EditBinderDialog({
             />
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="edit-binder-description">描述（選填）</Label>
+            <Label htmlFor="edit-binder-description">{t('description')}</Label>
             <Textarea
               id="edit-binder-description"
-              placeholder="選填，最多 150 字"
+              placeholder={t('descriptionPlaceholder')}
               maxLength={150}
               rows={2}
               value={description}
@@ -105,7 +107,7 @@ export function EditBinderDialog({
             />
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label>格式</Label>
+            <Label>{t('format')}</Label>
             <Tabs
               value={gridType}
               onValueChange={v => setGridType(v as GridType)}
@@ -126,7 +128,7 @@ export function EditBinderDialog({
             </Tabs>
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label>封面顏色</Label>
+            <Label>{t('coverColor')}</Label>
             <CoverColorPicker value={coverColor} onChange={setCoverColor} />
           </div>
           <Button
@@ -134,7 +136,7 @@ export function EditBinderDialog({
             disabled={loading}
             data-testid="edit-binder-submit"
           >
-            {loading ? '儲存中…' : '儲存'}
+            {loading ? t('saving') : t('save')}
           </Button>
         </form>
       </DialogContent>

@@ -1,6 +1,7 @@
 'use client'
 
 import { usePathname } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { cn } from '@/lib/utils'
 import { isActiveNavLink, NAV_ACTIVE_CLASS } from '@/lib/nav-utils'
 import { NAV_ITEMS } from '@/components/layout/nav-items'
@@ -12,6 +13,7 @@ interface MainNavProps {
 
 export function MainNav({ isLoggedIn }: MainNavProps) {
   const pathname = usePathname()
+  const t = useTranslations('nav')
 
   return (
     <nav className="hidden items-center gap-2 md:flex">
@@ -32,7 +34,7 @@ export function MainNav({ isLoggedIn }: MainNavProps) {
             )}
           >
             <Icon className="size-4" fill={active ? 'currentColor' : 'none'} />
-            {item.label}
+            {t(item.labelKey)}
           </PendingLink>
         )
       })}

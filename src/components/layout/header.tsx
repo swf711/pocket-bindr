@@ -1,17 +1,20 @@
 import Link from 'next/link'
+import { getTranslations } from 'next-intl/server'
 import { auth } from '@/lib/auth'
 import { Button } from '@/components/ui/button'
 import { UserMenu } from '@/components/layout/user-menu'
 import { MobileNav } from '@/components/layout/mobile-nav'
 import { MainNav } from '@/components/layout/main-nav'
 import { ModeToggle } from './mode-toggle'
+import { LanguageToggle } from './language-toggle'
 import Image from 'next/image'
 
 export async function Header() {
+  const t = await getTranslations('common')
   const session = await auth()
   const isLoggedIn = !!session?.user
   const username =
-    session?.user?.name ?? session?.user?.email?.split('@')[0] ?? '使用者'
+    session?.user?.name ?? session?.user?.email?.split('@')[0] ?? t('defaultUsername')
 
   return (
     <header
@@ -40,6 +43,7 @@ export async function Header() {
         </div>
 
         <div className="flex items-center gap-2">
+          <LanguageToggle />
           <ModeToggle />
           <div className="hidden md:flex md:items-center md:gap-2">
             {isLoggedIn ? (
@@ -47,7 +51,7 @@ export async function Header() {
             ) : (
               <Button variant="default" className="h-10 rounded-3xl" asChild>
                 <Link href="/login" data-testid="nav-login">
-                  登入
+                  {t('login')}
                 </Link>
               </Button>
             )}

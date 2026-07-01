@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { BookCheck, Bookmark, Copy, Eye, Trash2 } from 'lucide-react'
 import { useDraggable, useDroppable } from '@dnd-kit/core'
 import { Button } from '@/components/ui/button'
@@ -45,6 +46,7 @@ export function SlotCard({
   isTapped = false,
   onTap,
 }: SlotCardProps) {
+  const t = useTranslations('binder.slotCard')
   const [open, setOpen] = useState(false)
 
   const {
@@ -106,13 +108,13 @@ export function SlotCard({
                     variant="secondary"
                     size="icon-sm"
                     onClick={() => onToggleStatus(slot.id)}
-                    aria-label={slot.status === 'owned' ? '切換為想要' : '切換為擁有'}
+                    aria-label={slot.status === 'owned' ? t('switchToWanted') : t('switchToOwned')}
                   >
                     {slot.status === 'owned' ? <Bookmark /> : <BookCheck />}
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>{slot.status === 'owned' ? '切換為想要' : '切換為擁有'}</p>
+                  <p>{slot.status === 'owned' ? t('switchToWanted') : t('switchToOwned')}</p>
                 </TooltipContent>
               </Tooltip>
               {onCopy && (
@@ -123,13 +125,13 @@ export function SlotCard({
                       size="icon-sm"
                       onClick={() => onCopy(slot.id)}
                       data-testid={`slot-copy-btn-${slot.id}`}
-                      aria-label="複製到空格"
+                      aria-label={t('copyToEmptySlot')}
                     >
                       <Copy />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>複製到空格</p>
+                    <p>{t('copyToEmptySlot')}</p>
                   </TooltipContent>
                 </Tooltip>
               )}
@@ -141,13 +143,13 @@ export function SlotCard({
                       size="icon-sm"
                       onClick={() => onView(slot.cardId)}
                       data-testid={`slot-view-btn-${slot.id}`}
-                      aria-label="查看卡牌"
+                      aria-label={t('viewCard')}
                     >
                       <Eye />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>查看卡牌</p>
+                    <p>{t('viewCard')}</p>
                   </TooltipContent>
                 </Tooltip>
               )}
@@ -155,25 +157,25 @@ export function SlotCard({
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <AlertDialogTrigger asChild>
-                      <Button variant="secondary" size="icon-sm" data-variant="destructive" aria-label="移除卡牌">
+                      <Button variant="secondary" size="icon-sm" data-variant="destructive" aria-label={t('removeCard')}>
                         <Trash2 className="text-destructive" />
                       </Button>
                     </AlertDialogTrigger>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>移除卡牌</p>
+                    <p>{t('removeCard')}</p>
                   </TooltipContent>
                 </Tooltip>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>移除卡牌</AlertDialogTitle>
+                    <AlertDialogTitle>{t('removeCard')}</AlertDialogTitle>
                     <AlertDialogDescription>
-                      確定要從卡冊移除 {slot.card.name} 嗎？
+                      {t('removeCardConfirm', { cardName: slot.card.name })}
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
-                    <AlertDialogCancel>取消</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => onDelete(slot.id)}>確認移除</AlertDialogAction>
+                    <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => onDelete(slot.id)}>{t('confirmRemove')}</AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>

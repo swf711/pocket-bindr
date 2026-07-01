@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl'
 import { Plus } from 'lucide-react'
 
 interface AddBinderSlotProps {
@@ -5,6 +6,7 @@ interface AddBinderSlotProps {
 }
 
 export function AddBinderSlot({ onClick }: AddBinderSlotProps) {
+  const t = useTranslations('binderList.addSlot')
   return (
     <button
       type="button"
@@ -15,7 +17,7 @@ export function AddBinderSlot({ onClick }: AddBinderSlotProps) {
       data-testid="add-binder-slot"
     >
       <Plus className="w-8 h-8" />
-      <span className="text-sm">新增卡冊</span>
+      <span className="text-sm">{t('label')}</span>
     </button>
   )
 }

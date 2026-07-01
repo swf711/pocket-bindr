@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { useTranslations } from 'next-intl'
 import {
   Carousel,
   CarouselContent,
@@ -19,6 +20,7 @@ interface StatsCarouselSectionProps {
 }
 
 export function StatsCarouselSection({ totalCards, carouselCards }: StatsCarouselSectionProps) {
+  const t = useTranslations('home')
   const [count, setCount] = useState(0)
   const [selectedCard, setSelectedCard] = useState<ShowcaseCard | null>(null)
   const [carouselApi, setCarouselApi] = useState<CarouselApi>()
@@ -112,16 +114,16 @@ export function StatsCarouselSection({ totalCards, carouselCards }: StatsCarouse
   const statsContent = (
     <div ref={statsRef} className="container mx-auto px-4 text-center">
       <p className="text-muted-foreground text-base uppercase tracking-widest mb-2">
-        平台即時同步所有系列
+        {t('statsLabel')}
       </p>
       <div className="flex items-baseline justify-center gap-3 mb-4">
         <span className="text-7xl font-bold tabular-nums" data-testid="total-card-count">
           {count.toLocaleString()}
         </span>
-        <span className="text-2xl text-muted-foreground font-medium">張卡牌</span>
+        <span className="text-2xl text-muted-foreground font-medium">{t('cardsUnit')}</span>
       </div>
       <p className="text-muted-foreground text-base mx-auto">
-        涵蓋 Pokémon TCG 與 One Piece TCG，繁中、日文、英文三語言持續更新
+        {t('statsCoverage')}
       </p>
     </div>
   )
@@ -152,7 +154,7 @@ export function StatsCarouselSection({ totalCards, carouselCards }: StatsCarouse
         </CarouselContent>
       </Carousel>
       <div className="flex justify-center items-center gap-1 text-muted-foreground mt-3">
-        <span>點擊卡牌來詳細檢視</span>
+        <span>{t('carouselHint')}</span>
         <Eye className="size-4" />
       </div>
     </div>

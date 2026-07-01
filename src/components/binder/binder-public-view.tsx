@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { GridType } from '@prisma/client'
 import { toast } from 'sonner'
 import {
@@ -146,6 +147,7 @@ function PublicPanelContent({
   description?: string | null
   onView?: (cardId: string) => void
 }) {
+  const t = useTranslations('binder')
   if (content.type === 'cover') {
     if (mobileWrapper) {
       return (
@@ -196,7 +198,7 @@ function PublicPanelContent({
             display: 'block',
           }}
         >
-          第 {content.pageNumber} 頁
+          {t('pageLabel', { page: content.pageNumber })}
         </p>
       </div>
       <ReadOnlyGridSlots slots={content.page} gridType={gridType} onView={onView} />
@@ -207,6 +209,7 @@ function PublicPanelContent({
 // ─── 主元件 ───────────────────────────────────────────────────────────────────
 
 export function BinderPublicView({ binder }: { binder: BinderPublicData }) {
+  const t = useTranslations('binder')
   const [spreadIndex, setSpreadIndex] = useState(0)
   const [mobilePageIndex, setMobilePageIndex] = useState(0)
   const [viewCard, setViewCard] = useState<CardWithCollectionStatus | null>(null)
@@ -222,7 +225,7 @@ export function BinderPublicView({ binder }: { binder: BinderPublicData }) {
   const handleViewCard = async (cardId: string) => {
     const res = await fetch(`/api/cards/${cardId}`)
     if (!res.ok) {
-      toast.error('讀取卡牌資料失敗')
+      toast.error(t('loadCardFailed'))
       return
     }
     setViewCard(await res.json())
@@ -278,7 +281,7 @@ export function BinderPublicView({ binder }: { binder: BinderPublicData }) {
         className="text-xs text-muted-foreground leading-none"
         data-testid="public-owner-banner"
       >
-        {binder.ownerName} 的卡冊
+        {t('publicView.ownerBinder', { ownerName: binder.ownerName })}
       </p>
       <h1 className="text-xl font-bold leading-tight">{binder.name}</h1>
     </div>
@@ -335,7 +338,7 @@ export function BinderPublicView({ binder }: { binder: BinderPublicData }) {
                           size="icon-sm"
                           onClick={() => setSpreadIndex(0)}
                           disabled={spreadIndex === 0}
-                          tooltip="第一頁"
+                          tooltip={t('firstPage')}
                         >
                           <ChevronsLeft />
                         </IconTooltipButton>
@@ -344,7 +347,7 @@ export function BinderPublicView({ binder }: { binder: BinderPublicData }) {
                           size="icon-sm"
                           onClick={() => setSpreadIndex(spreadIndex - 1)}
                           disabled={spreadIndex === 0}
-                          tooltip="上一頁"
+                          tooltip={t('prevPage')}
                         >
                           <ChevronLeft />
                         </IconTooltipButton>
@@ -362,7 +365,7 @@ export function BinderPublicView({ binder }: { binder: BinderPublicData }) {
                           size="icon-sm"
                           onClick={() => setSpreadIndex(spreadIndex + 1)}
                           disabled={isLastSpread}
-                          tooltip="下一頁"
+                          tooltip={t('nextPage')}
                         >
                           <ChevronRight />
                         </IconTooltipButton>
@@ -371,7 +374,7 @@ export function BinderPublicView({ binder }: { binder: BinderPublicData }) {
                           size="icon-sm"
                           onClick={() => setSpreadIndex(spreads.length - 1)}
                           disabled={isLastSpread}
-                          tooltip="最後一頁"
+                          tooltip={t('lastPage')}
                         >
                           <ChevronsRight />
                         </IconTooltipButton>
@@ -480,7 +483,7 @@ export function BinderPublicView({ binder }: { binder: BinderPublicData }) {
               }}
               className="z-20"
               onClick={() => setMobilePageIndex(mobilePageIndex - 1)}
-              aria-label="上一頁"
+              aria-label={t('prevPage')}
             >
               <ChevronLeft />
             </Button>
@@ -497,7 +500,7 @@ export function BinderPublicView({ binder }: { binder: BinderPublicData }) {
               }}
               className="z-20"
               onClick={() => setMobilePageIndex(mobilePageIndex + 1)}
-              aria-label="下一頁"
+              aria-label={t('nextPage')}
             >
               <ChevronRight />
             </Button>
@@ -515,7 +518,7 @@ export function BinderPublicView({ binder }: { binder: BinderPublicData }) {
                     size="icon"
                     onClick={() => setMobilePageIndex(0)}
                     disabled={mobilePageIndex === 0}
-                    tooltip="第一頁"
+                    tooltip={t('firstPage')}
                   >
                     <ChevronsLeft />
                   </IconTooltipButton>
@@ -524,7 +527,7 @@ export function BinderPublicView({ binder }: { binder: BinderPublicData }) {
                     size="icon"
                     onClick={() => setMobilePageIndex(mobilePageIndex - 1)}
                     disabled={mobilePageIndex === 0}
-                    tooltip="上一頁"
+                    tooltip={t('prevPage')}
                   >
                     <ChevronLeft />
                   </IconTooltipButton>
@@ -542,7 +545,7 @@ export function BinderPublicView({ binder }: { binder: BinderPublicData }) {
                     size="icon"
                     onClick={() => setMobilePageIndex(mobilePageIndex + 1)}
                     disabled={isLastMobilePage}
-                    tooltip="下一頁"
+                    tooltip={t('nextPage')}
                   >
                     <ChevronRight />
                   </IconTooltipButton>
@@ -551,7 +554,7 @@ export function BinderPublicView({ binder }: { binder: BinderPublicData }) {
                     size="icon"
                     onClick={() => setMobilePageIndex(mobilePages.length - 1)}
                     disabled={isLastMobilePage}
-                    tooltip="最後一頁"
+                    tooltip={t('lastPage')}
                   >
                     <ChevronsRight />
                   </IconTooltipButton>

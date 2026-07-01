@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { CardStatus } from '@prisma/client'
 import { ArrowLeft, BookCheck, Bookmark } from 'lucide-react'
 import {
@@ -28,6 +29,7 @@ interface SlotCardPickerDialogProps {
 }
 
 export function SlotCardPickerDialog({ open, onClose, onConfirm }: SlotCardPickerDialogProps) {
+  const t = useTranslations('binder.pickerDialog')
   const [game, setGame] = useState<string | null>(null)
   const [language, setLanguage] = useState(DEFAULT_LANGUAGE)
   const [query, setQuery] = useState('')
@@ -80,7 +82,7 @@ export function SlotCardPickerDialog({ open, onClose, onConfirm }: SlotCardPicke
         setFetchError(null)
       } else {
         const errData = await res.json().catch(() => ({}))
-        setFetchError((errData as { error?: string }).error ?? '載入失敗，請稍後再試')
+        setFetchError((errData as { error?: string }).error ?? t('loadFailed'))
       }
     } finally {
       setLoading(false)
@@ -163,7 +165,7 @@ export function SlotCardPickerDialog({ open, onClose, onConfirm }: SlotCardPicke
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-[calc(100%-2rem)] lg:max-w-5xl" data-testid="slot-card-picker-dialog">
         <DialogHeader>
-          <DialogTitle>{selectedCard ? '選擇收藏狀態' : '選擇要加入的卡片'}</DialogTitle>
+          <DialogTitle>{selectedCard ? t('selectStatus') : t('selectCard')}</DialogTitle>
         </DialogHeader>
 
         {!selectedCard ? (
@@ -195,7 +197,7 @@ export function SlotCardPickerDialog({ open, onClose, onConfirm }: SlotCardPicke
                   <>
                     <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                       <p className="text-center">
-                        搜尋結果 <span className="font-bold">{total}</span> 張
+                        {t('resultCount', { count: total })}
                       </p>
                       <CardPagination
                         className="md:mx-0 md:w-auto md:justify-end"
@@ -219,7 +221,7 @@ export function SlotCardPickerDialog({ open, onClose, onConfirm }: SlotCardPicke
               data-testid="slot-card-picker-back"
               onClick={() => setSelectedCard(null)}
             >
-              <ArrowLeft className="h-4 w-4" /> 返回選卡
+              <ArrowLeft className="h-4 w-4" /> {t('backToSelectCard')}
             </Button>
 
             <div className="flex flex-col items-center gap-3">
@@ -236,10 +238,10 @@ export function SlotCardPickerDialog({ open, onClose, onConfirm }: SlotCardPicke
             <Tabs value={status} onValueChange={(v) => setStatus(v as CardStatus)}>
               <TabsList className="w-full">
                 <TabsTrigger data-testid="picker-status-owned" value="owned" className="flex-1">
-                  <BookCheck /> 擁有
+                  <BookCheck /> {t('owned')}
                 </TabsTrigger>
                 <TabsTrigger data-testid="picker-status-wanted" value="wanted" className="flex-1">
-                  <Bookmark /> 想要
+                  <Bookmark /> {t('wanted')}
                 </TabsTrigger>
               </TabsList>
             </Tabs>
@@ -250,7 +252,7 @@ export function SlotCardPickerDialog({ open, onClose, onConfirm }: SlotCardPicke
               onClick={handleConfirm}
               disabled={confirming}
             >
-              {confirming ? '加入中...' : '加入卡片'}
+              {confirming ? t('adding') : t('addCard')}
             </Button>
           </div>
         )}

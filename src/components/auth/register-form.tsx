@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { signIn } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
@@ -18,16 +19,9 @@ import { PasswordInput } from '@/components/auth/password-input'
 import { Progress } from '@/components/ui/progress'
 import { getPasswordStrength, isPasswordValid, MIN_PASSWORD_LENGTH } from '@/lib/password-policy'
 
-const errorMessages: Record<string, string> = {
-  EMAIL_TAKEN: '此 Email 已被使用',
-  USERNAME_TAKEN: '此使用者名稱已被使用',
-  INVALID_INPUT: '請填寫所有欄位',
-  WEAK_PASSWORD: `密碼至少需 ${MIN_PASSWORD_LENGTH} 個字元`,
-  SERVER_ERROR: '伺服器錯誤，請稍後再試',
-}
-
 export function RegisterForm() {
   const router = useRouter()
+  const t = useTranslations('auth')
   const [email, setEmail] = useState('')
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
@@ -42,11 +36,11 @@ export function RegisterForm() {
     setError('')
 
     if (!isPasswordValid(password)) {
-      setError(`密碼至少需 ${MIN_PASSWORD_LENGTH} 個字元`)
+      setError(t('weakPassword', { min: MIN_PASSWORD_LENGTH }))
       return
     }
     if (password !== confirmPassword) {
-      setError('兩次輸入的密碼不一致')
+      setError(t('passwordMismatch'))
       return
     }
 
@@ -61,7 +55,14 @@ export function RegisterForm() {
     const data = await res.json()
 
     if (!data.success) {
-      setError(errorMessages[data.error] ?? '註冊失敗')
+      const code = data.error as string
+      if (code === 'WEAK_PASSWORD') {
+        setError(t('weakPassword', { min: MIN_PASSWORD_LENGTH }))
+      } else if (['EMAIL_TAKEN', 'USERNAME_TAKEN', 'INVALID_INPUT', 'SERVER_ERROR'].includes(code)) {
+        setError(t(`register.errors.${code}`))
+      } else {
+        setError(t('register.genericError'))
+      }
       setLoading(false)
       return
     }
@@ -75,16 +76,16 @@ export function RegisterForm() {
     <div className="flex flex-col gap-6">
       <Card>
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl">建立帳號</CardTitle>
+          <CardTitle className="text-2xl">{t('register.title')}</CardTitle>
           <CardDescription>
-            填入資訊以建立 TCG Binder 帳號
+            {t('register.subtitle')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <form onSubmit={handleSubmit} className="space-y-4">
             <FieldGroup>
               <Field>
-                <FieldLabel htmlFor="email">Email</FieldLabel>
+                <FieldLabel htmlFor="email">{t('email')}</FieldLabel>
                 <Input
                   id="email"
                   type="email"
@@ -95,7 +96,7 @@ export function RegisterForm() {
               </Field>
 
               <Field>
-                <FieldLabel htmlFor="username">使用者名稱</FieldLabel>
+                <FieldLabel htmlFor="username">{t('register.username')}</FieldLabel>
                 <Input
                   id="username"
                   type="text"
@@ -106,7 +107,7 @@ export function RegisterForm() {
               </Field>
 
               <Field>
-                <FieldLabel htmlFor="password">密碼</FieldLabel>
+                <FieldLabel htmlFor="password">{t('password')}</FieldLabel>
                 <PasswordInput
                   id="password"
                   value={password}
@@ -117,13 +118,13 @@ export function RegisterForm() {
                 {password.length > 0 && (
                   <div className="space-y-1" data-testid="password-strength">
                     <Progress value={((strength.score + 1) / 4) * 100} className="h-1.5" />
-                    <FieldDescription>密碼強度：{strength.label}</FieldDescription>
+                    <FieldDescription>{t('strength.label', { level: t(`strength.${strength.score}`) })}</FieldDescription>
                   </div>
                 )}
               </Field>
 
               <Field>
-                <FieldLabel htmlFor="confirmPassword">確認密碼</FieldLabel>
+                <FieldLabel htmlFor="confirmPassword">{t('confirmPassword')}</FieldLabel>
                 <PasswordInput
                   id="confirmPassword"
                   value={confirmPassword}
@@ -139,12 +140,12 @@ export function RegisterForm() {
 
               <Field>
                 <Button type="submit" disabled={loading}>
-                  {loading ? '註冊中...' : '註冊'}
+                  {loading ? t('register.submitting') : t('register.submit')}
                 </Button>
               </Field>
 
               <FieldSeparator className="*:data-[slot=field-separator-content]:bg-card">
-                或以下方式註冊
+                {t('register.orRegisterWith')}
               </FieldSeparator>
 
               <Field className="grid grid-cols-2 gap-4">
@@ -155,7 +156,7 @@ export function RegisterForm() {
                       fill="currentColor"
                     />
                   </svg>
-                  <span className="sr-only">以 Google 登入</span>
+                  <span className="sr-only">{t('loginWithGoogle')}</span>
                 </Button>
 
                 <Button variant="outline" type="button" onClick={() => signIn('discord', { callbackUrl: '/cards' })}>
@@ -165,14 +166,14 @@ export function RegisterForm() {
                       fill="currentColor"
                     />
                   </svg>
-                  <span className="sr-only">以 Discord 登入</span>
+                  <span className="sr-only">{t('loginWithDiscord')}</span>
                 </Button>
               </Field>
 
               <FieldDescription className="text-center">
-                已有帳號？
+                {t('register.haveAccount')}
                 <Link href="/login" className="text-primary underline-offset-4 hover:underline">
-                  登入
+                  {t('register.loginLink')}
                 </Link>
               </FieldDescription>
             </FieldGroup>

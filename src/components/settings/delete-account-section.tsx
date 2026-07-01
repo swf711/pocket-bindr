@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { signOut } from 'next-auth/react'
+import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -17,6 +18,7 @@ import {
 } from '@/components/ui/alert-dialog'
 
 export function DeleteAccountSection() {
+  const t = useTranslations('settings.dangerZone')
   const [confirmInput, setConfirmInput] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -38,31 +40,30 @@ export function DeleteAccountSection() {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button variant="destructive">刪除帳號</Button>
+        <Button variant="destructive">{t('deleteAccount')}</Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>確認刪除帳號？</AlertDialogTitle>
+          <AlertDialogTitle>{t('confirmTitle')}</AlertDialogTitle>
           <AlertDialogDescription>
-            此操作無法復原。您的帳號、收藏卡牌與卡冊將永久刪除。
-            請在下方輸入「DELETE」以確認。
+            {t('confirmDescription')}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <Input
           data-testid="delete-confirm-input"
           value={confirmInput}
           onChange={(e) => setConfirmInput(e.target.value)}
-          placeholder="輸入 DELETE 確認"
+          placeholder={t('confirmPlaceholder')}
         />
         <AlertDialogFooter>
-          <AlertDialogCancel onClick={() => setConfirmInput('')}>取消</AlertDialogCancel>
+          <AlertDialogCancel onClick={() => setConfirmInput('')}>{t('cancel')}</AlertDialogCancel>
           <AlertDialogAction
             data-testid="confirm-delete-btn"
             disabled={!canDelete || loading}
             onClick={handleDelete}
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
           >
-            {loading ? '刪除中...' : '確認刪除'}
+            {loading ? t('deleting') : t('confirmDelete')}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

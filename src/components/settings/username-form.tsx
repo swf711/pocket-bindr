@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { toast } from 'sonner'
+import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -12,6 +13,7 @@ interface UsernameFormProps {
 }
 
 export function UsernameForm({ username, email }: UsernameFormProps) {
+  const t = useTranslations('settings.profile')
   const [value, setValue] = useState(username ?? '')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
@@ -29,17 +31,17 @@ export function UsernameForm({ username, email }: UsernameFormProps) {
       if (!res.ok) {
         const data = await res.json().catch(() => ({}))
         if (data?.error === 'USERNAME_TAKEN') {
-          setError('此用戶名稱已被使用')
+          setError(t('usernameTaken'))
         } else if (data?.error === 'INVALID_USERNAME') {
-          setError('用戶名稱格式不正確（3–20 字元，英數字、_ 或 -）')
+          setError(t('usernameInvalid'))
         } else {
-          toast.error('更新失敗')
+          toast.error(t('updateFailed'))
         }
         return
       }
-      toast('更新成功')
+      toast(t('updateSuccess'))
     } catch {
-      toast.error('更新失敗')
+      toast.error(t('updateFailed'))
     } finally {
       setLoading(false)
     }
@@ -53,13 +55,13 @@ export function UsernameForm({ username, email }: UsernameFormProps) {
           id="email"
           data-testid="email-input"
           value={email ?? ''}
-          placeholder="（未設定）"
+          placeholder={t('emailNotSet')}
           disabled
           readOnly
         />
       </div>
       <div className="space-y-1.5">
-        <Label htmlFor="username">用戶名稱</Label>
+        <Label htmlFor="username">{t('usernameLabel')}</Label>
         <Input
           id="username"
           data-testid="username-input"
@@ -68,7 +70,7 @@ export function UsernameForm({ username, email }: UsernameFormProps) {
             setValue(e.target.value)
             setError(null)
           }}
-          placeholder="3–20 字元，英數字、_ 或 -"
+          placeholder={t('usernamePlaceholder')}
           maxLength={20}
         />
         {error && (
@@ -82,7 +84,7 @@ export function UsernameForm({ username, email }: UsernameFormProps) {
         data-testid="save-username-btn"
         disabled={loading}
       >
-        {loading ? '更新中…' : '儲存'}
+        {loading ? t('saving') : t('save')}
       </Button>
     </form>
   )

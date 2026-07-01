@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { signIn } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
@@ -23,12 +24,9 @@ interface LoginFormProps {
   passwordReset?: boolean
 }
 
-const OAUTH_ERROR_MESSAGES: Record<string, string> = {
-  OAuthAccountNotLinked: '此 email 已有帳號但尚未綁定此社群帳號，請用原本方式登入後，到設定頁進行社群綁定。',
-}
-
 export function LoginForm({ oauthError, accountDeleted, passwordReset }: LoginFormProps) {
   const router = useRouter()
+  const t = useTranslations('auth')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -41,7 +39,7 @@ export function LoginForm({ oauthError, accountDeleted, passwordReset }: LoginFo
     const res = await signIn('credentials', { email, password, redirect: false, callbackUrl: '/cards' })
     setLoading(false)
     if (res?.error) {
-      setError('Email 或密碼錯誤')
+      setError(t('login.invalidCredentials'))
     } else {
       router.push('/cards')
       router.refresh()
@@ -49,27 +47,29 @@ export function LoginForm({ oauthError, accountDeleted, passwordReset }: LoginFo
   }
 
   const oauthMessage = oauthError
-    ? (OAUTH_ERROR_MESSAGES[oauthError] ?? '登入時發生錯誤，請再試一次。')
+    ? (oauthError === 'OAuthAccountNotLinked'
+        ? t('oauthErrors.OAuthAccountNotLinked')
+        : t('login.genericOauthError'))
     : undefined
 
   return (
     <div className="flex flex-col gap-6">
       <Card>
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl">歡迎回來</CardTitle>
+          <CardTitle className="text-2xl">{t('login.title')}</CardTitle>
           <CardDescription>
-            登入 TCG Binder 帳號以使用完整卡冊功能
+            {t('login.subtitle')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {passwordReset && (
             <Alert data-testid="password-reset-alert">
-              <AlertDescription>密碼已重設，請使用新密碼登入。</AlertDescription>
+              <AlertDescription>{t('login.passwordResetAlert')}</AlertDescription>
             </Alert>
           )}
           {accountDeleted && (
             <Alert data-testid="account-deleted-alert">
-              <AlertDescription>帳號已刪除，感謝您的使用。</AlertDescription>
+              <AlertDescription>{t('login.accountDeletedAlert')}</AlertDescription>
             </Alert>
           )}
           {oauthMessage && (
@@ -80,7 +80,7 @@ export function LoginForm({ oauthError, accountDeleted, passwordReset }: LoginFo
           <form onSubmit={handleSubmit} className="space-y-4">
             <FieldGroup>
               <Field>
-                <FieldLabel htmlFor="email">Email</FieldLabel>
+                <FieldLabel htmlFor="email">{t('email')}</FieldLabel>
                 <Input
                   id="email"
                   type="email"
@@ -92,9 +92,9 @@ export function LoginForm({ oauthError, accountDeleted, passwordReset }: LoginFo
 
               <Field>
                 <div className="flex items-center justify-between">
-                  <FieldLabel htmlFor="password">密碼</FieldLabel>
+                  <FieldLabel htmlFor="password">{t('password')}</FieldLabel>
                   <Link href="/forgot-password" className="text-sm text-muted-foreground hover:text-foreground underline-offset-4 hover:underline">
-                    忘記密碼？
+                    {t('login.forgotPassword')}
                   </Link>
                 </div>
                 <PasswordInput id="password" value={password} onChange={e => setPassword(e.target.value)} autoComplete="current-password" required />
@@ -106,12 +106,12 @@ export function LoginForm({ oauthError, accountDeleted, passwordReset }: LoginFo
 
               <Field>
                 <Button type="submit" disabled={loading}>
-                  {loading ? '登入中...' : '登入'}
+                  {loading ? t('login.submitting') : t('login.submit')}
                 </Button>
               </Field>
 
               <FieldSeparator className="*:data-[slot=field-separator-content]:bg-card">
-                或以下方式登入
+                {t('login.orLoginWith')}
               </FieldSeparator>
 
               <Field className="grid grid-cols-2 gap-4">
@@ -122,7 +122,7 @@ export function LoginForm({ oauthError, accountDeleted, passwordReset }: LoginFo
                       fill="currentColor"
                     />
                   </svg>
-                  <span className="sr-only">以 Google 登入</span>
+                  <span className="sr-only">{t('loginWithGoogle')}</span>
                 </Button>
 
                 <Button variant="outline" type="button" onClick={() => signIn('discord', { callbackUrl: '/cards' })}>
@@ -132,14 +132,14 @@ export function LoginForm({ oauthError, accountDeleted, passwordReset }: LoginFo
                       fill="currentColor"
                     />
                   </svg>
-                  <span className="sr-only">以 Discord 登入</span>
+                  <span className="sr-only">{t('loginWithDiscord')}</span>
                 </Button>
               </Field>
 
               <FieldDescription className="text-center">
-                還沒有帳號？
+                {t('login.noAccount')}
                 <Link href="/register" className="text-primary underline-offset-4 hover:underline">
-                  註冊
+                  {t('login.registerLink')}
                 </Link>
               </FieldDescription>
             </FieldGroup>

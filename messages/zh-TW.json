@@ -1,0 +1,438 @@
+{
+  "common": {
+    "appName": "TCG Binder",
+    "login": "登入",
+    "settings": "設定",
+    "logout": "登出",
+    "defaultUsername": "使用者"
+  },
+  "nav": {
+    "home": "首頁",
+    "cards": "卡牌搜尋",
+    "binders": "我的卡冊",
+    "collection": "我的收藏",
+    "menu": "選單",
+    "openMenu": "開啟選單",
+    "userSection": "使用者"
+  },
+  "footer": {
+    "rights": "© 2026 TCG Binder, All rights reserved.",
+    "disclaimer": "本站與 Nintendo、The Pokémon Company、Bandai 及相關商標持有人無任何關聯。卡牌圖片版權歸原版權方所有，僅供收藏整理參考用途。"
+  },
+  "home": {
+    "tagline": "搜尋、收藏、整理你的集換式卡牌。建立專屬卡冊，隨時掌握收藏進度。",
+    "startSearch": "開始搜尋",
+    "myBinders": "我的卡冊",
+    "supports": "支援 Pokémon TCG・One Piece TCG・繁中／日文／英文",
+    "statsLabel": "平台即時同步所有系列",
+    "cardsUnit": "張卡牌",
+    "statsCoverage": "涵蓋 Pokémon TCG 與 One Piece TCG，繁中、日文、英文三語言持續更新",
+    "carouselHint": "點擊卡牌來詳細檢視",
+    "dragToReorder": "拖拉卡牌來重新排列",
+    "featuresTitle": "平台功能",
+    "featuresSubtitle": "所有你需要的卡牌收藏工具，一站搞定",
+    "features": {
+      "search": { "title": "搜尋卡牌", "description": "支援 PTCG、OPCG 多語言卡牌搜尋，依系列、稀有度快速找到目標卡牌。" },
+      "binder": { "title": "建立卡冊", "description": "自訂格式與封面，將收藏整理成精美的虛擬卡冊，支援拖拉排序。" },
+      "collection": { "title": "管理收藏", "description": "標記擁有或想要的卡牌，追蹤每個系列的收集進度，支援各式尺寸卡冊。" },
+      "sync": { "title": "裝置同步", "description": "帳號資料雲端同步，隨時隨地在任何裝置上整理你的收藏。" },
+      "share": { "title": "分享你的卡冊", "description": "建立卡冊連結，輕鬆與好友分享你的收藏。（即將推出）" },
+      "more": { "title": "更多功能", "description": "持續開發中，敬請期待更多實用功能。" }
+    },
+    "aboutTitle": "關於",
+    "aboutBody": "TCG Binder 由我一人獨立開發，希望為卡牌玩家打造最直覺、好用的收藏管理工具。如果你有任何建議或問題，歡迎透過以下方式聯絡我。"
+  },
+  "auth": {
+    "email": "Email",
+    "password": "密碼",
+    "confirmPassword": "確認密碼",
+    "newPassword": "新密碼",
+    "passwordMismatch": "兩次輸入的密碼不一致",
+    "weakPassword": "密碼至少需 {min} 個字元",
+    "loginWithGoogle": "以 Google 登入",
+    "loginWithDiscord": "以 Discord 登入",
+    "showPassword": "顯示密碼",
+    "hidePassword": "隱藏密碼",
+    "strength": {
+      "label": "密碼強度：{level}",
+      "0": "太短",
+      "1": "弱",
+      "2": "中",
+      "3": "強"
+    },
+    "login": {
+      "title": "歡迎回來",
+      "subtitle": "登入 TCG Binder 帳號以使用完整卡冊功能",
+      "submit": "登入",
+      "submitting": "登入中...",
+      "passwordResetAlert": "密碼已重設，請使用新密碼登入。",
+      "accountDeletedAlert": "帳號已刪除，感謝您的使用。",
+      "invalidCredentials": "Email 或密碼錯誤",
+      "genericOauthError": "登入時發生錯誤，請再試一次。",
+      "forgotPassword": "忘記密碼？",
+      "orLoginWith": "或以下方式登入",
+      "noAccount": "還沒有帳號？",
+      "registerLink": "註冊"
+    },
+    "oauthErrors": {
+      "OAuthAccountNotLinked": "此 email 已有帳號但尚未綁定此社群帳號，請用原本方式登入後，到設定頁進行社群綁定。"
+    },
+    "register": {
+      "title": "建立帳號",
+      "subtitle": "填入資訊以建立 TCG Binder 帳號",
+      "username": "使用者名稱",
+      "submit": "註冊",
+      "submitting": "註冊中...",
+      "orRegisterWith": "或以下方式註冊",
+      "haveAccount": "已有帳號？",
+      "loginLink": "登入",
+      "genericError": "註冊失敗",
+      "errors": {
+        "EMAIL_TAKEN": "此 Email 已被使用",
+        "USERNAME_TAKEN": "此使用者名稱已被使用",
+        "INVALID_INPUT": "請填寫所有欄位",
+        "SERVER_ERROR": "伺服器錯誤，請稍後再試"
+      }
+    },
+    "modal": {
+      "title": "登入以繼續",
+      "failed": "登入失敗，請確認帳號密碼"
+    },
+    "forgot": {
+      "title": "忘記密碼",
+      "subtitle": "輸入您的 email，若有帳號將收到密碼重設連結",
+      "rateLimited": "請求過於頻繁，請稍後再試。",
+      "successAlert": "若此 email 有帳號，您將在幾分鐘內收到重設信。請也確認垃圾郵件資料夾。",
+      "submit": "送出重設連結",
+      "submitting": "送出中...",
+      "backToLogin": "返回登入"
+    },
+    "reset": {
+      "title": "設定新密碼",
+      "subtitle": "請輸入您的新密碼，連結 15 分鐘內有效",
+      "invalidLink": "連結無效，請重新申請。",
+      "reapply": "重新申請重設連結",
+      "submit": "設定新密碼",
+      "submitting": "設定中...",
+      "tokenExpired": "連結已過期，請重新申請。",
+      "tokenInvalid": "連結無效或已被使用，請重新申請。",
+      "genericError": "發生錯誤，請稍後再試。"
+    }
+  },
+  "cards": {
+    "title": "卡牌搜尋",
+    "loadFailed": "載入失敗，請稍後再試",
+    "resultPrefix": "搜尋結果",
+    "resultSuffix": "張",
+    "noResults": "沒有找到卡牌",
+    "noImage": "無圖片",
+    "searchPlaceholder": "搜尋卡牌名稱或型號...",
+    "allSets": "所有系列",
+    "searchSets": "搜尋系列...",
+    "noSetsFound": "找不到系列",
+    "games": {
+      "PTCG": "Pokemon TCG",
+      "OPCG": "One Piece TCG"
+    },
+    "moreComingSoon": "更多 TCG 即將推出",
+    "languages": {
+      "ZH_TW": "繁體中文",
+      "JA": "日本語",
+      "EN": "English"
+    }
+  },
+  "cardDetail": {
+    "prev": "上一張",
+    "next": "下一張",
+    "series": "系列",
+    "cardNumber": "卡號",
+    "releaseDate": "發售日",
+    "rarity": "稀有度",
+    "types": "屬性",
+    "loginRequired": "請先登入以加入卡冊",
+    "addToBinder": "加入卡冊",
+    "noBinders": "尚無卡冊",
+    "createBinder": "建立卡冊",
+    "binder": "卡冊",
+    "selectBinder": "選擇卡冊",
+    "status": "狀態",
+    "owned": "擁有",
+    "wanted": "想要",
+    "quantity": "數量",
+    "addedSuccess": "已加入 {quantity} 張到卡冊",
+    "addFailed": "加入失敗，請重試",
+    "comingSoon": "即將推出",
+    "adding": "加入中...",
+    "ownedCount": "擁有 {count}",
+    "wantedCount": "想要 {count}"
+  },
+  "theme": {
+    "toggle": "切換主題"
+  },
+  "language": {
+    "toggle": "切換語言"
+  },
+  "metadata": {
+    "title": "TCG Binder",
+    "description": "線上 TCG 卡牌收藏管理——搜尋卡牌、標記擁有／想要、放入自訂格式卡冊。"
+  },
+  "binder": {
+    "back": "返回",
+    "backToList": "返回卡冊列表",
+    "prevPage": "上一頁",
+    "nextPage": "下一頁",
+    "firstPage": "第一頁",
+    "lastPage": "最後一頁",
+    "addPage": "新增內頁",
+    "pageLabel": "第 {page} 頁",
+    "pageMax": "卡冊最多 100 頁",
+    "loadCardFailed": "讀取卡牌資料失敗",
+    "dragToFlip": "拖到此處翻頁",
+    "addedCard": "已加入卡片",
+    "addCardFailed": "加入失敗，請重試",
+    "copiedCard": "已複製卡片",
+    "copyCardFailed": "複製失敗，請重試",
+    "slotCard": {
+      "switchToWanted": "切換為想要",
+      "switchToOwned": "切換為擁有",
+      "copyToEmptySlot": "複製到空格",
+      "viewCard": "查看卡牌",
+      "removeCard": "移除卡牌",
+      "removeCardConfirm": "確定要從卡冊移除 {cardName} 嗎？",
+      "cancel": "取消",
+      "confirmRemove": "確認移除"
+    },
+    "pickerDialog": {
+      "selectStatus": "選擇收藏狀態",
+      "selectCard": "選擇要加入的卡片",
+      "loadFailed": "載入失敗，請稍後再試",
+      "resultCount": "搜尋結果 {count} 張",
+      "backToSelectCard": "返回選卡",
+      "owned": "擁有",
+      "wanted": "想要",
+      "adding": "加入中...",
+      "addCard": "加入卡片"
+    },
+    "settingsDrawer": {
+      "dragPage": "拖拉第 {page} 頁",
+      "deletePage": "刪除第 {page} 頁",
+      "deleteThisPage": "刪除此頁",
+      "deletePageConfirmTitle": "刪除第 {page} 頁？",
+      "deletePageConfirmDescription": "此頁上的所有卡牌將從卡冊中移除，後續頁碼將自動重新編號。",
+      "cancel": "取消",
+      "delete": "刪除",
+      "updateFailed": "更新失敗",
+      "formatUpdated": "格式已更新，{count} 張卡牌已搬移至第 {from}～{to} 頁",
+      "settingsSaved": "設定已儲存",
+      "enableShareSuccess": "已啟用公開分享",
+      "enableShareFailed": "啟用失敗，請再試一次",
+      "revokeShareSuccess": "已撤銷公開分享",
+      "revokeShareFailed": "撤銷失敗，請再試一次",
+      "linkCopied": "已複製連結",
+      "reorderFailed": "重排失敗",
+      "deletePageFailed": "刪除失敗",
+      "pageDeleted": "第 {page} 頁已刪除",
+      "binderSettings": "卡冊設定",
+      "name": "名稱",
+      "description": "描述（選填）",
+      "descriptionPlaceholder": "選填，最多 150 字",
+      "format": "格式",
+      "coverColor": "封面顏色",
+      "saving": "儲存中…",
+      "saveSettings": "儲存設定",
+      "publicShare": "公開分享",
+      "shareEnabledHint": "任何持有此連結的人皆可瀏覽（純唯讀）",
+      "copyLink": "複製連結",
+      "revokeShare": "撤銷分享",
+      "shareDisabledHint": "啟用後產生公開連結，任何人皆可瀏覽此卡冊",
+      "enableShare": "啟用公開分享",
+      "pageManagement": "內頁管理"
+    },
+    "shareDialog": {
+      "title": "公開分享卡冊",
+      "descriptionEnabled": "任何持有此連結的人皆可瀏覽（純唯讀，無法編輯）",
+      "descriptionDisabled": "啟用後產生公開連結，任何人皆可瀏覽此卡冊（純唯讀）",
+      "publicLink": "公開連結",
+      "copyLink": "複製連結",
+      "revokeShare": "撤銷分享",
+      "enableShare": "啟用公開分享",
+      "enableSuccess": "已啟用公開分享",
+      "enableFailed": "啟用失敗，請再試一次",
+      "revokeSuccess": "已撤銷公開分享",
+      "revokeFailed": "撤銷失敗，請再試一次",
+      "linkCopied": "已複製連結"
+    },
+    "coverPanel": {
+      "pages": "內頁",
+      "pagesUnit": "頁",
+      "cards": "卡片",
+      "cardsUnit": "格卡槽",
+      "collectionStatus": "收藏狀態",
+      "ownedWanted": "擁有 {owned} / 想要 {wanted}",
+      "searchPlaceholder": "搜尋卡牌...",
+      "noResults": "查無符合的卡牌",
+      "pageLabel": "第 {page} 頁"
+    },
+    "publicView": {
+      "ownerBinder": "{ownerName} 的卡冊"
+    },
+    "notFound": {
+      "title": "找不到卡冊",
+      "description": "此分享連結無效或已被撤銷。",
+      "backHome": "回首頁"
+    },
+    "defaultOwnerName": "TCG 玩家"
+  },
+  "binderList": {
+    "title": "我的卡冊",
+    "countUnit": "本",
+    "emptyTitle": "還沒有卡冊",
+    "emptyDescription": "建立你的第一本卡冊來整理收藏",
+    "createFirst": "建立第一本卡冊",
+    "created": "卡冊已建立",
+    "updated": "卡冊已更新",
+    "deleted": "卡冊已刪除",
+    "reorderFailed": "排序儲存失敗，請再試一次",
+    "coverCard": {
+      "cardCount": "{count} 張卡",
+      "enterBinder": "進入卡冊",
+      "enterBinderAriaLabel": "進入卡冊：{name}",
+      "moreActions": "更多操作",
+      "edit": "編輯",
+      "share": "分享",
+      "delete": "刪除"
+    },
+    "createDialog": {
+      "title": "新增卡冊",
+      "name": "名稱",
+      "namePlaceholder": "卡冊名稱",
+      "description": "描述（選填）",
+      "descriptionPlaceholder": "選填，最多 150 字",
+      "format": "格式",
+      "coverColor": "封面顏色",
+      "creating": "建立中…",
+      "create": "建立",
+      "limitReached": "已達卡冊上限（{max} 本）",
+      "createFailed": "建立失敗"
+    },
+    "editDialog": {
+      "title": "編輯卡冊",
+      "name": "名稱",
+      "namePlaceholder": "卡冊名稱",
+      "description": "描述（選填）",
+      "descriptionPlaceholder": "選填，最多 150 字",
+      "format": "格式",
+      "coverColor": "封面顏色",
+      "saving": "儲存中…",
+      "save": "儲存",
+      "updateFailed": "更新失敗",
+      "formatUpdated": "格式已更新，{count} 張卡牌已搬移至新頁"
+    },
+    "deleteDialog": {
+      "title": "刪除卡冊",
+      "description": "刪除後無法復原，此卡冊的 {count} 個格位將一併移除",
+      "cancel": "取消",
+      "deleting": "刪除中…",
+      "confirmDelete": "確認刪除",
+      "deleteFailed": "刪除失敗"
+    },
+    "coverColorPicker": {
+      "label": "封面顏色"
+    },
+    "addSlot": {
+      "label": "新增卡冊"
+    },
+    "sortableCard": {
+      "ariaLabel": "卡冊：{name}"
+    }
+  },
+  "settings": {
+    "title": "帳號設定",
+    "profile": {
+      "title": "用戶資料",
+      "emailNotSet": "（未設定）",
+      "usernameLabel": "用戶名稱",
+      "usernamePlaceholder": "3–20 字元，英數字、_ 或 -",
+      "usernameTaken": "此用戶名稱已被使用",
+      "usernameInvalid": "用戶名稱格式不正確（3–20 字元，英數字、_ 或 -）",
+      "updateFailed": "更新失敗",
+      "updateSuccess": "更新成功",
+      "saving": "更新中…",
+      "save": "儲存"
+    },
+    "changePassword": {
+      "title": "修改密碼",
+      "currentPasswordLabel": "目前密碼",
+      "newPasswordLabel": "新密碼",
+      "newPasswordPlaceholder": "最少 8 個字元",
+      "wrongPassword": "目前密碼不正確",
+      "newPasswordTooShort": "新密碼至少需要 8 個字元",
+      "updateFailed": "更新失敗",
+      "updateSuccess": "密碼已更新",
+      "updating": "更新中…",
+      "submit": "修改密碼"
+    },
+    "setPassword": {
+      "title": "設定密碼",
+      "subtitle": "設定後可使用 Email + 密碼登入",
+      "emailRequiredSubtitle": "需先設定 Email 才能設定密碼登入",
+      "emailRequiredBody": "您的帳號目前沒有 Email，無法以密碼登入。請先綁定具有 Email 的社群帳號。",
+      "newPasswordLabel": "新密碼",
+      "newPasswordPlaceholder": "最少 8 個字元",
+      "confirmPasswordLabel": "確認密碼",
+      "minLength": "密碼至少需要 {min} 個字元",
+      "passwordMismatch": "兩次輸入的密碼不一致",
+      "setFailed": "設定失敗",
+      "setSuccess": "密碼已設定",
+      "setting": "設定中…",
+      "submit": "設定密碼"
+    },
+    "oauth": {
+      "title": "社群帳號",
+      "subtitle": "綁定後可使用對應社群帳號登入",
+      "linkedBadge": "✓ 已連結",
+      "googleLinkedBadge": "✓ 已連結 Google 帳號",
+      "linkGoogle": "連結 Google 帳號",
+      "unlink": "解綁",
+      "unlinkDisabledTitle": "這是您目前唯一的登入方式，無法解綁",
+      "unlinked": "已解除連結",
+      "unlinkLastMethodError": "無法解綁：這是您唯一的登入方式",
+      "unlinkFailed": "解除連結失敗，請再試一次",
+      "link": "連結",
+      "linking": "連結中...",
+      "alreadyLinked": "此帳號已連結此社群帳號",
+      "linkFailed": "連結失敗，請再試一次"
+    },
+    "dangerZone": {
+      "title": "危險區域",
+      "subtitle": "刪除帳號後，所有資料將永久消失且無法復原",
+      "deleteAccount": "刪除帳號",
+      "confirmTitle": "確認刪除帳號？",
+      "confirmDescription": "此操作無法復原。您的帳號、收藏卡牌與卡冊將永久刪除。 請在下方輸入「DELETE」以確認。",
+      "confirmPlaceholder": "輸入 DELETE 確認",
+      "cancel": "取消",
+      "deleting": "刪除中...",
+      "confirmDelete": "確認刪除"
+    },
+    "linkSuccess": "已成功連結 {provider} 帳號",
+    "linkErrors": {
+      "ALREADY_LINKED": "此社群帳號已連結至您的帳號",
+      "PROVIDER_ACCOUNT_TAKEN": "此社群帳號已被其他使用者使用",
+      "OAUTH_FAILED": "社群帳號驗證失敗，請再試一次",
+      "INVALID_STATE": "連結請求無效或已過期，請重試",
+      "generic": "連結失敗，請再試一次"
+    }
+  },
+  "collection": {
+    "title": "我的收藏",
+    "loadFailed": "載入失敗，請稍後再試",
+    "emptyNoCollection": "還沒有任何收藏，前往卡牌搜尋頁標記卡牌吧！",
+    "emptyNoMatch": "沒有符合條件的卡牌",
+    "totalPrefix": "共",
+    "totalSuffix": "張",
+    "filters": {
+      "all": "全部",
+      "searchPlaceholder": "搜尋卡牌名稱或型號..."
+    }
+  }
+}

@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
+import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { PasswordInput } from '@/components/auth/password-input'
@@ -19,6 +20,8 @@ import {
 // check (not sent to the API), mirroring the register form.
 export function SetPasswordForm() {
   const router = useRouter()
+  const t = useTranslations('settings.setPassword')
+  const tAuth = useTranslations('auth')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -31,11 +34,11 @@ export function SetPasswordForm() {
     setError(null)
 
     if (!isPasswordValid(newPassword)) {
-      setError(`密碼至少需要 ${MIN_PASSWORD_LENGTH} 個字元`)
+      setError(t('minLength', { min: MIN_PASSWORD_LENGTH }))
       return
     }
     if (newPassword !== confirmPassword) {
-      setError('兩次輸入的密碼不一致')
+      setError(t('passwordMismatch'))
       return
     }
 
@@ -49,18 +52,18 @@ export function SetPasswordForm() {
       if (!res.ok) {
         const data = await res.json().catch(() => ({}))
         if (data?.error === 'INVALID_NEW_PASSWORD') {
-          setError(`密碼至少需要 ${MIN_PASSWORD_LENGTH} 個字元`)
+          setError(t('minLength', { min: MIN_PASSWORD_LENGTH }))
         } else {
-          toast.error('設定失敗')
+          toast.error(t('setFailed'))
         }
         return
       }
-      toast('密碼已設定')
+      toast(t('setSuccess'))
       setNewPassword('')
       setConfirmPassword('')
       router.refresh()
     } catch {
-      toast.error('設定失敗')
+      toast.error(t('setFailed'))
     } finally {
       setLoading(false)
     }
@@ -69,7 +72,7 @@ export function SetPasswordForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
       <div className="space-y-1.5">
-        <Label htmlFor="set-password">新密碼</Label>
+        <Label htmlFor="set-password">{t('newPasswordLabel')}</Label>
         <PasswordInput
           id="set-password"
           data-testid="set-password-input"
@@ -79,17 +82,17 @@ export function SetPasswordForm() {
             setError(null)
           }}
           autoComplete="new-password"
-          placeholder="最少 8 個字元"
+          placeholder={t('newPasswordPlaceholder')}
         />
         {newPassword.length > 0 && (
           <div className="space-y-1" data-testid="set-password-strength">
             <Progress value={((strength.score + 1) / 4) * 100} className="h-1.5" />
-            <FieldDescription>密碼強度：{strength.label}</FieldDescription>
+            <FieldDescription>{tAuth('strength.label', { level: tAuth(`strength.${strength.score}`) })}</FieldDescription>
           </div>
         )}
       </div>
       <div className="space-y-1.5">
-        <Label htmlFor="set-password-confirm">確認密碼</Label>
+        <Label htmlFor="set-password-confirm">{t('confirmPasswordLabel')}</Label>
         <PasswordInput
           id="set-password-confirm"
           data-testid="set-password-confirm-input"
@@ -107,7 +110,7 @@ export function SetPasswordForm() {
         )}
       </div>
       <Button type="submit" data-testid="save-set-password-btn" disabled={loading}>
-        {loading ? '設定中…' : '設定密碼'}
+        {loading ? t('setting') : t('submit')}
       </Button>
     </form>
   )

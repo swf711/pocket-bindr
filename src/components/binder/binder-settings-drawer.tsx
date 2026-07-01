@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 import { GridType } from '@prisma/client'
 import { toast } from 'sonner'
 import { Settings, Trash2, GripVertical, Copy, Share2 } from 'lucide-react'
@@ -84,6 +85,7 @@ function SortablePageRow({
   deletingPage: number | null
   onDelete: (page: number) => void
 }) {
+  const t = useTranslations('binder.settingsDrawer')
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: page,
   })
@@ -105,12 +107,12 @@ function SortablePageRow({
           className="cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground touch-none"
           {...attributes}
           {...listeners}
-          aria-label={`拖拉第 ${page} 頁`}
+          aria-label={t('dragPage', { page })}
           data-testid={`page-drag-handle-${page}`}
         >
           <GripVertical className="h-4 w-4" />
         </button>
-        <span className="text-sm">第 {page} 頁</span>
+        <span className="text-sm">{t('pageLabel', { page })}</span>
       </div>
       <AlertDialog>
         <Tooltip>
@@ -121,7 +123,7 @@ function SortablePageRow({
                 size="icon"
                 className="h-7 w-7 text-destructive hover:text-destructive"
                 disabled={totalPages <= 1 || deletingPage === page}
-                aria-label={`刪除第 ${page} 頁`}
+                aria-label={t('deletePage', { page })}
                 data-testid={`page-delete-btn-${page}`}
               >
                 <Trash2 className="h-4 w-4" />
@@ -129,23 +131,23 @@ function SortablePageRow({
             </AlertDialogTrigger>
           </TooltipTrigger>
           <TooltipContent>
-            <p>刪除此頁</p>
+            <p>{t('deleteThisPage')}</p>
           </TooltipContent>
         </Tooltip>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>刪除第 {page} 頁？</AlertDialogTitle>
+            <AlertDialogTitle>{t('deletePageConfirmTitle', { page })}</AlertDialogTitle>
             <AlertDialogDescription>
-              此頁上的所有卡牌將從卡冊中移除，後續頁碼將自動重新編號。
+              {t('deletePageConfirmDescription')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>取消</AlertDialogCancel>
+            <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => onDelete(page)}
               data-testid={`page-delete-confirm-${page}`}
             >
-              刪除
+              {t('delete')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -168,6 +170,7 @@ export function BinderSettingsDrawer({
   onTotalPagesChange,
   onShareTokenChange,
 }: BinderSettingsDrawerProps) {
+  const t = useTranslations('binder.settingsDrawer')
   const [open, setOpen] = useState(false)
   const [name, setName] = useState(binderName)
   const [description, setDescription] = useState(binderDescription ?? '')
@@ -205,7 +208,7 @@ export function BinderSettingsDrawer({
       })
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
-        throw new Error(err?.error ?? '更新失敗')
+        throw new Error(err?.error ?? t('updateFailed'))
       }
       const data = await res.json()
       const affectedSlotsCount: number = data.affectedSlotsCount ?? 0
@@ -222,10 +225,10 @@ export function BinderSettingsDrawer({
           newSlots: refreshData.slots,
           newTotalPages,
         })
-        toast(`格式已更新，${affectedSlotsCount} 張卡牌已搬移至第 ${totalPages + 1}～${newTotalPages} 頁`)
+        toast(t('formatUpdated', { count: affectedSlotsCount, from: totalPages + 1, to: newTotalPages }))
       } else {
         onSettingsUpdate({ name, gridType: localGridType, coverColor: localCoverColor, description: description || null })
-        toast('設定已儲存')
+        toast(t('settingsSaved'))
       }
     } catch (err) {
       toast((err as Error).message)
@@ -242,9 +245,9 @@ export function BinderSettingsDrawer({
       const data = await res.json()
       setLocalShareToken(data.shareToken)
       onShareTokenChange(data.shareToken)
-      toast('已啟用公開分享')
+      toast(t('enableShareSuccess'))
     } catch {
-      toast.error('啟用失敗，請再試一次')
+      toast.error(t('enableShareFailed'))
     } finally {
       setSharingLoading(false)
     }
@@ -257,9 +260,9 @@ export function BinderSettingsDrawer({
       if (!res.ok) throw new Error()
       setLocalShareToken(null)
       onShareTokenChange(null)
-      toast('已撤銷公開分享')
+      toast(t('revokeShareSuccess'))
     } catch {
-      toast.error('撤銷失敗，請再試一次')
+      toast.error(t('revokeShareFailed'))
     } finally {
       setSharingLoading(false)
     }
@@ -269,7 +272,7 @@ export function BinderSettingsDrawer({
     if (!localShareToken) return
     const shareUrl = `${window.location.origin}/b/${localShareToken}`
     await navigator.clipboard.writeText(shareUrl)
-    toast('已複製連結')
+    toast(t('linkCopied'))
   }
 
   async function handleDragEnd(event: DragEndEvent) {
@@ -287,7 +290,7 @@ export function BinderSettingsDrawer({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ newOrder }),
       })
-      if (!res.ok) throw new Error('重排失敗')
+      if (!res.ok) throw new Error(t('reorderFailed'))
       const data = await res.json()
       onPageReorder(data.slots)
       setPageOrder(Array.from({ length: totalPages }, (_, i) => i + 1))
@@ -305,12 +308,12 @@ export function BinderSettingsDrawer({
       })
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
-        throw new Error(err?.error ?? '刪除失敗')
+        throw new Error(err?.error ?? t('deletePageFailed'))
       }
       const data = await res.json()
       onPageDelete(pageNumber, data.slots)
       onTotalPagesChange(data.totalPages)
-      toast(`第 ${pageNumber} 頁已刪除`)
+      toast(t('pageDeleted', { page: pageNumber }))
     } catch (err) {
       toast((err as Error).message)
     } finally {
@@ -323,24 +326,24 @@ export function BinderSettingsDrawer({
       <Tooltip>
         <TooltipTrigger asChild>
           <DrawerTrigger asChild>
-            <Button variant="outline" size="icon-sm" data-testid="binder-settings-btn" aria-label="卡冊設定">
+            <Button variant="outline" size="icon-sm" data-testid="binder-settings-btn" aria-label={t('binderSettings')}>
               <Settings className="h-5 w-5" />
             </Button>
           </DrawerTrigger>
         </TooltipTrigger>
         <TooltipContent>
-          <p>卡冊設定</p>
+          <p>{t('binderSettings')}</p>
         </TooltipContent>
       </Tooltip>
       <DrawerContent className="h-full w-80 right-0 left-auto">
         <DrawerHeader>
-          <DrawerTitle>卡冊設定</DrawerTitle>
+          <DrawerTitle>{t('binderSettings')}</DrawerTitle>
         </DrawerHeader>
         <div className="flex flex-col gap-6 p-4 overflow-y-auto">
           {/* 基本設定 */}
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="drawer-binder-name">名稱</Label>
+              <Label htmlFor="drawer-binder-name">{t('name')}</Label>
               <Input
                 id="drawer-binder-name"
                 value={name}
@@ -351,10 +354,10 @@ export function BinderSettingsDrawer({
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="drawer-binder-description">描述（選填）</Label>
+              <Label htmlFor="drawer-binder-description">{t('description')}</Label>
               <Textarea
                 id="drawer-binder-description"
-                placeholder="選填，最多 150 字"
+                placeholder={t('descriptionPlaceholder')}
                 maxLength={150}
                 rows={2}
                 value={description}
@@ -364,7 +367,7 @@ export function BinderSettingsDrawer({
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <Label>格式</Label>
+              <Label>{t('format')}</Label>
               <Tabs
                 value={localGridType}
                 onValueChange={(v) => setLocalGridType(v as GridType)}
@@ -386,7 +389,7 @@ export function BinderSettingsDrawer({
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <Label>封面顏色</Label>
+              <Label>{t('coverColor')}</Label>
               <CoverColorPicker value={localCoverColor} onChange={setLocalCoverColor} />
             </div>
 
@@ -395,7 +398,7 @@ export function BinderSettingsDrawer({
               disabled={savingSettings || !name.trim()}
               data-testid="drawer-save-settings-btn"
             >
-              {savingSettings ? '儲存中…' : '儲存設定'}
+              {savingSettings ? t('saving') : t('saveSettings')}
             </Button>
           </div>
 
@@ -405,11 +408,11 @@ export function BinderSettingsDrawer({
           <div className="flex flex-col gap-3">
             <p className="text-sm font-medium flex items-center gap-1.5">
               <Share2 className="h-4 w-4" />
-              公開分享
+              {t('publicShare')}
             </p>
             {localShareToken ? (
               <div className="flex flex-col gap-2">
-                <p className="text-xs text-muted-foreground">任何持有此連結的人皆可瀏覽（純唯讀）</p>
+                <p className="text-xs text-muted-foreground">{t('shareEnabledHint')}</p>
                 <div className="flex gap-2">
                   <Input
                     readOnly
@@ -422,7 +425,7 @@ export function BinderSettingsDrawer({
                     size="icon"
                     className="h-8 w-8 shrink-0"
                     onClick={handleCopyShareUrl}
-                    tooltip="複製連結"
+                    tooltip={t('copyLink')}
                     data-testid="drawer-copy-share-url-btn"
                   >
                     <Copy className="h-3.5 w-3.5" />
@@ -435,12 +438,12 @@ export function BinderSettingsDrawer({
                   disabled={sharingLoading}
                   data-testid="drawer-revoke-share-btn"
                 >
-                  撤銷分享
+                  {t('revokeShare')}
                 </Button>
               </div>
             ) : (
               <div className="flex flex-col gap-2">
-                <p className="text-xs text-muted-foreground">啟用後產生公開連結，任何人皆可瀏覽此卡冊</p>
+                <p className="text-xs text-muted-foreground">{t('shareDisabledHint')}</p>
                 <Button
                   variant="outline"
                   size="sm"
@@ -448,7 +451,7 @@ export function BinderSettingsDrawer({
                   disabled={sharingLoading}
                   data-testid="drawer-enable-share-btn"
                 >
-                  啟用公開分享
+                  {t('enableShare')}
                 </Button>
               </div>
             )}
@@ -458,7 +461,7 @@ export function BinderSettingsDrawer({
 
           {/* 內頁管理 */}
           <div className="flex flex-col gap-2">
-            <p className="text-sm font-medium">內頁管理</p>
+            <p className="text-sm font-medium">{t('pageManagement')}</p>
             <DndContext
               sensors={sensors}
               collisionDetection={closestCenter}

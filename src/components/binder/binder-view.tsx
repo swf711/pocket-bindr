@@ -1,6 +1,7 @@
 'use client'
 
 import { useRef, useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { GridType, CardStatus } from '@prisma/client'
 import { toast } from 'sonner'
 import { BinderSpreadView } from './binder-spread-view'
@@ -16,6 +17,7 @@ import { useSwapSlots } from '@/hooks/use-swap-slots'
 import { useAddToBinder } from '@/hooks/use-add-to-binder'
 
 export function BinderView({ binder }: { binder: BinderDetailResponse }) {
+  const t = useTranslations('binder')
   const [slots, setSlots] = useState<SlotWithCard[]>(binder.slots)
   const [spreadIndex, setSpreadIndex] = useState(0)
   const [mobilePageIndex, setMobilePageIndex] = useState(0)
@@ -113,7 +115,7 @@ export function BinderView({ binder }: { binder: BinderDetailResponse }) {
   const handleAddPage = async () => {
     const res = await fetch(`/api/binders/${binder.id}/pages`, { method: 'POST' })
     if (res.status === 409) {
-      toast.error('卡冊最多 100 頁')
+      toast.error(t('pageMax'))
       return
     }
     if (res.ok) {
@@ -168,7 +170,7 @@ export function BinderView({ binder }: { binder: BinderDetailResponse }) {
     })
     if (!res.ok) {
       const err = await res.json().catch(() => ({}))
-      toast.error(err?.error ?? '加入失敗，請重試')
+      toast.error(err?.error ?? t('addCardFailed'))
       return
     }
     const result: SlotCardResult = await res.json()
@@ -185,7 +187,7 @@ export function BinderView({ binder }: { binder: BinderDetailResponse }) {
       },
     ])
     setPickerTarget(null)
-    toast.success('已加入卡片')
+    toast.success(t('addedCard'))
   }
 
   const handleAddToBinderFromDrawer = async (
@@ -209,7 +211,7 @@ export function BinderView({ binder }: { binder: BinderDetailResponse }) {
   const handleViewCard = async (cardId: string) => {
     const res = await fetch(`/api/cards/${cardId}`)
     if (!res.ok) {
-      toast.error('讀取卡牌資料失敗')
+      toast.error(t('loadCardFailed'))
       return
     }
     setViewCard(await res.json())
@@ -242,11 +244,11 @@ export function BinderView({ binder }: { binder: BinderDetailResponse }) {
     if (!target) {
       const pageRes = await fetch(`/api/binders/${binder.id}/pages`, { method: 'POST' })
       if (pageRes.status === 409) {
-        toast.error('卡冊最多 100 頁')
+        toast.error(t('pageMax'))
         return
       }
       if (!pageRes.ok) {
-        toast.error('複製失敗，請重試')
+        toast.error(t('copyCardFailed'))
         return
       }
       const data = await pageRes.json()
@@ -261,7 +263,7 @@ export function BinderView({ binder }: { binder: BinderDetailResponse }) {
     })
     if (!res.ok) {
       const err = await res.json().catch(() => ({}))
-      toast.error(err?.error ?? '複製失敗，請重試')
+      toast.error(err?.error ?? t('copyCardFailed'))
       return
     }
     const result: SlotCardResult = await res.json()
@@ -276,7 +278,7 @@ export function BinderView({ binder }: { binder: BinderDetailResponse }) {
     }
     setSlots((prev) => [...prev, newSlot])
     handleJumpToSlot(newSlot)
-    toast.success('已複製卡片')
+    toast.success(t('copiedCard'))
   }
 
   const sharedHandlers = {

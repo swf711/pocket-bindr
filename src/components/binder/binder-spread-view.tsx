@@ -2,6 +2,7 @@
 
 import { useRef, useState } from 'react'
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 import { GridType } from '@prisma/client'
 import {
   DndContext,
@@ -94,6 +95,7 @@ function SpreadPanelContent({
   highlightedSlotId?: string | null
   counterScale: number
 }) {
+  const t = useTranslations('binder')
   if (content.type === 'cover') {
     return (
       <BinderCoverPanel
@@ -118,7 +120,7 @@ function SpreadPanelContent({
           className="text-xs text-muted-foreground text-center"
           style={{ transform: `scale(${counterScale})`, transformOrigin: 'top center', display: 'block' }}
         >
-          第 {content.pageNumber} 頁
+          {t('pageLabel', { page: content.pageNumber })}
         </p>
       </div>
       <BinderGridSlots
@@ -160,6 +162,7 @@ export function BinderSpreadView({
   onAddPage,
   settingsSlot,
 }: BinderSpreadViewProps) {
+  const t = useTranslations('binder')
   const spread = spreads[spreadIndex]
   const containerRef = useRef<HTMLDivElement>(null)
   const [activeSlot, setActiveSlot] = useState<SlotWithCard | null>(null)
@@ -274,9 +277,9 @@ export function BinderSpreadView({
             >
               <div className="flex items-center gap-1">
                 <Button variant="outline" size="sm" className="mr-2" asChild>
-                  <Link href="/binders" aria-label="返回卡冊列表" data-testid="back-to-binders">
+                  <Link href="/binders" aria-label={t('backToList')} data-testid="back-to-binders">
                     <ArrowLeft />
-                    <span>返回</span>
+                    <span>{t('back')}</span>
                   </Link>
                 </Button>
                 <h1 className="text-2xl font-bold">{binderName}</h1>
@@ -292,7 +295,7 @@ export function BinderSpreadView({
                           data-testid="spread-first-btn"
                           onClick={() => onSpreadChange(0)}
                           disabled={spreadIndex === 0 || isDragging}
-                          tooltip="第一頁"
+                          tooltip={t('firstPage')}
                         >
                           <ChevronsLeft />
                         </IconTooltipButton>
@@ -303,7 +306,7 @@ export function BinderSpreadView({
                           onClick={() => onSpreadChange(spreadIndex - 1)}
                           disabled={spreadIndex === 0 || isDragging}
                           className="gap-1 px-2.5"
-                          tooltip="上一頁"
+                          tooltip={t('prevPage')}
                         >
                           <ChevronLeft />
                         </IconTooltipButton>
@@ -323,10 +326,10 @@ export function BinderSpreadView({
                             data-testid="spread-add-page-btn"
                             onClick={onAddPage}
                             disabled={isDragging}
-                            aria-label="新增內頁"
+                            aria-label={t('addPage')}
                           >
                             <Plus />
-                            <span>新增內頁</span>
+                            <span>{t('addPage')}</span>
                           </Button>
                         ) : (
                           <IconTooltipButton
@@ -336,7 +339,7 @@ export function BinderSpreadView({
                             onClick={() => onSpreadChange(spreadIndex + 1)}
                             disabled={isDragging}
                             className="gap-1 px-2.5"
-                            tooltip="下一頁"
+                            tooltip={t('nextPage')}
                           >
                             <ChevronRight />
                           </IconTooltipButton>
@@ -347,7 +350,7 @@ export function BinderSpreadView({
                           data-testid="spread-last-btn"
                           onClick={() => onSpreadChange(spreads.length - 1)}
                           disabled={isLastSpread || isDragging}
-                          tooltip="最後一頁"
+                          tooltip={t('lastPage')}
                         >
                           <ChevronsRight />
                         </IconTooltipButton>
@@ -421,7 +424,7 @@ export function BinderSpreadView({
                   <div style={{ transform: `scale(${counterScale})`, transformOrigin: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
                     <ChevronLeft />
                     <span style={{ writingMode: 'vertical-rl' }}>
-                      拖到此處翻頁
+                      {t('dragToFlip')}
                     </span>
                     <ChevronLeft />
                   </div>
@@ -435,7 +438,7 @@ export function BinderSpreadView({
                   <div style={{ transform: `scale(${counterScale})`, transformOrigin: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
                     <ChevronRight />
                     <span style={{ writingMode: 'vertical-rl' }}>
-                      拖到此處翻頁
+                      {t('dragToFlip')}
                     </span>
                     <ChevronRight />
                   </div>
@@ -452,7 +455,7 @@ export function BinderSpreadView({
               style={{ position: 'absolute', left: offsetX - 44, top: '50%', transform: 'translateY(-50%)' }}
               className="z-20"
               onClick={() => onSpreadChange(spreadIndex - 1)}
-              aria-label="上一頁"
+              aria-label={t('prevPage')}
               data-testid="spread-side-prev-btn"
             >
               <ChevronLeft />
@@ -466,7 +469,7 @@ export function BinderSpreadView({
               style={{ position: 'absolute', right: offsetX - 44, top: '50%', transform: 'translateY(-50%)' }}
               className="z-20"
               onClick={isLastSpread ? onAddPage : () => onSpreadChange(spreadIndex + 1)}
-              aria-label={isLastSpread ? '新增內頁' : '下一頁'}
+              aria-label={isLastSpread ? t('addPage') : t('nextPage')}
               data-testid="spread-side-next-btn"
             >
               {isLastSpread ? <Plus /> : <ChevronRight />}

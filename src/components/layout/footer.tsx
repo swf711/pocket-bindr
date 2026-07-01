@@ -2,9 +2,11 @@
 
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 
 export function Footer() {
   const pathname = usePathname()
+  const t = useTranslations('footer')
 
   const HIDDEN_PATHS = ['/login', '/register', '/']
   if (
@@ -32,11 +34,10 @@ export function Footer() {
           className="dark:block hidden mx-auto"
         />
         <p className="text-sm text-muted-foreground">
-          © 2026 TCG Binder, All rights reserved.
+          {t('rights')}
         </p>
         <p className="text-xs text-muted-foreground max-w-2xl mx-auto">
-          本站與 Nintendo、The Pokémon Company、Bandai 及相關商標持有人無任何關聯。
-          卡牌圖片版權歸原版權方所有，僅供收藏整理參考用途。
+          {t('disclaimer')}
         </p>
       </div>
     </footer>

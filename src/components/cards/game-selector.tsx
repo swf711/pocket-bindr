@@ -1,14 +1,10 @@
 'use client'
 
 import Image from 'next/image'
+import { useTranslations } from 'next-intl'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
-const games = [
-  { id: 'PTCG', label: 'Pokemon TCG', image: '/placeholder-card-back.svg' },
-  { id: 'OPCG', label: 'One Piece TCG', image: '/placeholder-card-back.svg' },
-]
-
-const comingSoonGame = { label: '更多 TCG 即將推出', image: '/placeholder-card-back.svg' }
+const GAME_IDS = ['PTCG', 'OPCG'] as const
 
 interface GameSelectorProps {
   selected: string | null
@@ -16,6 +12,8 @@ interface GameSelectorProps {
 }
 
 export function GameSelector({ selected, onSelect }: GameSelectorProps) {
+  const t = useTranslations('cards')
+  const games = GAME_IDS.map((id) => ({ id, label: t(`games.${id}`), image: '/placeholder-card-back.svg' }))
   // 已選遊戲 → Tabs 呈現
   if (selected) {
     return (
@@ -70,13 +68,13 @@ export function GameSelector({ selected, onSelect }: GameSelectorProps) {
         className="flex cursor-not-allowed flex-col items-center gap-3 rounded-lg border border-input bg-card p-6 text-card-foreground opacity-60 shadow-xs"
       >
         <Image
-          src={comingSoonGame.image}
-          alt={comingSoonGame.label}
+          src="/placeholder-card-back.svg"
+          alt={t('moreComingSoon')}
           width={120}
           height={168}
           className="rounded-md"
         />
-        <span className="text-lg font-semibold">{comingSoonGame.label}</span>
+        <span className="text-lg font-semibold">{t('moreComingSoon')}</span>
       </button>
     </div>
   )

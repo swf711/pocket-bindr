@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { BookOpen } from 'lucide-react'
 import { toast } from 'sonner'
 import {
@@ -32,6 +33,7 @@ interface BinderListClientProps {
 }
 
 export function BinderListClient({ initialBinders }: BinderListClientProps) {
+  const t = useTranslations('binderList')
   const [binderList, setBinderList] = useState<BinderSummary[]>(initialBinders)
   const [createOpen, setCreateOpen] = useState(false)
   const [editOpen, setEditOpen] = useState(false)
@@ -48,17 +50,17 @@ export function BinderListClient({ initialBinders }: BinderListClientProps) {
 
   function handleCreated(binder: BinderSummary) {
     setBinderList(prev => [...prev, binder])
-    toast('卡冊已建立')
+    toast(t('created'))
   }
 
   function handleUpdated(binder: BinderSummary) {
     setBinderList(prev => prev.map(b => (b.id === binder.id ? binder : b)))
-    toast('卡冊已更新')
+    toast(t('updated'))
   }
 
   function handleDeleted(id: string) {
     setBinderList(prev => prev.filter(b => b.id !== id))
-    toast('卡冊已刪除')
+    toast(t('deleted'))
   }
 
   function openEdit(binder: BinderSummary) {
@@ -102,7 +104,7 @@ export function BinderListClient({ initialBinders }: BinderListClientProps) {
       if (!res.ok) throw new Error('reorder failed')
     } catch {
       setBinderList(binderList)
-      toast.error('排序儲存失敗，請再試一次')
+      toast.error(t('reorderFailed'))
     }
   }
 
@@ -111,11 +113,11 @@ export function BinderListClient({ initialBinders }: BinderListClientProps) {
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">我的卡冊</h1>
+        <h1 className="text-2xl font-bold">{t('title')}</h1>
         <div className="flex items-center gap-3">
           <div className="whitespace-nowrap" data-testid="binder-count-stat">
             <span className="text-xl mr-1">{binderList.length}</span>
-            <span className="text-sm text-muted-foreground">/ {MAX_BINDERS_PER_USER} 本</span>
+            <span className="text-sm text-muted-foreground">/ {MAX_BINDERS_PER_USER} {t('countUnit')}</span>
           </div>
           <Progress
             value={(binderList.length / MAX_BINDERS_PER_USER) * 100}
@@ -130,11 +132,11 @@ export function BinderListClient({ initialBinders }: BinderListClientProps) {
             <EmptyMedia variant="icon">
               <BookOpen />
             </EmptyMedia>
-            <EmptyTitle>還沒有卡冊</EmptyTitle>
-            <EmptyDescription>建立你的第一本卡冊來整理收藏</EmptyDescription>
+            <EmptyTitle>{t('emptyTitle')}</EmptyTitle>
+            <EmptyDescription>{t('emptyDescription')}</EmptyDescription>
           </EmptyHeader>
           <EmptyContent>
-            <Button onClick={() => setCreateOpen(true)}>建立第一本卡冊</Button>
+            <Button onClick={() => setCreateOpen(true)}>{t('createFirst')}</Button>
           </EmptyContent>
         </Empty>
       ) : (
