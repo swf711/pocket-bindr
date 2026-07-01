@@ -2,6 +2,7 @@
 
 import { useQuery, keepPreviousData } from '@tanstack/react-query'
 import { queryKeys, type CollectionFilters } from '@/lib/query-keys'
+import { ClientError } from '@/lib/client-error'
 import type { CardWithCollectionStatus } from '@/types/card'
 
 export interface CollectionListResponse {
@@ -24,8 +25,8 @@ async function fetchCollectionApi(filters: CollectionFilters): Promise<Collectio
 
   const res = await fetch(`/api/collection?${params.toString()}`)
   if (!res.ok) {
-    const err = await res.json().catch(() => ({}))
-    throw new Error((err as { error?: string }).error ?? '載入失敗，請稍後再試')
+    // Throw a code (not API text) so the consumer localizes the message.
+    throw new ClientError('LOAD_FAILED')
   }
   return res.json()
 }

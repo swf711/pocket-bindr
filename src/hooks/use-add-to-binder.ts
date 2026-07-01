@@ -3,6 +3,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { queryKeys } from '@/lib/query-keys'
 import { resolveCollectionCardId } from '@/lib/resolve-card-id'
+import { ClientError } from '@/lib/client-error'
 import type { AddToBinderResult } from '@/types/binder'
 
 export type AddToBinderInput = {
@@ -22,8 +23,8 @@ async function postBinderCards(input: AddToBinderInput): Promise<AddToBinderResu
     body: JSON.stringify({ cardId: input.card.id, status: input.status, quantity: input.quantity }),
   })
   if (!res.ok) {
-    const err = await res.json().catch(() => ({}))
-    throw new Error((err as { error?: string }).error ?? '加入失敗')
+    // Throw a code (not API text) so the consumer localizes the message.
+    throw new ClientError('ADD_FAILED')
   }
   return res.json()
 }

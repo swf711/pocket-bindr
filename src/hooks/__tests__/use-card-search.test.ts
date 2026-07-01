@@ -6,6 +6,7 @@ import { renderHook, waitFor } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import React from 'react'
 import { useCardSearch } from '../use-card-search'
+import { ClientError } from '@/lib/client-error'
 import type { CardSearchFilters } from '@/lib/query-keys'
 
 function makeWrapper() {
@@ -69,6 +70,7 @@ describe('useCardSearch', () => {
     const { result } = renderHook(() => useCardSearch(baseFilters), { wrapper: Wrapper })
 
     await waitFor(() => expect(result.current.isError).toBe(true))
-    expect((result.current.error as Error).message).toContain('載入失敗')
+    expect(result.current.error).toBeInstanceOf(ClientError)
+    expect((result.current.error as ClientError).code).toBe('LOAD_FAILED')
   })
 })

@@ -2,6 +2,7 @@
 
 import { useQuery, keepPreviousData } from '@tanstack/react-query'
 import { queryKeys, type CardSearchFilters } from '@/lib/query-keys'
+import { ClientError } from '@/lib/client-error'
 import type { CardWithCollectionStatus } from '@/types/card'
 
 export interface CardSearchResponse {
@@ -24,8 +25,8 @@ async function fetchCardsApi(filters: CardSearchFilters): Promise<CardSearchResp
 
   const res = await fetch(`/api/cards?${params.toString()}`)
   if (!res.ok) {
-    const err = await res.json().catch(() => ({}))
-    throw new Error((err as { error?: string }).error ?? '載入失敗，請稍後再試')
+    // Throw a code (not API text) so the consumer localizes the message.
+    throw new ClientError('LOAD_FAILED')
   }
   return res.json()
 }

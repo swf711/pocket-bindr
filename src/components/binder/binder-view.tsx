@@ -169,8 +169,8 @@ export function BinderView({ binder }: { binder: BinderDetailResponse }) {
       body: JSON.stringify({ ...pickerTarget, cardId, status }),
     })
     if (!res.ok) {
-      const err = await res.json().catch(() => ({}))
-      toast.error(err?.error ?? t('addCardFailed'))
+      // Show a localized message rather than the raw (English) API error text.
+      toast.error(t('addCardFailed'))
       return
     }
     const result: SlotCardResult = await res.json()
@@ -262,8 +262,8 @@ export function BinderView({ binder }: { binder: BinderDetailResponse }) {
       body: JSON.stringify({ ...target, cardId: src.cardId, status: src.status }),
     })
     if (!res.ok) {
-      const err = await res.json().catch(() => ({}))
-      toast.error(err?.error ?? t('copyCardFailed'))
+      // Show a localized message rather than the raw (English) API error text.
+      toast.error(t('copyCardFailed'))
       return
     }
     const result: SlotCardResult = await res.json()

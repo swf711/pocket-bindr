@@ -6,6 +6,7 @@ import { renderHook, act, waitFor } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import React from 'react'
 import { useAddToBinder } from '../use-add-to-binder'
+import { ClientError } from '@/lib/client-error'
 
 function makeWrapper() {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } })
@@ -105,6 +106,7 @@ describe('useAddToBinder', () => {
     })
 
     await waitFor(() => expect(result.current.isError).toBe(true))
-    expect((result.current.error as Error).message).toContain('加入失敗')
+    expect(result.current.error).toBeInstanceOf(ClientError)
+    expect((result.current.error as ClientError).code).toBe('ADD_FAILED')
   })
 })

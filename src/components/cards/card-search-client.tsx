@@ -53,7 +53,7 @@ export function CardSearchClient({ initialParams }: CardSearchClientProps) {
     : { game: '', language, page }
 
   const qc = useQueryClient()
-  const { data, isPending, isError, error } = useCardSearch(filters)
+  const { data, isPending, isError } = useCardSearch(filters)
   const addToBinder = useAddToBinder()
 
   const cards = data?.cards ?? []
@@ -175,7 +175,7 @@ export function CardSearchClient({ initialParams }: CardSearchClientProps) {
               <CardGrid cards={[]} onCardClick={() => {}} loading />
             ) : isError ? (
               <div className="text-center py-12 text-destructive">
-                {(error as Error)?.message ?? t('loadFailed')}
+                {t('loadFailed')}
               </div>
             ) : (
               <>

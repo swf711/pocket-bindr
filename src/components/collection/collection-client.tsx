@@ -56,7 +56,7 @@ export function CollectionClient({ initialParams }: CollectionClientProps) {
     page,
   }
 
-  const { data, isPending, isError, error } = useCollectionList(filters)
+  const { data, isPending, isError } = useCollectionList(filters)
   const addToBinder = useAddToBinder()
 
   const cards = data?.cards ?? []
@@ -161,7 +161,7 @@ export function CollectionClient({ initialParams }: CollectionClientProps) {
           <CardGrid cards={[]} onCardClick={() => {}} loading />
         ) : isError ? (
           <div className="text-center py-12 text-destructive">
-            {(error as Error)?.message ?? t('loadFailed')}
+            {t('loadFailed')}
           </div>
         ) : cards.length === 0 ? (
           <div className="text-center py-12 text-muted-foreground" data-testid="collection-empty">
