@@ -52,7 +52,7 @@ export function CommandPalette() {
   return (
     <CommandDialog open={open} onOpenChange={setOpen} title={t('title')} description={t('description')}>
       <CommandInput placeholder={t('placeholder')} />
-      <CommandList>
+      <CommandList className="py-1">
         <CommandEmpty>{t('empty')}</CommandEmpty>
         <CommandGroup heading={t('groupNavigation')}>
           {navItems.map((item) => {
@@ -60,6 +60,7 @@ export function CommandPalette() {
             return (
               <CommandItem
                 key={item.href}
+                className="rounded-md px-3 h-12 cursor-pointer"
                 value={`${tNav(item.labelKey)} ${item.href}`}
                 onSelect={() => runCommand(() => router.push(item.href))}
               >
@@ -69,6 +70,7 @@ export function CommandPalette() {
             )
           })}
           <CommandItem
+            className="rounded-md px-3 h-12 cursor-pointer"
             value={`${tCommon('settings')} /settings`}
             onSelect={() => runCommand(() => router.push('/settings'))}
           >
@@ -76,11 +78,12 @@ export function CommandPalette() {
             {tCommon('settings')}
           </CommandItem>
         </CommandGroup>
-        <CommandSeparator />
+        <CommandSeparator className='mx-1 mb-2' />
         <CommandGroup heading={t('groupActions')}>
           {isLoggedIn && (
             <CommandItem
               value={t('createBinder')}
+              className="rounded-md px-3 h-12 cursor-pointer"
               onSelect={() => runCommand(() => router.push('/binders?new=1'))}
             >
               <Plus />
@@ -89,6 +92,7 @@ export function CommandPalette() {
           )}
           <CommandItem
             value={t('toggleTheme')}
+            className="rounded-md px-3 h-12 cursor-pointer"
             onSelect={() =>
               runCommand(() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark'))
             }
@@ -100,6 +104,7 @@ export function CommandPalette() {
             <CommandItem
               key={locale}
               value={`${t('switchLanguage')} ${LOCALE_LABELS[locale]}`}
+              className="rounded-md px-3 h-12 cursor-pointer"
               onSelect={() =>
                 runCommand(() => {
                   setLocale(locale).then(() => router.refresh())

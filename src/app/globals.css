@@ -4,42 +4,38 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/*
+ * M3 色彩角色系統：色彩 token 由 scripts/gen-theme-css.ts 從
+ * design/material-theme.json（Material Theme Builder 匯出，單一真相）產生。
+ * 改色請回 Theme Builder 重匯出 JSON 後重跑腳本，不要手調下方色值。
+ * shadcn token ↔ M3 role 映射表詳見 docs/PATTERNS.md。
+ */
 :root {
   --radius: 0.625rem;
   --background: oklch(98.1% 0.014 110.9);
   --foreground: oklch(22.2% 0.012 122.4);
   --card: oklch(98.1% 0.014 110.9);
   --card-foreground: oklch(22.2% 0.012 122.4);
-  --popover: oklch(100.0% 0 0);
+  --popover: oklch(96.3% 0.015 110.9);
   --popover-foreground: oklch(22.2% 0.012 122.4);
   --primary: oklch(48.0% 0.088 248.7);
   --primary-foreground: oklch(100.0% 0 0);
-  --secondary: oklch(48.3% 0.0311 251.91);
+  --secondary: oklch(48.3% 0.031 251.9);
   --secondary-foreground: oklch(100.0% 0 0);
   --muted: oklch(93.0% 0.015 110.9);
   --muted-foreground: oklch(39.6% 0.014 256.8);
-  --accent: oklch(48.2% 0.0937 97.44);
-  --accent-foreground: oklch(100.0% 0 0);
+  --accent: oklch(93.0% 0.015 110.9);
+  --accent-foreground: oklch(39.6% 0.014 256.8);
   --destructive: oklch(50.6% 0.193 27.7);
   --destructive-foreground: oklch(100.0% 0 0);
   --border: oklch(82.9% 0.012 264.5);
-  --input: oklch(82.9% 0.012 264.5);
+  --input: oklch(56.9% 0.013 264.5);
   --ring: oklch(48.0% 0.088 248.7);
   --chart-1: oklch(48.0% 0.088 248.7);
   --chart-2: oklch(48.3% 0.031 251.9);
   --chart-3: oklch(48.3% 0.094 97.4);
-  --chart-4: oklch(56.8% 0.104 248.2);
-  --chart-5: oklch(56.8% 0.096 97.9);
-  --sidebar: oklch(96.3% 0.015 110.9);
-  --sidebar-foreground: oklch(22.2% 0.012 122.4);
-  --sidebar-primary: oklch(48.0% 0.088 248.7);
-  --sidebar-primary-foreground: oklch(100.0% 0 0);
-  --sidebar-accent: oklch(91.2% 0.113 96.0);
-  --sidebar-accent-foreground: oklch(39.6% 0.082 97.0);
-  --sidebar-border: oklch(82.9% 0.012 264.5);
-  --sidebar-ring: oklch(48.0% 0.088 248.7);
-
-  /* custom */
+  --chart-4: oklch(82.6% 0.085 252.0);
+  --chart-5: oklch(82.5% 0.110 96.7);
   --surface-dim: oklch(88.8% 0.015 110.9);
   --surface: oklch(98.1% 0.014 110.9);
   --surface-bright: oklch(98.1% 0.014 110.9);
@@ -52,8 +48,16 @@
   --on-primary-container: oklch(39.4% 0.091 247.6);
   --secondary-container: oklch(91.4% 0.030 256.0);
   --on-secondary-container: oklch(39.6% 0.031 252.2);
+  --tertiary: oklch(48.3% 0.094 97.4);
+  --on-tertiary: oklch(100.0% 0 0);
   --tertiary-container: oklch(91.2% 0.113 96.0);
   --on-tertiary-container: oklch(39.6% 0.082 97.0);
+  --error-container: oklch(91.8% 0.042 25.2);
+  --on-error-container: oklch(41.7% 0.170 27.4);
+  --inverse-surface: oklch(30.9% 0.013 120.1);
+  --inverse-on-surface: oklch(95.7% 0.016 110.6);
+  --inverse-primary: oklch(82.6% 0.085 252.0);
+  --scrim: oklch(0.0% 0 0);
 }
 
 .dark {
@@ -65,32 +69,22 @@
   --popover-foreground: oklch(91.2% 0.015 110.9);
   --primary: oklch(82.6% 0.085 252.0);
   --primary-foreground: oklch(31.1% 0.080 245.9);
-  --secondary: oklch(82.8% 0.0308 256.02);
-  --secondary-foreground: oklch(31.09% 0.0315 248.87);
+  --secondary: oklch(82.8% 0.031 256.0);
+  --secondary-foreground: oklch(31.1% 0.032 248.9);
   --muted: oklch(28.4% 0.013 126.2);
   --muted-foreground: oklch(82.9% 0.012 264.5);
-  --accent: oklch(91.2% 0.113 96.0);
-  --accent-foreground: oklch(39.6% 0.082 97.0);
+  --accent: oklch(28.4% 0.013 126.2);
+  --accent-foreground: oklch(82.9% 0.012 264.5);
   --destructive: oklch(83.8% 0.089 26.8);
   --destructive-foreground: oklch(32.8% 0.134 27.3);
   --border: oklch(39.6% 0.014 256.8);
-  --input: oklch(39.6% 0.014 256.8);
+  --input: oklch(65.6% 0.013 264.5);
   --ring: oklch(82.6% 0.085 252.0);
   --chart-1: oklch(82.6% 0.085 252.0);
   --chart-2: oklch(82.8% 0.031 256.0);
   --chart-3: oklch(82.5% 0.110 96.7);
-  --chart-4: oklch(74.1% 0.102 249.8);
-  --chart-5: oklch(74.0% 0.104 97.1);
-  --sidebar: oklch(22.2% 0.012 122.4);
-  --sidebar-foreground: oklch(91.2% 0.015 110.9);
-  --sidebar-primary: oklch(82.6% 0.085 252.0);
-  --sidebar-primary-foreground: oklch(31.1% 0.080 245.9);
-  --sidebar-accent: oklch(39.6% 0.082 97.0);
-  --sidebar-accent-foreground: oklch(91.2% 0.113 96.0);
-  --sidebar-border: oklch(39.6% 0.014 256.8);
-  --sidebar-ring: oklch(82.6% 0.085 252.0);
-
-  /* custom */
+  --chart-4: oklch(82.6% 0.085 252.0);
+  --chart-5: oklch(82.5% 0.110 96.7);
   --surface-dim: oklch(18.7% 0.012 122.6);
   --surface: oklch(18.7% 0.012 122.6);
   --surface-bright: oklch(34.4% 0.014 118.5);
@@ -103,8 +97,117 @@
   --on-primary-container: oklch(91.2% 0.043 255.9);
   --secondary-container: oklch(39.6% 0.031 252.2);
   --on-secondary-container: oklch(91.4% 0.030 256.0);
+  --tertiary: oklch(82.5% 0.110 96.7);
+  --on-tertiary: oklch(31.0% 0.064 97.8);
   --tertiary-container: oklch(39.6% 0.082 97.0);
   --on-tertiary-container: oklch(91.2% 0.113 96.0);
+  --error-container: oklch(41.7% 0.170 27.4);
+  --on-error-container: oklch(91.8% 0.042 25.2);
+  --inverse-surface: oklch(91.2% 0.015 110.9);
+  --inverse-on-surface: oklch(30.9% 0.013 120.1);
+  --inverse-primary: oklch(48.0% 0.088 248.7);
+  --scrim: oklch(0.0% 0 0);
+}
+
+/* M3 high-contrast scheme（使用者於 OS 開啟「增加對比度」時生效） */
+@media (prefers-contrast: more) {
+  :root {
+    --background: oklch(98.1% 0.014 110.9);
+    --foreground: oklch(0.0% 0 0);
+    --card: oklch(98.1% 0.014 110.9);
+    --card-foreground: oklch(0.0% 0 0);
+    --popover: oklch(95.7% 0.016 110.6);
+    --popover-foreground: oklch(0.0% 0 0);
+    --primary: oklch(29.2% 0.076 246.4);
+    --primary-foreground: oklch(100.0% 0 0);
+    --secondary: oklch(29.2% 0.033 252.5);
+    --secondary-foreground: oklch(100.0% 0 0);
+    --muted: oklch(86.9% 0.015 110.9);
+    --muted-foreground: oklch(0.0% 0 0);
+    --accent: oklch(86.9% 0.015 110.9);
+    --accent-foreground: oklch(0.0% 0 0);
+    --destructive: oklch(30.8% 0.125 27.4);
+    --destructive-foreground: oklch(100.0% 0 0);
+    --border: oklch(40.4% 0.013 261.7);
+    --input: oklch(29.2% 0.014 261.7);
+    --ring: oklch(29.2% 0.076 246.4);
+    --chart-1: oklch(29.2% 0.076 246.4);
+    --chart-2: oklch(29.2% 0.033 252.5);
+    --chart-3: oklch(29.3% 0.061 98.4);
+    --chart-4: oklch(31.9% 0.082 245.8);
+    --chart-5: oklch(31.8% 0.066 96.9);
+    --surface-dim: oklch(78.4% 0.015 115.1);
+    --surface: oklch(98.1% 0.014 110.9);
+    --surface-bright: oklch(98.1% 0.014 110.9);
+    --surface-container-lowest: oklch(100.0% 0 0);
+    --surface-container-low: oklch(95.7% 0.016 110.6);
+    --surface-container: oklch(91.2% 0.015 110.9);
+    --surface-container-high: oklch(86.9% 0.015 110.9);
+    --surface-container-highest: oklch(82.6% 0.014 111.3);
+    --primary-container: oklch(40.4% 0.089 247.0);
+    --on-primary-container: oklch(100.0% 0 0);
+    --secondary-container: oklch(40.4% 0.032 253.8);
+    --on-secondary-container: oklch(100.0% 0 0);
+    --tertiary: oklch(29.3% 0.061 98.4);
+    --on-tertiary: oklch(100.0% 0 0);
+    --tertiary-container: oklch(40.5% 0.084 98.4);
+    --on-tertiary-container: oklch(100.0% 0 0);
+    --error-container: oklch(42.7% 0.174 27.5);
+    --on-error-container: oklch(100.0% 0 0);
+    --inverse-surface: oklch(30.9% 0.013 120.1);
+    --inverse-on-surface: oklch(100.0% 0 0);
+    --inverse-primary: oklch(82.6% 0.085 252.0);
+    --scrim: oklch(0.0% 0 0);
+  }
+
+  .dark {
+    --background: oklch(18.7% 0.012 122.6);
+    --foreground: oklch(100.0% 0 0);
+    --card: oklch(18.7% 0.012 122.6);
+    --card-foreground: oklch(100.0% 0 0);
+    --popover: oklch(23.9% 0.012 122.3);
+    --popover-foreground: oklch(100.0% 0 0);
+    --primary: oklch(95.5% 0.022 256.7);
+    --primary-foreground: oklch(0.0% 0 0);
+    --secondary: oklch(95.5% 0.022 256.7);
+    --secondary-foreground: oklch(0.0% 0 0);
+    --muted: oklch(35.2% 0.012 120.0);
+    --muted-foreground: oklch(100.0% 0 0);
+    --accent: oklch(35.2% 0.012 120.0);
+    --accent-foreground: oklch(100.0% 0 0);
+    --destructive: oklch(95.7% 0.021 28.3);
+    --destructive-foreground: oklch(0.0% 0 0);
+    --border: oklch(81.6% 0.012 264.5);
+    --input: oklch(95.5% 0.013 266.7);
+    --ring: oklch(95.5% 0.022 256.7);
+    --chart-1: oklch(95.5% 0.022 256.7);
+    --chart-2: oklch(95.5% 0.022 256.7);
+    --chart-3: oklch(95.3% 0.075 95.1);
+    --chart-4: oklch(82.6% 0.085 252.0);
+    --chart-5: oklch(82.5% 0.110 96.7);
+    --surface-dim: oklch(18.7% 0.012 122.6);
+    --surface: oklch(18.7% 0.012 122.6);
+    --surface-bright: oklch(43.0% 0.013 118.4);
+    --surface-container-lowest: oklch(0.0% 0 0);
+    --surface-container-low: oklch(23.9% 0.012 122.3);
+    --surface-container: oklch(30.9% 0.013 120.1);
+    --surface-container-high: oklch(35.2% 0.012 120.0);
+    --surface-container-highest: oklch(39.6% 0.014 123.8);
+    --primary-container: oklch(81.3% 0.085 252.0);
+    --on-primary-container: oklch(15.0% 0.038 245.9);
+    --secondary-container: oklch(81.6% 0.031 256.0);
+    --on-secondary-container: oklch(15.0% 0.035 247.0);
+    --tertiary: oklch(95.3% 0.075 95.1);
+    --on-tertiary: oklch(0.0% 0 0);
+    --tertiary-container: oklch(81.5% 0.111 97.4);
+    --on-tertiary-container: oklch(15.0% 0.031 96.6);
+    --error-container: oklch(82.6% 0.097 27.1);
+    --on-error-container: oklch(15.9% 0.064 25.9);
+    --inverse-surface: oklch(91.2% 0.015 110.9);
+    --inverse-on-surface: oklch(0.0% 0 0);
+    --inverse-primary: oklch(40.1% 0.089 246.8);
+    --scrim: oklch(0.0% 0 0);
+  }
 }
 
 @theme inline {
@@ -131,20 +234,12 @@
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
-  --color-sidebar: var(--sidebar);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-ring: var(--sidebar-ring);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
 
-  /* custom */
+  /* M3 roles（shadcn 未涵蓋的角色） */
   --color-surface-dim: var(--surface-dim);
   --color-surface: var(--surface);
   --color-surface-bright: var(--surface-bright);
@@ -157,8 +252,16 @@
   --color-on-primary-container: var(--on-primary-container);
   --color-secondary-container: var(--secondary-container);
   --color-on-secondary-container: var(--on-secondary-container);
+  --color-tertiary: var(--tertiary);
+  --color-on-tertiary: var(--on-tertiary);
   --color-tertiary-container: var(--tertiary-container);
   --color-on-tertiary-container: var(--on-tertiary-container);
+  --color-error-container: var(--error-container);
+  --color-on-error-container: var(--on-error-container);
+  --color-inverse-surface: var(--inverse-surface);
+  --color-inverse-on-surface: var(--inverse-on-surface);
+  --color-inverse-primary: var(--inverse-primary);
+  --color-scrim: var(--scrim);
 }
 
 @layer base {

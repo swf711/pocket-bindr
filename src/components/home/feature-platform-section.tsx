@@ -25,7 +25,7 @@ export async function FeaturePlatformSection() {
         </div>
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
           {FEATURES.map(({ icon: Icon, key }) => (
-            <Card key={key} className="[--card-spacing:--spacing(3)] sm:[--card-spacing:--spacing(6)] bg-primary-container text-on-primary-container">
+            <Card key={key} className="[--card-spacing:--spacing(3)] sm:[--card-spacing:--spacing(6)] bg-tertiary-container text-on-tertiary-container">
               <CardHeader>
                 <CardTitle>
                   <div className="flex sm:flex-col items-center sm:items-start gap-3 sm:gap-5">

@@ -45,7 +45,7 @@ export async function HeroSection({ isLoggedIn, cards }: HeroSectionProps) {
                 <Link href="/cards">{t('startSearch')}</Link>
               </Button>
               {isLoggedIn && (
-                <Button variant="accent" className="h-14 px-6 rounded-3xl" asChild>
+                <Button variant="tertiary" className="h-14 px-6 rounded-3xl" asChild>
                   <Link href="/binders">{t('myBinders')}</Link>
                 </Button>
               )}

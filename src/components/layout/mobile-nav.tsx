@@ -107,7 +107,7 @@ export function MobileNav({ isLoggedIn, username, image }: MobileNavProps) {
               <div className="flex items-center gap-3 p-4">
                 <Avatar size="lg">
                   {image && <AvatarImage src={image} alt={username} />}
-                  <AvatarFallback className='bg-accent text-accent-foreground'>{initial}</AvatarFallback>
+                  <AvatarFallback className='bg-tertiary-container text-on-tertiary-container'>{initial}</AvatarFallback>
                 </Avatar>
                 <span className="max-w-36 truncate text-sm font-medium">
                   {username}

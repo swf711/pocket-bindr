@@ -31,6 +31,7 @@ export function GameSelector({ selected, onSelect }: GameSelectorProps) {
           {games.map(g => (
             <TabsTrigger
               key={g.id}
+              className="data-[state=active]:bg-secondary-container data-[state=active]:text-on-secondary-container dark:data-[state=active]:bg-secondary-container dark:data-[state=active]:text-on-secondary-container"
               data-testid={`game-btn-${g.id.toLowerCase()}`}
               value={g.id}
             >
@@ -54,7 +55,7 @@ export function GameSelector({ selected, onSelect }: GameSelectorProps) {
           type="button"
           data-testid={`game-btn-${g.id.toLowerCase()}`}
           onClick={() => onSelect(g.id)}
-          className="flex flex-col items-center gap-3 rounded-lg border border-input bg-card p-6 text-card-foreground shadow-xs transition-all hover:border-ring hover:shadow-md focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
+          className="flex flex-col items-center gap-3 rounded-xl bg-primary-container p-6 text-on-primary-container shadow-xs transition-all hover:bg-primary-container/80 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
         >
           <Image
             src={g.image}
@@ -70,7 +71,7 @@ export function GameSelector({ selected, onSelect }: GameSelectorProps) {
         type="button"
         disabled
         data-testid="game-btn-coming-soon"
-        className="flex cursor-not-allowed flex-col items-center gap-3 rounded-lg border border-input bg-card p-6 text-card-foreground opacity-60 shadow-xs"
+        className="flex cursor-not-allowed flex-col items-center gap-3 rounded-xl bg-primary-container p-6 text-on-primary-container opacity-60 shadow-xs"
       >
         <Image
           src="/placeholder-card-back.svg"

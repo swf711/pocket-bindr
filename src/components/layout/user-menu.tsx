@@ -35,7 +35,7 @@ export function UserMenu({ username, image }: UserMenuProps) {
         >
           <Avatar size="lg">
             {image && <AvatarImage src={image} alt={username} />}
-            <AvatarFallback className='bg-accent text-accent-foreground'>{initial}</AvatarFallback>
+            <AvatarFallback className='bg-tertiary-container text-on-tertiary-container'>{initial}</AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
@@ -43,7 +43,7 @@ export function UserMenu({ username, image }: UserMenuProps) {
         <DropdownMenuLabel className="h-12 px-3 flex items-center gap-2">
           <Avatar size="lg">
             {image && <AvatarImage src={image} alt={username} />}
-            <AvatarFallback className='bg-accent text-accent-foreground'>{initial}</AvatarFallback>
+            <AvatarFallback className='bg-tertiary-container text-on-tertiary-container'>{initial}</AvatarFallback>
           </Avatar>
           <span className='w-full truncate text-foreground text-base'>{username}</span>
         </DropdownMenuLabel>
