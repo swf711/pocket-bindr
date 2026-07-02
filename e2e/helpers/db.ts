@@ -19,11 +19,19 @@ async function getRedis() {
 /**
  * Clear rate-limit sliding-window keys for a given prefix + identifier so
  * rate-limit E2E tests start from a clean slate.
+ * 注意：@upstash/ratelimit slidingWindow 的實際 key 帶 window bucket 後綴
+ * （如 `rl:forgot:ip:127.0.0.1:495277`），必須以 SCAN 前綴比對刪除；
+ * 精確 DEL `prefix:identifier` 永遠刪不到任何東西。
  */
 export async function clearRateLimitKey(prefix: string, identifier: string): Promise<void> {
   const r = await getRedis()
   if (!r) return
-  await r.del(`${prefix}:${identifier}`)
+  let cursor = 0
+  do {
+    const [next, keys] = await r.scan(cursor, { match: `${prefix}:${identifier}:*`, count: 100 })
+    cursor = Number(next)
+    if (keys.length) await r.del(...keys)
+  } while (cursor !== 0)
 }
 
 /**

@@ -20,47 +20,47 @@ test.describe('卡冊公開分享', () => {
     await loginAs(page, USER)
     // 建立一本卡冊
     await page.goto('/binders')
-    await page.getByText('建立第一本卡冊').click()
-    await page.getByTestId('binder-name-input').fill('分享測試冊')
-    await page.getByTestId('create-binder-submit').click()
-    await expect(page.getByTestId('binder-card')).toBeVisible()
+    await page.getByText('建立第一本卡冊').filter({ visible: true }).click()
+    await page.getByTestId('binder-name-input').filter({ visible: true }).fill('分享測試冊')
+    await page.getByTestId('create-binder-submit').filter({ visible: true }).click()
+    await expect(page.getByTestId('binder-card').filter({ visible: true }).first()).toBeVisible()
 
     // 點擊 ⋮ 按鈕
-    await page.getByTestId('binder-card').first().hover()
-    await page.getByTestId('binder-more-btn').click()
+    await page.getByTestId('binder-card').filter({ visible: true }).first().hover()
+    await page.getByTestId('binder-more-btn').filter({ visible: true }).click()
 
     // DropdownMenu 展開後應看到編輯/分享/刪除
-    await expect(page.getByTestId('edit-binder-btn')).toBeVisible()
-    await expect(page.getByTestId('share-binder-btn')).toBeVisible()
-    await expect(page.getByTestId('delete-binder-btn')).toBeVisible()
+    await expect(page.getByTestId('edit-binder-btn').filter({ visible: true })).toBeVisible()
+    await expect(page.getByTestId('share-binder-btn').filter({ visible: true })).toBeVisible()
+    await expect(page.getByTestId('delete-binder-btn').filter({ visible: true })).toBeVisible()
   })
 
   test('列表頁：啟用分享 → 顯示連結 → 可複製', async ({ page }) => {
     await loginAs(page, USER)
     await page.goto('/binders')
-    await page.getByText('建立第一本卡冊').click()
-    await page.getByTestId('binder-name-input').fill('分享測試冊')
-    await page.getByTestId('create-binder-submit').click()
-    await expect(page.getByTestId('binder-card')).toBeVisible()
+    await page.getByText('建立第一本卡冊').filter({ visible: true }).click()
+    await page.getByTestId('binder-name-input').filter({ visible: true }).fill('分享測試冊')
+    await page.getByTestId('create-binder-submit').filter({ visible: true }).click()
+    await expect(page.getByTestId('binder-card').filter({ visible: true }).first()).toBeVisible()
 
     // 開啟分享 Dialog
-    await page.getByTestId('binder-card').first().hover()
-    await page.getByTestId('binder-more-btn').click()
-    await page.getByTestId('share-binder-btn').click()
+    await page.getByTestId('binder-card').filter({ visible: true }).first().hover()
+    await page.getByTestId('binder-more-btn').filter({ visible: true }).click()
+    await page.getByTestId('share-binder-btn').filter({ visible: true }).click()
 
     // Dialog 打開，顯示啟用按鈕
-    await expect(page.getByTestId('enable-share-btn')).toBeVisible()
+    await expect(page.getByTestId('enable-share-btn').filter({ visible: true })).toBeVisible()
 
     // 啟用分享
-    await page.getByTestId('enable-share-btn').click()
+    await page.getByTestId('enable-share-btn').filter({ visible: true }).click()
 
     // 切換到已分享狀態 — 顯示連結 input 和複製按鈕
-    await expect(page.getByTestId('share-url-input')).toBeVisible()
-    await expect(page.getByTestId('copy-share-url-btn')).toBeVisible()
-    await expect(page.getByTestId('revoke-share-btn')).toBeVisible()
+    await expect(page.getByTestId('share-url-input').filter({ visible: true })).toBeVisible()
+    await expect(page.getByTestId('copy-share-url-btn').filter({ visible: true })).toBeVisible()
+    await expect(page.getByTestId('revoke-share-btn').filter({ visible: true })).toBeVisible()
 
     // Input 中的 URL 含 /b/
-    const shareUrl = await page.getByTestId('share-url-input').inputValue()
+    const shareUrl = await page.getByTestId('share-url-input').filter({ visible: true }).inputValue()
     expect(shareUrl).toContain('/b/')
     expect(shareUrl).toHaveLength(shareUrl.length)
   })
@@ -68,22 +68,22 @@ test.describe('卡冊公開分享', () => {
   test('撤銷分享 → 舊連結 404', async ({ page }) => {
     await loginAs(page, USER)
     await page.goto('/binders')
-    await page.getByText('建立第一本卡冊').click()
-    await page.getByTestId('binder-name-input').fill('撤銷測試冊')
-    await page.getByTestId('create-binder-submit').click()
-    await expect(page.getByTestId('binder-card')).toBeVisible()
+    await page.getByText('建立第一本卡冊').filter({ visible: true }).click()
+    await page.getByTestId('binder-name-input').filter({ visible: true }).fill('撤銷測試冊')
+    await page.getByTestId('create-binder-submit').filter({ visible: true }).click()
+    await expect(page.getByTestId('binder-card').filter({ visible: true }).first()).toBeVisible()
 
     // 啟用分享
-    await page.getByTestId('binder-card').first().hover()
-    await page.getByTestId('binder-more-btn').click()
-    await page.getByTestId('share-binder-btn').click()
-    await page.getByTestId('enable-share-btn').click()
+    await page.getByTestId('binder-card').filter({ visible: true }).first().hover()
+    await page.getByTestId('binder-more-btn').filter({ visible: true }).click()
+    await page.getByTestId('share-binder-btn').filter({ visible: true }).click()
+    await page.getByTestId('enable-share-btn').filter({ visible: true }).click()
 
-    const shareUrl = await page.getByTestId('share-url-input').inputValue()
+    const shareUrl = await page.getByTestId('share-url-input').filter({ visible: true }).inputValue()
 
     // 撤銷分享
-    await page.getByTestId('revoke-share-btn').click()
-    await expect(page.getByTestId('enable-share-btn')).toBeVisible()
+    await page.getByTestId('revoke-share-btn').filter({ visible: true }).click()
+    await expect(page.getByTestId('enable-share-btn').filter({ visible: true })).toBeVisible()
 
     // 舊連結應回傳 404
     const res = await page.request.get(shareUrl)
@@ -103,21 +103,21 @@ test.describe('卡冊公開分享', () => {
     await page.goto(`/binders/${binder.id}`)
 
     // 開啟 Settings Drawer
-    await page.getByTestId('binder-settings-btn').first().click()
+    await page.getByTestId('binder-settings-btn').filter({ visible: true }).first().click()
 
     // 找到 Drawer 內的啟用分享按鈕
-    await expect(page.getByTestId('drawer-enable-share-btn')).toBeVisible()
-    await page.getByTestId('drawer-enable-share-btn').click()
+    await expect(page.getByTestId('drawer-enable-share-btn').filter({ visible: true })).toBeVisible()
+    await page.getByTestId('drawer-enable-share-btn').filter({ visible: true }).click()
 
     // 應顯示連結 input
-    await expect(page.getByTestId('drawer-share-url-input')).toBeVisible()
+    await expect(page.getByTestId('drawer-share-url-input').filter({ visible: true })).toBeVisible()
 
-    const shareUrl = await page.getByTestId('drawer-share-url-input').inputValue()
+    const shareUrl = await page.getByTestId('drawer-share-url-input').filter({ visible: true }).inputValue()
     expect(shareUrl).toContain('/b/')
 
     // 撤銷
-    await page.getByTestId('drawer-revoke-share-btn').click()
-    await expect(page.getByTestId('drawer-enable-share-btn')).toBeVisible()
+    await page.getByTestId('drawer-revoke-share-btn').filter({ visible: true }).click()
+    await expect(page.getByTestId('drawer-enable-share-btn').filter({ visible: true })).toBeVisible()
 
     await clearBinderShareToken(binder.id)
   })
@@ -139,10 +139,10 @@ test.describe('卡冊公開分享', () => {
     await page.goto(`/b/${token}`)
 
     // 顯示 owner banner（spread + mobile 兩 view 各渲染一份，取首個可見者）
-    await expect(page.getByTestId('public-owner-banner').first()).toBeVisible()
+    await expect(page.getByTestId('public-owner-banner').filter({ visible: true }).first()).toBeVisible()
 
     // 無 Settings 觸發按鈕（公開唯讀頁不含 binder-settings-btn）
-    await expect(page.getByTestId('binder-settings-btn')).toHaveCount(0)
+    await expect(page.getByTestId('binder-settings-btn').filter({ visible: true })).toHaveCount(0)
 
     // 清理
     await clearBinderShareToken(binder.id)
@@ -166,10 +166,10 @@ test.describe('卡冊公開分享', () => {
     await page.locator(`img[alt="${card.name}"]`).first().click()
 
     // CardDetailDrawer 開啟；未登入訪客的加入卡冊區塊顯示登入引導
-    await expect(page.getByTestId('card-detail-drawer')).toBeVisible()
-    await expect(page.getByText('請先登入以加入卡冊')).toBeVisible({ timeout: 5000 })
-    await page.getByTestId('modal-add-btn').click()
-    await expect(page.getByTestId('login-modal')).toBeVisible({ timeout: 5000 })
+    await expect(page.getByTestId('card-detail-drawer').filter({ visible: true })).toBeVisible()
+    await expect(page.getByText('請先登入以加入卡冊').filter({ visible: true })).toBeVisible({ timeout: 5000 })
+    await page.getByTestId('modal-add-btn').filter({ visible: true }).click()
+    await expect(page.getByTestId('login-modal').filter({ visible: true })).toBeVisible({ timeout: 5000 })
 
     await clearBinderShareToken(binder.id)
   })
@@ -197,12 +197,12 @@ test.describe('卡冊公開分享', () => {
 
     await page.goto(`/b/${token}`)
     await page.locator(`img[alt="${card.name}"]`).first().click()
-    await expect(page.getByTestId('card-detail-drawer')).toBeVisible()
+    await expect(page.getByTestId('card-detail-drawer').filter({ visible: true })).toBeVisible()
 
     // 下拉為訪客自己的卡冊；加入成功
-    await expect(page.getByTestId('modal-binder-select')).toContainText('Visitor Binder')
-    await page.getByTestId('modal-add-btn').click()
-    await expect(page.getByText(/已加入/)).toBeVisible({ timeout: 5000 })
+    await expect(page.getByTestId('modal-binder-select').filter({ visible: true })).toContainText('Visitor Binder')
+    await page.getByTestId('modal-add-btn').filter({ visible: true }).click()
+    await expect(page.getByText(/已加入/).filter({ visible: true })).toBeVisible({ timeout: 5000 })
 
     await clearBinderShareToken(binder.id)
     await clearUserBindersByEmail(VISITOR.email)

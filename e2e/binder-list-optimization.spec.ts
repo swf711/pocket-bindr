@@ -10,10 +10,10 @@ test.describe('卡冊列表優化', () => {
     await clearUserBindersByEmail(USER.email)
     await loginAs(page, USER)
     await page.goto('/binders')
-    await expect(page.getByTestId('empty-binder-state')).toBeVisible()
-    await expect(page.getByText('還沒有卡冊')).toBeVisible()
-    await page.getByText('建立第一本卡冊').click()
-    await expect(page.getByTestId('binder-name-input')).toBeVisible()
+    await expect(page.getByTestId('empty-binder-state').filter({ visible: true })).toBeVisible()
+    await expect(page.getByText('還沒有卡冊').filter({ visible: true })).toBeVisible()
+    await page.getByText('建立第一本卡冊').filter({ visible: true }).click()
+    await expect(page.getByTestId('binder-name-input').filter({ visible: true })).toBeVisible()
   })
 
   test('有卡冊（< 3 本）：grid 末位顯示虛線格位，點擊開啟 Dialog', async ({ page }) => {
@@ -24,10 +24,10 @@ test.describe('卡冊列表優化', () => {
       data: { userId, name: '已有一本', gridType: 'grid_3x3' },
     })
     await page.goto('/binders')
-    await expect(page.getByTestId('binder-card')).toBeVisible()
-    await expect(page.getByTestId('add-binder-slot')).toBeVisible()
-    await page.getByTestId('add-binder-slot').click()
-    await expect(page.getByTestId('binder-name-input')).toBeVisible()
+    await expect(page.getByTestId('binder-card').filter({ visible: true }).first()).toBeVisible()
+    await expect(page.getByTestId('add-binder-slot').filter({ visible: true })).toBeVisible()
+    await page.getByTestId('add-binder-slot').filter({ visible: true }).click()
+    await expect(page.getByTestId('binder-name-input').filter({ visible: true })).toBeVisible()
   })
 
   test('建立第 3 本後：虛線格位消失，統計顯示「3 / 3 本」', async ({ page }) => {
@@ -42,16 +42,16 @@ test.describe('卡冊列表優化', () => {
     })
     await page.goto('/binders')
     // 還差一本，虛線格位應存在
-    await expect(page.getByTestId('add-binder-slot')).toBeVisible()
+    await expect(page.getByTestId('add-binder-slot').filter({ visible: true })).toBeVisible()
     // 建立第三本
-    await page.getByTestId('add-binder-slot').click()
-    await page.getByTestId('binder-name-input').fill('第三本')
-    await page.getByTestId('create-binder-submit').click()
-    await expect(page.getByTestId('binder-card')).toHaveCount(3)
+    await page.getByTestId('add-binder-slot').filter({ visible: true }).click()
+    await page.getByTestId('binder-name-input').filter({ visible: true }).fill('第三本')
+    await page.getByTestId('create-binder-submit').filter({ visible: true }).click()
+    await expect(page.getByTestId('binder-card').filter({ visible: true })).toHaveCount(3)
     // 虛線格位應消失
-    await expect(page.getByTestId('add-binder-slot')).not.toBeVisible()
+    await expect(page.getByTestId('add-binder-slot').filter({ visible: true })).not.toBeVisible()
     // 統計顯示 3 / 3
-    await expect(page.getByTestId('binder-count-stat')).toContainText(/3\s*\/\s*3\s*本/)
+    await expect(page.getByTestId('binder-count-stat').filter({ visible: true })).toContainText(/3\s*\/\s*3\s*本/)
   })
 
   test('嘗試透過 API 建立第 4 本：回傳 409 binderLimitReached', async ({ page }) => {
@@ -79,8 +79,8 @@ test.describe('卡冊列表優化', () => {
     await clearUserBindersByEmail(USER.email)
     await loginAs(page, USER)
     await page.goto('/binders')
-    await page.getByText('建立第一本卡冊').click()
-    await page.getByTestId('cover-color-picker').click()
+    await page.getByText('建立第一本卡冊').filter({ visible: true }).click()
+    await page.getByTestId('cover-color-picker').filter({ visible: true }).click()
     // PopoverContent 由 Radix UI portal 渲染，不在 trigger 的 DOM 樹下；直接查全頁色塊按鈕
     const colorButtons = page.locator('button[title^="#"]')
     await expect(colorButtons).toHaveCount(12)
