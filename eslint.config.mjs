@@ -13,6 +13,16 @@ const eslintConfig = defineConfig([
       // and would also require editing vendored shadcn files under src/components/ui/
       // (forbidden by CLAUDE.md). Disabled project-wide as an intentional choice.
       "react-hooks/set-state-in-effect": "off",
+      // Card/cover images come from many external hosts (self-hosted Supabase plus
+      // some hotlinked official sites), so next/image remotePatterns is impractical
+      // and would also fight the Snowglobe scale layout. We intentionally use <img>.
+      "@next/next/no-img-element": "off",
+      // Underscore-prefixed args/vars are intentionally kept (unused route/handler
+      // params, deliberately-ignored destructured props). Honor the convention.
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        { argsIgnorePattern: "^_", varsIgnorePattern: "^_", caughtErrorsIgnorePattern: "^_" },
+      ],
     },
   },
   // Override default ignores of eslint-config-next.

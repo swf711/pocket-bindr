@@ -15,7 +15,9 @@ vi.mock('@testing-library/react', async () => {
     ...actual,
     render: (ui: React.ReactElement, options?: Parameters<typeof actual.render>[1]) =>
       actual.render(
-        React.createElement(NextIntlClientProvider, { locale: 'zh-TW', messages: zhTW, children: ui }),
+        <NextIntlClientProvider locale="zh-TW" messages={zhTW}>
+          {ui}
+        </NextIntlClientProvider>,
         options,
       ),
   }

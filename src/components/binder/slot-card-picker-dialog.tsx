@@ -87,7 +87,7 @@ export function SlotCardPickerDialog({ open, onClose, onConfirm }: SlotCardPicke
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [t])
 
   const fetchSets = useCallback(async (g: string, lang: string) => {
     try {

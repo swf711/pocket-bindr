@@ -22,6 +22,7 @@ import bcrypt from 'bcryptjs'
 
 const mockUser = {
   id: 'user-123',
+  name: null,
   email: 'test@test.com',
   username: 'testuser',
   passwordHash: 'hashed_password',

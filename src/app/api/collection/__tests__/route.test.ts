@@ -219,7 +219,7 @@ describe('POST /api/collection', () => {
     mockAuth.mockResolvedValue({ user: { id: 'u1' } })
     vi.mocked(prisma.userCard.upsert).mockResolvedValue({
       id: 'uc1', userId: 'u1', cardId: 'c1', status: 'owned',
-      quantity: 1, condition: null, notes: null,
+      displayCardId: null, quantity: 1, condition: null, notes: null,
       createdAt: new Date(), updatedAt: new Date(),
     })
     const res = await POST(makeRequest({ cardId: 'c1', status: 'owned' }))
@@ -262,7 +262,7 @@ describe('POST /api/collection', () => {
     vi.mocked(prisma.card.findUnique).mockResolvedValue(ALIAS_CARD as never)
     vi.mocked(prisma.userCard.upsert).mockResolvedValue({
       id: 'uc1', userId: 'u1', cardId: 'ja-card-1', status: 'owned',
-      quantity: 1, condition: null, notes: null,
+      displayCardId: null, quantity: 1, condition: null, notes: null,
       createdAt: new Date(), updatedAt: new Date(),
     })
     const res = await POST(makeRequest({ cardId: 'zhtw-alias-id', status: 'owned' }))
@@ -282,7 +282,7 @@ describe('POST /api/collection', () => {
     mockAuth.mockResolvedValue({ user: { id: 'u1' } })
     vi.mocked(prisma.userCard.upsert).mockResolvedValue({
       id: 'uc1', userId: 'u1', cardId: 'c1', status: 'owned',
-      quantity: 1, condition: null, notes: null,
+      displayCardId: null, quantity: 1, condition: null, notes: null,
       createdAt: new Date(), updatedAt: new Date(),
     } as never)
     await POST(makeRequest({ cardId: 'c1', status: 'owned' }))
@@ -310,7 +310,7 @@ describe('POST /api/collection', () => {
     mockAuth.mockResolvedValue({ user: { id: 'u1' } })
     vi.mocked(prisma.userCard.upsert).mockResolvedValue({
       id: 'uc1', userId: 'u1', cardId: 'c1', status: 'owned',
-      quantity: 1, condition: null, notes: null,
+      displayCardId: null, quantity: 1, condition: null, notes: null,
       createdAt: new Date(), updatedAt: new Date(),
     })
     const res = await POST(makeRequest({ cardId: 'c1', status: 'owned' }))

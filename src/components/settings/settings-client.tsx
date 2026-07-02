@@ -23,14 +23,13 @@ function SettingsToastHandler() {
   const router = useRouter()
   const t = useTranslations('settings')
 
-  const LINK_ERROR_MESSAGES: Record<string, string> = {
-    ALREADY_LINKED: t('linkErrors.ALREADY_LINKED'),
-    PROVIDER_ACCOUNT_TAKEN: t('linkErrors.PROVIDER_ACCOUNT_TAKEN'),
-    OAUTH_FAILED: t('linkErrors.OAUTH_FAILED'),
-    INVALID_STATE: t('linkErrors.INVALID_STATE'),
-  }
-
   useEffect(() => {
+    const LINK_ERROR_MESSAGES: Record<string, string> = {
+      ALREADY_LINKED: t('linkErrors.ALREADY_LINKED'),
+      PROVIDER_ACCOUNT_TAKEN: t('linkErrors.PROVIDER_ACCOUNT_TAKEN'),
+      OAUTH_FAILED: t('linkErrors.OAUTH_FAILED'),
+      INVALID_STATE: t('linkErrors.INVALID_STATE'),
+    }
     const success = searchParams.get('link_success')
     const error = searchParams.get('link_error')
     if (success) {
@@ -42,7 +41,7 @@ function SettingsToastHandler() {
       toast.error(LINK_ERROR_MESSAGES[error] ?? t('linkErrors.generic'))
       router.replace('/settings')
     }
-  }, [searchParams, router])
+  }, [searchParams, router, t])
 
   return null
 }

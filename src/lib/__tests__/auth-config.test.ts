@@ -5,9 +5,13 @@ import type { User } from 'next-auth'
 
 // Helper to invoke the jwt callback with proper typing without pulling the full
 // NextAuth call signature (trigger/account/etc. are optional at runtime here).
-function runJwt(token: JWT, user?: Partial<User> & { username?: string | null }) {
+async function runJwt(
+  token: JWT,
+  user?: Partial<User> & { username?: string | null },
+): Promise<JWT> {
   const jwt = authConfig.callbacks!.jwt!
-  return jwt({ token, user: user as User } as Parameters<typeof jwt>[0])
+  const result = await jwt({ token, user: user as User } as Parameters<typeof jwt>[0])
+  return result!
 }
 
 describe('authConfig.jwt callback — display-name mapping', () => {

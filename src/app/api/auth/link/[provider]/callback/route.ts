@@ -1,7 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import {
   SUPPORTED_PROVIDERS,
-  LINK_STATE_COOKIE,
   verifyLinkState,
   extractNonceFromCookie,
   nonceMatchesCookie,
