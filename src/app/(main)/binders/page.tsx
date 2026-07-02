@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import { auth } from '@/lib/auth'
 import { PageContainer } from '@/components/layout/page-container'
 import { prisma } from '@/lib/prisma'
@@ -23,5 +24,11 @@ export default async function BindersPage() {
     shareToken: b.shareToken ?? null,
   }))
 
-  return <PageContainer><BinderListClient initialBinders={binderSummaries} /></PageContainer>
+  return (
+    <PageContainer>
+      <Suspense fallback={null}>
+        <BinderListClient initialBinders={binderSummaries} />
+      </Suspense>
+    </PageContainer>
+  )
 }

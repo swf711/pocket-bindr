@@ -172,6 +172,17 @@
   "language": {
     "toggle": "言語を変更"
   },
+  "command": {
+    "title": "コマンドパレット",
+    "description": "操作を検索して実行",
+    "placeholder": "コマンドやキーワードを入力…",
+    "empty": "該当する結果が見つかりません",
+    "groupNavigation": "ナビゲーション",
+    "groupActions": "アクション",
+    "createBinder": "バインダーを新規作成",
+    "toggleTheme": "テーマを切り替え",
+    "switchLanguage": "言語を切り替え"
+  },
   "metadata": {
     "title": "PocketBindr",
     "description": "オンラインTCGカードコレクション管理——カードを検索し、所有／欲しいを記録し、カスタムバインダーに整理。"

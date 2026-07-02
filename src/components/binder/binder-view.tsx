@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { GridType, CardStatus } from '@prisma/client'
 import { toast } from 'sonner'
@@ -40,6 +40,26 @@ export function BinderView({ binder }: { binder: BinderDetailResponse }) {
   const pagesArray = Array.from({ length: totalPages }, (_, i) => pages.get(i + 1) ?? [])
   const spreads = buildSpreads(pagesArray)
   const mobilePages = buildMobilePages(pagesArray)
+
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return
+      if (viewCard !== null || pickerTarget !== null) return
+
+      const active = document.activeElement as HTMLElement | null
+      if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.isContentEditable)) return
+      if (active?.closest('[role="dialog"]')) return
+
+      const delta = e.key === 'ArrowLeft' ? -1 : 1
+      if (isMobile) {
+        setMobilePageIndex((prev) => Math.min(Math.max(prev + delta, 0), totalPages - 1))
+      } else {
+        setSpreadIndex((prev) => Math.min(Math.max(prev + delta, 0), spreads.length - 1))
+      }
+    }
+    window.addEventListener('keydown', handleKey)
+    return () => window.removeEventListener('keydown', handleKey)
+  }, [isMobile, viewCard, pickerTarget, spreads.length, totalPages])
 
   const handleDelete = async (slotId: string) => {
     await fetch(`/api/binders/${binder.id}/slots/${slotId}`, { method: 'DELETE' })

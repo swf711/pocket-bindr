@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { BookOpen } from 'lucide-react'
 import { toast } from 'sonner'
@@ -34,6 +35,8 @@ interface BinderListClientProps {
 
 export function BinderListClient({ initialBinders }: BinderListClientProps) {
   const t = useTranslations('binderList')
+  const router = useRouter()
+  const searchParams = useSearchParams()
   const [binderList, setBinderList] = useState<BinderSummary[]>(initialBinders)
   const [createOpen, setCreateOpen] = useState(false)
   const [editOpen, setEditOpen] = useState(false)
@@ -109,6 +112,13 @@ export function BinderListClient({ initialBinders }: BinderListClientProps) {
   }
 
   const canAddMore = binderList.length < MAX_BINDERS_PER_USER
+
+  useEffect(() => {
+    if (searchParams.get('new') === '1' && canAddMore) {
+      setCreateOpen(true)
+      router.replace('/binders')
+    }
+  }, [searchParams, canAddMore, router])
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">

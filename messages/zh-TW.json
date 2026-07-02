@@ -172,6 +172,17 @@
   "language": {
     "toggle": "切換語言"
   },
+  "command": {
+    "title": "命令面板",
+    "description": "搜尋並執行操作",
+    "placeholder": "輸入指令或關鍵字…",
+    "empty": "找不到符合的結果",
+    "groupNavigation": "導航",
+    "groupActions": "動作",
+    "createBinder": "新增卡冊",
+    "toggleTheme": "切換主題",
+    "switchLanguage": "切換語言"
+  },
   "metadata": {
     "title": "PocketBindr",
     "description": "線上 TCG 卡牌收藏管理——搜尋卡牌、標記擁有／想要、放入自訂格式卡冊。"

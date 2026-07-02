@@ -172,6 +172,17 @@
   "language": {
     "toggle": "Change language"
   },
+  "command": {
+    "title": "Command Palette",
+    "description": "Search and run an action",
+    "placeholder": "Type a command or search…",
+    "empty": "No results found",
+    "groupNavigation": "Navigation",
+    "groupActions": "Actions",
+    "createBinder": "New Binder",
+    "toggleTheme": "Toggle theme",
+    "switchLanguage": "Switch language"
+  },
   "metadata": {
     "title": "PocketBindr",
     "description": "Online TCG card collection manager — search cards, mark owned/wanted, and organize them into custom binders."

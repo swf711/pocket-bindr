@@ -2,7 +2,7 @@
  * @vitest-environment jsdom
  */
 import '@testing-library/jest-dom/vitest'
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render as baseRender, screen, fireEvent } from '@testing-library/react'
 import { BinderListClient } from '../binder-list-client'
 import { TooltipProvider } from '@/components/ui/tooltip'
@@ -12,8 +12,12 @@ import type { BinderSummary } from '@/types/binder'
 const render = ((ui: Parameters<typeof baseRender>[0]) =>
   baseRender(ui, { wrapper: TooltipProvider })) as typeof baseRender
 
+const mockReplace = vi.fn()
+let mockSearchParams = new URLSearchParams()
+
 vi.mock('next/navigation', () => ({
-  useRouter: () => ({ push: vi.fn() }),
+  useRouter: () => ({ push: vi.fn(), replace: mockReplace }),
+  useSearchParams: () => mockSearchParams,
 }))
 
 vi.mock('sonner', () => ({
@@ -37,6 +41,11 @@ function makeBinder(overrides: Partial<BinderSummary> = {}): BinderSummary {
 }
 
 describe('BinderListClient', () => {
+  beforeEach(() => {
+    mockSearchParams = new URLSearchParams()
+    mockReplace.mockClear()
+  })
+
   it('無卡冊時顯示空狀態 empty-binder-state', () => {
     render(<BinderListClient initialBinders={[]} />)
     expect(screen.getByTestId('empty-binder-state')).toBeInTheDocument()
@@ -85,5 +94,24 @@ describe('BinderListClient', () => {
     render(<BinderListClient initialBinders={[]} />)
     fireEvent.click(screen.getByText('建立第一本卡冊'))
     expect(screen.getByTestId('binder-name-input')).toBeInTheDocument()
+  })
+
+  it('?new=1 且未達上限時自動開啟 CreateBinderDialog', () => {
+    mockSearchParams = new URLSearchParams('new=1')
+    render(<BinderListClient initialBinders={[makeBinder()]} />)
+    expect(screen.getByTestId('binder-name-input')).toBeInTheDocument()
+    expect(mockReplace).toHaveBeenCalledWith('/binders')
+  })
+
+  it('?new=1 但已達上限時不自動開啟 CreateBinderDialog', () => {
+    mockSearchParams = new URLSearchParams('new=1')
+    const binders = [
+      makeBinder({ id: 'b1' }),
+      makeBinder({ id: 'b2' }),
+      makeBinder({ id: 'b3' }),
+    ]
+    render(<BinderListClient initialBinders={binders} />)
+    expect(screen.queryByTestId('binder-name-input')).not.toBeInTheDocument()
+    expect(mockReplace).not.toHaveBeenCalled()
   })
 })
