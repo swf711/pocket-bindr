@@ -58,6 +58,21 @@
   --inverse-on-surface: oklch(95.7% 0.016 110.6);
   --inverse-primary: oklch(82.6% 0.085 252.0);
   --scrim: oklch(0.0% 0 0);
+
+  /*
+   * M3 shape scale — 獨立命名空間，刻意不撞既有 bridge --radius-sm/md/lg/xl
+   * （那組被 100+ 處 rounded-* utility 消費，見 docs/PATTERNS.md「M3 shape override 模式」）。
+   */
+  --m3-radius-xs: 4px;
+  --m3-radius-sm: 8px;
+  --m3-radius-md: 12px;
+  --m3-radius-lg: 16px;
+  --m3-radius-xl: 28px;
+  /* 參考常數：不自動生效，需 use-site 明確 var() 引用才有效 */
+  --m3-icon: 20px;
+  --m3-btn-h: 40px;
+  --m3-touch-min: 48px;
+  --m3-state-hover-opacity: 0.08;
 }
 
 .dark {
@@ -278,6 +293,63 @@
     cursor: pointer;
   }
 }
+
+/*
+ * M3 shape overrides（unlayered — origin 優先於 @layer utilities 內的 Tailwind rounded-*，
+ * 不需 !important、不拉高 specificity）。只改圓角，不碰原生 shadcn 檔（CLAUDE.md 鐵則）。
+ * 對映表詳見 docs/PATTERNS.md「M3 shape override 模式」。
+ */
+[data-slot="button"] {
+  border-radius: 9999px;
+}
+[data-slot="input"],
+[data-slot="textarea"],
+[data-slot="select-trigger"] {
+  border-radius: var(--m3-radius-xs);
+}
+[data-slot="card"] {
+  border-radius: var(--m3-radius-md);
+}
+[data-slot="card"] > img:first-child {
+  border-top-left-radius: var(--m3-radius-md);
+  border-top-right-radius: var(--m3-radius-md);
+}
+[data-slot="card"] > img:last-child {
+  border-bottom-left-radius: var(--m3-radius-md);
+  border-bottom-right-radius: var(--m3-radius-md);
+}
+[data-slot="card-header"] {
+  border-top-left-radius: var(--m3-radius-md);
+  border-top-right-radius: var(--m3-radius-md);
+}
+[data-slot="card-footer"] {
+  border-bottom-left-radius: var(--m3-radius-md);
+  border-bottom-right-radius: var(--m3-radius-md);
+}
+[data-slot="popover-content"],
+[data-slot="dropdown-menu-content"],
+[data-slot="select-content"],
+[data-slot="command"] {
+  border-radius: var(--m3-radius-md);
+}
+[data-slot="drawer-content"][data-vaul-drawer-direction="top"] {
+  border-bottom-left-radius: var(--m3-radius-lg);
+  border-bottom-right-radius: var(--m3-radius-lg);
+}
+[data-slot="drawer-content"][data-vaul-drawer-direction="bottom"] {
+  border-top-left-radius: var(--m3-radius-lg);
+  border-top-right-radius: var(--m3-radius-lg);
+}
+[data-slot="dialog-content"],
+[data-slot="alert-dialog-content"] {
+  border-radius: var(--m3-radius-xl);
+}
+/*
+ * sheet-content 刻意不覆寫：Radix Dialog primitive 不像 vaul drawer 有
+ * data-vaul-drawer-direction 可分流，sheet 有 top/right/bottom/left 四向、
+ * 貼齊螢幕邊緣，blanket 圓角會在貼邊那側露出不該有的缺口；native 檔不得加
+ * data-side 屬性（CLAUDE.md 鐵則）。維持現狀 0 圓角，記入 docs/TECH_DEBT.md。
+ */
 
 /*
  * 首頁全螢幕 snap scroll：真正的捲動容器是 window（<html>），不是內層 div
