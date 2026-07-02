@@ -78,7 +78,7 @@ export function SeriesCombobox({ groups, selectedSetId, onSetChange }: SeriesCom
               <CommandItem
                 value={t('allSets')}
                 onSelect={() => handleSelect(null)}
-                className={cn('justify-between text-left', !selectedSetId && 'bg-secondary-container text-on-secondary-container font-medium')}
+                className={cn('min-h-(--m3-touch-min) justify-between text-left', !selectedSetId && 'bg-secondary-container text-on-secondary-container font-medium')}
               >
                 {t('allSets')}
                 <Check className={cn('ml-2 shrink-0', !selectedSetId ? 'opacity-100' : 'opacity-0')} />
@@ -97,7 +97,7 @@ export function SeriesCombobox({ groups, selectedSetId, onSetChange }: SeriesCom
                     value={set.id}
                     keywords={[set.name, set.externalId]}
                     onSelect={() => handleSelect(set.id)}
-                    className={cn('justify-between text-left', selectedSetId === set.id && 'bg-secondary-container text-on-secondary-container font-medium')}
+                    className={cn('min-h-(--m3-touch-min) justify-between text-left', selectedSetId === set.id && 'bg-secondary-container text-on-secondary-container font-medium')}
                   >
                     <span className="whitespace-nowrap">
                       {set.name}{' '}
