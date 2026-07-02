@@ -6,6 +6,11 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 const GAME_IDS = ['PTCG', 'OPCG'] as const
 
+const CARD_BACK_IMAGES: Record<(typeof GAME_IDS)[number], string> = {
+  PTCG: '/PTCG.png',
+  OPCG: '/OPCG.jpeg',
+}
+
 interface GameSelectorProps {
   selected: string | null
   onSelect: (game: string) => void
@@ -13,7 +18,7 @@ interface GameSelectorProps {
 
 export function GameSelector({ selected, onSelect }: GameSelectorProps) {
   const t = useTranslations('cards')
-  const games = GAME_IDS.map((id) => ({ id, label: t(`games.${id}`), image: '/placeholder-card-back.svg' }))
+  const games = GAME_IDS.map((id) => ({ id, label: t(`games.${id}`), image: CARD_BACK_IMAGES[id] }))
   // 已選遊戲 → Tabs 呈現
   if (selected) {
     return (
