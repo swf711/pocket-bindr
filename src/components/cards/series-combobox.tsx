@@ -14,11 +14,7 @@ import {
   CommandSeparator,
 } from '@/components/ui/command'
 import { Fragment } from 'react'
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover'
+import { ResponsivePopover } from '@/components/common/responsive-popover'
 import { cn } from '@/lib/utils'
 import { SetGroup } from '@/types/card'
 
@@ -44,8 +40,13 @@ export function SeriesCombobox({ groups, selectedSetId, onSetChange }: SeriesCom
   }
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
+    <ResponsivePopover
+      open={open}
+      onOpenChange={setOpen}
+      align="end"
+      title={t('searchSets')}
+      popoverClassName="w-auto min-w-[min(40rem,90vw)] max-w-[90vw] p-0"
+      trigger={
         <Button
           data-testid="set-combobox"
           variant="outline"
@@ -65,56 +66,52 @@ export function SeriesCombobox({ groups, selectedSetId, onSetChange }: SeriesCom
           </span>
           <ChevronsUpDown className="opacity-50" />
         </Button>
-      </PopoverTrigger>
-      <PopoverContent
-        className="w-auto min-w-[min(40rem,90vw)] max-w-[90vw] p-0"
-        align="end"
-      >
-        <Command>
-          <CommandInput placeholder={t('searchSets')} />
-          <CommandList className="max-h-[60vh]">
-            <CommandEmpty>{t('noSetsFound')}</CommandEmpty>
-            <CommandGroup>
-              <CommandItem
-                value={t('allSets')}
-                onSelect={() => handleSelect(null)}
-                className={cn('min-h-(--m3-touch-min) justify-between text-left', !selectedSetId && 'bg-secondary-container text-on-secondary-container font-medium')}
+      }
+    >
+      <Command>
+        <CommandInput placeholder={t('searchSets')} />
+        <CommandList className="max-h-[60vh]">
+          <CommandEmpty>{t('noSetsFound')}</CommandEmpty>
+          <CommandGroup>
+            <CommandItem
+              value={t('allSets')}
+              onSelect={() => handleSelect(null)}
+              className={cn('min-h-(--m3-touch-min) justify-between text-left', !selectedSetId && 'bg-secondary-container text-on-secondary-container font-medium')}
+            >
+              {t('allSets')}
+              <Check className={cn('ml-2 shrink-0', !selectedSetId ? 'opacity-100' : 'opacity-0')} />
+            </CommandItem>
+          </CommandGroup>
+          {groups.map((group, i) => (
+            <Fragment key={group.series}>
+              {i > 0 && <CommandSeparator />}
+              <CommandGroup
+                heading={group.series}
+                className="**:[[cmdk-group-items]]:grid **:[[cmdk-group-items]]:sm:grid-cols-2 **:[[cmdk-group-items]]:gap-x-1"
               >
-                {t('allSets')}
-                <Check className={cn('ml-2 shrink-0', !selectedSetId ? 'opacity-100' : 'opacity-0')} />
-              </CommandItem>
-            </CommandGroup>
-            {groups.map((group, i) => (
-              <Fragment key={group.series}>
-                {i > 0 && <CommandSeparator />}
-                <CommandGroup
-                  heading={group.series}
-                  className="**:[[cmdk-group-items]]:grid **:[[cmdk-group-items]]:sm:grid-cols-2 **:[[cmdk-group-items]]:gap-x-1"
+              {group.sets.map(set => (
+                <CommandItem
+                  key={set.id}
+                  value={set.id}
+                  keywords={[set.name, set.externalId]}
+                  onSelect={() => handleSelect(set.id)}
+                  className={cn('min-h-(--m3-touch-min) justify-between text-left', selectedSetId === set.id && 'bg-secondary-container text-on-secondary-container font-medium')}
                 >
-                {group.sets.map(set => (
-                  <CommandItem
-                    key={set.id}
-                    value={set.id}
-                    keywords={[set.name, set.externalId]}
-                    onSelect={() => handleSelect(set.id)}
-                    className={cn('min-h-(--m3-touch-min) justify-between text-left', selectedSetId === set.id && 'bg-secondary-container text-on-secondary-container font-medium')}
-                  >
-                    <span className="whitespace-nowrap">
-                      {set.name}{' '}
-                      <span className="text-muted-foreground">{set.externalId}</span>
-                    </span>
-                    <Check
-                      className={cn('ml-2 shrink-0', selectedSetId === set.id ? 'opacity-100' : 'opacity-0')}
-                    />
-                  </CommandItem>
-                ))}
-                </CommandGroup>
-              </Fragment>
-            ))}
-          </CommandList>
-        </Command>
-      </PopoverContent>
-    </Popover>
+                  <span className="whitespace-nowrap">
+                    {set.name}{' '}
+                    <span className="text-muted-foreground">{set.externalId}</span>
+                  </span>
+                  <Check
+                    className={cn('ml-2 shrink-0', selectedSetId === set.id ? 'opacity-100' : 'opacity-0')}
+                  />
+                </CommandItem>
+              ))}
+              </CommandGroup>
+            </Fragment>
+          ))}
+        </CommandList>
+      </Command>
+    </ResponsivePopover>
   )
 }
 

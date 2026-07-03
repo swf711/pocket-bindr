@@ -352,6 +352,25 @@
  */
 
 /*
+ * 行動裝置 CommandInput 樣式比照一般 Input（ResponsivePopover 行動版）：
+ * series-combobox 等 Command 搜尋框在行動裝置改走底部 Drawer（避免軟鍵盤頂掉輸入框，
+ * 見 responsive-popover.tsx），cmdk 預設的 border-b 貼齊版型與其他獨立方框輸入框不一致，
+ * 改為獨立方框、圓角與 [data-slot="input"] 對齊（--m3-radius-md）。只在 drawer-content
+ * 內生效，不影響桌面 Popover 內原本的 border-b 版型。
+ */
+[data-slot="drawer-content"] [data-slot="command-input-wrapper"] {
+  height: 2.25rem;
+  margin: 1rem 1rem 0.5rem;
+  border: 1px solid var(--input);
+  border-radius: var(--m3-radius-md);
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+}
+[data-slot="drawer-content"] [data-slot="command-input-wrapper"]:has([data-slot="command-input"]:focus-visible) {
+  border-color: var(--ring);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 50%, transparent);
+}
+
+/*
  * 首頁全螢幕 snap scroll：真正的捲動容器是 window（<html>），不是內層 div
  * （body 為 min-h-full 會隨內容撐高）。由 HomeSnapScroll 於首頁掛載時加上此 class，
  * scroll-padding-top 抵銷 sticky header（h-16 = 4rem）使各區塊對齊於 header 下方。

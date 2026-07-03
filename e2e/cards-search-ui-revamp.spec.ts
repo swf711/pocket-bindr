@@ -73,6 +73,26 @@ test.describe('系列 ComboBox', () => {
 
     await expect(page).toHaveURL(/setId=/, { timeout: 10000 })
   })
+
+  test('行動裝置：以底部 Drawer 呈現，搜尋框可見且可過濾', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 })
+    await page.goto('/cards?game=PTCG')
+    await page.getByTestId('card-grid').waitFor({ timeout: 10000 })
+
+    await page.getByTestId('set-combobox').click()
+    await expect(page.getByRole('dialog')).toBeVisible()
+
+    const searchInput = page.getByPlaceholder('搜尋系列...')
+    await expect(searchInput).toBeVisible()
+    await searchInput.fill('火箭')
+
+    const option = page.getByRole('option').first()
+    await option.waitFor({ timeout: 5000 })
+    await option.click()
+
+    await expect(page).toHaveURL(/setId=/, { timeout: 10000 })
+    await expect(page.getByRole('dialog')).not.toBeVisible()
+  })
 })
 
 test.describe('結果統計與雙 pagination', () => {
