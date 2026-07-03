@@ -9,9 +9,9 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { DialogHeaderClose } from '@/components/common/dialog-header-close'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 
@@ -74,16 +74,19 @@ export function ShareBinderDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-md" showCloseButton={false}>
+        <DialogHeaderClose
+          description={
+            <DialogDescription>
+              {token ? t('descriptionEnabled') : t('descriptionDisabled')}
+            </DialogDescription>
+          }
+        >
           <DialogTitle className="flex items-center gap-2">
             <Share2 className="h-4 w-4" />
             {t('title')}
           </DialogTitle>
-          <DialogDescription>
-            {token ? t('descriptionEnabled') : t('descriptionDisabled')}
-          </DialogDescription>
-        </DialogHeader>
+        </DialogHeaderClose>
 
         {token ? (
           <div className="space-y-4">

@@ -8,9 +8,9 @@ import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { DialogHeaderClose } from '@/components/common/dialog-header-close'
 import {
   Field,
   FieldDescription,
@@ -59,10 +59,10 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={open => { if (!open) onClose() }}>
-      <DialogContent data-testid="login-modal" className="p-6 md:p-8 gap-7 bg-surface-container sm:max-w-sm">
-        <DialogHeader>
+      <DialogContent data-testid="login-modal" className="p-6 md:p-8 gap-7 bg-surface-container sm:max-w-sm" showCloseButton={false}>
+        <DialogHeaderClose>
           <DialogTitle>{t('modal.title')}</DialogTitle>
-        </DialogHeader>
+        </DialogHeaderClose>
         <form onSubmit={handleSubmit}>
           <FieldGroup>
             <Field>

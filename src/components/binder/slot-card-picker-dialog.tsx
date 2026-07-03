@@ -7,9 +7,9 @@ import { ArrowLeft, BookCheck, Bookmark } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { DialogHeaderClose } from '@/components/common/dialog-header-close'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { GameSelector } from '@/components/cards/game-selector'
@@ -163,10 +163,10 @@ export function SlotCardPickerDialog({ open, onClose, onConfirm }: SlotCardPicke
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-[calc(100%-2rem)] lg:max-w-5xl" data-testid="slot-card-picker-dialog">
-        <DialogHeader>
+      <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-[calc(100%-2rem)] lg:max-w-5xl" data-testid="slot-card-picker-dialog" showCloseButton={false}>
+        <DialogHeaderClose>
           <DialogTitle>{selectedCard ? t('selectStatus') : t('selectCard')}</DialogTitle>
-        </DialogHeader>
+        </DialogHeaderClose>
 
         {!selectedCard ? (
           <div className="space-y-4">

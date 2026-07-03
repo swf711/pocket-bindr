@@ -8,9 +8,9 @@ import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { DialogHeaderClose } from '@/components/common/dialog-header-close'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
@@ -70,10 +70,10 @@ export function CreateBinderDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
+      <DialogContent showCloseButton={false}>
+        <DialogHeaderClose>
           <DialogTitle>{t('title')}</DialogTitle>
-        </DialogHeader>
+        </DialogHeaderClose>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4 mt-2">
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="binder-name">{t('name')}</Label>
