@@ -169,7 +169,7 @@ export function SlotCardPickerDialog({ open, onClose, onConfirm }: SlotCardPicke
           <DialogTitle>{selectedCard ? t('selectStatus') : t('selectCard')}</DialogTitle>
         </DialogHeaderClose>
 
-        <ScrollArea className="flex-1">
+        <ScrollArea className="flex-1 min-h-0">
           {!selectedCard ? (
             <div className="space-y-4 px-6 py-4">
               {!game && <GameSelector selected={game} onSelect={handleGameChange} />}

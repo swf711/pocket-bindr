@@ -185,10 +185,10 @@ export function BinderCoverPanel({
         {/* 搜尋結果 - 動態高度 */}
         {searchQuery.trim() && (
           <ScrollArea
-            className="max-h-36 **:data-[slot=scroll-area-thumb]:bg-white/30 **:data-[slot=scroll-area-scrollbar]:border-white/10"
+            className="max-h-36 **:data-[slot=scroll-area-thumb]:bg-white/30"
             data-testid="cover-slot-search-results"
           >
-            <div className="flex flex-col gap-1">
+            <div className="flex flex-col gap-1 pr-2.5">
               {searchResults.length === 0 ? (
                 <p className="text-xs text-white/50 px-1">{t('noResults')}</p>
               ) : (
