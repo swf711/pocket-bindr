@@ -1,8 +1,8 @@
 'use client'
 
 import { useTranslations } from 'next-intl'
+import Link from 'next/link'
 import { ArrowRight, EllipsisVertical, Pencil, Share2, Trash2 } from 'lucide-react'
-import { PendingLink } from '@/components/layout/pending-link'
 import { Button } from '@/components/ui/button'
 import { ButtonGroup } from '@/components/ui/button-group'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
@@ -112,14 +112,14 @@ export function BinderCoverCard({ binder, onEdit, onDelete, onShare, isTapped }:
               className="h-7 shrink-0 text-xs active:not-aria-[haspopup]:translate-y-px"
               style={{ color: textColor }}
             >
-              <PendingLink
+              <Link
                 href={`/binders/${binder.id}`}
                 data-testid="enter-binder-btn"
                 aria-label={t('enterBinderAriaLabel', { name: binder.name })}
               >
                 <ArrowRight className="h-3 w-3" />
                 {t('enterBinder')}
-              </PendingLink>
+              </Link>
             </Button>
 
             {/* ⋮ DropdownMenu：編輯、分享、刪除 */}

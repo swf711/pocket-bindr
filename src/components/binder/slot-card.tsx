@@ -105,7 +105,7 @@ export function SlotCard({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
-                    variant="secondary"
+                    variant="default"
                     size="icon-sm"
                     onClick={() => onToggleStatus(slot.id)}
                     aria-label={slot.status === 'owned' ? t('switchToWanted') : t('switchToOwned')}
@@ -121,7 +121,7 @@ export function SlotCard({
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button
-                      variant="secondary"
+                      variant="default"
                       size="icon-sm"
                       onClick={() => onCopy(slot.id)}
                       data-testid={`slot-copy-btn-${slot.id}`}
@@ -139,7 +139,7 @@ export function SlotCard({
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button
-                      variant="secondary"
+                      variant="default"
                       size="icon-sm"
                       onClick={() => onView(slot.cardId)}
                       data-testid={`slot-view-btn-${slot.id}`}
@@ -157,8 +157,14 @@ export function SlotCard({
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <AlertDialogTrigger asChild>
-                      <Button variant="secondary" size="icon-sm" data-variant="destructive" aria-label={t('removeCard')}>
-                        <Trash2 className="text-destructive" />
+                      <Button
+                        variant="default"
+                        size="icon-sm"
+                        data-variant="destructive"
+                        aria-label={t('removeCard')}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90 focus-visible:ring-destructive/50"
+                      >
+                        <Trash2 />
                       </Button>
                     </AlertDialogTrigger>
                   </TooltipTrigger>

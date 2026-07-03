@@ -93,7 +93,7 @@ function CoverLabel({
 }) {
   return (
     <div className="p-4">
-      <div className="dark text-white bg-black/50 rounded-md p-4 flex flex-col gap-2">
+      <div className="dark text-foreground bg-background/50 rounded-md p-4 flex flex-col gap-2">
         <div style={{ height: COVER_NAME_HEIGHT * counterScale, overflow: 'visible' }}>
           <h1
             className="text-4xl font-black truncate text-center select-none break-all"
@@ -189,7 +189,7 @@ function PublicPanelContent({
 
   // page
   return (
-    <div className="w-full p-4 dark bg-black">
+    <div className="w-full p-4 dark bg-background">
       <div style={{ height: PAGE_LABEL_HEIGHT * counterScale, overflow: 'visible' }}>
         <p
           className="text-xs text-muted-foreground text-center"

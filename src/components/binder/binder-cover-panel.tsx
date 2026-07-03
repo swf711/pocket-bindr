@@ -61,7 +61,7 @@ export function BinderCoverPanel({
       data-droppable="false"
       className="w-full h-full p-4 flex justify-center flex-col overflow-hidden"
     >
-      <div className="dark text-white bg-black/50 rounded-md p-4 flex flex-col gap-2">
+      <div className="dark text-foreground bg-background/90 rounded-md p-4 flex flex-col gap-2">
         {/* 卡冊標題 */}
         <div
           className="flex items-start justify-center overflow-hidden"
@@ -159,7 +159,7 @@ export function BinderCoverPanel({
         </div>
 
         {/* 搜尋 */}
-        <hr className="border-white/10" />
+        <hr />
         <div style={{ height: SEARCH_INPUT_HEIGHT * counterScale, overflow: 'visible' }}>
           <div
             style={{
@@ -169,14 +169,14 @@ export function BinderCoverPanel({
             }}
           >
             <div className="relative">
-              <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-white/50 pointer-events-none" />
+              <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-foreground pointer-events-none" />
               <Input
                 data-testid="cover-slot-search"
                 type="text"
                 placeholder={t('searchPlaceholder')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-7 h-7 text-xs bg-white/10 border-white/20 text-white placeholder:text-white/40 focus-visible:ring-white/30"
+                className="pl-7 h-7 text-xs"
               />
             </div>
           </div>
@@ -185,19 +185,19 @@ export function BinderCoverPanel({
         {/* 搜尋結果 - 動態高度 */}
         {searchQuery.trim() && (
           <ScrollArea
-            className="max-h-36 **:data-[slot=scroll-area-thumb]:bg-white/30"
+            className="max-h-50"
             data-testid="cover-slot-search-results"
           >
             <div className="flex flex-col gap-1 pr-2.5">
               {searchResults.length === 0 ? (
-                <p className="text-xs text-white/50 px-1">{t('noResults')}</p>
+                <p className="text-xs text-muted-foreground px-1">{t('noResults')}</p>
               ) : (
                 searchResults.map((slot) => (
                   <button
                     key={slot.id}
                     type="button"
                     onClick={() => handleResultClick(slot)}
-                    className="flex items-center gap-2 rounded px-2 py-1 text-left hover:bg-white/10 transition-colors"
+                    className="flex items-center gap-2 rounded px-2 py-1 text-left hover:bg-foreground/10 transition-colors"
                     data-testid={`cover-search-result-${slot.id}`}
                   >
                     <img
@@ -205,8 +205,8 @@ export function BinderCoverPanel({
                       alt={slot.card.name}
                       className="h-8 w-6 rounded-xs object-cover shrink-0"
                     />
-                    <span className="text-xs text-white/90 truncate">{slot.card.name}</span>
-                    <span className="text-xs text-white/50 ml-auto shrink-0">
+                    <span className="text-xs text-foreground truncate">{slot.card.name}</span>
+                    <span className="text-xs text-muted-foreground ml-auto shrink-0">
                       {t('pageLabel', { page: slot.pageNumber })}
                     </span>
                   </button>

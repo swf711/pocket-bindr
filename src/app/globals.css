@@ -299,8 +299,43 @@
  * 不需 !important、不拉高 specificity）。只改圓角，不碰原生 shadcn 檔（CLAUDE.md 鐵則）。
  * 對映表詳見 docs/PATTERNS.md「M3 shape override 模式」。
  */
-[data-slot="button"] {
+/*
+ * Button 被 TooltipTrigger/DropdownMenuTrigger/AlertDialogTrigger 以 asChild 包裹時
+ * （如 <TooltipTrigger asChild><Button>），Radix 巢狀 asChild 合併 props 時外層 trigger
+ * 自己的 data-slot 會蓋掉內層 Button 的 data-slot="button"，實際渲染出的 DOM 是
+ * data-slot="tooltip-trigger"（非 "button"）。這幾個 trigger 唯一會與 Button 共用的
+ * 屬性是 data-variant + data-size（Button 自己一定會設，trigger 元件都不會設這兩個），
+ * 用來當作「這其實是包了 Button」的判斷錨點，避免誤傷 Badge/Tabs/ToggleGroup 等其他也用
+ * data-variant 的原生元件。
+ */
+[data-slot="button"],
+[data-slot="tooltip-trigger"][data-variant][data-size],
+[data-slot="dropdown-menu-trigger"][data-variant][data-size],
+[data-slot="alert-dialog-trigger"][data-variant][data-size] {
   border-radius: 9999px;
+}
+/*
+ * ButtonGroup 合併邊框修正：上面的 pill override 對每顆 Button（含被 trigger 包裹的）
+ * 各自生效，蓋掉 button-group.tsx 用 @layer utilities 定義的 rounded-l/r-none，
+ * 導致合併邊框斷裂。這裡補方向性覆寫，讓 ButtonGroup 內的按鈕維持相鄰邊直角。
+ */
+[data-slot="button-group"] > :is(
+  [data-slot="button"],
+  [data-slot="tooltip-trigger"][data-variant][data-size],
+  [data-slot="dropdown-menu-trigger"][data-variant][data-size],
+  [data-slot="alert-dialog-trigger"][data-variant][data-size]
+):not(:first-child) {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+[data-slot="button-group"] > :is(
+  [data-slot="button"],
+  [data-slot="tooltip-trigger"][data-variant][data-size],
+  [data-slot="dropdown-menu-trigger"][data-variant][data-size],
+  [data-slot="alert-dialog-trigger"][data-variant][data-size]
+):not(:last-child) {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
 }
 [data-slot="input"],
 [data-slot="input-group"],
