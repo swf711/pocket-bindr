@@ -31,7 +31,7 @@ export function GameSelector({ selected, onSelect }: GameSelectorProps) {
           {games.map(g => (
             <TabsTrigger
               key={g.id}
-              className="rounded-full data-[state=active]:bg-primary-container data-[state=active]:text-on-primary-container dark:data-[state=active]:bg-primary-container dark:data-[state=active]:text-on-primary-container"
+              className="rounded-full data-[state=active]:bg-primary-container data-[state=active]:text-on-primary-container dark:data-[state=active]:bg-primary-container dark:data-[state=active]:text-on-primary-container dark:data-[state=active]:border-none"
               data-testid={`game-btn-${g.id.toLowerCase()}`}
               value={g.id}
             >

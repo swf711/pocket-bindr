@@ -303,9 +303,18 @@
   border-radius: 9999px;
 }
 [data-slot="input"],
+[data-slot="input-group"],
 [data-slot="textarea"],
 [data-slot="select-trigger"] {
-  border-radius: var(--m3-radius-xs);
+  border-radius: var(--m3-radius-md);
+}
+/*
+ * 瀏覽器自動填入（-webkit-autofill）會在 InputGroup 內層方角 control 上畫一塊不透明背景框，
+ * 其方角會戳出外層 group 圓角、視覺上吃掉圓角 border。讓 group 裁切子元素使方角隨圓角被裁掉。
+ * group 的 focus ring 為元素自身 box-shadow，不受 overflow 影響。
+ */
+[data-slot="input-group"] {
+  overflow: hidden;
 }
 [data-slot="card"] {
   border-radius: var(--m3-radius-md);

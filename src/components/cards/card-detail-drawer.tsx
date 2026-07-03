@@ -21,7 +21,7 @@ import {
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { ChevronLeft, ChevronRight, BookCheck, Bookmark, X } from 'lucide-react'
+import { ChevronLeft, ChevronRight, BookCheck, Bookmark, X, Minus, Plus } from 'lucide-react'
 import { CardWithCollectionStatus } from '@/types/card'
 import { getCardImageUrl } from '@/lib/get-card-image-url'
 import { BinderSummary } from '@/types/binder'
@@ -148,44 +148,48 @@ export function CardDetailDrawer({ card, open, onClose, onAddToBinder, onLoginSu
   )
 
   const infoBlock = (
-    <div className="grid grid-cols-[auto_1fr] items-center gap-x-4 gap-y-3 text-sm">
-      <span className="text-xs text-muted-foreground">{t('series')}</span>
-      <span>
-        {card.set.name}{' '}
-        <span className="text-xs text-muted-foreground">{card.set.externalId}</span>
-      </span>
+    <div className="flex flex-col gap-3 text-sm md:grid md:grid-cols-[auto_1fr] md:items-center md:gap-x-4 md:gap-y-3">
+      <div className="flex flex-col gap-0.5 md:contents">
+        <span className="text-xs text-muted-foreground">{t('series')}</span>
+        <span>
+          {card.set.name}{' '}
+          <span className="text-xs text-muted-foreground">{card.set.externalId}</span>
+        </span>
+      </div>
 
-      <span className="text-xs text-muted-foreground">{t('cardNumber')}</span>
-      <span>{card.cardNumber}</span>
+      <div className="flex flex-col gap-0.5 md:contents">
+        <span className="text-xs text-muted-foreground">{t('cardNumber')}</span>
+        <span>{card.cardNumber}</span>
+      </div>
 
       {card.set.releaseDate && (
-        <>
+        <div className="flex flex-col gap-0.5 md:contents">
           <span className="text-xs text-muted-foreground">{t('releaseDate')}</span>
           <span>{card.set.releaseDate.slice(0, 10)}</span>
-        </>
+        </div>
       )}
 
       {card.rarity && (
-        <>
+        <div className="flex flex-col gap-0.5 md:contents">
           <span className="text-xs text-muted-foreground">{t('rarity')}</span>
           <span><Badge className="bg-tertiary-container text-on-tertiary-container">{card.rarity}</Badge></span>
-        </>
+        </div>
       )}
 
       {card.hp != null && (
-        <>
+        <div className="flex flex-col gap-0.5 md:contents">
           <span className="text-xs text-muted-foreground">HP</span>
           <span><Badge className="bg-tertiary-container text-on-tertiary-container"> {card.hp} </Badge></span>
-        </>
+        </div>
       )}
 
       {card.types.length > 0 && (
-        <>
+        <div className="flex flex-col gap-0.5 md:contents">
           <span className="text-xs text-muted-foreground">{t('types')}</span>
           <span className="flex flex-wrap gap-1">
             {card.types.map(t => <Badge key={t} className="bg-tertiary-container text-on-tertiary-container">{t}</Badge>)}
           </span>
-        </>
+        </div>
       )}
     </div>
   )
@@ -374,6 +378,7 @@ function AddToBinderSection({
         <p className="text-sm text-muted-foreground">{t('loginRequired')}</p>
         <Button
           data-testid="modal-add-btn"
+          className="h-10"
           onClick={() => setLoginModalOpen(true)}
         >
           {t('addToBinder')}
@@ -470,10 +475,10 @@ function AddToBinderSection({
             data-testid="modal-qty-minus"
             size="icon"
             variant="outline"
-            className="rounded-r-none! border-r-0"
+            className="rounded-r-none! rounded-l-(--m3-radius-md)! border-input"
             onClick={() => { setQtyDraft(null); setQuantity(q => Math.max(1, q - 1)) }}
           >
-            -
+            <Minus />
           </Button>
           <Input
             data-testid="modal-qty-value"
@@ -488,16 +493,16 @@ function AddToBinderSection({
               setQuantity(Number.isNaN(n) ? 1 : Math.min(99, Math.max(1, n))) // 無效或非數字 → 1
               setQtyDraft(null)
             }}
-            className="rounded-none! border-x-0 w-14 text-center [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+            className="rounded-none! w-14 text-center [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
           />
           <Button
             data-testid="modal-qty-plus"
             size="icon"
             variant="outline"
-            className="rounded-l-none!"
+            className="rounded-l-none! rounded-r-(--m3-radius-md)! border-input"
             onClick={() => { setQtyDraft(null); setQuantity(q => Math.min(99, q + 1)) }}
           >
-            +
+            <Plus />
           </Button>
         </ButtonGroup>
       </div>

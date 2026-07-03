@@ -23,7 +23,7 @@ export function LanguageTabs({ language, onLanguageChange }: LanguageTabsProps) 
         {LANGUAGE_OPTIONS.map(lang => (
           <TabsTrigger
             key={lang.value}
-            className="rounded-full data-[state=active]:bg-primary-container data-[state=active]:text-on-primary-container dark:data-[state=active]:bg-primary-container dark:data-[state=active]:text-on-primary-container"
+            className="rounded-full data-[state=active]:bg-primary-container data-[state=active]:text-on-primary-container dark:data-[state=active]:bg-primary-container dark:data-[state=active]:text-on-primary-container  dark:data-[state=active]:border-none"
             data-testid={`language-tab-${lang.value.toLowerCase()}`}
             value={lang.value}
           >
