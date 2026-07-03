@@ -440,10 +440,10 @@ function AddToBinderSection({
       <div>
         <p className="text-xs text-muted-foreground mb-1">{t('binder')}</p>
         <Select value={selectedBinderId} onValueChange={setSelectedBinderId}>
-          <SelectTrigger data-testid="modal-binder-select" className="w-full">
+          <SelectTrigger data-testid="modal-binder-select" className="w-full data-[state=open]:border-ring data-[state=open]:ring-[3px] data-[state=open]:ring-ring/50 dark:hover:bg-input/30">
             <SelectValue placeholder={t('selectBinder')} />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent position="popper">
             {binders.map(b => (
               <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
             ))}
@@ -453,11 +453,11 @@ function AddToBinderSection({
       <div>
         <p className="text-xs text-muted-foreground mb-1">{t('status')}</p>
         <Tabs value={selectedStatus} onValueChange={(v) => setSelectedStatus(v as CardStatus)}>
-          <TabsList className="w-full">
-            <TabsTrigger data-testid="modal-status-owned" value="owned" className="flex-1">
+          <TabsList className="w-full rounded-full">
+            <TabsTrigger data-testid="modal-status-owned" value="owned" className="rounded-full data-[state=active]:bg-primary-container data-[state=active]:text-on-primary-container dark:data-[state=active]:bg-primary-container dark:data-[state=active]:text-on-primary-container dark:data-[state=active]:border-none">
               <BookCheck /> {t('owned')}
             </TabsTrigger>
-            <TabsTrigger data-testid="modal-status-wanted" value="wanted" className="flex-1">
+            <TabsTrigger data-testid="modal-status-wanted" value="wanted" className="rounded-full data-[state=active]:bg-primary-container data-[state=active]:text-on-primary-container dark:data-[state=active]:bg-primary-container dark:data-[state=active]:text-on-primary-container dark:data-[state=active]:border-none">
               <Bookmark /> {t('wanted')}
             </TabsTrigger>
           </TabsList>
@@ -470,6 +470,7 @@ function AddToBinderSection({
             data-testid="modal-qty-minus"
             size="icon"
             variant="outline"
+            className="rounded-r-none! border-r-0"
             onClick={() => { setQtyDraft(null); setQuantity(q => Math.max(1, q - 1)) }}
           >
             -
@@ -487,12 +488,13 @@ function AddToBinderSection({
               setQuantity(Number.isNaN(n) ? 1 : Math.min(99, Math.max(1, n))) // 無效或非數字 → 1
               setQtyDraft(null)
             }}
-            className="w-14 text-center [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+            className="rounded-none! border-x-0 w-14 text-center [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
           />
           <Button
             data-testid="modal-qty-plus"
             size="icon"
             variant="outline"
+            className="rounded-l-none!"
             onClick={() => { setQtyDraft(null); setQuantity(q => Math.min(99, q + 1)) }}
           >
             +
@@ -501,7 +503,7 @@ function AddToBinderSection({
       </div>
       <Button
         data-testid="modal-add-btn"
-        className="mt-2"
+        className="mt-2 h-10"
         onClick={handleAdd}
         disabled={!onAddToBinder || loading || !selectedBinderId}
         title={!onAddToBinder ? t('comingSoon') : undefined}
