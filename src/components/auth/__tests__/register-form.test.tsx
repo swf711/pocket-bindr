@@ -156,4 +156,17 @@ describe('RegisterForm', () => {
     const dialog = await screen.findByRole('dialog')
     expect(within(dialog).getByRole('heading', { name: '我們蒐集的個人資料' })).toBeInTheDocument()
   })
+
+  it('法律 Dialog 以底部「關閉」鍵關閉、無右上角 X', async () => {
+    renderForm()
+    fireEvent.click(screen.getByRole('button', { name: '服務條款' }))
+    const dialog = await screen.findByRole('dialog')
+    // 無 shadcn 預設右上角 X（sr-only 文字為 "Close"）
+    expect(within(dialog).queryByRole('button', { name: 'Close' })).not.toBeInTheDocument()
+    const closeBtn = within(dialog).getByRole('button', { name: '關閉' })
+    fireEvent.click(closeBtn)
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    })
+  })
 })

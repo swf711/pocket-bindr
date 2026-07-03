@@ -10,6 +10,8 @@ interface LegalSection {
 
 interface LegalDocumentBodyProps {
   namespace: 'privacy' | 'terms'
+  /** Suppress the internal title/lastUpdated header (used when a host renders its own fixed header, e.g. LegalDialog). */
+  hideHeader?: boolean
 }
 
 /**
@@ -19,19 +21,21 @@ interface LegalDocumentBodyProps {
  * the root layout injects full messages into NextIntlClientProvider, so
  * `useTranslations` + `t.raw('sections')` resolve identically on the client.
  */
-export function LegalDocumentBody({ namespace }: LegalDocumentBodyProps) {
+export function LegalDocumentBody({ namespace, hideHeader = false }: LegalDocumentBodyProps) {
   const t = useTranslations(namespace)
   const sections = t.raw('sections') as LegalSection[]
   const hasGoverningNotice = t.has('governingNotice')
 
   return (
     <article className="max-w-2xl mx-auto space-y-6" data-testid="legal-document">
-      <header className="space-y-2">
-        <h1 className="text-3xl font-bold">{t('title')}</h1>
-        <p className="text-sm text-muted-foreground">
-          {t('lastUpdatedLabel')}：{t('lastUpdated')}
-        </p>
-      </header>
+      {!hideHeader && (
+        <header className="space-y-2">
+          <h1 className="text-3xl font-bold">{t('title')}</h1>
+          <p className="text-sm text-muted-foreground">
+            {t('lastUpdatedLabel')}：{t('lastUpdated')}
+          </p>
+        </header>
+      )}
 
       {hasGoverningNotice && (
         <p className="text-sm text-muted-foreground border rounded-md p-4 bg-muted/50">

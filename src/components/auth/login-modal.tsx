@@ -20,8 +20,14 @@ import {
 } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { PasswordInput } from '@/components/auth/password-input'
-import { consentChunks } from '@/components/auth/consent-chunks'
+import { makeConsentChunks } from '@/components/auth/consent-chunks'
 import Link from 'next/link'
+
+// Light links: the consent strip floats over the fixed dark dialog overlay
+// (bg-black/50), so it needs light text rather than the page's primary color.
+const overlayConsentChunks = makeConsentChunks(
+  'text-tertiary-container',
+)
 
 interface LoginModalProps {
   isOpen: boolean
@@ -121,12 +127,11 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
                   {t('login.registerLink')}
                 </Link>
               </FieldDescription>
-
-              <FieldDescription className="text-center">
-                {t.rich('consentLogin', consentChunks)}
-              </FieldDescription>
           </FieldGroup>
         </form>
+        <p className="absolute top-full inset-x-0 mt-3 text-center text-sm text-background">
+          {t.rich('consentLogin', overlayConsentChunks)}
+        </p>
       </DialogContent>
     </Dialog>
   )

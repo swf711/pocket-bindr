@@ -2,12 +2,25 @@ import type { ReactNode } from 'react'
 import { LegalDialog } from '@/components/legal/legal-dialog'
 
 /**
- * next-intl rich-text chunk map shared by the register/login consent lines.
- * Renders the `<terms>` / `<privacy>` markers in `auth.consentRegister` /
- * `auth.consentLogin` as in-place dialogs showing the legal document, so the
- * user never leaves the register/login flow.
+ * Builds the next-intl rich-text chunk map for the register/login consent
+ * lines. The `<terms>` / `<privacy>` markers open the legal document in-place
+ * as a dialog (no navigation away). `linkClassName` lets a host restyle the
+ * inline trigger — e.g. light links for the login modal's over-overlay strip.
  */
-export const consentChunks = {
-  terms: (chunks: ReactNode) => <LegalDialog namespace="terms">{chunks}</LegalDialog>,
-  privacy: (chunks: ReactNode) => <LegalDialog namespace="privacy">{chunks}</LegalDialog>,
+export function makeConsentChunks(linkClassName?: string) {
+  return {
+    terms: (chunks: ReactNode) => (
+      <LegalDialog namespace="terms" className={linkClassName}>
+        {chunks}
+      </LegalDialog>
+    ),
+    privacy: (chunks: ReactNode) => (
+      <LegalDialog namespace="privacy" className={linkClassName}>
+        {chunks}
+      </LegalDialog>
+    ),
+  }
 }
+
+/** Default chunk map (primary-colored links) for the register/login pages. */
+export const consentChunks = makeConsentChunks()
