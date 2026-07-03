@@ -1,6 +1,6 @@
 import { Page } from '@playwright/test'
 import { encode } from 'next-auth/jwt'
-import { createOAuthUser } from './db'
+import { createOAuthUser, createPasswordUser } from './db'
 
 // Auth.js v5 default session cookie name on http (no __Secure prefix on localhost).
 // `salt` for JWT encode/decode equals the cookie name (see @auth/core).
@@ -28,10 +28,41 @@ export function getTestUser(specName: string): TestUser {
 }
 
 /**
- * 登入指定測試帳號。若帳號不存在則先註冊。
- * 在 test.beforeEach 中呼叫。
+ * 登入指定測試帳號（在 test.beforeEach 中呼叫），結束時停在 /cards（與舊 UI 流程行為一致）。
+ *
+ * 預設走**快速路徑**：app 採 `session: { strategy: 'jwt' }`，session 即為簽章 cookie，
+ * 故在 DB 確保帳號存在（createPasswordUser upsert）後直接鑄同一顆 JWT cookie 注入，
+ * 繞過整段 UI 表單登入，把每次 ~2-3s 的 round-trip 降為即時（見 TECH_DEBT「storageState」項）。
+ * 手法與 loginAsOAuthUser 相同，僅帳號來源不同（credentials 帳號需 passwordHash）。
+ *
+ * `opts.viaUi = true` 走原本的 UI 表單登入（帳號不存在則改註冊），供需要驗證登入 UI 的呼叫點使用。
  */
-export async function loginAs(page: Page, user: TestUser): Promise<void> {
+export async function loginAs(page: Page, user: TestUser, opts: { viaUi?: boolean } = {}): Promise<void> {
+  if (!opts.viaUi) {
+    // 確保帳號存在並取得 userId；createPasswordUser 為冪等 upsert。
+    const { userId } = await createPasswordUser(user.email, user.username, user.password)
+    const secret = process.env.AUTH_SECRET
+    if (!secret) throw new Error('AUTH_SECRET is required to mint E2E session JWT')
+    const token = await encode({
+      token: { sub: userId, name: user.username },
+      secret,
+      salt: SESSION_COOKIE,
+    })
+    await page.context().addCookies([
+      {
+        name: SESSION_COOKIE,
+        value: token,
+        domain: 'localhost',
+        path: '/',
+        httpOnly: true,
+        sameSite: 'Lax',
+      },
+    ])
+    // 停在 /cards，與 UI 登入流程的 post-condition 一致（cookie 已就緒，不會被導回 /login）。
+    await page.goto('/cards')
+    return
+  }
+
   await page.goto('/login')
   await page.getByLabel('Email').fill(user.email)
   await page.getByLabel('密碼', { exact: true }).fill(user.password)

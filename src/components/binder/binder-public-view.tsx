@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { GridType } from '@prisma/client'
 import { toast } from 'sonner'
@@ -21,6 +21,7 @@ import { IconTooltipButton } from '@/components/common/icon-tooltip-button'
 import { ReadOnlySlotCard } from './read-only-slot-card'
 import { CardDetailDrawer } from '@/components/cards/card-detail-drawer'
 import { useScaleFit } from '@/hooks/use-scale-fit'
+import { useIsMobile } from '@/hooks/use-is-mobile'
 import { useAddToBinder } from '@/hooks/use-add-to-binder'
 import {
   buildGridPages,
@@ -237,6 +238,29 @@ export function BinderPublicView({ binder }: { binder: BinderPublicData }) {
   const pagesArray = Array.from({ length: totalPages }, (_, i) => pages.get(i + 1) ?? [])
   const spreads = buildSpreads(pagesArray)
   const mobilePages = buildMobilePages(pagesArray)
+
+  const isMobile = useIsMobile()
+
+  // 方向鍵翻頁（比照 binder-view.tsx；公開頁無 picker，故 gate 只判 viewCard）。
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return
+      if (viewCard !== null) return
+
+      const active = document.activeElement as HTMLElement | null
+      if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.isContentEditable)) return
+      if (active?.closest('[role="dialog"]')) return
+
+      const delta = e.key === 'ArrowLeft' ? -1 : 1
+      if (isMobile) {
+        setMobilePageIndex((prev) => Math.min(Math.max(prev + delta, 0), totalPages - 1))
+      } else {
+        setSpreadIndex((prev) => Math.min(Math.max(prev + delta, 0), spreads.length - 1))
+      }
+    }
+    window.addEventListener('keydown', handleKey)
+    return () => window.removeEventListener('keydown', handleKey)
+  }, [isMobile, viewCard, spreads.length, totalPages])
 
   // Snowglobe hooks — 必須無條件呼叫
   const {
