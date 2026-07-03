@@ -10,6 +10,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { DialogHeaderClose } from '@/components/common/dialog-header-close'
+import { ScrollArea } from '@/components/ui/scroll-area'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { GameSelector } from '@/components/cards/game-selector'
@@ -163,99 +164,101 @@ export function SlotCardPickerDialog({ open, onClose, onConfirm }: SlotCardPicke
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-[calc(100%-2rem)] lg:max-w-5xl" data-testid="slot-card-picker-dialog" showCloseButton={false}>
-        <DialogHeaderClose>
+      <DialogContent className="flex max-h-[85vh] flex-col gap-0 overflow-hidden p-0 sm:max-w-[calc(100%-2rem)] lg:max-w-5xl" data-testid="slot-card-picker-dialog" showCloseButton={false}>
+        <DialogHeaderClose className="shrink-0 border-b px-6 py-4">
           <DialogTitle>{selectedCard ? t('selectStatus') : t('selectCard')}</DialogTitle>
         </DialogHeaderClose>
 
-        {!selectedCard ? (
-          <div className="space-y-4">
-            {!game && <GameSelector selected={game} onSelect={handleGameChange} />}
+        <ScrollArea className="flex-1">
+          {!selectedCard ? (
+            <div className="space-y-4 px-6 py-4">
+              {!game && <GameSelector selected={game} onSelect={handleGameChange} />}
 
-            {game && (
-              <>
-                <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
-                  <div className="flex flex-wrap items-center gap-3">
-                    <GameSelector selected={game} onSelect={handleGameChange} />
-                    <LanguageTabs language={language} onLanguageChange={handleLanguageChange} />
-                  </div>
-                  <CardFilters
-                    className="lg:flex-1"
-                    query={query}
-                    onQueryChange={handleQueryChange}
-                    groups={groups}
-                    selectedSetId={setId}
-                    onSetChange={handleSetChange}
-                  />
-                </div>
-
-                {loading ? (
-                  <CardGrid cards={[]} onCardClick={() => {}} loading />
-                ) : fetchError ? (
-                  <div className="text-center py-12 text-destructive">{fetchError}</div>
-                ) : (
-                  <>
-                    <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                      <p className="text-center">
-                        {t('resultCount', { count: total })}
-                      </p>
-                      <CardPagination
-                        className="md:mx-0 md:w-auto md:justify-end"
-                        currentPage={page}
-                        totalPages={totalPages}
-                        onPageChange={handlePageChange}
-                      />
+              {game && (
+                <>
+                  <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+                    <div className="flex flex-wrap items-center gap-3">
+                      <GameSelector selected={game} onSelect={handleGameChange} />
+                      <LanguageTabs language={language} onLanguageChange={handleLanguageChange} />
                     </div>
-                    <CardGrid cards={cards} onCardClick={setSelectedCard} />
-                    <CardPagination currentPage={page} totalPages={totalPages} onPageChange={handlePageChange} />
-                  </>
-                )}
-              </>
-            )}
-          </div>
-        ) : (
-          <div className="space-y-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              data-testid="slot-card-picker-back"
-              onClick={() => setSelectedCard(null)}
-            >
-              <ArrowLeft className="h-4 w-4" /> {t('backToSelectCard')}
-            </Button>
+                    <CardFilters
+                      className="lg:flex-1"
+                      query={query}
+                      onQueryChange={handleQueryChange}
+                      groups={groups}
+                      selectedSetId={setId}
+                      onSetChange={handleSetChange}
+                    />
+                  </div>
 
-            <div className="flex flex-col items-center gap-3">
-              {displayImage && (
-                <img
-                  src={displayImage}
-                  alt={selectedCard.name}
-                  className="w-40 rounded-md"
-                />
+                  {loading ? (
+                    <CardGrid cards={[]} onCardClick={() => {}} loading />
+                  ) : fetchError ? (
+                    <div className="text-center py-12 text-destructive">{fetchError}</div>
+                  ) : (
+                    <>
+                      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                        <p className="text-center">
+                          {t('resultCount', { count: total })}
+                        </p>
+                        <CardPagination
+                          className="md:mx-0 md:w-auto md:justify-end"
+                          currentPage={page}
+                          totalPages={totalPages}
+                          onPageChange={handlePageChange}
+                        />
+                      </div>
+                      <CardGrid cards={cards} onCardClick={setSelectedCard} />
+                      <CardPagination currentPage={page} totalPages={totalPages} onPageChange={handlePageChange} />
+                    </>
+                  )}
+                </>
               )}
-              <p className="font-semibold">{selectedCard.name}</p>
             </div>
+          ) : (
+            <div className="space-y-4 px-6 py-4">
+              <Button
+                variant="ghost"
+                size="sm"
+                data-testid="slot-card-picker-back"
+                onClick={() => setSelectedCard(null)}
+              >
+                <ArrowLeft className="h-4 w-4" /> {t('backToSelectCard')}
+              </Button>
 
-            <Tabs value={status} onValueChange={(v) => setStatus(v as CardStatus)}>
-              <TabsList className="w-full">
-                <TabsTrigger data-testid="picker-status-owned" value="owned" className="flex-1">
-                  <BookCheck /> {t('owned')}
-                </TabsTrigger>
-                <TabsTrigger data-testid="picker-status-wanted" value="wanted" className="flex-1">
-                  <Bookmark /> {t('wanted')}
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
+              <div className="flex flex-col items-center gap-3">
+                {displayImage && (
+                  <img
+                    src={displayImage}
+                    alt={selectedCard.name}
+                    className="w-40 rounded-md"
+                  />
+                )}
+                <p className="font-semibold">{selectedCard.name}</p>
+              </div>
 
-            <Button
-              className="w-full"
-              data-testid="slot-card-picker-confirm"
-              onClick={handleConfirm}
-              disabled={confirming}
-            >
-              {confirming ? t('adding') : t('addCard')}
-            </Button>
-          </div>
-        )}
+              <Tabs value={status} onValueChange={(v) => setStatus(v as CardStatus)}>
+                <TabsList className="w-full">
+                  <TabsTrigger data-testid="picker-status-owned" value="owned" className="flex-1">
+                    <BookCheck /> {t('owned')}
+                  </TabsTrigger>
+                  <TabsTrigger data-testid="picker-status-wanted" value="wanted" className="flex-1">
+                    <Bookmark /> {t('wanted')}
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+
+              <Button
+                className="w-full"
+                data-testid="slot-card-picker-confirm"
+                onClick={handleConfirm}
+                disabled={confirming}
+              >
+                {confirming ? t('adding') : t('addCard')}
+              </Button>
+            </div>
+          )}
+        </ScrollArea>
       </DialogContent>
     </Dialog>
   )

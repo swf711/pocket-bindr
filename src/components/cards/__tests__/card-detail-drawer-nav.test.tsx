@@ -8,12 +8,17 @@ import userEvent from '@testing-library/user-event'
 import { TooltipProvider } from '@/components/ui/tooltip'
 
 // CardDetailDrawer 內部無條件呼叫 new ResizeObserver()（量測 overlay 高度），
-// jsdom 本身不提供此 API，需手動 stub（同 use-scale-fit.test.ts 慣例）。
+// 現在 ScrollArea（Radix useSize）也會在同一次 render 呼叫 new ResizeObserver()。
+// jsdom 本身不提供此 API，需手動 stub；用真的 class 而非 vi.fn().mockImplementation(箭頭函式)——
+// 箭頭函式沒有 [[Construct]]，vitest 內部以 Reflect.construct 呼叫 new 時會丟出
+// 「is not a constructor」。
 beforeEach(() => {
-  vi.stubGlobal(
-    'ResizeObserver',
-    vi.fn().mockImplementation(() => ({ observe: vi.fn(), disconnect: vi.fn(), unobserve: vi.fn() })),
-  )
+  class MockResizeObserver {
+    observe() {}
+    disconnect() {}
+    unobserve() {}
+  }
+  vi.stubGlobal('ResizeObserver', MockResizeObserver)
 })
 
 afterEach(() => {

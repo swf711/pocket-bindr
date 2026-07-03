@@ -19,6 +19,7 @@ import {
   SelectTrigger, SelectValue
 } from '@/components/ui/select'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { ScrollArea } from '@/components/ui/scroll-area'
 import { ChevronLeft, ChevronRight, BookCheck, Bookmark, X } from 'lucide-react'
 import { CardWithCollectionStatus } from '@/types/card'
 import { getCardImageUrl } from '@/lib/get-card-image-url'
@@ -233,28 +234,32 @@ export function CardDetailDrawer({ card, open, onClose, onAddToBinder, onLoginSu
           )}
         </DrawerHeader>
         {isMobile ? (
-          <div
-            className={cn(
-              'no-scrollbar overflow-y-auto px-4 pb-6',
-              hideAddToBinder ? 'flex flex-col gap-4' : 'grid grid-cols-2 items-start gap-4',
-            )}
-          >
-            {/* 左欄：卡牌資訊；右欄：加入卡冊操作（收藏狀態移至卡圖下方 overlay） */}
-            {infoBlock}
-            {!hideAddToBinder && (
-              <AddToBinderSection card={card} onAddToBinder={onAddToBinder} onLoginSuccess={onLoginSuccess} currentBinderId={currentBinderId} />
-            )}
-          </div>
-        ) : (
-          <div className="no-scrollbar flex flex-col gap-4 overflow-y-auto px-4 pb-6">
-            {infoBlock}
-            {!hideAddToBinder && (
-              <>
-                <Separator />
+          <ScrollArea className="flex-1 min-h-0">
+            <div
+              className={cn(
+                'px-4 pb-6',
+                hideAddToBinder ? 'flex flex-col gap-4' : 'grid grid-cols-2 items-start gap-4',
+              )}
+            >
+              {/* 左欄：卡牌資訊；右欄：加入卡冊操作（收藏狀態移至卡圖下方 overlay） */}
+              {infoBlock}
+              {!hideAddToBinder && (
                 <AddToBinderSection card={card} onAddToBinder={onAddToBinder} onLoginSuccess={onLoginSuccess} currentBinderId={currentBinderId} />
-              </>
-            )}
-          </div>
+              )}
+            </div>
+          </ScrollArea>
+        ) : (
+          <ScrollArea className="flex-1 min-h-0">
+            <div className="flex flex-col gap-4 px-4 pb-6">
+              {infoBlock}
+              {!hideAddToBinder && (
+                <>
+                  <Separator />
+                  <AddToBinderSection card={card} onAddToBinder={onAddToBinder} onLoginSuccess={onLoginSuccess} currentBinderId={currentBinderId} />
+                </>
+              )}
+            </div>
+          </ScrollArea>
         )}
       </CardDetailDrawerContent>
 

@@ -6,6 +6,7 @@ import { Search } from 'lucide-react'
 import { GridType } from '@prisma/client'
 import { Input } from '@/components/ui/input'
 import { Progress } from '@/components/ui/progress'
+import { ScrollArea } from '@/components/ui/scroll-area'
 import { getCardImageUrl } from '@/lib/get-card-image-url'
 import { computeBinderStats } from '@/lib/binder-utils'
 import { MAX_PAGES_PER_BINDER } from '@/lib/binder-limits'
@@ -183,34 +184,36 @@ export function BinderCoverPanel({
 
         {/* 搜尋結果 - 動態高度 */}
         {searchQuery.trim() && (
-          <div
-            className="flex flex-col gap-1 max-h-36 overflow-y-auto"
+          <ScrollArea
+            className="max-h-36 **:data-[slot=scroll-area-thumb]:bg-white/30 **:data-[slot=scroll-area-scrollbar]:border-white/10"
             data-testid="cover-slot-search-results"
           >
-            {searchResults.length === 0 ? (
-              <p className="text-xs text-white/50 px-1">{t('noResults')}</p>
-            ) : (
-              searchResults.map((slot) => (
-                <button
-                  key={slot.id}
-                  type="button"
-                  onClick={() => handleResultClick(slot)}
-                  className="flex items-center gap-2 rounded px-2 py-1 text-left hover:bg-white/10 transition-colors"
-                  data-testid={`cover-search-result-${slot.id}`}
-                >
-                  <img
-                    src={getCardImageUrl(slot.card.imageSmall) ?? ''}
-                    alt={slot.card.name}
-                    className="h-8 w-6 rounded-xs object-cover shrink-0"
-                  />
-                  <span className="text-xs text-white/90 truncate">{slot.card.name}</span>
-                  <span className="text-xs text-white/50 ml-auto shrink-0">
-                    {t('pageLabel', { page: slot.pageNumber })}
-                  </span>
-                </button>
-              ))
-            )}
-          </div>
+            <div className="flex flex-col gap-1">
+              {searchResults.length === 0 ? (
+                <p className="text-xs text-white/50 px-1">{t('noResults')}</p>
+              ) : (
+                searchResults.map((slot) => (
+                  <button
+                    key={slot.id}
+                    type="button"
+                    onClick={() => handleResultClick(slot)}
+                    className="flex items-center gap-2 rounded px-2 py-1 text-left hover:bg-white/10 transition-colors"
+                    data-testid={`cover-search-result-${slot.id}`}
+                  >
+                    <img
+                      src={getCardImageUrl(slot.card.imageSmall) ?? ''}
+                      alt={slot.card.name}
+                      className="h-8 w-6 rounded-xs object-cover shrink-0"
+                    />
+                    <span className="text-xs text-white/90 truncate">{slot.card.name}</span>
+                    <span className="text-xs text-white/50 ml-auto shrink-0">
+                      {t('pageLabel', { page: slot.pageNumber })}
+                    </span>
+                  </button>
+                ))
+              )}
+            </div>
+          </ScrollArea>
         )}
       </div>
     </div>
