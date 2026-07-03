@@ -3,7 +3,7 @@
  */
 import '@testing-library/jest-dom/vitest'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor, within } from '@testing-library/react'
 
 const { mockSignIn, mockRefresh } = vi.hoisted(() => ({
   mockSignIn: vi.fn(),
@@ -86,9 +86,10 @@ describe('LoginModal', () => {
     expect(mockSignIn).toHaveBeenCalledWith('discord')
   })
 
-  it('consent 文字的服務條款／隱私權政策連結指向 /terms、/privacy', () => {
+  it('點擊 consent 的「服務條款」在 modal 內開啟巢狀 Dialog 顯示條款內容', async () => {
     renderModal()
-    expect(screen.getByRole('link', { name: '服務條款' })).toHaveAttribute('href', '/terms')
-    expect(screen.getByRole('link', { name: '隱私權政策' })).toHaveAttribute('href', '/privacy')
+    fireEvent.click(screen.getByRole('button', { name: '服務條款' }))
+    const dialog = await screen.findByRole('dialog', { name: '服務條款' })
+    expect(within(dialog).getByRole('heading', { name: '準據法與管轄' })).toBeInTheDocument()
   })
 })
