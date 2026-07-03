@@ -74,4 +74,11 @@ describe('Footer', () => {
     expect(screen.getByTestId('site-footer')).toHaveTextContent('Pokémon')
     expect(screen.getByTestId('site-footer')).toHaveTextContent('Bandai')
   })
+
+  it('包含服務條款與隱私權政策連結', () => {
+    vi.mocked(usePathname).mockReturnValue('/cards')
+    render(<Footer />)
+    expect(screen.getByRole('link', { name: '服務條款' })).toHaveAttribute('href', '/terms')
+    expect(screen.getByRole('link', { name: '隱私權政策' })).toHaveAttribute('href', '/privacy')
+  })
 })

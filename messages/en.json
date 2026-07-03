@@ -17,7 +17,9 @@
   },
   "footer": {
     "rights": "© 2026 PocketBindr, All rights reserved.",
-    "disclaimer": "This site is not affiliated with Nintendo, The Pokémon Company, Bandai, or any related trademark holders. Card images are copyright of their respective owners and are provided for collection reference only."
+    "disclaimer": "This site is not affiliated with Nintendo, The Pokémon Company, Bandai, or any related trademark holders. Card images are copyright of their respective owners and are provided for collection reference only.",
+    "terms": "Terms of Service",
+    "privacy": "Privacy Policy"
   },
   "home": {
     "tagline": "Search, collect, and organize your trading cards. Build your own binders and track your collection anytime.",
@@ -53,6 +55,8 @@
     "loginWithDiscord": "Sign in with Discord",
     "showPassword": "Show password",
     "hidePassword": "Hide password",
+    "consentRegister": "By signing up, you agree to PocketBindr's Terms of Service and Privacy Policy.",
+    "consentLogin": "By continuing, you agree to PocketBindr's Terms of Service and Privacy Policy.",
     "strength": {
       "label": "Password strength: {level}",
       "0": "Too short",
@@ -445,5 +449,151 @@
       "all": "All",
       "searchPlaceholder": "Search by card name or number..."
     }
+  },
+  "privacy": {
+    "title": "Privacy Policy",
+    "lastUpdatedLabel": "Last updated",
+    "lastUpdated": "2026-07-03",
+    "governingNotice": "This document is provided in Traditional Chinese as the authoritative version. This English translation is for reference only; in case of any discrepancy, the Traditional Chinese version shall prevail.",
+    "intro": "PocketBindr (\"the Service\") is independently developed and operated by solo developer Brian Shao (邵尉夫). This policy explains how the Service collects, uses, retains, and protects your personal data, and applies to the Service's website and related features. By using the Service, you acknowledge that you have read and agree to this policy.",
+    "sections": [
+      {
+        "heading": "Scope of This Policy",
+        "body": ["This policy is drafted in accordance with Taiwan's Personal Data Protection Act (PDPA) and applies to all users of the PocketBindr website and its features, including card search, account registration, binder creation and management, and public sharing."]
+      },
+      {
+        "heading": "Personal Data We Collect",
+        "body": ["To provide the Service's features, we collect the following categories of personal data:"],
+        "items": [
+          "Identity data: email address (required for email/password registration; may be absent for social login users), username, display name provided by social login (name), avatar image URL (image)",
+          "Authentication and authorization data: password hash (bcrypt-hashed; we never store plaintext passwords); if you sign in with Google or Discord, we store the access token and refresh token issued by that provider to maintain your login session",
+          "User content: your collection status (owned/wanted), quantity, and notes for cards you mark; binder names, descriptions, cover colors, and page layouts you create",
+          "Connection and abuse-prevention data: to prevent abuse of features such as password reset, we temporarily record your IP address and the email address you provide for rate limiting; this data is stored in Upstash Redis and automatically expires"
+        ]
+      },
+      {
+        "heading": "Purposes of Collection",
+        "body": ["We collect the personal data above for the following purposes:"],
+        "items": [
+          "Providing account registration, login, and identity verification",
+          "Providing core features such as card search, collection marking, and binder creation and management",
+          "Sending password reset notification emails when requested",
+          "Preventing automated attacks, brute-force attempts, and other abuse to maintain service security",
+          "Providing binder public sharing at your choice"
+        ]
+      },
+      {
+        "heading": "Retention Period, Region, Recipients, and Method of Use",
+        "body": ["Your personal data is used throughout the operation of the Service and is processed by the following recipients within the scope necessary for their respective functions. Aside from these service providers accessing your personal data as required by their functions, we do not sell, rent, or use your personal data for marketing purposes with unrelated third parties."],
+        "items": [
+          "Google LLC (social login authentication)",
+          "Discord Inc. (social login authentication)",
+          "Supabase (database hosting, servers located in Japan)",
+          "Vercel Inc. (website hosting, servers located in Tokyo, Japan)",
+          "Resend (password reset email delivery)",
+          "Upstash (temporary data storage for rate limiting)",
+          "Cloudflare (DNS and email forwarding)"
+        ]
+      },
+      {
+        "heading": "International Data Transfers",
+        "body": ["The Service's database is primarily hosted in Japan (Supabase, ap-northeast-1 region), and the website server is also deployed in Tokyo, Japan (Vercel hnd1 region). However, because some of the service providers we use (such as Google, Discord, Resend, Upstash, and Cloudflare) may have their corporate entities or data processing facilities located outside Taiwan, including in the United States, your personal data may be transferred to and processed in regions outside Taiwan as a result. We require these service providers to protect your personal data in accordance with their own privacy policies and applicable law."]
+      },
+      {
+        "heading": "Your Rights",
+        "body": ["Under Taiwan's PDPA, you may exercise the following rights regarding the personal data we hold about you:"],
+        "items": [
+          "Access: you can view your account data and collection in the Settings page; for a complete copy of your personal data, please contact us using the details below",
+          "Correction or supplementation: you can update your username and password yourself in the Settings page; to correct your email address or social login display name, please contact us using the details below",
+          "Request to stop collection, processing, or use: you may exercise this right by deleting your account (see below)",
+          "Deletion: you can delete your account yourself from the \"Danger Zone\" in the Settings page. Upon deletion, your account data, linked social accounts, collection records, and all binders are immediately and permanently removed"
+        ]
+      },
+      {
+        "heading": "Data Security",
+        "body": ["We take the following measures to protect your personal data: passwords are hashed using bcrypt, so no one at the Service can see your plaintext password; password reset and account linking flows use HMAC-SHA256-signed, single-use, time-limited tokens; sensitive actions (such as account deletion or unlinking a social account) require an authenticated session."]
+      },
+      {
+        "heading": "Cookies and Similar Technologies",
+        "body": ["The Service uses essential cookies to maintain your login session and remember your language preference (NEXT_LOCALE). These cookies are necessary to provide the Service and are not used for third-party advertising tracking."]
+      },
+      {
+        "heading": "Children's Personal Data",
+        "body": ["The Service does not knowingly collect personal data from children under 13. If you are a parent or guardian and believe a child under 13 has provided personal data to the Service without your consent, please contact us using the details below and we will promptly delete the relevant data."]
+      },
+      {
+        "heading": "Changes to This Policy",
+        "body": ["We may revise this policy from time to time; the \"Last updated\" date on this page will be updated accordingly. We will notify you of material changes by reasonable means (such as a notice on the website). We encourage you to review this page periodically."]
+      },
+      {
+        "heading": "Contact Us",
+        "body": ["If you have any questions about this policy or wish to exercise the rights described above, please contact us:"],
+        "items": ["Email: support@pocketbindr.app", "GitHub Issues: https://github.com/swf711/pocket-bindr/issues"]
+      }
+    ]
+  },
+  "terms": {
+    "title": "Terms of Service",
+    "lastUpdatedLabel": "Last updated",
+    "lastUpdated": "2026-07-03",
+    "governingNotice": "This document is provided in Traditional Chinese as the authoritative version. This English translation is for reference only; in case of any discrepancy, the Traditional Chinese version shall prevail.",
+    "intro": "Welcome to PocketBindr (\"the Service\"). These Terms of Service (\"the Terms\") govern your use of the Service, which is independently developed and operated by solo developer Brian Shao (邵尉夫). By using the Service, you agree to be bound by these Terms; if you do not agree to any part of these Terms, please do not use the Service.",
+    "sections": [
+      {
+        "heading": "Description of Service",
+        "body": ["The Service provides trading card game (TCG) data search, collection marking (owned/wanted), and custom-format virtual binder creation and management, currently supporting Pokémon TCG and One Piece TCG, with Traditional Chinese, Japanese, and English interface languages. Sources for card data and images are described in the site footer and related pages."]
+      },
+      {
+        "heading": "Account Registration and Conduct",
+        "body": [
+          "You may register and log in to the Service using email/password or social login via Google or Discord. You are responsible for keeping your account credentials confidential and for all activity that occurs under your account. If you become aware of unauthorized use of your account, please notify us immediately.",
+          "Information you provide at registration must be true, accurate, and belong to you. We reserve the right to suspend or terminate your account access if we discover a violation of these Terms."
+        ]
+      },
+      {
+        "heading": "Ownership of User Content",
+        "body": [
+          "You retain ownership of the binders, collection markings, notes, and other content you create using the Service (\"User Content\"). You grant the Service the technical license necessary to provide these features, including any public sharing you choose to enable.",
+          "Card names, images, and related data displayed on the Service are the copyright and trademark property of their respective owners (such as Nintendo, The Pokémon Company, Bandai, and other relevant trademark holders). The Service is not affiliated with these rights holders in any way, and such data is provided solely for collection reference purposes."
+        ]
+      },
+      {
+        "heading": "Prohibited Conduct",
+        "body": ["When using the Service, you agree not to:"],
+        "items": [
+          "Use automated means (such as scrapers or bots) to access or interfere with the Service's normal operation at scale",
+          "Attempt to gain unauthorized access to another user's account or the Service's systems",
+          "Upload, store, or transmit content that violates the law, infringes on others' rights, or is otherwise inappropriate",
+          "Use the Service for any commercial resale or commercial purpose without the Service's prior written consent"
+        ]
+      },
+      {
+        "heading": "Disclaimer",
+        "body": [
+          "Card data provided by the Service (including names, images, and series information) is aggregated from public sources for collection reference purposes only, and its complete accuracy, timeliness, or completeness is not guaranteed. The Service is not affiliated with, sponsored by, or endorsed by Nintendo, The Pokémon Company, Bandai, or any other relevant trademark holders.",
+          "The Service is provided \"as is\" without any express or implied warranty that it will be uninterrupted, error-free, or fit for a particular purpose. To the fullest extent permitted by law, the Service is not liable for any damages arising from your use or inability to use the Service."
+        ]
+      },
+      {
+        "heading": "Changes and Termination",
+        "body": [
+          "We reserve the right to modify, suspend, or discontinue all or part of the Service at any time without prior notice. If you violate these Terms, we may suspend or terminate your account access.",
+          "You may terminate your use of the Service at any time by deleting your account in the Settings page; upon deletion, all your data will be permanently removed as described in the Privacy Policy."
+        ]
+      },
+      {
+        "heading": "Governing Law and Jurisdiction",
+        "body": ["These Terms shall be governed by and construed in accordance with the laws of the Republic of China (Taiwan). Any dispute arising from or relating to these Terms shall be subject to the exclusive jurisdiction of the Taipei District Court in Taiwan as the court of first instance."]
+      },
+      {
+        "heading": "Changes to These Terms",
+        "body": ["We may revise these Terms from time to time; the \"Last updated\" date on this page will be updated accordingly. Revised Terms take effect upon posting; your continued use of the Service after revisions constitutes acceptance of the revised Terms."]
+      },
+      {
+        "heading": "Contact Us",
+        "body": ["If you have any questions about these Terms, please contact us:"],
+        "items": ["Email: support@pocketbindr.app", "GitHub Issues: https://github.com/swf711/pocket-bindr/issues"]
+      }
+    ]
   }
 }

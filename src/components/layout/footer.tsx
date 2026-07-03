@@ -1,6 +1,7 @@
 'use client'
 
 import Image from 'next/image'
+import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 
@@ -39,6 +40,14 @@ export function Footer() {
         <p className="text-xs text-muted-foreground max-w-2xl mx-auto">
           {t('disclaimer')}
         </p>
+        <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
+          <Link href="/terms" className="hover:underline">
+            {t('terms')}
+          </Link>
+          <Link href="/privacy" className="hover:underline">
+            {t('privacy')}
+          </Link>
+        </div>
       </div>
     </footer>
   )

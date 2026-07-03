@@ -94,3 +94,5 @@ E2E 以 `pnpm build && pnpm start` 啟動正式 build（非 dev mode），並需
 
 本專案為個人 / 教育用途的卡牌收藏管理工具，與 The Pokémon Company、Nintendo、Bandai 等公司**無任何關聯**，
 亦未獲其授權或贊助。所有卡牌名稱、圖片與相關資料之著作權與商標權均屬各自權利人所有。
+
+服務條款與隱私權政策（繁中 / 英 / 日）請見網站頁尾連結（`/terms`、`/privacy`）。
