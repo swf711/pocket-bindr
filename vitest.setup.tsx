@@ -3,6 +3,16 @@ import * as React from 'react'
 import { NextIntlClientProvider, createTranslator } from 'next-intl'
 import zhTW from './messages/zh-TW.json'
 
+// jsdom lacks ResizeObserver, which Radix ScrollArea (and other primitives)
+// instantiate on mount. Provide a no-op polyfill so components using it render.
+if (!('ResizeObserver' in globalThis)) {
+  globalThis.ResizeObserver = class {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  }
+}
+
 // Every component migrated to next-intl needs a NextIntlClientProvider ancestor
 // to call useTranslations(). Rather than touching every existing test file's
 // local render() wrapper, wrap @testing-library/react's render globally with

@@ -4,7 +4,8 @@
     "login": "Log in",
     "settings": "Settings",
     "logout": "Log out",
-    "defaultUsername": "User"
+    "defaultUsername": "User",
+    "close": "Close"
   },
   "nav": {
     "home": "Home",

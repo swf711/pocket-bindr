@@ -4,7 +4,8 @@
     "login": "ログイン",
     "settings": "設定",
     "logout": "ログアウト",
-    "defaultUsername": "ユーザー"
+    "defaultUsername": "ユーザー",
+    "close": "閉じる"
   },
   "nav": {
     "home": "ホーム",
