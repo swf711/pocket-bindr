@@ -4,6 +4,7 @@ import { Search } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { PILL_TABS_LIST, PILL_TABS_TRIGGER } from '@/lib/tabs-styles'
 import { SeriesCombobox } from '@/components/cards/series-combobox'
 import { SetGroup } from '@/types/card'
 
@@ -55,9 +56,9 @@ export function CollectionFilters({
       {/* 桌面：全部 tabs + 搜尋框同一列；行動：wrap 換行 */}
       <div className="flex flex-wrap items-center gap-3 lg:flex-nowrap">
         <Tabs value={status} onValueChange={v => onStatusChange(v as 'all' | 'owned' | 'wanted')}>
-          <TabsList>
+          <TabsList className={PILL_TABS_LIST}>
             {STATUS_VALUES.map(value => (
-              <TabsTrigger key={value} value={value} data-testid={`status-filter-${value}`}>
+              <TabsTrigger key={value} value={value} className={PILL_TABS_TRIGGER} data-testid={`status-filter-${value}`}>
                 {statusLabel(value)}
               </TabsTrigger>
             ))}
@@ -65,9 +66,9 @@ export function CollectionFilters({
         </Tabs>
 
         <Tabs value={game || 'all'} onValueChange={v => onGameChange(v === 'all' ? '' : v)}>
-          <TabsList>
+          <TabsList className={PILL_TABS_LIST}>
             {GAME_VALUES.map(value => (
-              <TabsTrigger key={value} value={value} data-testid={`game-filter-${value}`}>
+              <TabsTrigger key={value} value={value} className={PILL_TABS_TRIGGER} data-testid={`game-filter-${value}`}>
                 {gameLabel(value)}
               </TabsTrigger>
             ))}
@@ -75,9 +76,9 @@ export function CollectionFilters({
         </Tabs>
 
         <Tabs value={language || 'all'} onValueChange={v => onLanguageChange(v === 'all' ? '' : v)}>
-          <TabsList>
+          <TabsList className={PILL_TABS_LIST}>
             {LANGUAGE_VALUES.map(value => (
-              <TabsTrigger key={value} value={value} data-testid={`language-filter-${value}`}>
+              <TabsTrigger key={value} value={value} className={PILL_TABS_TRIGGER} data-testid={`language-filter-${value}`}>
                 {languageLabel(value)}
               </TabsTrigger>
             ))}

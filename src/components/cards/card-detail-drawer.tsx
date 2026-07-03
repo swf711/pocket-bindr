@@ -19,6 +19,7 @@ import {
   SelectTrigger, SelectValue
 } from '@/components/ui/select'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { PILL_TABS_LIST, PILL_TABS_TRIGGER } from '@/lib/tabs-styles'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { ChevronLeft, ChevronRight, BookCheck, Bookmark, X, Minus, Plus } from 'lucide-react'
@@ -458,11 +459,11 @@ function AddToBinderSection({
       <div>
         <p className="text-xs text-muted-foreground mb-1">{t('status')}</p>
         <Tabs value={selectedStatus} onValueChange={(v) => setSelectedStatus(v as CardStatus)}>
-          <TabsList className="w-full rounded-full">
-            <TabsTrigger data-testid="modal-status-owned" value="owned" className="rounded-full data-[state=active]:bg-primary-container data-[state=active]:text-on-primary-container dark:data-[state=active]:bg-primary-container dark:data-[state=active]:text-on-primary-container dark:data-[state=active]:border-none">
+          <TabsList className={cn(PILL_TABS_LIST, 'w-full')}>
+            <TabsTrigger data-testid="modal-status-owned" value="owned" className={PILL_TABS_TRIGGER}>
               <BookCheck /> {t('owned')}
             </TabsTrigger>
-            <TabsTrigger data-testid="modal-status-wanted" value="wanted" className="rounded-full data-[state=active]:bg-primary-container data-[state=active]:text-on-primary-container dark:data-[state=active]:bg-primary-container dark:data-[state=active]:text-on-primary-container dark:data-[state=active]:border-none">
+            <TabsTrigger data-testid="modal-status-wanted" value="wanted" className={PILL_TABS_TRIGGER}>
               <Bookmark /> {t('wanted')}
             </TabsTrigger>
           </TabsList>

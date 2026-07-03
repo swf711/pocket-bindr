@@ -3,6 +3,7 @@
 import Image from 'next/image'
 import { useTranslations } from 'next-intl'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { PILL_TABS_LIST, PILL_TABS_TRIGGER } from '@/lib/tabs-styles'
 
 const GAME_IDS = ['PTCG', 'OPCG'] as const
 
@@ -27,11 +28,11 @@ export function GameSelector({ selected, onSelect }: GameSelectorProps) {
         value={selected}
         onValueChange={onSelect}
       >
-        <TabsList className="rounded-full">
+        <TabsList className={PILL_TABS_LIST}>
           {games.map(g => (
             <TabsTrigger
               key={g.id}
-              className="rounded-full data-[state=active]:bg-primary-container data-[state=active]:text-on-primary-container dark:data-[state=active]:bg-primary-container dark:data-[state=active]:text-on-primary-container dark:data-[state=active]:border-none"
+              className={PILL_TABS_TRIGGER}
               data-testid={`game-btn-${g.id.toLowerCase()}`}
               value={g.id}
             >

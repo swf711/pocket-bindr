@@ -13,6 +13,8 @@ import { DialogHeaderClose } from '@/components/common/dialog-header-close'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { PILL_TABS_LIST, PILL_TABS_TRIGGER } from '@/lib/tabs-styles'
+import { cn } from '@/lib/utils'
 import { GameSelector } from '@/components/cards/game-selector'
 import { LanguageTabs } from '@/components/cards/language-tabs'
 import { CardFilters } from '@/components/cards/card-filters'
@@ -238,11 +240,11 @@ export function SlotCardPickerDialog({ open, onClose, onConfirm }: SlotCardPicke
               </div>
 
               <Tabs value={status} onValueChange={(v) => setStatus(v as CardStatus)}>
-                <TabsList className="w-full">
-                  <TabsTrigger data-testid="picker-status-owned" value="owned" className="flex-1">
+                <TabsList className={cn(PILL_TABS_LIST, 'w-full')}>
+                  <TabsTrigger data-testid="picker-status-owned" value="owned" className={cn(PILL_TABS_TRIGGER, 'flex-1')}>
                     <BookCheck /> {t('owned')}
                   </TabsTrigger>
-                  <TabsTrigger data-testid="picker-status-wanted" value="wanted" className="flex-1">
+                  <TabsTrigger data-testid="picker-status-wanted" value="wanted" className={cn(PILL_TABS_TRIGGER, 'flex-1')}>
                     <Bookmark /> {t('wanted')}
                   </TabsTrigger>
                 </TabsList>

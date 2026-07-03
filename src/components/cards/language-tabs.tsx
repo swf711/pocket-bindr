@@ -2,6 +2,7 @@
 
 import { useTranslations } from 'next-intl'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { PILL_TABS_LIST, PILL_TABS_TRIGGER } from '@/lib/tabs-styles'
 
 const LANGUAGE_VALUES = ['ZH_TW', 'JA', 'EN'] as const
 
@@ -19,11 +20,11 @@ export function LanguageTabs({ language, onLanguageChange }: LanguageTabsProps) 
       value={language}
       onValueChange={onLanguageChange}
     >
-      <TabsList className="rounded-full">
+      <TabsList className={PILL_TABS_LIST}>
         {LANGUAGE_OPTIONS.map(lang => (
           <TabsTrigger
             key={lang.value}
-            className="rounded-full data-[state=active]:bg-primary-container data-[state=active]:text-on-primary-container dark:data-[state=active]:bg-primary-container dark:data-[state=active]:text-on-primary-container  dark:data-[state=active]:border-none"
+            className={PILL_TABS_TRIGGER}
             data-testid={`language-tab-${lang.value.toLowerCase()}`}
             value={lang.value}
           >

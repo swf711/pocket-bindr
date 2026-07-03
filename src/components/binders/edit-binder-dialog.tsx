@@ -15,6 +15,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { PILL_TABS_LIST, PILL_TABS_TRIGGER } from '@/lib/tabs-styles'
+import { cn } from '@/lib/utils'
 import { BinderSummary, PatchBinderResponse, GRID_SHORT_LABELS, GRID_TYPE_LABELS } from '@/types/binder'
 import { DEFAULT_COVER_COLOR } from '@/lib/cover-colors'
 import { CoverColorPicker } from './cover-color-picker'
@@ -113,13 +115,13 @@ export function EditBinderDialog({
               onValueChange={v => setGridType(v as GridType)}
               data-testid="binder-grid-tabs"
             >
-              <TabsList className="flex flex-wrap h-auto gap-1">
+              <TabsList className={cn(PILL_TABS_LIST, 'flex flex-wrap h-auto gap-1')}>
                 {(Object.keys(GRID_SHORT_LABELS) as GridType[]).map((gt) => (
                   <TabsTrigger
                     key={gt}
                     value={gt}
                     aria-label={GRID_TYPE_LABELS[gt]}
-                    className="text-xs px-3"
+                    className={cn(PILL_TABS_TRIGGER, 'text-xs px-3')}
                   >
                     {GRID_SHORT_LABELS[gt]}
                   </TabsTrigger>

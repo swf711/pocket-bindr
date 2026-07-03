@@ -45,6 +45,8 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { PILL_TABS_LIST, PILL_TABS_TRIGGER } from '@/lib/tabs-styles'
+import { cn } from '@/lib/utils'
 import { Separator } from '@/components/ui/separator'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
@@ -373,13 +375,13 @@ export function BinderSettingsDrawer({
                 onValueChange={(v) => setLocalGridType(v as GridType)}
                 data-testid="drawer-grid-tabs"
               >
-                <TabsList className="flex flex-wrap h-auto gap-1">
+                <TabsList className={cn(PILL_TABS_LIST, 'flex flex-wrap h-auto gap-1')}>
                   {(Object.keys(GRID_SHORT_LABELS) as GridType[]).map((gt) => (
                     <TabsTrigger
                       key={gt}
                       value={gt}
                       aria-label={GRID_TYPE_LABELS[gt]}
-                      className="text-xs px-3"
+                      className={cn(PILL_TABS_TRIGGER, 'text-xs px-3')}
                     >
                       {GRID_SHORT_LABELS[gt]}
                     </TabsTrigger>
