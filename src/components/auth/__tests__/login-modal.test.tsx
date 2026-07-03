@@ -85,4 +85,10 @@ describe('LoginModal', () => {
     fireEvent.click(screen.getByRole('button', { name: /Discord/i }))
     expect(mockSignIn).toHaveBeenCalledWith('discord')
   })
+
+  it('consent 文字的服務條款／隱私權政策連結指向 /terms、/privacy', () => {
+    renderModal()
+    expect(screen.getByRole('link', { name: '服務條款' })).toHaveAttribute('href', '/terms')
+    expect(screen.getByRole('link', { name: '隱私權政策' })).toHaveAttribute('href', '/privacy')
+  })
 })

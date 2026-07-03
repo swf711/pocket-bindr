@@ -55,8 +55,8 @@
     "loginWithDiscord": "Sign in with Discord",
     "showPassword": "Show password",
     "hidePassword": "Hide password",
-    "consentRegister": "By signing up, you agree to PocketBindr's Terms of Service and Privacy Policy.",
-    "consentLogin": "By continuing, you agree to PocketBindr's Terms of Service and Privacy Policy.",
+    "consentRegister": "By signing up, you agree to PocketBindr's <terms>Terms of Service</terms> and <privacy>Privacy Policy</privacy>.",
+    "consentLogin": "By continuing, you agree to PocketBindr's <terms>Terms of Service</terms> and <privacy>Privacy Policy</privacy>.",
     "strength": {
       "label": "Password strength: {level}",
       "0": "Too short",

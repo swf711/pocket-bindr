@@ -55,8 +55,8 @@
     "loginWithDiscord": "Discord でログイン",
     "showPassword": "パスワードを表示",
     "hidePassword": "パスワードを非表示",
-    "consentRegister": "登録することで、PocketBindr の利用規約およびプライバシーポリシーに同意したものとみなされます。",
-    "consentLogin": "続行することで、PocketBindr の利用規約およびプライバシーポリシーに同意したものとみなされます。",
+    "consentRegister": "登録することで、PocketBindr の<terms>利用規約</terms>および<privacy>プライバシーポリシー</privacy>に同意したものとみなされます。",
+    "consentLogin": "続行することで、PocketBindr の<terms>利用規約</terms>および<privacy>プライバシーポリシー</privacy>に同意したものとみなされます。",
     "strength": {
       "label": "パスワード強度：{level}",
       "0": "短すぎます",

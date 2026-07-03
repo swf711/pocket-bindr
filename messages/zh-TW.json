@@ -55,8 +55,8 @@
     "loginWithDiscord": "以 Discord 登入",
     "showPassword": "顯示密碼",
     "hidePassword": "隱藏密碼",
-    "consentRegister": "註冊即表示您同意 PocketBindr 的服務條款與隱私權政策。",
-    "consentLogin": "繼續即表示您同意 PocketBindr 的服務條款與隱私權政策。",
+    "consentRegister": "註冊即表示您同意 PocketBindr 的<terms>服務條款</terms>與<privacy>隱私權政策</privacy>。",
+    "consentLogin": "繼續即表示您同意 PocketBindr 的<terms>服務條款</terms>與<privacy>隱私權政策</privacy>。",
     "strength": {
       "label": "密碼強度：{level}",
       "0": "太短",

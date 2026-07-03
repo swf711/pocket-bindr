@@ -17,6 +17,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { PasswordInput } from '@/components/auth/password-input'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { consentChunks } from '@/components/auth/consent-chunks'
 
 interface LoginFormProps {
   oauthError?: string
@@ -146,6 +147,9 @@ export function LoginForm({ oauthError, accountDeleted, passwordReset }: LoginFo
           </form>
         </CardContent>
       </Card>
+      <FieldDescription className="px-6 text-center">
+        {t.rich('consentLogin', consentChunks)}
+      </FieldDescription>
     </div>
   )
 }

@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { PasswordInput } from '@/components/auth/password-input'
+import { consentChunks } from '@/components/auth/consent-chunks'
 import Link from 'next/link'
 
 interface LoginModalProps {
@@ -119,6 +120,10 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
                 <Link href="/register" className="text-primary underline-offset-4 hover:underline">
                   {t('login.registerLink')}
                 </Link>
+              </FieldDescription>
+
+              <FieldDescription className="text-center">
+                {t.rich('consentLogin', consentChunks)}
               </FieldDescription>
           </FieldGroup>
         </form>

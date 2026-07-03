@@ -18,6 +18,7 @@ import { Input } from '@/components/ui/input'
 import { PasswordInput } from '@/components/auth/password-input'
 import { Progress } from '@/components/ui/progress'
 import { getPasswordStrength, isPasswordValid, MIN_PASSWORD_LENGTH } from '@/lib/password-policy'
+import { consentChunks } from '@/components/auth/consent-chunks'
 
 export function RegisterForm() {
   const router = useRouter()
@@ -181,8 +182,7 @@ export function RegisterForm() {
         </CardContent>
       </Card>
       <FieldDescription className="px-6 text-center">
-        By clicking continue, you agree to our <a href="#">Terms of Service</a>{" "}
-        and <a href="#">Privacy Policy</a>.
+        {t.rich('consentRegister', consentChunks)}
       </FieldDescription>
     </div>
   )
