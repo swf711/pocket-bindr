@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/select'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { ChevronLeft, ChevronRight, BookCheck, Bookmark, X } from 'lucide-react'
 import { CardWithCollectionStatus } from '@/types/card'
 import { getCardImageUrl } from '@/lib/get-card-image-url'
@@ -123,7 +124,7 @@ export function CardDetailDrawer({ card, open, onClose, onAddToBinder, onLoginSu
       data-testid="modal-nav-prev"
       variant="outline"
       size="icon-lg"
-      className="rounded-full md:scale-130 md:hover:scale-140 active:scale-90 md:active:scale-130 transition-transform"
+      className="rounded-full bg-background/80 md:scale-130 md:hover:scale-140 active:scale-90 md:active:scale-130 transition-transform"
       disabled={atStart}
       onClick={() => onNavigate(currentIndex! - 1)}
       tooltip={t('prev')}
@@ -137,7 +138,7 @@ export function CardDetailDrawer({ card, open, onClose, onAddToBinder, onLoginSu
       data-testid="modal-nav-next"
       variant="outline"
       size="icon-lg"
-      className="rounded-full md:scale-130 md:hover:scale-140 active:scale-90 md:active:scale-130 transition-transform"
+      className="rounded-full bg-background/80 md:scale-130 md:hover:scale-140 active:scale-90 md:active:scale-130 transition-transform"
       disabled={atEnd}
       onClick={() => onNavigate(currentIndex! + 1)}
       tooltip={t('next')}
@@ -147,61 +148,69 @@ export function CardDetailDrawer({ card, open, onClose, onAddToBinder, onLoginSu
   )
 
   const infoBlock = (
-    <div className="flex flex-col gap-4">
-      <div className="grid grid-cols-[auto_1fr] items-center gap-x-4 gap-y-2 text-sm">
-        <span className="text-muted-foreground">{t('series')}</span>
-        <span>
-          {card.set.name}{' '}
-          <span className="text-muted-foreground">{card.set.externalId}</span>
-        </span>
+    <div className="grid grid-cols-[auto_1fr] items-center gap-x-4 gap-y-3 text-sm">
+      <span className="text-xs text-muted-foreground">{t('series')}</span>
+      <span>
+        {card.set.name}{' '}
+        <span className="text-xs text-muted-foreground">{card.set.externalId}</span>
+      </span>
 
-        <span className="text-muted-foreground">{t('cardNumber')}</span>
-        <span>{card.cardNumber}</span>
+      <span className="text-xs text-muted-foreground">{t('cardNumber')}</span>
+      <span>{card.cardNumber}</span>
 
-        {card.set.releaseDate && (
-          <>
-            <span className="text-muted-foreground">{t('releaseDate')}</span>
-            <span>{card.set.releaseDate.slice(0, 10)}</span>
-          </>
-        )}
+      {card.set.releaseDate && (
+        <>
+          <span className="text-xs text-muted-foreground">{t('releaseDate')}</span>
+          <span>{card.set.releaseDate.slice(0, 10)}</span>
+        </>
+      )}
 
-        {card.rarity && (
-          <>
-            <span className="text-muted-foreground">{t('rarity')}</span>
-            <span><Badge variant="outline">{card.rarity}</Badge></span>
-          </>
-        )}
+      {card.rarity && (
+        <>
+          <span className="text-xs text-muted-foreground">{t('rarity')}</span>
+          <span><Badge className="bg-tertiary-container text-on-tertiary-container">{card.rarity}</Badge></span>
+        </>
+      )}
 
-        {card.hp != null && (
-          <>
-            <span className="text-muted-foreground">HP</span>
-            <span><Badge variant="outline">{card.hp}</Badge></span>
-          </>
-        )}
+      {card.hp != null && (
+        <>
+          <span className="text-xs text-muted-foreground">HP</span>
+          <span><Badge className="bg-tertiary-container text-on-tertiary-container"> {card.hp} </Badge></span>
+        </>
+      )}
 
-        {card.types.length > 0 && (
-          <>
-            <span className="text-muted-foreground">{t('types')}</span>
-            <span className="flex flex-wrap gap-1">
-              {card.types.map(t => <Badge key={t} variant="secondary">{t}</Badge>)}
-            </span>
-          </>
-        )}
-      </div>
+      {card.types.length > 0 && (
+        <>
+          <span className="text-xs text-muted-foreground">{t('types')}</span>
+          <span className="flex flex-wrap gap-1">
+            {card.types.map(t => <Badge key={t} className="bg-tertiary-container text-on-tertiary-container">{t}</Badge>)}
+          </span>
+        </>
+      )}
     </div>
   )
 
   // 收藏狀態：DrawerHeader 內僅以 icon + 數字呈現
   const statusSummary = (
-    <div className="flex items-center gap-3 text-sm text-muted-foreground">
-      <span className="flex items-center gap-1">
-        <BookCheck className="size-4" />
-        <span className="font-medium text-foreground" data-testid="modal-owned-count">{card.collectionStatus.owned ?? 0}</span>
-      </span>
-      <span className="flex items-center gap-1">
-        <Bookmark className="size-4" />
-        <span className="font-medium text-foreground" data-testid="modal-wanted-count">{card.collectionStatus.wanted ?? 0}</span>
-      </span>
+    <div className="flex items-center gap-3 text-sm">
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span className="flex items-center gap-1" aria-label={t('owned')}>
+            <BookCheck className="size-4" />
+            <span className="font-medium text-foreground" data-testid="modal-owned-count">{card.collectionStatus.owned ?? 0}</span>
+          </span>
+        </TooltipTrigger>
+        <TooltipContent><p>{t('owned')}</p></TooltipContent>
+      </Tooltip>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span className="flex items-center gap-1" aria-label={t('wanted')}>
+            <Bookmark className="size-4" />
+            <span className="font-medium text-foreground" data-testid="modal-wanted-count">{card.collectionStatus.wanted ?? 0}</span>
+          </span>
+        </TooltipTrigger>
+        <TooltipContent><p>{t('wanted')}</p></TooltipContent>
+      </Tooltip>
     </div>
   )
 
@@ -228,7 +237,7 @@ export function CardDetailDrawer({ card, open, onClose, onAddToBinder, onLoginSu
                 {card.name}
               </DrawerTitle>
               <DrawerClose>
-                  <X className="size-5" />
+                <X className="size-5" />
               </DrawerClose>
             </div>
           )}
