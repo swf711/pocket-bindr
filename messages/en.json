@@ -231,6 +231,7 @@
     },
     "settingsDrawer": {
       "dragPage": "Drag page {page}",
+      "pageLabel": "Page {page}",
       "deletePage": "Delete page {page}",
       "deleteThisPage": "Delete this page",
       "deletePageConfirmTitle": "Delete page {page}?",

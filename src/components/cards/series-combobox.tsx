@@ -51,7 +51,7 @@ export function SeriesCombobox({ groups, selectedSetId, onSetChange }: SeriesCom
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-full justify-between font-normal sm:w-64"
+          className="w-full justify-between border-input bg-transparent font-normal hover:bg-transparent hover:text-foreground data-[state=open]:border-ring data-[state=open]:ring-[3px] data-[state=open]:ring-ring/50 sm:w-64 dark:hover:bg-input/30"
         >
           <span className="truncate">
             {selectedSet ? (

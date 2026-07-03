@@ -231,6 +231,7 @@
     },
     "settingsDrawer": {
       "dragPage": "{page} ページ目をドラッグ",
+      "pageLabel": "{page} ページ目",
       "deletePage": "{page} ページ目を削除",
       "deleteThisPage": "このページを削除",
       "deletePageConfirmTitle": "{page} ページ目を削除しますか？",

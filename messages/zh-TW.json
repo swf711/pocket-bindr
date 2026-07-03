@@ -231,6 +231,7 @@
     },
     "settingsDrawer": {
       "dragPage": "拖拉第 {page} 頁",
+      "pageLabel": "第 {page} 頁",
       "deletePage": "刪除第 {page} 頁",
       "deleteThisPage": "刪除此頁",
       "deletePageConfirmTitle": "刪除第 {page} 頁？",
