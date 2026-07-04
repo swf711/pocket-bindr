@@ -249,7 +249,7 @@ export function BinderMobileView({
                 />
               )}
               {content.type === 'page' && (
-                <div className="p-4 dark bg-background text-foreground">
+                <div className="p-4 dark bg-surface-container text-foreground">
                   {/* 固定佔位高度 = 文字自然高度 × counterScale，避免 transform 不影響 layout 導致視覺溢出 */}
                   <div style={{ height: PAGE_LABEL_HEIGHT * counterScale, overflow: 'visible' }}>
                     <p
@@ -311,7 +311,7 @@ export function BinderMobileView({
           {isDragging && pageIndex > 1 && (
             <div
               style={{ top: HEADER_HEIGHT, height: hintHeight ?? '100%' }}
-              className="dark absolute left-0 w-12 text-primary/80 flex flex-col items-center justify-center gap-1 bg-background/50 border-2 border-dashed border-primary/80 rounded-l-lg pointer-events-none z-10"
+              className="dark absolute left-0 w-12 text-primary flex flex-col items-center justify-center gap-1 bg-surface-container/60 border-2 border-dashed border-primary rounded-l-lg pointer-events-none z-10"
               data-testid="mobile-drag-hint-prev"
             >
               <ChevronLeft />
@@ -326,7 +326,7 @@ export function BinderMobileView({
           {isDragging && hasNext && (
             <div
               style={{ top: HEADER_HEIGHT, height: hintHeight ?? '100%' }}
-              className="dark absolute right-0 w-12 text-primary/80 flex flex-col items-center justify-center gap-1 bg-background/50 border-2 border-dashed border-primary/80 rounded-r-lg pointer-events-none z-10"
+              className="dark absolute right-0 w-12 text-primary flex flex-col items-center justify-center gap-1 bg-surface-container/60 border-2 border-dashed border-primary rounded-r-lg pointer-events-none z-10"
               data-testid="mobile-drag-hint-next"
             >
               <ChevronRight />

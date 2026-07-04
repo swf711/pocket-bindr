@@ -113,7 +113,7 @@ function SpreadPanelContent({
     return <div className="w-full h-full rounded-lg" style={{ backgroundColor: coverColor }} />
   }
   return (
-    <div className="w-full p-4 dark bg-background text-foreground">
+    <div className="w-full p-4 dark bg-surface-container text-foreground">
       {/* 固定佔位高度 = 文字自然高度 × counterScale，避免 transform 不影響 layout 導致視覺溢出 */}
       <div style={{ height: PAGE_LABEL_HEIGHT * counterScale, overflow: 'visible' }}>
         <p
@@ -418,7 +418,7 @@ export function BinderSpreadView({
               {/* Drag hint panels — shown only while dragging */}
               {isDragging && hasPrev && (
                 <div
-                  className="dark absolute left-0 top-0 bottom-0 text-primary/80 w-16 flex flex-col items-center justify-center gap-1 bg-background/50 border-2 border-dashed border-primary/80 rounded-l-lg pointer-events-none"
+                  className="dark absolute left-0 top-0 bottom-0 text-primary w-16 flex flex-col items-center justify-center gap-1 bg-surface-container/60 border-2 border-dashed border-primary rounded-l-lg pointer-events-none"
                   data-testid="drag-hint-prev"
                 >
                   <div style={{ transform: `scale(${counterScale})`, transformOrigin: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
@@ -432,7 +432,7 @@ export function BinderSpreadView({
               )}
               {isDragging && hasNext && (
                 <div
-                  className="dark absolute right-0 top-0 bottom-0 text-primary/80 w-16 flex flex-col items-center justify-center gap-1 bg-background/50 border-2 border-dashed border-primary/80 rounded-r-lg pointer-events-none"
+                  className="dark absolute right-0 top-0 bottom-0 text-primary w-16 flex flex-col items-center justify-center gap-1 bg-surface-container/60 border-2 border-dashed border-primary rounded-r-lg pointer-events-none"
                   data-testid="drag-hint-next"
                 >
                   <div style={{ transform: `scale(${counterScale})`, transformOrigin: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
