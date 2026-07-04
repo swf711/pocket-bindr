@@ -2,6 +2,8 @@ import { defineConfig } from '@playwright/test'
 
 export default defineConfig({
   testDir: './e2e',
+  // 套件啟動前冪等預種所有 E2E 密碼帳號（fresh DB / CI 自舉，繞過 register 限流）。
+  globalSetup: './e2e/global-setup.ts',
   // Specs share a single dev server + DB; several reuse test accounts/cards.
   // Serial execution avoids cross-spec race conditions (see CLAUDE.md / TECH_DEBT).
   workers: 1,
