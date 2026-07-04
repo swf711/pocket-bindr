@@ -20,6 +20,7 @@ export function BinderListSkeleton() {
         {Array.from({ length: 3 }).map((_, i) => (
           <Skeleton key={i} className="aspect-2.5/3.5 w-full rounded-r-lg" />
         ))}
+        <div className="aspect-2.5/3.5 w-full rounded-r-lg border border-dashed border-border" />
       </div>
     </div>
   )
