@@ -32,7 +32,7 @@ export function EmptySlotCard({
     >
       {onAddCard && !isDragging && (
         <div className="absolute inset-0 flex items-center justify-center opacity-20 group-hover:opacity-70 transition-opacity pointer-events-none">
-          <Plus className="h-6 w-6 text-foreground" />
+          <Plus className="size-6 text-foreground" />
         </div>
       )}
     </div>

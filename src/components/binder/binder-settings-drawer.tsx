@@ -112,7 +112,7 @@ function SortablePageRow({
           aria-label={t('dragPage', { page })}
           data-testid={`page-drag-handle-${page}`}
         >
-          <GripVertical className="h-4 w-4" />
+          <GripVertical className="size-4" />
         </button>
         <span className="text-sm">{t('pageLabel', { page })}</span>
       </div>
@@ -128,7 +128,7 @@ function SortablePageRow({
                 aria-label={t('deletePage', { page })}
                 data-testid={`page-delete-btn-${page}`}
               >
-                <Trash2 className="h-4 w-4" />
+                <Trash2 className="size-4" />
               </Button>
             </AlertDialogTrigger>
           </TooltipTrigger>
@@ -329,7 +329,7 @@ export function BinderSettingsDrawer({
         <TooltipTrigger asChild>
           <DrawerTrigger asChild>
             <Button variant="outline" size="icon-sm" data-testid="binder-settings-btn" aria-label={t('binderSettings')}>
-              <Settings className="h-5 w-5" />
+              <Settings className="size-5" />
             </Button>
           </DrawerTrigger>
         </TooltipTrigger>
@@ -409,7 +409,7 @@ export function BinderSettingsDrawer({
           {/* 公開分享 */}
           <div className="flex flex-col gap-3">
             <p className="text-sm font-medium flex items-center gap-1.5">
-              <Share2 className="h-4 w-4" />
+              <Share2 className="size-4" />
               {t('publicShare')}
             </p>
             {localShareToken ? (

@@ -83,7 +83,7 @@ export function ShareBinderDialog({
           }
         >
           <DialogTitle className="flex items-center gap-2">
-            <Share2 className="h-4 w-4" />
+            <Share2 className="size-4" />
             {t('title')}
           </DialogTitle>
         </DialogHeaderClose>
@@ -106,7 +106,7 @@ export function ShareBinderDialog({
                   aria-label={t('copyLink')}
                   data-testid="copy-share-url-btn"
                 >
-                  <Copy className="h-4 w-4" />
+                  <Copy className="size-4" />
                 </Button>
               </div>
             </div>

@@ -117,7 +117,7 @@ export function BinderCoverCard({ binder, onEdit, onDelete, onShare, isTapped }:
                 data-testid="enter-binder-btn"
                 aria-label={t('enterBinderAriaLabel', { name: binder.name })}
               >
-                <ArrowRight className="h-3 w-3" />
+                <ArrowRight className="size-3" />
                 {t('enterBinder')}
               </Link>
             </Button>
@@ -135,7 +135,7 @@ export function BinderCoverCard({ binder, onEdit, onDelete, onShare, isTapped }:
                       data-testid="binder-more-btn"
                       aria-label={t('moreActions')}
                     >
-                      <EllipsisVertical className="h-3 w-3" />
+                      <EllipsisVertical className="size-3" />
                     </Button>
                   </DropdownMenuTrigger>
                 </TooltipTrigger>
@@ -148,14 +148,14 @@ export function BinderCoverCard({ binder, onEdit, onDelete, onShare, isTapped }:
                   onClick={() => onEdit(binder)}
                   data-testid="edit-binder-btn"
                 >
-                  <Pencil className="h-3 w-3 mr-2" />
+                  <Pencil className="size-3 mr-2" />
                   {t('edit')}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => onShare(binder)}
                   data-testid="share-binder-btn"
                 >
-                  <Share2 className="h-3 w-3 mr-2" />
+                  <Share2 className="size-3 mr-2" />
                   {t('share')}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
@@ -164,7 +164,7 @@ export function BinderCoverCard({ binder, onEdit, onDelete, onShare, isTapped }:
                   data-testid="delete-binder-btn"
                   className="text-destructive focus:text-destructive"
                 >
-                  <Trash2 className="h-3 w-3 mr-2" />
+                  <Trash2 className="size-3 mr-2" />
                   {t('delete')}
                 </DropdownMenuItem>
               </DropdownMenuContent>

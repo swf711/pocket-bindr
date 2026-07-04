@@ -210,7 +210,7 @@ export function BinderMobileView({
               <div className="flex items-center gap-1">
                 <Button variant="outline" size="sm" className="mr-2" asChild>
                   <Link href="/binders" aria-label={t('backToList')} data-testid="back-to-binders-mobile">
-                    <ChevronLeft className="h-4 w-4" />
+                    <ChevronLeft className="size-4" />
                     <span>{t('back')}</span>
                   </Link>
                 </Button>

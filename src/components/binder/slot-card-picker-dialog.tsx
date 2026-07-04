@@ -225,7 +225,7 @@ export function SlotCardPickerDialog({ open, onClose, onConfirm }: SlotCardPicke
                 data-testid="slot-card-picker-back"
                 onClick={() => setSelectedCard(null)}
               >
-                <ArrowLeft className="h-4 w-4" /> {t('backToSelectCard')}
+                <ArrowLeft className="size-4" /> {t('backToSelectCard')}
               </Button>
 
               <div className="flex flex-col items-center gap-3">

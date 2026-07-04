@@ -64,7 +64,7 @@ export async function WhySection() {
               target="_blank"
               rel="noopener noreferrer"
             >
-              <LinkedInIcon className="mr-2 h-4 w-4" />
+              <LinkedInIcon className="mr-2 size-4" />
               LinkedIn
             </Link>
           </Button>
@@ -74,13 +74,13 @@ export async function WhySection() {
               target="_blank"
               rel="noopener noreferrer"
             >
-              <GitHubIcon className="mr-2 h-4 w-4" />
+              <GitHubIcon className="mr-2 size-4" />
               GitHub
             </Link>
           </Button>
           <Button asChild variant="secondary" className="h-14 has-[>svg]:px-6 rounded-3xl">
             <Link href="mailto:your-email@example.com">
-              <Mail className="mr-2 h-4 w-4" />
+              <Mail className="mr-2 size-4" />
               Email
             </Link>
           </Button>
