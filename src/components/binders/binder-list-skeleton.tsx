@@ -3,11 +3,11 @@ import { cardGridClassName } from '@/components/cards/card-grid'
 
 /**
  * 卡冊列表載入骨架，對齊 BinderListClient 版面
- * （max-w-7xl 容器 → 標題列 → 封面卡牌 grid，封面為 aspect-2.5/3.5）。
+ * （寬度/邊距由 PageContainer 提供 → 標題列 → 封面卡牌 grid，封面為 aspect-2.5/3.5）。
  */
 export function BinderListSkeleton() {
   return (
-    <div data-testid="binder-list-skeleton" className="max-w-7xl mx-auto px-4 py-8 space-y-6">
+    <div data-testid="binder-list-skeleton" className="space-y-6">
       <div className="flex items-center justify-between">
         <Skeleton className="h-8 w-32" />
         <div className="flex items-center gap-3">

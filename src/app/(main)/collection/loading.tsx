@@ -5,7 +5,7 @@ import { cardGridClassName } from '@/components/cards/card-grid'
 export default function Loading() {
   return (
     <PageContainer>
-      <div className="max-w-7xl mx-auto px-4 py-8">
+      <div>
         <Skeleton className="h-8 w-32 mb-6" />
         <Skeleton className="h-10 w-full mb-3" />
         <Skeleton className="h-10 w-64 mb-6" />

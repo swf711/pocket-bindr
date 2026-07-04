@@ -249,7 +249,7 @@ export function BinderMobileView({
                 />
               )}
               {content.type === 'page' && (
-                <div className="p-4 dark bg-background">
+                <div className="p-4 dark bg-background text-foreground">
                   {/* 固定佔位高度 = 文字自然高度 × counterScale，避免 transform 不影響 layout 導致視覺溢出 */}
                   <div style={{ height: PAGE_LABEL_HEIGHT * counterScale, overflow: 'visible' }}>
                     <p

@@ -189,7 +189,7 @@ function PublicPanelContent({
 
   // page
   return (
-    <div className="w-full p-4 dark bg-background">
+    <div className="w-full p-4 dark bg-background text-foreground">
       <div style={{ height: PAGE_LABEL_HEIGHT * counterScale, overflow: 'visible' }}>
         <p
           className="text-xs text-muted-foreground text-center"

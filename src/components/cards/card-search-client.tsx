@@ -147,7 +147,7 @@ export function CardSearchClient({ initialParams }: CardSearchClientProps) {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
+    <div>
       <h1 className="text-2xl font-bold mb-6">{t('title')}</h1>
 
       <div className="space-y-6">
