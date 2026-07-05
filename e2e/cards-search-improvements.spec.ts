@@ -267,4 +267,52 @@ test.describe('PTCG set code + 卡號搜尋', () => {
       page.getByTestId('card-grid').or(page.getByText('沒有找到卡牌'))
     ).toBeVisible({ timeout: 10000 })
   })
+
+  test('PTCG JA 輸入 sv4a 036/190（空格+斜線，一般化解析）不出現錯誤', async ({ page }) => {
+    await page.goto('/cards?game=PTCG&language=JA')
+    await page.getByTestId('card-grid').waitFor({ timeout: 10000 })
+
+    await page.getByTestId('search-input').fill('sv4a 036/190')
+    await expect(page).toHaveURL(/q=sv4a\+036%2F190/, { timeout: 10000 })
+
+    await expect(
+      page.getByTestId('card-grid').or(page.getByText('沒有找到卡牌'))
+    ).toBeVisible({ timeout: 10000 })
+  })
+
+  test('OPCG 輸入 op11 072（空格分隔）不出現錯誤', async ({ page }) => {
+    await page.goto('/cards?game=OPCG')
+    await page.getByTestId('card-grid').waitFor({ timeout: 10000 })
+
+    await page.getByTestId('search-input').fill('op11 072')
+    await expect(page).toHaveURL(/q=op11\+072/, { timeout: 10000 })
+
+    await expect(
+      page.getByTestId('card-grid').or(page.getByText('沒有找到卡牌'))
+    ).toBeVisible({ timeout: 10000 })
+  })
+
+  test('PTCG EN 輸入 036/190（斜線單獨形，無 set code）不出現錯誤', async ({ page }) => {
+    await page.goto('/cards?game=PTCG&language=EN')
+    await page.getByTestId('card-grid').waitFor({ timeout: 10000 })
+
+    await page.getByTestId('search-input').fill('036/190')
+    await expect(page).toHaveURL(/q=036%2F190/, { timeout: 10000 })
+
+    await expect(
+      page.getByTestId('card-grid').or(page.getByText('沒有找到卡牌'))
+    ).toBeVisible({ timeout: 10000 })
+  })
+
+  test('PTCG 輸入 pikachu ex（多詞卡名）仍正常搜尋（不誤觸空格型號解析）', async ({ page }) => {
+    await page.goto('/cards?game=PTCG')
+    await page.getByTestId('card-grid').waitFor({ timeout: 10000 })
+
+    await page.getByTestId('search-input').fill('pikachu ex')
+    await expect(page).toHaveURL(/q=pikachu\+ex/, { timeout: 10000 })
+
+    await expect(
+      page.getByTestId('card-grid').or(page.getByText('沒有找到卡牌'))
+    ).toBeVisible({ timeout: 10000 })
+  })
 })
