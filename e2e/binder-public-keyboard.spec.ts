@@ -29,7 +29,9 @@ test.describe('公開分享頁方向鍵翻頁', () => {
       // 全程不登入，直接以訪客身份訪問公開頁。
       await page.goto(`/b/${token}`)
       const spreadView = page.getByTestId('binder-public-spread-view')
-      const pageLabel = spreadView.getByText(/^\d+ \/ \d+$/)
+      // 桌面/行動版翻頁標籤同時存在於 DOM（僅 CSS hidden 切換可見度，見 binder-public-view.tsx），
+      // 需 filter 可見元素避免 strict-mode 命中 2 個
+      const pageLabel = spreadView.getByText(/^\d+ \/ \d+$/).filter({ visible: true })
       await expect(pageLabel).toHaveText('1 / 3')
 
       await page.keyboard.press('ArrowRight')

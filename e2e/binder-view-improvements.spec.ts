@@ -21,7 +21,7 @@ test.describe('卡冊詳情頁改善', () => {
     }
   })
 
-  test('內頁面板背景為黑色', async ({ page }) => {
+  test('內頁面板固定為 M3 dark surface-container（不受淺色模式影響）', async ({ page }) => {
     await loginAs(page, USER)
     const userId = await getUserIdByEmail(USER.email)
     const { binder } = await createMultiPageBinder(userId, { pageCount: 1 })
@@ -29,10 +29,10 @@ test.describe('卡冊詳情頁改善', () => {
       await page.goto(`/binders/${binder.id}`)
       const spreadView = page.getByTestId('spread-drag-container')
       await expect(spreadView).toBeVisible()
-      // 內頁 panel 使用 bg-black class（外層 wrapper 套用 coverColor）
-      const pagePanel = spreadView.locator('.bg-black').first()
-      const bg = await pagePanel.evaluate((el) => getComputedStyle(el).backgroundColor)
-      expect(bg).toBe('rgb(0, 0, 0)')
+      // 內頁 panel 套 dark + bg-surface-container class（外層 wrapper 套用 coverColor），
+      // 強制暗色 surface 不隨全站淺色模式切換（981eeb3 M3 dark 模式背景改色後的現行實作）
+      const pagePanel = spreadView.locator('.dark.bg-surface-container').first()
+      await expect(pagePanel).toBeVisible()
     } finally {
       await cleanupBinder(binder.id)
     }
