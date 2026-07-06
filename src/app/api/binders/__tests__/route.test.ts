@@ -372,6 +372,24 @@ describe('POST /api/binders - description 驗證', () => {
     const res = await POST(req)
     expect(res.status).toBe(400)
   })
+
+  /**
+   * 迴歸測試：CreateBinderDialog 的 zod descriptionSchema 在前端已把「未填描述」
+   * transform 成 null 才送出（見 src/lib/schemas/binder.ts descriptionSchema），
+   * 而非省略欄位或空字串。route 必須把 null 視為「無描述」而非非法輸入，
+   * 否則所有未填描述的建立卡冊請求都會被誤判 400（RHF+zod 重構曾一度造成此迴歸）。
+   */
+  it('description 為 null 時視為無描述，建立成功', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'user-1' } })
+    vi.mocked(prisma.binder.count).mockResolvedValue(0)
+    vi.mocked(prisma.binder.create).mockResolvedValue({ ...mockBinder, description: null } as never)
+    const req = new NextRequest('http://localhost/api/binders', {
+      method: 'POST',
+      body: JSON.stringify({ name: '測試', gridType: 'grid_3x3', description: null }),
+    })
+    const res = await POST(req)
+    expect(res.status).toBe(201)
+  })
 })
 
 describe('PATCH /api/binders/[id] - description 更新', () => {

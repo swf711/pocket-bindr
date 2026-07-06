@@ -1,7 +1,6 @@
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-
-const USERNAME_REGEX = /^[a-zA-Z0-9_-]{3,20}$/
+import { usernameSchema } from '@/lib/schemas/user'
 
 export async function PATCH(request: Request) {
   try {
@@ -13,12 +12,13 @@ export async function PATCH(request: Request) {
     const body = await request.json()
     const { username } = body as { username: unknown }
 
-    if (typeof username !== 'string' || !USERNAME_REGEX.test(username)) {
+    const parsed = usernameSchema.safeParse(username)
+    if (!parsed.success) {
       return Response.json({ error: 'INVALID_USERNAME' }, { status: 400 })
     }
 
     const existing = await prisma.user.findUnique({
-      where: { username },
+      where: { username: parsed.data },
       select: { id: true },
     })
     if (existing && existing.id !== session.user.id) {
@@ -27,7 +27,7 @@ export async function PATCH(request: Request) {
 
     await prisma.user.update({
       where: { id: session.user.id },
-      data: { username },
+      data: { username: parsed.data },
     })
 
     return Response.json({ success: true })

@@ -3,16 +3,8 @@ import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { DEFAULT_COVER_COLOR } from '@/lib/cover-colors'
 import { MAX_BINDERS_PER_USER } from '@/lib/binder-limits'
-
-const VALID_GRID_TYPES = new Set<GridType>([
-  'grid_1x2',
-  'grid_2x2',
-  'grid_3x3',
-  'grid_4x3',
-  'grid_4x4',
-])
-
-const HEX_COLOR_RE = /^#[0-9A-Fa-f]{6}$/
+import { GRID_TYPE_VALUES, hexColorSchema } from '@/lib/schemas/common'
+import { binderCreateSchema } from '@/lib/schemas/binder'
 
 export async function GET() {
   const session = await auth()
@@ -46,16 +38,17 @@ export async function POST(request: Request) {
 
   const { name, gridType, coverColor, description } = body as Record<string, unknown>
 
-  if (typeof name !== 'string' || name.trim().length === 0 || name.trim().length > 50) {
+  if (!binderCreateSchema.shape.name.safeParse(name).success) {
     return Response.json(
       { error: 'name is required and must be a non-empty string of at most 50 characters' },
       { status: 400 },
     )
   }
+  const trimmedName = (name as string).trim()
 
-  if (!VALID_GRID_TYPES.has(gridType as GridType)) {
+  if (!binderCreateSchema.shape.gridType.safeParse(gridType).success) {
     return Response.json(
-      { error: `gridType must be one of: ${[...VALID_GRID_TYPES].join(', ')}` },
+      { error: `gridType must be one of: ${GRID_TYPE_VALUES.join(', ')}` },
       { status: 400 },
     )
   }
@@ -69,11 +62,18 @@ export async function POST(request: Request) {
   }
 
   const resolvedColor = coverColor === undefined ? DEFAULT_COVER_COLOR : coverColor
-  if (typeof resolvedColor !== 'string' || !HEX_COLOR_RE.test(resolvedColor)) {
+  if (!hexColorSchema.safeParse(resolvedColor).success) {
     return Response.json({ error: 'coverColor must be a valid hex color (e.g. #4A5568)' }, { status: 400 })
   }
 
-  if (description !== undefined && (typeof description !== 'string' || description.trim().length > 150)) {
+  // description 的用戶端 zod schema（見 src/lib/schemas/binder.ts descriptionSchema）在表單送出前
+  // 已把空字串 transform 成 null（RHF 送出的是 resolver 的「輸出」型別，非原始輸入型別），
+  // 故這裡的 shape.description（驗證原始輸入用）需額外放行 null，否則「未填描述」會被誤判成不合法輸入而 400。
+  if (
+    description !== undefined &&
+    description !== null &&
+    !binderCreateSchema.shape.description.safeParse(description).success
+  ) {
     return Response.json({ error: 'description must be a string of at most 150 characters' }, { status: 400 })
   }
 
@@ -86,9 +86,9 @@ export async function POST(request: Request) {
   const binder = await prisma.binder.create({
     data: {
       userId,
-      name: name.trim(),
+      name: trimmedName,
       gridType: gridType as GridType,
-      coverColor: resolvedColor,
+      coverColor: resolvedColor as string,
       description: typeof description === 'string' ? description.trim() || null : null,
       sortOrder: nextSortOrder,
     },

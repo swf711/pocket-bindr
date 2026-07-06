@@ -10,7 +10,7 @@ export default async function BinderNotFound() {
         <h1 className="text-2xl font-bold">{t('title')}</h1>
         <p className="text-muted-foreground">{t('description')}</p>
       </div>
-      <Button asChild variant="outline">
+      <Button asChild size="lg">
         <Link href="/">{t('backHome')}</Link>
       </Button>
     </div>

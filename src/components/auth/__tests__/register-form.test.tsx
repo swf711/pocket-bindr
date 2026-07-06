@@ -78,7 +78,7 @@ describe('RegisterForm', () => {
     fillForm({ password: 'short', confirm: 'short' })
     fireEvent.click(screen.getByRole('button', { name: '註冊' }))
     await waitFor(() => {
-      expect(screen.getByTestId('register-error')).toHaveTextContent('密碼至少需 8 個字元')
+      expect(screen.getByTestId('register-error')).toHaveTextContent('密碼至少需要 8 個字元')
     })
     expect(fetch).not.toHaveBeenCalled()
   })

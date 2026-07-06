@@ -4,10 +4,9 @@ import { prisma } from '@/lib/prisma'
 import { GRID_TYPE_SLOTS } from '@/types/binder'
 import { resolveCanonicalCardId, deriveDisplayCardId } from '@/lib/resolve-canonical-card'
 import { revalidatePublicBinder } from '@/lib/binder-cache'
+import { addCardsSchema } from '@/lib/schemas/binder'
 
 type RouteContext = { params: Promise<{ id: string }> }
-
-const VALID_STATUSES = new Set<CardStatus>(['owned', 'wanted'])
 
 export async function POST(request: Request, context: RouteContext) {
   const session = await auth()
@@ -39,18 +38,19 @@ export async function POST(request: Request, context: RouteContext) {
     return Response.json({ error: 'Canonical card not found' }, { status: 404 })
   }
 
-  if (typeof quantity !== 'number' || !Number.isInteger(quantity) || quantity < 1 || quantity > 99) {
+  if (!addCardsSchema.shape.quantity.safeParse(quantity).success) {
     return Response.json({ error: 'quantity must be an integer between 1 and 99' }, { status: 400 })
   }
 
-  if (!VALID_STATUSES.has(status as CardStatus)) {
+  const statusResult = addCardsSchema.shape.status.safeParse(status)
+  if (!statusResult.success) {
     return Response.json({ error: "status must be 'owned' or 'wanted'" }, { status: 400 })
   }
 
   const typedCardId = resolved.resolvedCardId
   // 保留原始顯示語言（OPCG ZH_TW alias）；純 canonical 加入則 null
   const displayCardId = deriveDisplayCardId(cardId as string, typedCardId)
-  const typedStatus = status as CardStatus
+  const typedStatus = statusResult.data
   const typedQuantity = quantity as number
 
   const slotsPerPage = GRID_TYPE_SLOTS[binder.gridType]

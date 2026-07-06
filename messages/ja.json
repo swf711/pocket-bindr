@@ -597,5 +597,18 @@
         "items": ["メール：support@pocketbindr.app", "GitHub Issues：https://github.com/swf711/pocket-bindr/issues"]
       }
     ]
+  },
+  "validation": {
+    "PASSWORD_TOO_SHORT": "パスワードは8文字以上で入力してください",
+    "PASSWORD_MISMATCH": "パスワードが一致しません",
+    "USERNAME_INVALID": "ユーザー名は3〜20文字の半角英数字、_、-のみ使用できます",
+    "INVALID_INPUT": "入力内容をご確認ください",
+    "BINDER_NAME_REQUIRED": "バインダー名を入力してください",
+    "BINDER_NAME_TOO_LONG": "バインダー名は50文字以内で入力してください",
+    "COVER_COLOR_INVALID": "表紙の色は正しい16進数カラーコードで入力してください（例：#4A5568）",
+    "DESCRIPTION_TOO_LONG": "説明は150文字以内で入力してください",
+    "GRID_TYPE_INVALID": "有効なバインダー形式を選択してください",
+    "TOKEN_INVALID": "このリンクは無効か、有効期限が切れています",
+    "generic": "この項目をご確認ください"
   }
 }

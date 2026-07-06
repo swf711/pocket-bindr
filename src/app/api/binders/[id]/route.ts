@@ -5,16 +5,8 @@ import { computeSlotMigration, decrementUserCardsForSlots } from '@/lib/binder-u
 import { GRID_TYPE_SLOTS } from '@/types/binder'
 import { revalidatePublicBinder } from '@/lib/binder-cache'
 import { slotDisplaySelect, toDisplaySlot } from '@/lib/slot-display'
-
-const HEX_COLOR_RE = /^#[0-9A-Fa-f]{6}$/
-
-const VALID_GRID_TYPES = new Set<GridType>([
-  'grid_1x2',
-  'grid_2x2',
-  'grid_3x3',
-  'grid_4x3',
-  'grid_4x4',
-])
+import { GRID_TYPE_VALUES, hexColorSchema } from '@/lib/schemas/common'
+import { binderUpdateSchema } from '@/lib/schemas/binder'
 
 type RouteContext = { params: Promise<{ id: string }> }
 
@@ -80,19 +72,19 @@ export async function PATCH(request: Request, context: RouteContext) {
   const updateData: { name?: string; gridType?: GridType; coverColor?: string; description?: string | null } = {}
 
   if (name !== undefined) {
-    if (typeof name !== 'string' || name.trim().length === 0 || name.trim().length > 50) {
+    if (!binderUpdateSchema.shape.name.unwrap().safeParse(name).success) {
       return Response.json(
         { error: 'name must be a non-empty string of at most 50 characters' },
         { status: 400 },
       )
     }
-    updateData.name = name.trim()
+    updateData.name = (name as string).trim()
   }
 
   if (gridType !== undefined) {
-    if (!VALID_GRID_TYPES.has(gridType as GridType)) {
+    if (!binderUpdateSchema.shape.gridType.unwrap().safeParse(gridType).success) {
       return Response.json(
-        { error: `gridType must be one of: ${[...VALID_GRID_TYPES].join(', ')}` },
+        { error: `gridType must be one of: ${GRID_TYPE_VALUES.join(', ')}` },
         { status: 400 },
       )
     }
@@ -100,10 +92,10 @@ export async function PATCH(request: Request, context: RouteContext) {
   }
 
   if (coverColor !== undefined) {
-    if (typeof coverColor !== 'string' || !HEX_COLOR_RE.test(coverColor)) {
+    if (!hexColorSchema.safeParse(coverColor).success) {
       return Response.json({ error: 'coverColor must be a valid hex color (e.g. #4A5568)' }, { status: 400 })
     }
-    updateData.coverColor = coverColor
+    updateData.coverColor = coverColor as string
   }
 
   if (description !== undefined) {

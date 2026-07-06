@@ -5,8 +5,7 @@ import { CardStatus, Game, Language, Prisma } from '@prisma/client'
 import { parseLanguage } from '@/lib/language'
 import { deriveDisplayCardId } from '@/lib/resolve-canonical-card'
 import { getDisplayCollectionStatusMap } from '@/lib/card-collection-status'
-
-const validStatuses: string[] = Object.values(CardStatus)
+import { cardStatusSchema, gameSchema, collectionCardIdSchema } from '@/lib/schemas/collection'
 
 export async function GET(req: NextRequest) {
   const session = await auth()
@@ -24,10 +23,10 @@ export async function GET(req: NextRequest) {
   const pageNum = Math.max(1, parseInt(searchParams.get('page') ?? '1', 10))
   const pageSizeNum = Math.min(100, Math.max(1, parseInt(searchParams.get('pageSize') ?? '20', 10)))
 
-  if (statusParam !== null && !validStatuses.includes(statusParam)) {
+  if (statusParam !== null && !cardStatusSchema.safeParse(statusParam).success) {
     return Response.json({ error: 'Invalid status' }, { status: 400 })
   }
-  if (gameParam !== null && !Object.values(Game).includes(gameParam as Game)) {
+  if (gameParam !== null && !gameSchema.safeParse(gameParam).success) {
     return Response.json({ error: 'Invalid game' }, { status: 400 })
   }
   let language: Language | null | undefined
@@ -102,11 +101,11 @@ export async function POST(req: Request) {
   const body = await req.json()
   const { cardId, status, deleteStatus } = body
 
-  if (!cardId || typeof cardId !== 'string') {
+  if (!collectionCardIdSchema.safeParse(cardId).success) {
     return Response.json({ error: 'cardId is required' }, { status: 400 })
   }
 
-  if (status !== null && !validStatuses.includes(status)) {
+  if (status !== null && !cardStatusSchema.safeParse(status).success) {
     return Response.json({ error: 'Invalid status' }, { status: 400 })
   }
 
@@ -122,7 +121,7 @@ export async function POST(req: Request) {
   const displayCardId = deriveDisplayCardId(cardId, resolvedCardId)
 
   if (status === null) {
-    if (!deleteStatus || !validStatuses.includes(deleteStatus)) {
+    if (!deleteStatus || !cardStatusSchema.safeParse(deleteStatus).success) {
       return Response.json({ error: 'deleteStatus is required and must be a valid status' }, { status: 400 })
     }
     await prisma.userCard.deleteMany({

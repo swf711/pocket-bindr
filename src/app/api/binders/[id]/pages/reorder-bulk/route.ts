@@ -1,6 +1,7 @@
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { revalidatePublicBinder } from '@/lib/binder-cache'
+import { pagesReorderBulkSchema } from '@/lib/schemas/binder'
 
 type RouteContext = { params: Promise<{ id: string }> }
 
@@ -31,14 +32,11 @@ export async function PATCH(request: Request, context: RouteContext) {
     return Response.json({ error: 'Invalid JSON' }, { status: 400 })
   }
 
-  const { newOrder } = body as Record<string, unknown>
-  if (
-    !Array.isArray(newOrder) ||
-    newOrder.length === 0 ||
-    !newOrder.every((p) => typeof p === 'number' && Number.isInteger(p) && p >= 1)
-  ) {
+  const parsed = pagesReorderBulkSchema.safeParse(body)
+  if (!parsed.success) {
     return Response.json({ error: 'newOrder must be a non-empty array of positive integers' }, { status: 400 })
   }
+  const { newOrder } = parsed.data
 
   const n = newOrder.length
   const sorted = [...newOrder].sort((a, b) => a - b)

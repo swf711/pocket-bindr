@@ -5,10 +5,9 @@ import { resolveCanonicalCardId, deriveDisplayCardId } from '@/lib/resolve-canon
 import { GRID_TYPE_SLOTS } from '@/types/binder'
 import { revalidatePublicBinder } from '@/lib/binder-cache'
 import { slotDisplaySelect, toDisplaySlot } from '@/lib/slot-display'
+import { slotCreateSchema } from '@/lib/schemas/binder'
 
 type RouteContext = { params: Promise<{ id: string }> }
-
-const VALID_STATUSES = new Set<CardStatus>(['owned', 'wanted'])
 
 /**
  * Creates a single BinderSlot at a specific (pageNumber, slotIndex) — the
@@ -41,37 +40,35 @@ export async function POST(request: Request, context: RouteContext) {
     const { pageNumber, slotIndex, cardId, status } = body as Record<string, unknown>
 
     const slotsPerPage = GRID_TYPE_SLOTS[binder.gridType]
-    if (
-      typeof pageNumber !== 'number' ||
-      !Number.isInteger(pageNumber) ||
-      pageNumber < 1
-    ) {
+    if (!slotCreateSchema.shape.pageNumber.safeParse(pageNumber).success) {
       return Response.json({ error: 'pageNumber must be a positive integer' }, { status: 400 })
     }
+    const typedPageNumber = pageNumber as number
     if (
-      typeof slotIndex !== 'number' ||
-      !Number.isInteger(slotIndex) ||
-      slotIndex < 0 ||
-      slotIndex >= slotsPerPage
+      !slotCreateSchema.shape.slotIndex.safeParse(slotIndex).success ||
+      (slotIndex as number) >= slotsPerPage
     ) {
       return Response.json({ error: 'slotIndex out of range' }, { status: 400 })
     }
-    if (typeof cardId !== 'string' || !cardId) {
+    const typedSlotIndex = slotIndex as number
+    if (!slotCreateSchema.shape.cardId.safeParse(cardId).success) {
       return Response.json({ error: 'cardId is required' }, { status: 400 })
     }
-    if (!VALID_STATUSES.has(status as CardStatus)) {
+    const statusResult = slotCreateSchema.shape.status.safeParse(status)
+    if (!statusResult.success) {
       return Response.json({ error: "status must be 'owned' or 'wanted'" }, { status: 400 })
     }
-    const typedStatus = status as CardStatus
+    const typedStatus = statusResult.data
+    const typedCardId = cardId as string
 
     const existing = await prisma.binderSlot.findUnique({
-      where: { binderId_pageNumber_slotIndex: { binderId, pageNumber, slotIndex } },
+      where: { binderId_pageNumber_slotIndex: { binderId, pageNumber: typedPageNumber, slotIndex: typedSlotIndex } },
     })
     if (existing) {
       return Response.json({ error: 'Slot already has a card' }, { status: 400 })
     }
 
-    const resolved = await resolveCanonicalCardId(prisma, cardId)
+    const resolved = await resolveCanonicalCardId(prisma, typedCardId)
     if (resolved.status === 'not_found') {
       return Response.json({ error: 'Card not found' }, { status: 404 })
     }
@@ -80,7 +77,7 @@ export async function POST(request: Request, context: RouteContext) {
     }
     const resolvedCardId = resolved.resolvedCardId
     // 保留原始顯示語言（OPCG ZH_TW alias）；純 canonical 則 null
-    const displayCardId = deriveDisplayCardId(cardId, resolvedCardId)
+    const displayCardId = deriveDisplayCardId(typedCardId, resolvedCardId)
 
     const result = await prisma.$transaction(async (tx) => {
       const userCard = await tx.userCard.upsert({
@@ -90,7 +87,7 @@ export async function POST(request: Request, context: RouteContext) {
       })
 
       const createdSlot = await tx.binderSlot.create({
-        data: { binderId, pageNumber, slotIndex, cardId: resolvedCardId, status: typedStatus, displayCardId },
+        data: { binderId, pageNumber: typedPageNumber, slotIndex: typedSlotIndex, cardId: resolvedCardId, status: typedStatus, displayCardId },
         select: slotDisplaySelect,
       })
 

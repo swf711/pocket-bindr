@@ -8,6 +8,7 @@ import { groupAndSortSets } from '@/lib/sort-card-sets'
 import { getCollectionStatusMap, resolveCollectionLookupId } from '@/lib/card-collection-status'
 import { parseSetCardQuery, buildSetCardPrismaWhere, buildSetCardSql } from '@/lib/parse-set-card-query'
 import { buildCrossLangExpansion } from '@/lib/cross-language-search'
+import { gameSchema } from '@/lib/schemas/collection'
 
 export async function GET(req: NextRequest) {
   try {
@@ -117,9 +118,11 @@ async function handleGet(req: NextRequest) {
   const pageNum = Math.max(1, parseInt(searchParams.get('page') ?? '1', 10))
   const pageSizeNum = Math.min(100, Math.max(1, parseInt(searchParams.get('pageSize') ?? '20', 10)))
 
-  if (!game || !Object.values(Game).includes(game as Game)) {
+  const gameResult = gameSchema.safeParse(game)
+  if (!gameResult.success) {
     return Response.json({ error: 'game is required' }, { status: 400 })
   }
+  const validGame = gameResult.data
 
   const language = parseLanguage(searchParams.get('language'))
   if (!language) {
@@ -129,7 +132,7 @@ async function handleGet(req: NextRequest) {
   // auth() 與卡片查詢並行，避免串行多一段 round trip（尤其跨 region 時）
   const sessionPromise = auth()
 
-  const { cards, total, includeCanonical } = await fetchCardPage(game, language, q, setId, pageNum, pageSizeNum)
+  const { cards, total, includeCanonical } = await fetchCardPage(validGame, language, q, setId, pageNum, pageSizeNum)
 
   const session = await sessionPromise
   const collectionMap = await getCollectionStatusMap(cards, session?.user?.id, includeCanonical)

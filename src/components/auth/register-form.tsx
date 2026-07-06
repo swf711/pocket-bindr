@@ -1,6 +1,9 @@
 'use client'
 
 import { useState } from 'react'
+import { useForm, type FieldErrors } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
 import { signIn } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
@@ -17,34 +20,45 @@ import {
 import { Input } from '@/components/ui/input'
 import { PasswordInput } from '@/components/auth/password-input'
 import { Progress } from '@/components/ui/progress'
-import { getPasswordStrength, isPasswordValid, MIN_PASSWORD_LENGTH } from '@/lib/password-policy'
+import { getPasswordStrength } from '@/lib/password-policy'
 import { consentChunks } from '@/components/auth/consent-chunks'
+import { registerSchema } from '@/lib/schemas/auth'
+import { resolveFieldError } from '@/lib/schemas/field-error'
+
+/**
+ * 表單專用 schema：在共用 registerSchema 上疊加 confirmPassword 純前端比對。
+ * confirmPassword 不進 registerSchema（server 端不需要也不接受這個欄位）。
+ */
+const registerFormSchema = registerSchema
+  .extend({ confirmPassword: z.string() })
+  .superRefine((data, ctx) => {
+    if (data.password !== data.confirmPassword) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'PASSWORD_MISMATCH',
+        path: ['confirmPassword'],
+      })
+    }
+  })
+
+type RegisterFormValues = z.infer<typeof registerFormSchema>
 
 export function RegisterForm() {
   const router = useRouter()
   const t = useTranslations('auth')
-  const [email, setEmail] = useState('')
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
+  const tRoot = useTranslations()
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const { register, handleSubmit, watch } = useForm<RegisterFormValues>({
+    resolver: zodResolver(registerFormSchema),
+    defaultValues: { email: '', username: '', password: '', confirmPassword: '' },
+  })
 
+  const password = watch('password')
   const strength = getPasswordStrength(password)
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
+  const onValid = async ({ email, username, password }: RegisterFormValues) => {
     setError('')
-
-    if (!isPasswordValid(password)) {
-      setError(t('weakPassword', { min: MIN_PASSWORD_LENGTH }))
-      return
-    }
-    if (password !== confirmPassword) {
-      setError(t('passwordMismatch'))
-      return
-    }
-
     setLoading(true)
 
     const res = await fetch('/api/auth/register', {
@@ -57,9 +71,7 @@ export function RegisterForm() {
 
     if (!data.success) {
       const code = data.error as string
-      if (code === 'WEAK_PASSWORD') {
-        setError(t('weakPassword', { min: MIN_PASSWORD_LENGTH }))
-      } else if (['EMAIL_TAKEN', 'USERNAME_TAKEN', 'INVALID_INPUT', 'SERVER_ERROR'].includes(code)) {
+      if (['EMAIL_TAKEN', 'USERNAME_TAKEN', 'INVALID_INPUT', 'SERVER_ERROR'].includes(code)) {
         setError(t(`register.errors.${code}`))
       } else {
         setError(t('register.genericError'))
@@ -73,6 +85,15 @@ export function RegisterForm() {
     router.refresh()
   }
 
+  const onInvalid = (errors: FieldErrors<RegisterFormValues>) => {
+    const firstError = errors.password ?? errors.confirmPassword ?? errors.email ?? errors.username
+    if (firstError) {
+      setError(resolveFieldError(firstError, tRoot) ?? '')
+    }
+  }
+
+  const onSubmit = handleSubmit(onValid, onInvalid)
+
   return (
     <div className="flex flex-col gap-6">
       <Card className="p-6 md:p-8 gap-7 bg-surface-container ring-0">
@@ -83,16 +104,15 @@ export function RegisterForm() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={onSubmit} className="space-y-4">
             <FieldGroup>
               <Field>
                 <FieldLabel htmlFor="email">{t('email')}</FieldLabel>
                 <Input
                   id="email"
                   type="email"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
                   required
+                  {...register('email')}
                 />
               </Field>
 
@@ -101,9 +121,8 @@ export function RegisterForm() {
                 <Input
                   id="username"
                   type="text"
-                  value={username}
-                  onChange={e => setUsername(e.target.value)}
                   required
+                  {...register('username')}
                 />
               </Field>
 
@@ -111,10 +130,9 @@ export function RegisterForm() {
                 <FieldLabel htmlFor="password">{t('password')}</FieldLabel>
                 <PasswordInput
                   id="password"
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
                   autoComplete="new-password"
                   required
+                  {...register('password')}
                 />
                 {password.length > 0 && (
                   <div className="space-y-1" data-testid="password-strength">
@@ -128,10 +146,9 @@ export function RegisterForm() {
                 <FieldLabel htmlFor="confirmPassword">{t('confirmPassword')}</FieldLabel>
                 <PasswordInput
                   id="confirmPassword"
-                  value={confirmPassword}
-                  onChange={e => setConfirmPassword(e.target.value)}
                   autoComplete="new-password"
                   required
+                  {...register('confirmPassword')}
                 />
               </Field>
 
@@ -140,7 +157,7 @@ export function RegisterForm() {
               )}
 
               <Field>
-                <Button type="submit" disabled={loading} className="h-10">
+                <Button type="submit" size="lg" disabled={loading}>
                   {loading ? t('register.submitting') : t('register.submit')}
                 </Button>
               </Field>
@@ -150,7 +167,7 @@ export function RegisterForm() {
               </FieldSeparator>
 
               <Field className="grid grid-cols-2 gap-4">
-                <Button variant="outline" type="button" className="h-10 bg-surface-container hover:bg-surface-container-highest" onClick={() => signIn('google', { callbackUrl: '/cards' })}>
+                <Button variant="outline" size="lg" type="button" className="bg-surface-container hover:bg-surface-container-highest" onClick={() => signIn('google', { callbackUrl: '/cards' })}>
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                     <path
                       d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"
@@ -160,7 +177,7 @@ export function RegisterForm() {
                   <span className="sr-only">{t('loginWithGoogle')}</span>
                 </Button>
 
-                <Button variant="outline" type="button" className="h-10 bg-surface-container hover:bg-surface-container-highest" onClick={() => signIn('discord', { callbackUrl: '/cards' })}>
+                <Button variant="outline" size="lg" type="button" className="bg-surface-container hover:bg-surface-container-highest" onClick={() => signIn('discord', { callbackUrl: '/cards' })}>
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
                     <path
                       d="M13.545 2.907a13.2 13.2 0 0 0-3.257-1.011.05.05 0 0 0-.052.025c-.141.25-.297.577-.406.833a12.2 12.2 0 0 0-3.658 0 8 8 0 0 0-.412-.833.05.05 0 0 0-.052-.025c-1.125.194-2.22.534-3.257 1.011a.04.04 0 0 0-.021.018C.356 6.024-.213 9.047.066 12.032q.003.022.021.037a13.3 13.3 0 0 0 3.995 2.02.05.05 0 0 0 .056-.019q.463-.63.818-1.329a.05.05 0 0 0-.01-.059l-.018-.011a9 9 0 0 1-1.248-.595.05.05 0 0 1-.02-.066l.015-.019q.127-.095.248-.195a.05.05 0 0 1 .051-.007c2.619 1.196 5.454 1.196 8.041 0a.05.05 0 0 1 .053.007q.121.1.248.195a.05.05 0 0 1-.004.085 8 8 0 0 1-1.249.594.05.05 0 0 0-.03.03.05.05 0 0 0 .003.041c.24.465.515.909.817 1.329a.05.05 0 0 0 .056.019 13.2 13.2 0 0 0 4.001-2.02.05.05 0 0 0 .021-.037c.334-3.451-.559-6.449-2.366-9.106a.03.03 0 0 0-.02-.019m-8.198 7.307c-.789 0-1.438-.724-1.438-1.612s.637-1.613 1.438-1.613c.807 0 1.45.73 1.438 1.613 0 .888-.637 1.612-1.438 1.612m5.316 0c-.788 0-1.438-.724-1.438-1.612s.637-1.613 1.438-1.613c.807 0 1.451.73 1.438 1.613 0 .888-.631 1.612-1.438 1.612"

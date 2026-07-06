@@ -2,6 +2,7 @@ import { prisma } from '@/lib/prisma'
 import { createResetToken } from '@/lib/reset-password'
 import { sendResetPasswordEmail } from '@/lib/email'
 import { forgotPasswordIpLimiter, forgotPasswordEmailLimiter } from '@/lib/rate-limit'
+import { forgotPasswordLenientSchema } from '@/lib/schemas/auth'
 
 const SUCCESS_MESSAGE = '若此 email 有帳號，您將在幾分鐘內收到重設信'
 
@@ -13,8 +14,10 @@ export async function POST(request: Request) {
       return Response.json({ error: 'RATE_LIMITED' }, { status: 429 })
     }
 
-    const body = await request.json() as { email?: unknown }
-    const email = typeof body.email === 'string' ? body.email.trim() : null
+    const body = await request.json()
+    // 防 enumeration：不合法/缺漏 email 一律視為「沒給」，回同一句成功訊息，不回錯誤。
+    const parsed = forgotPasswordLenientSchema.safeParse(body)
+    const email = parsed.success ? parsed.data.email ?? null : null
     if (!email) {
       return Response.json({ message: SUCCESS_MESSAGE })
     }

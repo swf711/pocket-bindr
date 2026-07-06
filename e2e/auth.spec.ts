@@ -119,7 +119,7 @@ test.describe.serial('Auth Flow', () => {
     await page.getByLabel('確認密碼').fill('short')
     await page.getByRole('button', { name: '註冊' }).click()
 
-    await expect(page.getByText('密碼至少需 8 個字元')).toBeVisible({ timeout: 10000 })
+    await expect(page.getByText('密碼至少需要 8 個字元')).toBeVisible({ timeout: 10000 })
     expect(page.url()).toContain('/register')
   })
 

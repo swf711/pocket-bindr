@@ -1,6 +1,8 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
+import { useForm, Controller } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslations } from 'next-intl'
 import { toast } from 'sonner'
 import { GridType } from '@prisma/client'
@@ -20,6 +22,10 @@ import { cn } from '@/lib/utils'
 import { BinderSummary, PatchBinderResponse, GRID_SHORT_LABELS, GRID_TYPE_LABELS } from '@/types/binder'
 import { DEFAULT_COVER_COLOR } from '@/lib/cover-colors'
 import { CoverColorPicker } from './cover-color-picker'
+import { binderUpdateSchema, type BinderUpdateInput } from '@/lib/schemas/binder'
+import { resolveFieldError } from '@/lib/schemas/field-error'
+import { Field, FieldError } from '@/components/ui/field'
+import type { z } from 'zod'
 
 interface EditBinderDialogProps {
   open: boolean
@@ -28,6 +34,9 @@ interface EditBinderDialogProps {
   onUpdated: (binder: BinderSummary) => void
 }
 
+/** zod schema 對 description 有 transform，表單值型別（輸入） ≠ handleSubmit 收到的型別（輸出，見 BinderUpdateInput） */
+type EditBinderFormValues = z.input<typeof binderUpdateSchema>
+
 export function EditBinderDialog({
   open,
   onOpenChange,
@@ -35,30 +44,40 @@ export function EditBinderDialog({
   onUpdated,
 }: EditBinderDialogProps) {
   const t = useTranslations('binderList.editDialog')
-  const [name, setName] = useState('')
-  const [gridType, setGridType] = useState<GridType>('grid_3x3')
-  const [coverColor, setCoverColor] = useState(DEFAULT_COVER_COLOR)
-  const [description, setDescription] = useState('')
-  const [loading, setLoading] = useState(false)
+  const tValidation = useTranslations('validation')
+  const {
+    control,
+    handleSubmit,
+    reset,
+    formState: { isSubmitting },
+  } = useForm<EditBinderFormValues, unknown, BinderUpdateInput>({
+    resolver: zodResolver(binderUpdateSchema),
+    defaultValues: {
+      name: '',
+      gridType: 'grid_3x3',
+      coverColor: DEFAULT_COVER_COLOR,
+      description: '',
+    },
+  })
 
   useEffect(() => {
     if (binder) {
-      setName(binder.name)
-      setGridType(binder.gridType as GridType)
-      setCoverColor(binder.coverColor ?? DEFAULT_COVER_COLOR)
-      setDescription(binder.description ?? '')
+      reset({
+        name: binder.name,
+        gridType: binder.gridType as GridType,
+        coverColor: binder.coverColor ?? DEFAULT_COVER_COLOR,
+        description: binder.description ?? '',
+      })
     }
-  }, [binder])
+  }, [binder, reset])
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
+  const onSubmit = handleSubmit(async (values) => {
     if (!binder) return
-    setLoading(true)
     try {
       const res = await fetch(`/api/binders/${binder.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, gridType, coverColor, description: description || null }),
+        body: JSON.stringify(values),
       })
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
@@ -72,10 +91,8 @@ export function EditBinderDialog({
       onOpenChange(false)
     } catch (err) {
       toast((err as Error).message)
-    } finally {
-      setLoading(false)
     }
-  }
+  })
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -83,62 +100,91 @@ export function EditBinderDialog({
         <DialogHeaderClose>
           <DialogTitle>{t('title')}</DialogTitle>
         </DialogHeaderClose>
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4 mt-2">
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="edit-binder-name">{t('name')}</Label>
-            <Input
-              id="edit-binder-name"
-              placeholder={t('namePlaceholder')}
-              maxLength={50}
-              value={name}
-              onChange={e => setName(e.target.value)}
-              data-testid="binder-name-input"
-              required
-            />
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="edit-binder-description">{t('description')}</Label>
-            <Textarea
-              id="edit-binder-description"
-              placeholder={t('descriptionPlaceholder')}
-              maxLength={150}
-              rows={2}
-              value={description}
-              onChange={e => setDescription(e.target.value)}
-              data-testid="binder-description-input"
-            />
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <Label>{t('format')}</Label>
-            <Tabs
-              value={gridType}
-              onValueChange={v => setGridType(v as GridType)}
-              data-testid="binder-grid-tabs"
-            >
-              <TabsList className={cn(PILL_TABS_LIST, 'flex flex-wrap h-auto gap-1')}>
-                {(Object.keys(GRID_SHORT_LABELS) as GridType[]).map((gt) => (
-                  <TabsTrigger
-                    key={gt}
-                    value={gt}
-                    aria-label={GRID_TYPE_LABELS[gt]}
-                    className={cn(PILL_TABS_TRIGGER, 'text-xs px-3')}
-                  >
-                    {GRID_SHORT_LABELS[gt]}
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-            </Tabs>
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <Label>{t('coverColor')}</Label>
-            <CoverColorPicker value={coverColor} onChange={setCoverColor} />
-          </div>
+        <form onSubmit={onSubmit} className="flex flex-col gap-4 mt-2">
+          <Controller
+            control={control}
+            name="name"
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <Label htmlFor="edit-binder-name">{t('name')}</Label>
+                <Input
+                  id="edit-binder-name"
+                  placeholder={t('namePlaceholder')}
+                  maxLength={50}
+                  aria-invalid={fieldState.invalid}
+                  data-testid="binder-name-input"
+                  {...field}
+                  value={field.value ?? ''}
+                />
+                <FieldError>{fieldState.error && resolveFieldError(fieldState.error, tValidation)}</FieldError>
+              </Field>
+            )}
+          />
+          <Controller
+            control={control}
+            name="description"
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <Label htmlFor="edit-binder-description">{t('description')}</Label>
+                <Textarea
+                  id="edit-binder-description"
+                  placeholder={t('descriptionPlaceholder')}
+                  maxLength={150}
+                  rows={2}
+                  aria-invalid={fieldState.invalid}
+                  data-testid="binder-description-input"
+                  {...field}
+                  value={field.value ?? ''}
+                />
+                <FieldError>{fieldState.error && resolveFieldError(fieldState.error, tValidation)}</FieldError>
+              </Field>
+            )}
+          />
+          <Controller
+            control={control}
+            name="gridType"
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <Label>{t('format')}</Label>
+                <Tabs
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  data-testid="binder-grid-tabs"
+                >
+                  <TabsList className={cn(PILL_TABS_LIST, 'flex flex-wrap h-auto gap-1')}>
+                    {(Object.keys(GRID_SHORT_LABELS) as GridType[]).map((gt) => (
+                      <TabsTrigger
+                        key={gt}
+                        value={gt}
+                        aria-label={GRID_TYPE_LABELS[gt]}
+                        className={cn(PILL_TABS_TRIGGER, 'text-xs px-3')}
+                      >
+                        {GRID_SHORT_LABELS[gt]}
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
+                </Tabs>
+                <FieldError>{fieldState.error && resolveFieldError(fieldState.error, tValidation)}</FieldError>
+              </Field>
+            )}
+          />
+          <Controller
+            control={control}
+            name="coverColor"
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <Label>{t('coverColor')}</Label>
+                <CoverColorPicker value={field.value ?? DEFAULT_COVER_COLOR} onChange={field.onChange} />
+                <FieldError>{fieldState.error && resolveFieldError(fieldState.error, tValidation)}</FieldError>
+              </Field>
+            )}
+          />
           <Button
             type="submit"
-            disabled={loading}
+            disabled={isSubmitting}
             data-testid="edit-binder-submit"
           >
-            {loading ? t('saving') : t('save')}
+            {isSubmitting ? t('saving') : t('save')}
           </Button>
         </form>
       </DialogContent>

@@ -1,6 +1,7 @@
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { revalidatePublicBinder } from '@/lib/binder-cache'
+import { pagesSwapSchema } from '@/lib/schemas/binder'
 
 type RouteContext = { params: Promise<{ id: string }> }
 
@@ -31,18 +32,11 @@ export async function PATCH(request: Request, context: RouteContext) {
     return Response.json({ error: 'Invalid JSON' }, { status: 400 })
   }
 
-  const { pageA, pageB } = body as Record<string, unknown>
-  if (
-    typeof pageA !== 'number' ||
-    typeof pageB !== 'number' ||
-    !Number.isInteger(pageA) ||
-    !Number.isInteger(pageB) ||
-    pageA < 1 ||
-    pageB < 1 ||
-    pageA === pageB
-  ) {
+  const parsed = pagesSwapSchema.safeParse(body)
+  if (!parsed.success) {
     return Response.json({ error: 'pageA and pageB must be distinct positive integers' }, { status: 400 })
   }
+  const { pageA, pageB } = parsed.data
 
   const slots = await prisma.$transaction(async (tx) => {
     // Three-step swap using temp negatives to avoid unique constraint violations

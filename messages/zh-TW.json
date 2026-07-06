@@ -51,7 +51,7 @@
     "confirmPassword": "確認密碼",
     "newPassword": "新密碼",
     "passwordMismatch": "兩次輸入的密碼不一致",
-    "weakPassword": "密碼至少需 {min} 個字元",
+    "weakPassword": "密碼至少需要 {min} 個字元",
     "loginWithGoogle": "以 Google 登入",
     "loginWithDiscord": "以 Discord 登入",
     "showPassword": "顯示密碼",
@@ -595,5 +595,18 @@
         "items": ["Email：support@pocketbindr.app", "GitHub Issues：https://github.com/swf711/pocket-bindr/issues"]
       }
     ]
+  },
+  "validation": {
+    "PASSWORD_TOO_SHORT": "密碼至少需要 8 個字元",
+    "PASSWORD_MISMATCH": "兩次輸入的密碼不一致",
+    "USERNAME_INVALID": "使用者名稱須為 3-20 個字元（英數字、_ 或 -）",
+    "INVALID_INPUT": "請確認輸入內容",
+    "BINDER_NAME_REQUIRED": "請輸入卡冊名稱",
+    "BINDER_NAME_TOO_LONG": "卡冊名稱最多 50 個字元",
+    "COVER_COLOR_INVALID": "封面顏色須為有效的 hex 色碼（例如 #4A5568）",
+    "DESCRIPTION_TOO_LONG": "描述最多 150 個字元",
+    "GRID_TYPE_INVALID": "請選擇有效的卡冊格式",
+    "TOKEN_INVALID": "此連結無效或已過期",
+    "generic": "請確認此欄位"
   }
 }

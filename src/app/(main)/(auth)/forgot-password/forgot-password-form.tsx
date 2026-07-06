@@ -1,6 +1,8 @@
 'use client'
 
 import { useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
@@ -8,16 +10,19 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Field, FieldGroup, FieldLabel, FieldDescription } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { forgotPasswordSchema, type ForgotPasswordInput } from '@/lib/schemas/auth'
 
 export function ForgotPasswordForm() {
   const t = useTranslations('auth')
-  const [email, setEmail] = useState('')
   const [submitted, setSubmitted] = useState(false)
   const [rateLimited, setRateLimited] = useState(false)
   const [loading, setLoading] = useState(false)
+  const { register, handleSubmit } = useForm<ForgotPasswordInput>({
+    resolver: zodResolver(forgotPasswordSchema),
+    defaultValues: { email: '' },
+  })
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
+  const onSubmit = handleSubmit(async ({ email }) => {
     setLoading(true)
     setRateLimited(false)
 
@@ -35,11 +40,11 @@ export function ForgotPasswordForm() {
     }
 
     setSubmitted(true)
-  }
+  })
 
   return (
     <div className="flex flex-col gap-6">
-      <Card>
+      <Card className="p-6 md:p-8 gap-7 bg-surface-container ring-0">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl" role="heading" aria-level={1}>{t('forgot.title')}</CardTitle>
           <CardDescription>
@@ -59,21 +64,20 @@ export function ForgotPasswordForm() {
               </AlertDescription>
             </Alert>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={onSubmit} className="space-y-4">
               <FieldGroup>
                 <Field>
                   <FieldLabel htmlFor="email">{t('email')}</FieldLabel>
                   <Input
                     id="email"
                     type="email"
-                    value={email}
-                    onChange={e => setEmail(e.target.value)}
                     placeholder="your@email.com"
                     required
+                    {...register('email')}
                   />
                 </Field>
                 <Field>
-                  <Button type="submit" disabled={loading}>
+                  <Button type="submit" size="lg" disabled={loading}>
                     {loading ? t('forgot.submitting') : t('forgot.submit')}
                   </Button>
                 </Field>

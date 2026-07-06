@@ -2,6 +2,7 @@ import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { decrementUserCardsForSlots } from '@/lib/binder-utils'
 import { revalidatePublicBinder } from '@/lib/binder-cache'
+import { slotPositionSchema } from '@/lib/schemas/binder'
 
 type RouteContext = { params: Promise<{ id: string; slotId: string }> }
 
@@ -55,10 +56,11 @@ export async function PATCH(request: Request, context: RouteContext) {
     return Response.json({ error: 'Invalid JSON' }, { status: 400 })
   }
 
-  const { pageNumber, slotIndex } = body as Record<string, unknown>
-  if (typeof pageNumber !== 'number' || typeof slotIndex !== 'number') {
+  const parsed = slotPositionSchema.safeParse(body)
+  if (!parsed.success) {
     return Response.json({ error: 'pageNumber and slotIndex are required numbers' }, { status: 400 })
   }
+  const { pageNumber, slotIndex } = parsed.data
 
   const updated = await prisma.binderSlot.update({
     where: { id: slotId },

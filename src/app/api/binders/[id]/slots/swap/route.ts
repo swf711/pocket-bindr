@@ -1,8 +1,14 @@
+import { z } from 'zod'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { revalidatePublicBinder } from '@/lib/binder-cache'
 
 type RouteContext = { params: Promise<{ id: string }> }
+
+// 不重用 src/lib/schemas/binder.ts 的 slotsSwapSchema：該 schema 對兩個 id 額外套用
+// min(1)，會讓空字串提早被拒（原本行為是 typeof 檢查即可通過，空字串之後在 DB
+// 查詢比對時自然找不到、回 403），為完全保留原行為改用本地寬鬆 schema。
+const slotIdsSchema = z.object({ slotAId: z.string(), slotBId: z.string() })
 
 export async function PATCH(request: Request, context: RouteContext) {
   const session = await auth()
@@ -22,10 +28,11 @@ export async function PATCH(request: Request, context: RouteContext) {
     return Response.json({ error: 'Invalid JSON' }, { status: 400 })
   }
 
-  const { slotAId, slotBId } = body as Record<string, unknown>
-  if (typeof slotAId !== 'string' || typeof slotBId !== 'string') {
+  const parsed = slotIdsSchema.safeParse(body)
+  if (!parsed.success) {
     return Response.json({ error: 'slotAId and slotBId are required strings' }, { status: 400 })
   }
+  const { slotAId, slotBId } = parsed.data
 
   const [slotA, slotB] = await Promise.all([
     prisma.binderSlot.findUnique({ where: { id: slotAId } }),

@@ -11,6 +11,7 @@
 - **NextAuth.js v5**（Email/密碼 ＋ Google / Discord OAuth）
 - **Upstash Redis**（rate limiting）
 - **Tailwind CSS** + **shadcn/ui**
+- **react-hook-form** + **zod**（表單狀態與驗證，前後端共用 schema）
 - **next-intl**（UI 多語言：繁中 / 英 / 日）
 - **Vitest**（單元）＋ **Playwright**（E2E）
 - **pnpm**

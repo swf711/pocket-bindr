@@ -597,5 +597,18 @@
         "items": ["Email: support@pocketbindr.app", "GitHub Issues: https://github.com/swf711/pocket-bindr/issues"]
       }
     ]
+  },
+  "validation": {
+    "PASSWORD_TOO_SHORT": "Password must be at least 8 characters",
+    "PASSWORD_MISMATCH": "The two passwords do not match",
+    "USERNAME_INVALID": "Username must be 3-20 characters (letters, numbers, _ or -)",
+    "INVALID_INPUT": "Please check your input",
+    "BINDER_NAME_REQUIRED": "Binder name is required",
+    "BINDER_NAME_TOO_LONG": "Binder name must be at most 50 characters",
+    "COVER_COLOR_INVALID": "Cover color must be a valid hex color (e.g. #4A5568)",
+    "DESCRIPTION_TOO_LONG": "Description must be at most 150 characters",
+    "GRID_TYPE_INVALID": "Please select a valid binder format",
+    "TOKEN_INVALID": "This link is invalid or has expired",
+    "generic": "Please check this field"
   }
 }

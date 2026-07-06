@@ -1,5 +1,11 @@
+import { z } from 'zod'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+
+// 不重用 src/lib/schemas/binder.ts 的 bindersReorderSchema：該 schema 對陣列元素
+// 額外套用 min(1)，會讓「空字串」id 提早被拒（原本行為是 typeof 檢查即可通過，
+// 空字串之後在 DB 查詢比對時自然找不到、回 403），為完全保留原行為改用本地寬鬆 schema。
+const orderedIdsSchema = z.array(z.string()).min(1)
 
 export async function PATCH(request: Request) {
   const session = await auth()
@@ -15,10 +21,12 @@ export async function PATCH(request: Request) {
     return Response.json({ error: 'Invalid JSON' }, { status: 400 })
   }
 
-  const { orderedIds } = body as Record<string, unknown>
-  if (!Array.isArray(orderedIds) || orderedIds.length === 0 || !orderedIds.every(id => typeof id === 'string')) {
+  const { orderedIds: rawOrderedIds } = body as Record<string, unknown>
+  const orderedIdsResult = orderedIdsSchema.safeParse(rawOrderedIds)
+  if (!orderedIdsResult.success) {
     return Response.json({ error: 'orderedIds must be a non-empty array of strings' }, { status: 400 })
   }
+  const orderedIds = orderedIdsResult.data
 
   const binders = await prisma.binder.findMany({
     where: { id: { in: orderedIds } },
