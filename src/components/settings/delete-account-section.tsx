@@ -40,7 +40,7 @@ export function DeleteAccountSection() {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button variant="destructive">{t('deleteAccount')}</Button>
+        <Button size="lg" variant="destructive">{t('deleteAccount')}</Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>

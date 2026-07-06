@@ -144,7 +144,7 @@ export function SetPasswordForm() {
           </div>
         )}
       />
-      <Button type="submit" data-testid="save-set-password-btn" disabled={isSubmitting}>
+      <Button size="lg" type="submit" data-testid="save-set-password-btn" disabled={isSubmitting}>
         {isSubmitting ? t('setting') : t('submit')}
       </Button>
     </form>

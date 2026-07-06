@@ -277,7 +277,8 @@
       "enableFailed": "有効化に失敗しました。もう一度お試しください",
       "revokeSuccess": "公開共有を無効にしました",
       "revokeFailed": "無効化に失敗しました。もう一度お試しください",
-      "linkCopied": "リンクをコピーしました"
+      "linkCopied": "リンクをコピーしました",
+      "cancel": "キャンセル"
     },
     "coverPanel": {
       "pages": "ページ",

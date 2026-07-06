@@ -328,7 +328,7 @@ export function BinderSettingsDrawer({
       <Tooltip>
         <TooltipTrigger asChild>
           <DrawerTrigger asChild>
-            <Button variant="outline" size="icon-sm" data-testid="binder-settings-btn" aria-label={t('binderSettings')}>
+            <Button variant="outline" size="icon-lg" data-testid="binder-settings-btn" aria-label={t('binderSettings')}>
               <Settings className="size-5" />
             </Button>
           </DrawerTrigger>
@@ -396,6 +396,7 @@ export function BinderSettingsDrawer({
             </div>
 
             <Button
+              size="lg"
               onClick={handleSaveSettings}
               disabled={savingSettings || !name.trim()}
               data-testid="drawer-save-settings-btn"
@@ -423,7 +424,7 @@ export function BinderSettingsDrawer({
                     data-testid="drawer-share-url-input"
                   />
                   <IconTooltipButton
-                    variant="outline"
+                    variant="secondary"
                     size="icon"
                     className="h-8 w-8 shrink-0"
                     onClick={handleCopyShareUrl}
@@ -435,7 +436,7 @@ export function BinderSettingsDrawer({
                 </div>
                 <Button
                   variant="destructive"
-                  size="sm"
+                  size="lg"
                   onClick={handleRevokeShare}
                   disabled={sharingLoading}
                   data-testid="drawer-revoke-share-btn"
@@ -447,8 +448,8 @@ export function BinderSettingsDrawer({
               <div className="flex flex-col gap-2">
                 <p className="text-xs text-muted-foreground">{t('shareDisabledHint')}</p>
                 <Button
-                  variant="outline"
-                  size="sm"
+                  variant="secondary"
+                  size="lg"
                   onClick={handleEnableShare}
                   disabled={sharingLoading}
                   data-testid="drawer-enable-share-btn"

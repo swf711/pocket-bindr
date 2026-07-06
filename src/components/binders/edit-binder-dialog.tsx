@@ -180,6 +180,7 @@ export function EditBinderDialog({
             )}
           />
           <Button
+            size="lg"
             type="submit"
             disabled={isSubmitting}
             data-testid="edit-binder-submit"

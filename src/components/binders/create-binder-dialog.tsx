@@ -174,6 +174,7 @@ export function CreateBinderDialog({
             )}
           />
           <Button
+            size="lg"
             type="submit"
             disabled={isSubmitting}
             data-testid="create-binder-submit"

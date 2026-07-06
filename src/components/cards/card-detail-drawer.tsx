@@ -378,8 +378,8 @@ function AddToBinderSection({
       <div className="flex flex-col gap-3" onPointerDown={(e) => e.stopPropagation()}>
         <p className="text-sm text-muted-foreground">{t('loginRequired')}</p>
         <Button
+          size="lg"
           data-testid="modal-add-btn"
-          className="h-10"
           onClick={() => setLoginModalOpen(true)}
         >
           {t('addToBinder')}
@@ -413,7 +413,7 @@ function AddToBinderSection({
       // 阻止 vaul 接到此互動區的 pointerdown，與卡圖 overlay（見上方）同一 pattern。
       <div className="flex flex-col gap-3" onPointerDown={(e) => e.stopPropagation()}>
         <p className="text-sm text-muted-foreground">{t('noBinders')}</p>
-        <Button onClick={() => setCreateOpen(true)}>{t('createBinder')}</Button>
+        <Button size="lg" onClick={() => setCreateOpen(true)}>{t('createBinder')}</Button>
         <CreateBinderDialog
           open={createOpen}
           onOpenChange={setCreateOpen}

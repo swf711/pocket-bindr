@@ -63,7 +63,9 @@ export function LegalDialog({ namespace, children, className }: LegalDialogProps
 
         <div className="shrink-0 border-t px-6 py-4 flex justify-end">
           <DialogClose asChild>
-            <Button variant="outline">{tCommon('close')}</Button>
+            <Button variant="secondary" size="lg" className="rounded-full">
+              {tCommon('close')}
+            </Button>
           </DialogClose>
         </div>
       </DialogContent>

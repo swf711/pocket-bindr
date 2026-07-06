@@ -277,7 +277,8 @@
       "enableFailed": "Failed to enable, please try again",
       "revokeSuccess": "Public sharing revoked",
       "revokeFailed": "Failed to revoke, please try again",
-      "linkCopied": "Link copied"
+      "linkCopied": "Link copied",
+      "cancel": "Cancel"
     },
     "coverPanel": {
       "pages": "Pages",

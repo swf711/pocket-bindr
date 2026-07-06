@@ -14,6 +14,7 @@ import {
 import { DialogHeaderClose } from '@/components/common/dialog-header-close'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogMedia, AlertDialogTitle } from '../ui/alert-dialog'
 
 interface ShareBinderDialogProps {
   binderId: string
@@ -73,65 +74,65 @@ export function ShareBinderDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md" showCloseButton={false}>
-        <DialogHeaderClose
-          description={
-            <DialogDescription>
-              {token ? t('descriptionEnabled') : t('descriptionDisabled')}
-            </DialogDescription>
-          }
-        >
-          <DialogTitle className="flex items-center gap-2">
-            <Share2 className="size-4" />
-            {t('title')}
-          </DialogTitle>
-        </DialogHeaderClose>
-
+    <AlertDialog open={open} onOpenChange={onOpenChange}>
+      <AlertDialogContent size="sm">
+        <AlertDialogHeader>
+          <AlertDialogMedia className="bg-primary-container text-on-primary-container">
+            <Share2 />
+          </AlertDialogMedia>
+          <AlertDialogTitle>{t('title')}</AlertDialogTitle>
+          <AlertDialogDescription>
+            {token ? t('descriptionEnabled') : t('descriptionDisabled')}
+          </AlertDialogDescription>
+        </AlertDialogHeader>
         {token ? (
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>{t('publicLink')}</Label>
-              <div className="flex gap-2">
-                <Input
-                  readOnly
-                  value={shareUrl}
-                  className="font-mono text-xs"
-                  data-testid="share-url-input"
-                />
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={handleCopy}
-                  aria-label={t('copyLink')}
-                  data-testid="copy-share-url-btn"
-                >
-                  <Copy className="size-4" />
-                </Button>
-              </div>
+          <div className="space-y-2">
+            <Label>{t('publicLink')}</Label>
+            <div className="flex gap-2">
+              <Input
+                readOnly
+                value={shareUrl}
+                className="font-mono text-xs"
+                data-testid="share-url-input"
+              />
+              <Button
+                variant="secondary"
+                size="icon"
+                onClick={handleCopy}
+                aria-label={t('copyLink')}
+                data-testid="copy-share-url-btn"
+              >
+                <Copy className="size-4" />
+              </Button>
             </div>
-
+          </div>
+        ) : null}
+        <AlertDialogFooter>
+          <AlertDialogCancel variant="outline" size="lg" disabled={loading} className="rounded-full!">
+            {t('cancel')}
+          </AlertDialogCancel>
+          {token ? (
             <Button
               variant="destructive"
-              className="w-full"
+              size="lg"
               onClick={handleRevoke}
               disabled={loading}
               data-testid="revoke-share-btn"
             >
               {t('revokeShare')}
             </Button>
-          </div>
-        ) : (
-          <Button
-            className="w-full"
-            onClick={handleEnable}
-            disabled={loading}
-            data-testid="enable-share-btn"
-          >
-            {t('enableShare')}
-          </Button>
-        )}
-      </DialogContent>
-    </Dialog>
+          ) : (
+            <Button
+              size="lg"
+              onClick={handleEnable}
+              disabled={loading}
+              data-testid="enable-share-btn"
+            >
+              {t('enableShare')}
+            </Button>
+          )}
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   )
 }

@@ -277,7 +277,8 @@
       "enableFailed": "啟用失敗，請再試一次",
       "revokeSuccess": "已撤銷公開分享",
       "revokeFailed": "撤銷失敗，請再試一次",
-      "linkCopied": "已複製連結"
+      "linkCopied": "已複製連結",
+      "cancel": "取消"
     },
     "coverPanel": {
       "pages": "內頁",

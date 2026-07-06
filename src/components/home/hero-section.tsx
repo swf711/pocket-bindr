@@ -41,11 +41,11 @@ export async function HeroSection({ isLoggedIn, cards }: HeroSectionProps) {
               </p>
             </div>
             <div className="flex gap-3 flex-wrap justify-center lg:justify-start">
-              <Button variant="default" className="h-14 px-6 rounded-3xl" asChild>
+              <Button variant="default" size="lg" className="h-14 px-6 rounded-3xl" asChild>
                 <Link href="/cards">{t('startSearch')}</Link>
               </Button>
               {isLoggedIn && (
-                <Button variant="tertiary" className="h-14 px-6 rounded-3xl" asChild>
+                <Button variant="tertiary" size="lg" className="h-14 px-6 rounded-3xl" asChild>
                   <Link href="/binders">{t('myBinders')}</Link>
                 </Button>
               )}

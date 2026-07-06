@@ -359,7 +359,7 @@ export function BinderPublicView({ binder }: { binder: BinderPublicData }) {
                       <ButtonGroup>
                         <IconTooltipButton
                           variant="outline"
-                          size="icon-sm"
+                          size="icon-lg"
                           onClick={() => setSpreadIndex(0)}
                           disabled={spreadIndex === 0}
                           tooltip={t('firstPage')}
@@ -368,7 +368,7 @@ export function BinderPublicView({ binder }: { binder: BinderPublicData }) {
                         </IconTooltipButton>
                         <IconTooltipButton
                           variant="outline"
-                          size="icon-sm"
+                          size="icon-lg"
                           onClick={() => setSpreadIndex(spreadIndex - 1)}
                           disabled={spreadIndex === 0}
                           tooltip={t('prevPage')}
@@ -386,7 +386,7 @@ export function BinderPublicView({ binder }: { binder: BinderPublicData }) {
                       <ButtonGroup>
                         <IconTooltipButton
                           variant="outline"
-                          size="icon-sm"
+                          size="icon-lg"
                           onClick={() => setSpreadIndex(spreadIndex + 1)}
                           disabled={isLastSpread}
                           tooltip={t('nextPage')}
@@ -395,7 +395,7 @@ export function BinderPublicView({ binder }: { binder: BinderPublicData }) {
                         </IconTooltipButton>
                         <IconTooltipButton
                           variant="outline"
-                          size="icon-sm"
+                          size="icon-lg"
                           onClick={() => setSpreadIndex(spreads.length - 1)}
                           disabled={isLastSpread}
                           tooltip={t('lastPage')}
@@ -498,10 +498,10 @@ export function BinderPublicView({ binder }: { binder: BinderPublicData }) {
           {mobilePageIndex > 0 && (
             <Button
               variant="outline"
-              size="icon"
+              size="icon-lg"
               style={{
                 position: 'absolute',
-                left: mobileOffsetX - 44,
+                left: mobileOffsetX - 50,
                 top: '50%',
                 transform: 'translateY(-50%)',
               }}
@@ -515,10 +515,10 @@ export function BinderPublicView({ binder }: { binder: BinderPublicData }) {
           {!isLastMobilePage && (
             <Button
               variant="outline"
-              size="icon"
+              size="icon-lg"
               style={{
                 position: 'absolute',
-                right: mobileOffsetX - 44,
+                right: mobileOffsetX - 50,
                 top: '50%',
                 transform: 'translateY(-50%)',
               }}

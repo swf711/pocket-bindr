@@ -208,7 +208,7 @@ export function BinderMobileView({
               }}
             >
               <div className="flex items-center gap-1">
-                <Button variant="outline" size="sm" className="mr-2" asChild>
+                <Button variant="outline" size="lg" className="mr-2" asChild>
                   <Link href="/binders" aria-label={t('backToList')} data-testid="back-to-binders-mobile">
                     <ChevronLeft className="size-4" />
                     <span>{t('back')}</span>
@@ -282,8 +282,8 @@ export function BinderMobileView({
           {!isDragging && hasPrev && (
             <Button
               variant="outline"
-              size="icon"
-              style={{ position: 'absolute', left: offsetX - 44, top: '50%', transform: 'translateY(-50%)' }}
+              size="icon-lg"
+              style={{ position: 'absolute', left: offsetX - 50, top: '50%', transform: 'translateY(-50%)' }}
               className="z-20"
               onClick={() => onPageChange(pageIndex - 1)}
               aria-label={t('prevPage')}
@@ -296,8 +296,8 @@ export function BinderMobileView({
           {!isDragging && (
             <Button
               variant="outline"
-              size="icon"
-              style={{ position: 'absolute', right: offsetX - 44, top: '50%', transform: 'translateY(-50%)' }}
+              size="icon-lg"
+              style={{ position: 'absolute', right: offsetX - 50, top: '50%', transform: 'translateY(-50%)' }}
               className="z-20"
               onClick={isLastMobilePage ? onAddPage : () => onPageChange(pageIndex + 1)}
               aria-label={isLastMobilePage ? t('addPage') : t('nextPage')}
@@ -356,7 +356,7 @@ export function BinderMobileView({
               <ButtonGroup>
                 <IconTooltipButton
                   variant="outline"
-                  size="icon"
+                  size="icon-lg"
                   data-testid="mobile-first-btn"
                   onClick={() => onPageChange(0)}
                   disabled={pageIndex === 0}
@@ -366,7 +366,7 @@ export function BinderMobileView({
                 </IconTooltipButton>
                 <IconTooltipButton
                   variant="outline"
-                  size="icon"
+                  size="icon-lg"
                   data-testid="mobile-prev-btn"
                   onClick={() => onPageChange(pageIndex - 1)}
                   disabled={pageIndex === 0}
@@ -396,7 +396,7 @@ export function BinderMobileView({
                 ) : (
                   <IconTooltipButton
                     variant="outline"
-                    size="icon"
+                    size="icon-lg"
                     data-testid="mobile-next-btn"
                     onClick={() => onPageChange(pageIndex + 1)}
                     className="gap-1 px-2.5"
@@ -407,7 +407,7 @@ export function BinderMobileView({
                 )}
                 <IconTooltipButton
                   variant="outline"
-                  size="icon"
+                  size="icon-lg"
                   data-testid="mobile-last-btn"
                   onClick={() => onPageChange(mobilePages.length - 1)}
                   disabled={isLastMobilePage}

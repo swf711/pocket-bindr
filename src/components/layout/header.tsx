@@ -49,7 +49,7 @@ export async function Header() {
             {isLoggedIn ? (
               <UserMenu username={username} image={session?.user?.image ?? null} />
             ) : (
-              <Button variant="default" className="h-10 rounded-3xl" asChild>
+              <Button variant="default" size="lg" asChild>
                 <Link href="/login" data-testid="nav-login">
                   {t('login')}
                 </Link>

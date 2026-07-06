@@ -107,6 +107,7 @@ export function UsernameForm({ username, email }: UsernameFormProps) {
         )}
       />
       <Button
+        size="lg"
         type="submit"
         data-testid="save-username-btn"
         disabled={isSubmitting}

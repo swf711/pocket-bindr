@@ -37,7 +37,7 @@ export function CoverColorPicker({ value, onChange }: CoverColorPickerProps) {
       open={open}
       onOpenChange={setOpen}
       title={t('label')}
-      popoverClassName="w-auto p-3 space-y-3"
+      popoverClassName="w-auto p-3 space-y-3 bg-surface-container"
       drawerClassName="p-4 space-y-3"
       trigger={
         <Button

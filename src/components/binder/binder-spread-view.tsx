@@ -276,7 +276,7 @@ export function BinderSpreadView({
               }}
             >
               <div className="flex items-center gap-1">
-                <Button variant="outline" size="sm" className="mr-2" asChild>
+                <Button variant="outline" size="lg" className="mr-2" asChild>
                   <Link href="/binders" aria-label={t('backToList')} data-testid="back-to-binders">
                     <ArrowLeft />
                     <span>{t('back')}</span>
@@ -291,7 +291,7 @@ export function BinderSpreadView({
                       <ButtonGroup>
                         <IconTooltipButton
                           variant="outline"
-                          size="icon-sm"
+                          size="icon-lg"
                           data-testid="spread-first-btn"
                           onClick={() => onSpreadChange(0)}
                           disabled={spreadIndex === 0 || isDragging}
@@ -301,7 +301,7 @@ export function BinderSpreadView({
                         </IconTooltipButton>
                         <IconTooltipButton
                           variant="outline"
-                          size="icon-sm"
+                          size="icon-lg"
                           data-testid="spread-prev-btn"
                           onClick={() => onSpreadChange(spreadIndex - 1)}
                           disabled={spreadIndex === 0 || isDragging}
@@ -334,7 +334,7 @@ export function BinderSpreadView({
                         ) : (
                           <IconTooltipButton
                             variant="outline"
-                            size="icon-sm"
+                            size="icon-lg"
                             data-testid="spread-next-btn"
                             onClick={() => onSpreadChange(spreadIndex + 1)}
                             disabled={isDragging}
@@ -346,7 +346,7 @@ export function BinderSpreadView({
                         )}
                         <IconTooltipButton
                           variant="outline"
-                          size="icon-sm"
+                          size="icon-lg"
                           data-testid="spread-last-btn"
                           onClick={() => onSpreadChange(spreads.length - 1)}
                           disabled={isLastSpread || isDragging}
@@ -451,8 +451,8 @@ export function BinderSpreadView({
           {!isDragging && hasPrev && (
             <Button
               variant="outline"
-              size="icon"
-              style={{ position: 'absolute', left: offsetX - 44, top: '50%', transform: 'translateY(-50%)' }}
+              size="icon-lg"
+              style={{ position: 'absolute', left: offsetX - 50, top: '50%', transform: 'translateY(-50%)' }}
               className="z-20"
               onClick={() => onSpreadChange(spreadIndex - 1)}
               aria-label={t('prevPage')}
@@ -465,8 +465,8 @@ export function BinderSpreadView({
           {!isDragging && (
             <Button
               variant="outline"
-              size="icon"
-              style={{ position: 'absolute', right: offsetX - 44, top: '50%', transform: 'translateY(-50%)' }}
+              size="icon-lg"
+              style={{ position: 'absolute', right: offsetX - 50, top: '50%', transform: 'translateY(-50%)' }}
               className="z-20"
               onClick={isLastSpread ? onAddPage : () => onSpreadChange(spreadIndex + 1)}
               aria-label={isLastSpread ? t('addPage') : t('nextPage')}

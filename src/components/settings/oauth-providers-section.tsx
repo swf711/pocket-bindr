@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
+import { Badge } from '../ui/badge'
 
 interface OAuthProvidersSectionProps {
   linkedProviders: string[]
@@ -74,15 +75,12 @@ export function OAuthProvidersSection({ linkedProviders, hasPassword }: OAuthPro
             <span className="text-sm font-medium">{label}</span>
             {isLinked ? (
               <div className="flex items-center gap-2">
-                <span
-                  data-testid={`${id}-linked-badge`}
-                  className="text-sm text-muted-foreground"
-                >
+                <Badge data-testid={`${id}-linked-badge`}>
                   {t('linkedBadge')}
-                </span>
+                </Badge>
                 <Button
-                  variant="outline"
-                  size="sm"
+                  variant="secondary"
+                  size="lg"
                   data-testid={`${id}-unlink-btn`}
                   disabled={last}
                   title={last ? t('unlinkDisabledTitle') : undefined}
@@ -93,8 +91,8 @@ export function OAuthProvidersSection({ linkedProviders, hasPassword }: OAuthPro
               </div>
             ) : (
               <Button
-                variant="outline"
-                size="sm"
+                variant="tertiary"
+                size="lg"
                 data-testid={`${id}-link-btn`}
                 disabled={linkingProvider !== null}
                 onClick={() => handleLink(id)}

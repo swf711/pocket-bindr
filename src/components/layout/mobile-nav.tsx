@@ -137,7 +137,7 @@ export function MobileNav({ isLoggedIn, username, image }: MobileNavProps) {
           ) : (
             <div className="flex flex-col gap-2 px-3">
               <SheetClose asChild>
-                <Button variant="default" asChild className="w-full h-14 rounded-3xl">
+                <Button variant="default" size="lg" asChild className="w-full h-14 rounded-full">
                   <Link href="/login">{tCommon('login')}</Link>
                 </Button>
               </SheetClose>

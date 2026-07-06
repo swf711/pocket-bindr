@@ -146,7 +146,7 @@ export function BinderListClient({ initialBinders }: BinderListClientProps) {
             <EmptyDescription>{t('emptyDescription')}</EmptyDescription>
           </EmptyHeader>
           <EmptyContent>
-            <Button onClick={() => setCreateOpen(true)}>{t('createFirst')}</Button>
+            <Button size="lg" onClick={() => setCreateOpen(true)}>{t('createFirst')}</Button>
           </EmptyContent>
         </Empty>
       ) : (

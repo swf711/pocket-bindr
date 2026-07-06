@@ -110,6 +110,7 @@ export function PasswordForm() {
         )}
       />
       <Button
+        size="lg"
         type="submit"
         data-testid="save-password-btn"
         disabled={isSubmitting}

@@ -58,7 +58,7 @@ export async function WhySection() {
         </div>
 
         <div className="flex flex-wrap gap-3 justify-center">
-          <Button asChild variant="secondary" className="h-14 has-[>svg]:px-6 rounded-3xl">
+          <Button asChild variant="secondary" size="lg" className="h-14 has-[>svg]:px-6 rounded-3xl">
             <Link
               href="https://www.linkedin.com/in/swf711/"
               target="_blank"
@@ -68,7 +68,7 @@ export async function WhySection() {
               LinkedIn
             </Link>
           </Button>
-          <Button asChild variant="secondary" className="h-14 has-[>svg]:px-6 rounded-3xl">
+          <Button asChild variant="secondary" size="lg" className="h-14 has-[>svg]:px-6 rounded-3xl">
             <Link
               href="https://github.com/swf711"
               target="_blank"
@@ -78,7 +78,7 @@ export async function WhySection() {
               GitHub
             </Link>
           </Button>
-          <Button asChild variant="secondary" className="h-14 has-[>svg]:px-6 rounded-3xl">
+          <Button asChild variant="secondary" size="lg" className="h-14 has-[>svg]:px-6 rounded-3xl">
             <Link href="mailto:your-email@example.com">
               <Mail className="mr-2 size-4" />
               Email
