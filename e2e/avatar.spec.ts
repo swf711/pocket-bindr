@@ -31,7 +31,7 @@ test.describe('頭像上傳', () => {
     })
 
     await expect(page.getByText('頭像已更新')).toBeVisible()
-    await expect(page.locator('[data-slot="avatar-image"]')).toBeVisible()
+    await expect(page.locator('[data-slot="avatar-image"]').first()).toBeVisible()
 
     // Header 右上角頭像應即時同步（router.refresh() 觸發 Server Component 重渲染），不需重新導航
     await expect(

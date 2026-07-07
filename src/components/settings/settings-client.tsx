@@ -67,7 +67,7 @@ export function SettingsClient({
 
       <h1 className="text-2xl font-bold">{t('title')}</h1>
 
-      <div className='grid md:grid-cols-2 gap-4'>
+      <div className="columns-1 md:columns-2 gap-4 *:mb-4 *:break-inside-avoid">
         <Card className="p-6 md:p-8 gap-7 bg-surface-container ring-0">
           <CardHeader>
             <CardTitle>{t('profile.title')}</CardTitle>
@@ -126,7 +126,7 @@ export function SettingsClient({
           <CardFooter className="justify-end border-t-0 bg-transparent">
             <ReportDialog
               trigger={
-                <Button variant="outline" data-testid="settings-report-trigger">
+                <Button variant="secondary" size="lg" data-testid="settings-report-trigger" className="rounded-full">
                   {tReport('trigger')}
                 </Button>
               }

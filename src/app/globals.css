@@ -438,3 +438,25 @@ html.home-snap-scroll:has([data-state="open"]) {
 html.home-snap-scroll body[data-scroll-locked] {
   margin-right: 0px !important;
 }
+
+/* shadcn Attachment 元件（src/components/ui/attachment.tsx）依賴的兩個 utility class，
+ * 官方 registry 只給元件檔本身、不含這段 CSS，需專案自行補上才會生效：
+ * 隱藏原生 scrollbar 改用左右邊緣淡出當作「可橫向捲動」的視覺提示，而非讓使用者
+ * 誤以為內容被裁切消失。 */
+@utility scrollbar-none {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@utility scroll-fade-x {
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    black 12px,
+    black calc(100% - 12px),
+    transparent
+  );
+}

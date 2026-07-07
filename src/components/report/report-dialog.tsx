@@ -1,6 +1,6 @@
 'use client'
 
-import { type ReactNode, useRef, useState } from 'react'
+import { type ReactNode, useEffect, useState } from 'react'
 import { useForm, Controller, type FieldError } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { toast } from 'sonner'
@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
+import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import {
   Select,
@@ -25,6 +26,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import {
+  Attachment,
+  AttachmentGroup,
+  AttachmentMedia,
+  AttachmentContent,
+  AttachmentTitle,
+  AttachmentActions,
+  AttachmentAction,
+} from '@/components/ui/attachment'
 import {
   reportSchema,
   REPORT_TYPES,
@@ -63,10 +73,10 @@ export function ReportDialog({
   const tGlobal = useTranslations()
   const [internalOpen, setInternalOpen] = useState(false)
   const [attachments, setAttachments] = useState<File[]>([])
+  const [previewUrls, setPreviewUrls] = useState<string[]>([])
   const [isCompressing, setIsCompressing] = useState(false)
   // 用 key 強制重掛載 file input 來清空選取檔案，避免在 handleSubmit callback 內讀寫 ref（React Compiler 會警告）
   const [inputKey, setInputKey] = useState(0)
-  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const isControlled = open !== undefined
   const dialogOpen = isControlled ? open : internalOpen
@@ -81,6 +91,14 @@ export function ReportDialog({
     resolver: zodResolver(reportSchema.omit({ cardContext: true })),
     defaultValues: { type: defaultType, message: '' },
   })
+
+  useEffect(() => {
+    const urls = attachments.map((file) => URL.createObjectURL(file))
+    setPreviewUrls(urls)
+    return () => {
+      urls.forEach((url) => URL.revokeObjectURL(url))
+    }
+  }, [attachments])
 
   function resetAttachments() {
     setAttachments([])
@@ -162,7 +180,7 @@ export function ReportDialog({
           <DialogTitle>{t('title')}</DialogTitle>
           <DialogDescription>{t('description')}</DialogDescription>
         </DialogHeader>
-        <form onSubmit={onSubmit} className="space-y-4">
+        <form onSubmit={onSubmit} className="space-y-4 min-w-0">
           {defaultCardContext && (
             <p className="text-sm text-muted-foreground">
               {t('cardContextLabel')}：{defaultCardContext.cardName}（
@@ -214,48 +232,38 @@ export function ReportDialog({
           />
           <div className="space-y-1.5">
             <Label htmlFor="report-attachments">{t('attachLabel')}</Label>
-            <input
+            <Input
               key={inputKey}
-              ref={fileInputRef}
               id="report-attachments"
               type="file"
               accept="image/png,image/jpeg,image/webp"
               multiple
-              className="hidden"
+              disabled={attachments.length >= MAX_REPORT_ATTACHMENTS}
               data-testid="report-attachment-input"
               onChange={handleAttachmentChange}
             />
-            <div className="flex items-center gap-2">
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                disabled={attachments.length >= MAX_REPORT_ATTACHMENTS}
-                onClick={() => fileInputRef.current?.click()}
-              >
-                {t('attachAdd')}
-              </Button>
-              <p className="text-xs text-muted-foreground">{t('attachHint')}</p>
-            </div>
+            <p className="text-xs text-muted-foreground">{t('attachHint')}</p>
             {attachments.length > 0 && (
-              <ul className="flex flex-wrap gap-2" data-testid="report-attachment-list">
+              <AttachmentGroup data-testid="report-attachment-list">
                 {attachments.map((file, i) => (
-                  <li
-                    key={`${file.name}-${i}`}
-                    className="flex items-center gap-1 rounded-md border px-2 py-1 text-xs text-muted-foreground"
-                  >
-                    <span className="max-w-32 truncate">{file.name}</span>
-                    <button
-                      type="button"
-                      aria-label={t('attachRemove')}
-                      onClick={() => removeAttachment(i)}
-                      className="cursor-pointer"
-                    >
-                      <X className="size-3" />
-                    </button>
-                  </li>
+                  <Attachment key={`${file.name}-${i}`} size="sm">
+                    <AttachmentMedia variant="image">
+                      {previewUrls[i] && <img src={previewUrls[i]} alt="" />}
+                    </AttachmentMedia>
+                    <AttachmentContent>
+                      <AttachmentTitle>{file.name}</AttachmentTitle>
+                    </AttachmentContent>
+                    <AttachmentActions>
+                      <AttachmentAction
+                        aria-label={t('attachRemove')}
+                        onClick={() => removeAttachment(i)}
+                      >
+                        <X />
+                      </AttachmentAction>
+                    </AttachmentActions>
+                  </Attachment>
                 ))}
-              </ul>
+              </AttachmentGroup>
             )}
           </div>
           <DialogFooter>

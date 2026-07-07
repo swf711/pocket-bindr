@@ -7,6 +7,7 @@ import { toast } from 'sonner'
 import { useTranslations } from 'next-intl'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
+import { Item, ItemMedia, ItemContent, ItemTitle, ItemActions } from '@/components/ui/item'
 import { cropAndCompress } from '@/lib/image-compress'
 
 const AVATAR_OUTPUT_SIZE = 256
@@ -75,36 +76,39 @@ export function AvatarForm({ username, image }: AvatarFormProps) {
   }
 
   return (
-    <div className="flex items-center gap-4">
-      <Avatar className="size-16">
-        {currentImage && <AvatarImage src={currentImage} alt={username} />}
-        <AvatarFallback className="bg-tertiary-container text-on-tertiary-container text-xl">
-          {initial}
-        </AvatarFallback>
-      </Avatar>
-      <div className="flex flex-col gap-2">
-        <div className="flex gap-2">
+    <Item variant="outline">
+      <ItemMedia>
+        <Avatar className="size-16">
+          <AvatarImage src={currentImage ?? undefined} alt={username} />
+          <AvatarFallback className="bg-tertiary-container text-on-tertiary-container text-xl">
+            {initial}
+          </AvatarFallback>
+        </Avatar>
+      </ItemMedia>
+      <ItemContent>
+        <ItemTitle>{username}</ItemTitle>
+      </ItemContent>
+      <ItemActions>
+        <Button
+          type="button"
+          size="sm"
+          variant="tertiary"
+          disabled={isUploading}
+          onClick={() => fileInputRef.current?.click()}
+        >
+          {isUploading ? t('uploading') : t('upload')}
+        </Button>
+        {currentImage && (
           <Button
             type="button"
             size="sm"
-            variant="tertiary"
-            disabled={isUploading}
-            onClick={() => fileInputRef.current?.click()}
+            variant="secondary"
+            disabled={isRemoving}
+            onClick={handleRemove}
           >
-            {isUploading ? t('uploading') : t('upload')}
+            {isRemoving ? t('removing') : t('remove')}
           </Button>
-          {currentImage && (
-            <Button
-              type="button"
-              size="sm"
-              variant="secondary"
-              disabled={isRemoving}
-              onClick={handleRemove}
-            >
-              {isRemoving ? t('removing') : t('remove')}
-            </Button>
-          )}
-        </div>
+        )}
         <input
           ref={fileInputRef}
           type="file"
@@ -113,7 +117,7 @@ export function AvatarForm({ username, image }: AvatarFormProps) {
           data-testid="avatar-file-input"
           onChange={handleFileChange}
         />
-      </div>
-    </div>
+      </ItemActions>
+    </Item>
   )
 }

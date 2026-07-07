@@ -6,15 +6,17 @@ import { toast } from 'sonner'
 import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { Badge } from '../ui/badge'
+import { Item, ItemGroup, ItemMedia, ItemContent, ItemTitle, ItemActions } from '@/components/ui/item'
+import { GoogleIcon, DiscordIcon } from '@/components/icons/provider-icons'
 
 interface OAuthProvidersSectionProps {
   linkedProviders: string[]
   hasPassword: boolean
 }
 
-const PROVIDERS: { id: string; label: string }[] = [
-  { id: 'google', label: 'Google' },
-  { id: 'discord', label: 'Discord' },
+const PROVIDERS: { id: string; label: string; icon: React.ComponentType<React.SVGProps<SVGSVGElement>> }[] = [
+  { id: 'google', label: 'Google', icon: GoogleIcon },
+  { id: 'discord', label: 'Discord', icon: DiscordIcon },
 ]
 
 export function OAuthProvidersSection({ linkedProviders, hasPassword }: OAuthProvidersSectionProps) {
@@ -66,43 +68,50 @@ export function OAuthProvidersSection({ linkedProviders, hasPassword }: OAuthPro
   }
 
   return (
-    <div className="space-y-4">
-      {PROVIDERS.map(({ id, label }) => {
+    <ItemGroup className="gap-4">
+      {PROVIDERS.map(({ id, label, icon: Icon }) => {
         const isLinked = linkedProviders.includes(id)
         const last = isLastMethod(id)
         return (
-          <div key={id} className="flex items-center justify-between">
-            <span className="text-sm font-medium">{label}</span>
-            {isLinked ? (
-              <div className="flex items-center gap-2">
-                <Badge data-testid={`${id}-linked-badge`}>
-                  {t('linkedBadge')}
-                </Badge>
+          <Item key={id} variant="outline">
+            <ItemMedia variant="icon">
+              <Icon className="size-4" />
+            </ItemMedia>
+            <ItemContent>
+              <ItemTitle>{label}</ItemTitle>
+            </ItemContent>
+            <ItemActions>
+              {isLinked ? (
+                <>
+                  <Badge data-testid={`${id}-linked-badge`}>
+                    {t('linkedBadge')}
+                  </Badge>
+                  <Button
+                    variant="secondary"
+                    size="lg"
+                    data-testid={`${id}-unlink-btn`}
+                    disabled={last}
+                    title={last ? t('unlinkDisabledTitle') : undefined}
+                    onClick={() => handleUnlink(id)}
+                  >
+                    {t('unlink')}
+                  </Button>
+                </>
+              ) : (
                 <Button
-                  variant="secondary"
+                  variant="tertiary"
                   size="lg"
-                  data-testid={`${id}-unlink-btn`}
-                  disabled={last}
-                  title={last ? t('unlinkDisabledTitle') : undefined}
-                  onClick={() => handleUnlink(id)}
+                  data-testid={`${id}-link-btn`}
+                  disabled={linkingProvider !== null}
+                  onClick={() => handleLink(id)}
                 >
-                  {t('unlink')}
+                  {linkingProvider === id ? t('linking') : t('link')}
                 </Button>
-              </div>
-            ) : (
-              <Button
-                variant="tertiary"
-                size="lg"
-                data-testid={`${id}-link-btn`}
-                disabled={linkingProvider !== null}
-                onClick={() => handleLink(id)}
-              >
-                {linkingProvider === id ? t('linking') : t('link')}
-              </Button>
-            )}
-          </div>
+              )}
+            </ItemActions>
+          </Item>
         )
       })}
-    </div>
+    </ItemGroup>
   )
 }
