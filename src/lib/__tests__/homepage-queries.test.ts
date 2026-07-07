@@ -96,14 +96,82 @@ describe('getShowcaseCards', () => {
     expect(result[0].zhSetName).toBeUndefined()
   })
 
-  it('limit 參數正確套用至 take', async () => {
+  it('limit 參數決定候選池大小（limit * 4）', async () => {
     vi.mocked(prisma.card.findMany).mockResolvedValue([])
 
     await getShowcaseCards('PTCG', 'ZH_TW', 3)
 
     expect(prisma.card.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({ take: 3 })
+      expect.objectContaining({ take: 12 })
     )
+  })
+
+  it('優先以高稀有度 where 條件 + 卡號遞減撈取候選池', async () => {
+    vi.mocked(prisma.card.findMany).mockResolvedValueOnce([mockPrismaCard] as never)
+
+    await getShowcaseCards('PTCG', 'ZH_TW', 1)
+
+    expect(prisma.card.findMany).toHaveBeenCalledTimes(1)
+    expect(prisma.card.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ rarity: { in: expect.any(Array) }, supertype: 'Pokémon' }),
+        orderBy: { cardNumber: 'desc' },
+      })
+    )
+  })
+
+  it('PTCG：where 限定 supertype 為寶可夢卡（排除 Trainer / Energy）', async () => {
+    vi.mocked(prisma.card.findMany).mockResolvedValueOnce([mockPrismaCard] as never)
+
+    await getShowcaseCards('PTCG', 'ZH_TW', 1)
+
+    expect(prisma.card.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: expect.objectContaining({ supertype: 'Pokémon' }) })
+    )
+  })
+
+  it('OPCG：不限制 supertype', async () => {
+    vi.mocked(prisma.card.findMany).mockResolvedValueOnce([mockOpcgCard] as never)
+
+    await getShowcaseCards('OPCG', 'JA', 1)
+
+    const call = vi.mocked(prisma.card.findMany).mock.calls[0][0]
+    expect(call?.where).not.toHaveProperty('supertype')
+  })
+
+  it('高稀有度候選池不足 limit 時，退回無 rarity 過濾重新撈取（涵蓋 PTCG ZH_TW 全空 rarity）', async () => {
+    vi.mocked(prisma.card.findMany)
+      .mockResolvedValueOnce([]) // 高稀有度過濾：0 命中
+      .mockResolvedValueOnce([mockPrismaCard] as never) // fallback：無過濾
+
+    const result = await getShowcaseCards('PTCG', 'ZH_TW', 3)
+
+    expect(prisma.card.findMany).toHaveBeenCalledTimes(2)
+    const fallbackCall = vi.mocked(prisma.card.findMany).mock.calls[1][0]
+    expect(fallbackCall).toEqual(
+      expect.objectContaining({
+        where: {
+          game: 'PTCG',
+          language: 'ZH_TW',
+          isCollectible: true,
+          imageSmall: { not: '' },
+          supertype: 'Pokémon',
+        },
+        orderBy: { cardNumber: 'desc' },
+      })
+    )
+    expect(result).toHaveLength(1)
+  })
+
+  it('回傳結果依稀有度／卡號排序後取前 limit 筆', async () => {
+    const lowRarityCard = { ...mockPrismaCard, id: 'card-low', rarity: 'Common', cardNumber: '010' }
+    const highRarityCard = { ...mockPrismaCard, id: 'card-high', rarity: 'Hyper Rare', cardNumber: '200' }
+    vi.mocked(prisma.card.findMany).mockResolvedValueOnce([lowRarityCard, highRarityCard] as never)
+
+    const result = await getShowcaseCards('PTCG', 'ZH_TW', 1)
+
+    expect(result).toHaveLength(1)
+    expect(result[0].id).toBe('card-high')
   })
 
   it('imageSmall 為空時被 where 條件過濾（不回傳）', async () => {
@@ -224,10 +292,22 @@ describe('getLatestSeriesCards', () => {
     expect(prisma.card.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({ setId: 'set-latest', isCollectible: true }),
-        take: 2,
+        take: 300,
       })
     )
     expect(result).toHaveLength(1)
+  })
+
+  it('依稀有度／卡號排序後取前 limit 筆（該 set 內取最高稀有度）', async () => {
+    vi.mocked(prisma.cardSet.findFirst).mockResolvedValue(mockLatestSet as never)
+    const lowRarityCard = { ...mockPrismaCard, id: 'card-low', rarity: 'Common', cardNumber: '010' }
+    const highRarityCard = { ...mockPrismaCard, id: 'card-high', rarity: 'Hyper Rare', cardNumber: '200' }
+    vi.mocked(prisma.card.findMany).mockResolvedValue([lowRarityCard, highRarityCard] as never)
+
+    const result = await getLatestSeriesCards('PTCG', 'ZH_TW', 1)
+
+    expect(result).toHaveLength(1)
+    expect(result[0].id).toBe('card-high')
   })
 
   it('無符合系列時回傳空陣列', async () => {
