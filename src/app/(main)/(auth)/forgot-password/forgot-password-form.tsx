@@ -1,29 +1,33 @@
 'use client'
 
 import { useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { Field, FieldGroup, FieldLabel, FieldDescription } from '@/components/ui/field'
+import { Field, FieldError, FieldGroup, FieldLabel, FieldDescription } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { forgotPasswordSchema, type ForgotPasswordInput } from '@/lib/schemas/auth'
+import { resolveFieldError } from '@/lib/schemas/field-error'
 
 export function ForgotPasswordForm() {
   const t = useTranslations('auth')
+  const tRoot = useTranslations()
   const [submitted, setSubmitted] = useState(false)
   const [rateLimited, setRateLimited] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const { register, handleSubmit } = useForm<ForgotPasswordInput>({
+  const {
+    control,
+    handleSubmit,
+    formState: { isSubmitting },
+  } = useForm<ForgotPasswordInput>({
     resolver: zodResolver(forgotPasswordSchema),
     defaultValues: { email: '' },
   })
 
   const onSubmit = handleSubmit(async ({ email }) => {
-    setLoading(true)
     setRateLimited(false)
 
     const res = await fetch('/api/auth/forgot-password', {
@@ -31,8 +35,6 @@ export function ForgotPasswordForm() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email }),
     })
-
-    setLoading(false)
 
     if (res.status === 429) {
       setRateLimited(true)
@@ -68,21 +70,29 @@ export function ForgotPasswordForm() {
               </AlertDescription>
             </Alert>
           ) : (
-            <form onSubmit={onSubmit} className="space-y-4">
+            <form onSubmit={onSubmit} className="space-y-4" noValidate>
               <FieldGroup>
+                <Controller
+                  control={control}
+                  name="email"
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={!!fieldState.error}>
+                      <FieldLabel htmlFor="email">{t('email')}</FieldLabel>
+                      <Input
+                        id="email"
+                        type="email"
+                        placeholder="your@email.com"
+                        required
+                        aria-invalid={fieldState.invalid}
+                        {...field}
+                      />
+                      <FieldError errors={fieldState.error ? [{ message: resolveFieldError(fieldState.error, tRoot) }] : undefined} />
+                    </Field>
+                  )}
+                />
                 <Field>
-                  <FieldLabel htmlFor="email">{t('email')}</FieldLabel>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="your@email.com"
-                    required
-                    {...register('email')}
-                  />
-                </Field>
-                <Field>
-                  <Button type="submit" size="lg" disabled={loading}>
-                    {loading ? t('forgot.submitting') : t('forgot.submit')}
+                  <Button type="submit" size="lg" disabled={isSubmitting}>
+                    {isSubmitting ? t('forgot.submitting') : t('forgot.submit')}
                   </Button>
                 </Field>
               </FieldGroup>

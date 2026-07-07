@@ -78,7 +78,8 @@ describe('RegisterForm', () => {
     fillForm({ password: 'short', confirm: 'short' })
     fireEvent.click(screen.getByRole('button', { name: '註冊' }))
     await waitFor(() => {
-      expect(screen.getByTestId('register-error')).toHaveTextContent('密碼至少需要 8 個字元')
+      // inline 顯示於密碼欄位
+      expect(screen.getByText('密碼至少需要 8 個字元')).toBeInTheDocument()
     })
     expect(fetch).not.toHaveBeenCalled()
   })
@@ -88,7 +89,8 @@ describe('RegisterForm', () => {
     fillForm({ password: 'password123', confirm: 'password999' })
     fireEvent.click(screen.getByRole('button', { name: '註冊' }))
     await waitFor(() => {
-      expect(screen.getByTestId('register-error')).toHaveTextContent('兩次輸入的密碼不一致')
+      // inline 顯示於確認密碼欄位
+      expect(screen.getByText('兩次輸入的密碼不一致')).toBeInTheDocument()
     })
     expect(fetch).not.toHaveBeenCalled()
   })
@@ -101,7 +103,8 @@ describe('RegisterForm', () => {
     fillForm({ email: 'taken@b.com', username: 'user1' })
     fireEvent.click(screen.getByRole('button', { name: '註冊' }))
     await waitFor(() => {
-      expect(screen.getByTestId('register-error')).toHaveTextContent('此 Email 已被使用')
+      // 可歸欄位 → inline 貼回 email 欄位
+      expect(screen.getByText('此 Email 已被使用')).toBeInTheDocument()
     })
   })
 
@@ -113,7 +116,8 @@ describe('RegisterForm', () => {
     fillForm({ username: 'taken' })
     fireEvent.click(screen.getByRole('button', { name: '註冊' }))
     await waitFor(() => {
-      expect(screen.getByTestId('register-error')).toHaveTextContent('此使用者名稱已被使用')
+      // 可歸欄位 → inline 貼回 username 欄位
+      expect(screen.getByText('此使用者名稱已被使用')).toBeInTheDocument()
     })
   })
 

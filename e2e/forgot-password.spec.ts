@@ -125,7 +125,8 @@ test.describe('重設密碼頁面 — token 流程', () => {
     await page.getByLabel('新密碼').fill('short')
     await page.getByLabel('確認密碼').fill('short')
     await page.getByRole('button', { name: '設定新密碼' }).click()
-    await expect(page.getByTestId('reset-error-alert')).toBeVisible()
+    // 純前端驗證錯誤 inline 顯示於新密碼欄位（非表單級 reset-error-alert）
+    await expect(page.getByText('密碼至少需要 8 個字元')).toBeVisible()
   })
 
   test('兩次密碼不一致 → 顯示錯誤（純前端驗證）', async ({ page }) => {
@@ -135,7 +136,8 @@ test.describe('重設密碼頁面 — token 流程', () => {
     await page.getByLabel('新密碼').fill('Password123!')
     await page.getByLabel('確認密碼').fill('Different456!')
     await page.getByRole('button', { name: '設定新密碼' }).click()
-    await expect(page.getByTestId('reset-error-alert')).toContainText('不一致')
+    // 不一致錯誤 inline 顯示於確認密碼欄位（非表單級 reset-error-alert）
+    await expect(page.getByText('兩次輸入的密碼不一致')).toBeVisible()
   })
 })
 

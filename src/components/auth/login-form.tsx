@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { signIn } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
@@ -12,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import {
   Field,
   FieldDescription,
+  FieldError,
   FieldGroup,
   FieldLabel,
   FieldSeparator,
@@ -21,6 +22,7 @@ import { PasswordInput } from '@/components/auth/password-input'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { consentChunks } from '@/components/auth/consent-chunks'
 import { loginSchema, type LoginInput } from '@/lib/schemas/auth'
+import { resolveFieldError } from '@/lib/schemas/field-error'
 
 interface LoginFormProps {
   oauthError?: string
@@ -31,18 +33,21 @@ interface LoginFormProps {
 export function LoginForm({ oauthError, accountDeleted, passwordReset }: LoginFormProps) {
   const router = useRouter()
   const t = useTranslations('auth')
+  const tRoot = useTranslations()
+  // Sign-in failure（帳密錯誤）無法歸到單一欄位，保留表單級錯誤。
   const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
-  const { register, handleSubmit } = useForm<LoginInput>({
+  const {
+    control,
+    handleSubmit,
+    formState: { isSubmitting },
+  } = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
     defaultValues: { email: '', password: '' },
   })
 
   const onSubmit = handleSubmit(async ({ email, password }) => {
-    setLoading(true)
     setError('')
     const res = await signIn('credentials', { email, password, redirect: false, callbackUrl: '/cards' })
-    setLoading(false)
     if (res?.error) {
       setError(t('login.invalidCredentials'))
     } else {
@@ -86,35 +91,56 @@ export function LoginForm({ oauthError, accountDeleted, passwordReset }: LoginFo
               <AlertDescription>{oauthMessage}</AlertDescription>
             </Alert>
           )}
-          <form onSubmit={onSubmit} className="space-y-4">
+          <form onSubmit={onSubmit} className="space-y-4" noValidate>
             <FieldGroup>
-              <Field>
-                <FieldLabel htmlFor="email">{t('email')}</FieldLabel>
-                <Input
-                  id="email"
-                  type="email"
-                  required
-                  {...register('email')}
-                />
-              </Field>
+              <Controller
+                control={control}
+                name="email"
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={!!fieldState.error}>
+                    <FieldLabel htmlFor="email">{t('email')}</FieldLabel>
+                    <Input
+                      id="email"
+                      type="email"
+                      required
+                      aria-invalid={fieldState.invalid}
+                      {...field}
+                    />
+                    <FieldError errors={fieldState.error ? [{ message: resolveFieldError(fieldState.error, tRoot) }] : undefined} />
+                  </Field>
+                )}
+              />
 
-              <Field>
-                <div className="flex items-center justify-between">
-                  <FieldLabel htmlFor="password">{t('password')}</FieldLabel>
-                  <Link href="/forgot-password" className="text-sm text-muted-foreground hover:text-foreground underline-offset-4 hover:underline">
-                    {t('login.forgotPassword')}
-                  </Link>
-                </div>
-                <PasswordInput id="password" autoComplete="current-password" required {...register('password')} />
-              </Field>
+              <Controller
+                control={control}
+                name="password"
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={!!fieldState.error}>
+                    <div className="flex items-center justify-between">
+                      <FieldLabel htmlFor="password">{t('password')}</FieldLabel>
+                      <Link href="/forgot-password" className="text-sm text-muted-foreground hover:text-foreground underline-offset-4 hover:underline">
+                        {t('login.forgotPassword')}
+                      </Link>
+                    </div>
+                    <PasswordInput
+                      id="password"
+                      autoComplete="current-password"
+                      required
+                      aria-invalid={fieldState.invalid}
+                      {...field}
+                    />
+                    <FieldError errors={fieldState.error ? [{ message: resolveFieldError(fieldState.error, tRoot) }] : undefined} />
+                  </Field>
+                )}
+              />
 
               {error && (
                 <p data-testid="login-error" className="text-sm text-destructive">{error}</p>
               )}
 
               <Field>
-                <Button type="submit" size="lg" disabled={loading}>
-                  {loading ? t('login.submitting') : t('login.submit')}
+                <Button type="submit" size="lg" disabled={isSubmitting}>
+                  {isSubmitting ? t('login.submitting') : t('login.submit')}
                 </Button>
               </Field>
 

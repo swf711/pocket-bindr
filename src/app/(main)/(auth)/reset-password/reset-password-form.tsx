@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useForm, type FieldErrors } from 'react-hook-form'
+import { useForm, Controller, type FieldError } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useRouter } from 'next/navigation'
@@ -9,13 +9,24 @@ import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { Field, FieldGroup, FieldLabel } from '@/components/ui/field'
+import { Field, FieldError as FieldErrorText, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { PasswordInput } from '@/components/auth/password-input'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Progress } from '@/components/ui/progress'
 import { getPasswordStrength, MIN_PASSWORD_LENGTH } from '@/lib/password-policy'
 import { resetPasswordSchema } from '@/lib/schemas/auth'
 import { resolveFieldError } from '@/lib/schemas/field-error'
+
+// client 端 zod 驗證錯誤（message 是 code）走 resolveFieldError 轉譯；
+// setError 寫入的伺服器錯誤（type: 'server'）已是翻譯文字，原樣顯示。
+function fieldErrorMessage(
+  error: FieldError | undefined,
+  t: (key: string) => string,
+): string | undefined {
+  if (!error) return undefined
+  if (error.type === 'server') return error.message
+  return resolveFieldError(error, t)
+}
 
 const STRENGTH_COLORS = ['bg-destructive', 'bg-destructive', 'bg-yellow-500', 'bg-green-500'] as const
 
@@ -46,12 +57,18 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
   const router = useRouter()
   const t = useTranslations('auth')
   const tRoot = useTranslations()
+  // token 失效等無法歸到單一欄位的錯誤保留表單級 Alert。
   const [error, setError] = useState<string | null>(null)
   // Tracks whether the current error is a token issue (expired/invalid) so we can
   // offer the "request a new link" affordance without substring-matching localized text.
   const [canReapply, setCanReapply] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const { register, handleSubmit, watch } = useForm<ResetPasswordFormValues>({
+  const {
+    control,
+    handleSubmit,
+    setError: setFieldError,
+    watch,
+    formState: { isSubmitting },
+  } = useForm<ResetPasswordFormValues>({
     resolver: zodResolver(resetPasswordFormSchema),
     defaultValues: { newPassword: '', confirmPassword: '' },
   })
@@ -74,17 +91,15 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
     )
   }
 
-  const onValid = async ({ newPassword }: ResetPasswordFormValues) => {
+  const onSubmit = handleSubmit(async ({ newPassword }) => {
     setError(null)
     setCanReapply(false)
 
-    setLoading(true)
     const res = await fetch('/api/auth/reset-password', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ token, newPassword }),
     })
-    setLoading(false)
 
     if (res.ok) {
       router.push('/login?reset=success')
@@ -99,20 +114,12 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
       setError(t('reset.tokenInvalid'))
       setCanReapply(true)
     } else if (data.error === 'INVALID_NEW_PASSWORD') {
-      setError(t('weakPassword', { min: MIN_PASSWORD_LENGTH }))
+      // 可歸欄位 → inline 貼回新密碼欄位。
+      setFieldError('newPassword', { type: 'server', message: t('weakPassword', { min: MIN_PASSWORD_LENGTH }) })
     } else {
       setError(t('reset.genericError'))
     }
-  }
-
-  const onInvalid = (errors: FieldErrors<ResetPasswordFormValues>) => {
-    const firstError = errors.newPassword ?? errors.confirmPassword
-    if (firstError) {
-      setError(resolveFieldError(firstError, tRoot) ?? null)
-    }
-  }
-
-  const onSubmit = handleSubmit(onValid, onInvalid)
+  })
 
   return (
     <Card className="p-6 md:p-8 gap-7 bg-surface-container ring-0">
@@ -126,38 +133,54 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
-        <form onSubmit={onSubmit} className="space-y-4">
+        <form onSubmit={onSubmit} className="space-y-4" noValidate>
           <FieldGroup>
-            <Field>
-              <FieldLabel htmlFor="new-password">{t('newPassword')}</FieldLabel>
-              <PasswordInput
-                id="new-password"
-                autoComplete="new-password"
-                required
-                {...register('newPassword')}
-              />
-              {password.length > 0 && (
-                <div className="space-y-1 pt-1">
-                  <Progress
-                    value={(strength.score / 3) * 100}
-                    className={`h-1 [&>div]:${STRENGTH_COLORS[strength.score]}`}
+            <Controller
+              control={control}
+              name="newPassword"
+              render={({ field, fieldState }) => (
+                <Field data-invalid={!!fieldState.error}>
+                  <FieldLabel htmlFor="new-password">{t('newPassword')}</FieldLabel>
+                  <PasswordInput
+                    id="new-password"
+                    autoComplete="new-password"
+                    required
+                    aria-invalid={fieldState.invalid}
+                    {...field}
                   />
-                  <p className="text-xs text-muted-foreground">{t(`strength.${strength.score}`)}</p>
-                </div>
+                  {password.length > 0 && (
+                    <div className="space-y-1 pt-1">
+                      <Progress
+                        value={(strength.score / 3) * 100}
+                        className={`h-1 [&>div]:${STRENGTH_COLORS[strength.score]}`}
+                      />
+                      <p className="text-xs text-muted-foreground">{t(`strength.${strength.score}`)}</p>
+                    </div>
+                  )}
+                  <FieldErrorText>{fieldErrorMessage(fieldState.error, tRoot)}</FieldErrorText>
+                </Field>
               )}
-            </Field>
+            />
+            <Controller
+              control={control}
+              name="confirmPassword"
+              render={({ field, fieldState }) => (
+                <Field data-invalid={!!fieldState.error}>
+                  <FieldLabel htmlFor="confirm-password">{t('confirmPassword')}</FieldLabel>
+                  <PasswordInput
+                    id="confirm-password"
+                    autoComplete="new-password"
+                    required
+                    aria-invalid={fieldState.invalid}
+                    {...field}
+                  />
+                  <FieldErrorText>{fieldErrorMessage(fieldState.error, tRoot)}</FieldErrorText>
+                </Field>
+              )}
+            />
             <Field>
-              <FieldLabel htmlFor="confirm-password">{t('confirmPassword')}</FieldLabel>
-              <PasswordInput
-                id="confirm-password"
-                autoComplete="new-password"
-                required
-                {...register('confirmPassword')}
-              />
-            </Field>
-            <Field>
-              <Button type="submit" size="lg" disabled={loading}>
-                {loading ? t('reset.submitting') : t('reset.submit')}
+              <Button type="submit" size="lg" disabled={isSubmitting}>
+                {isSubmitting ? t('reset.submitting') : t('reset.submit')}
               </Button>
             </Field>
           </FieldGroup>

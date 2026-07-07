@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useForm, type FieldErrors } from 'react-hook-form'
+import { useForm, Controller, type FieldError as RHFFieldError } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { signIn } from 'next-auth/react'
@@ -13,6 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import {
   Field,
   FieldDescription,
+  FieldError,
   FieldGroup,
   FieldLabel,
   FieldSeparator,
@@ -24,6 +25,17 @@ import { getPasswordStrength } from '@/lib/password-policy'
 import { consentChunks } from '@/components/auth/consent-chunks'
 import { registerSchema } from '@/lib/schemas/auth'
 import { resolveFieldError } from '@/lib/schemas/field-error'
+
+// 顯示欄位錯誤：client 端 zod 驗證錯誤（message 是 code）走 resolveFieldError
+// 轉譯；API 回傳並經 setError 寫入的業務錯誤（type: 'server'）已是翻譯完成的文字，原樣顯示。
+function fieldErrorMessage(
+  error: RHFFieldError | undefined,
+  t: (key: string) => string,
+): string | undefined {
+  if (!error) return undefined
+  if (error.type === 'server') return error.message
+  return resolveFieldError(error, t)
+}
 
 /**
  * 表單專用 schema：在共用 registerSchema 上疊加 confirmPassword 純前端比對。
@@ -47,9 +59,15 @@ export function RegisterForm() {
   const router = useRouter()
   const t = useTranslations('auth')
   const tRoot = useTranslations()
+  // 無法歸到單一欄位的伺服器錯誤（INVALID_INPUT / SERVER_ERROR / generic）走表單級錯誤。
   const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
-  const { register, handleSubmit, watch } = useForm<RegisterFormValues>({
+  const {
+    control,
+    handleSubmit,
+    setError: setFieldError,
+    watch,
+    formState: { isSubmitting },
+  } = useForm<RegisterFormValues>({
     resolver: zodResolver(registerFormSchema),
     defaultValues: { email: '', username: '', password: '', confirmPassword: '' },
   })
@@ -57,9 +75,8 @@ export function RegisterForm() {
   const password = watch('password')
   const strength = getPasswordStrength(password)
 
-  const onValid = async ({ email, username, password }: RegisterFormValues) => {
+  const onSubmit = handleSubmit(async ({ email, username, password }) => {
     setError('')
-    setLoading(true)
 
     const res = await fetch('/api/auth/register', {
       method: 'POST',
@@ -71,28 +88,23 @@ export function RegisterForm() {
 
     if (!data.success) {
       const code = data.error as string
-      if (['EMAIL_TAKEN', 'USERNAME_TAKEN', 'INVALID_INPUT', 'SERVER_ERROR'].includes(code)) {
+      // 可歸欄位的錯誤 inline 貼回該欄位；其餘走表單級錯誤。
+      if (code === 'EMAIL_TAKEN') {
+        setFieldError('email', { type: 'server', message: t('register.errors.EMAIL_TAKEN') })
+      } else if (code === 'USERNAME_TAKEN') {
+        setFieldError('username', { type: 'server', message: t('register.errors.USERNAME_TAKEN') })
+      } else if (['INVALID_INPUT', 'SERVER_ERROR'].includes(code)) {
         setError(t(`register.errors.${code}`))
       } else {
         setError(t('register.genericError'))
       }
-      setLoading(false)
       return
     }
 
     await signIn('credentials', { email, password, redirect: false })
     router.push('/cards')
     router.refresh()
-  }
-
-  const onInvalid = (errors: FieldErrors<RegisterFormValues>) => {
-    const firstError = errors.password ?? errors.confirmPassword ?? errors.email ?? errors.username
-    if (firstError) {
-      setError(resolveFieldError(firstError, tRoot) ?? '')
-    }
-  }
-
-  const onSubmit = handleSubmit(onValid, onInvalid)
+  })
 
   return (
     <div className="flex flex-col gap-6">
@@ -104,61 +116,93 @@ export function RegisterForm() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <form onSubmit={onSubmit} className="space-y-4">
+          <form onSubmit={onSubmit} className="space-y-4" noValidate>
             <FieldGroup>
-              <Field>
-                <FieldLabel htmlFor="email">{t('email')}</FieldLabel>
-                <Input
-                  id="email"
-                  type="email"
-                  required
-                  {...register('email')}
-                />
-              </Field>
-
-              <Field>
-                <FieldLabel htmlFor="username">{t('register.username')}</FieldLabel>
-                <Input
-                  id="username"
-                  type="text"
-                  required
-                  {...register('username')}
-                />
-              </Field>
-
-              <Field>
-                <FieldLabel htmlFor="password">{t('password')}</FieldLabel>
-                <PasswordInput
-                  id="password"
-                  autoComplete="new-password"
-                  required
-                  {...register('password')}
-                />
-                {password.length > 0 && (
-                  <div className="space-y-1" data-testid="password-strength">
-                    <Progress value={((strength.score + 1) / 4) * 100} className="h-1.5" />
-                    <FieldDescription>{t('strength.label', { level: t(`strength.${strength.score}`) })}</FieldDescription>
-                  </div>
+              <Controller
+                control={control}
+                name="email"
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={!!fieldState.error}>
+                    <FieldLabel htmlFor="email">{t('email')}</FieldLabel>
+                    <Input
+                      id="email"
+                      type="email"
+                      required
+                      aria-invalid={fieldState.invalid}
+                      {...field}
+                    />
+                    <FieldError>{fieldErrorMessage(fieldState.error, tRoot)}</FieldError>
+                  </Field>
                 )}
-              </Field>
+              />
 
-              <Field>
-                <FieldLabel htmlFor="confirmPassword">{t('confirmPassword')}</FieldLabel>
-                <PasswordInput
-                  id="confirmPassword"
-                  autoComplete="new-password"
-                  required
-                  {...register('confirmPassword')}
-                />
-              </Field>
+              <Controller
+                control={control}
+                name="username"
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={!!fieldState.error}>
+                    <FieldLabel htmlFor="username">{t('register.username')}</FieldLabel>
+                    <Input
+                      id="username"
+                      type="text"
+                      required
+                      aria-invalid={fieldState.invalid}
+                      {...field}
+                    />
+                    <FieldError>{fieldErrorMessage(fieldState.error, tRoot)}</FieldError>
+                  </Field>
+                )}
+              />
+
+              <Controller
+                control={control}
+                name="password"
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={!!fieldState.error}>
+                    <FieldLabel htmlFor="password">{t('password')}</FieldLabel>
+                    <PasswordInput
+                      id="password"
+                      autoComplete="new-password"
+                      required
+                      aria-invalid={fieldState.invalid}
+                      {...field}
+                    />
+                    {password.length > 0 && (
+                      <div className="space-y-1" data-testid="password-strength">
+                        <Progress value={((strength.score + 1) / 4) * 100} className="h-1.5" />
+                        <FieldDescription>{t('strength.label', { level: t(`strength.${strength.score}`) })}</FieldDescription>
+                      </div>
+                    )}
+                    <FieldError>{fieldErrorMessage(fieldState.error, tRoot)}</FieldError>
+                  </Field>
+                )}
+              />
+
+              <Controller
+                control={control}
+                name="confirmPassword"
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={!!fieldState.error}>
+                    <FieldLabel htmlFor="confirmPassword">{t('confirmPassword')}</FieldLabel>
+                    <PasswordInput
+                      id="confirmPassword"
+                      autoComplete="new-password"
+                      required
+                      aria-invalid={fieldState.invalid}
+                      {...field}
+                    />
+                    <FieldError>{fieldErrorMessage(fieldState.error, tRoot)}</FieldError>
+                  </Field>
+                )}
+              />
 
               {error && (
                 <p data-testid="register-error" className="text-sm text-destructive">{error}</p>
               )}
 
               <Field>
-                <Button type="submit" size="lg" disabled={loading}>
-                  {loading ? t('register.submitting') : t('register.submit')}
+                <Button type="submit" size="lg" disabled={isSubmitting}>
+                  {isSubmitting ? t('register.submitting') : t('register.submit')}
                 </Button>
               </Field>
 

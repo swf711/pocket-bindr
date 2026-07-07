@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { signIn } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
@@ -16,6 +16,7 @@ import { DialogHeaderClose } from '@/components/common/dialog-header-close'
 import {
   Field,
   FieldDescription,
+  FieldError,
   FieldGroup,
   FieldLabel,
   FieldSeparator,
@@ -24,6 +25,7 @@ import { Input } from '@/components/ui/input'
 import { PasswordInput } from '@/components/auth/password-input'
 import { makeConsentChunks } from '@/components/auth/consent-chunks'
 import { loginSchema, type LoginInput } from '@/lib/schemas/auth'
+import { resolveFieldError } from '@/lib/schemas/field-error'
 import Link from 'next/link'
 
 // Light links: the consent strip floats over the fixed dark dialog overlay
@@ -41,18 +43,21 @@ interface LoginModalProps {
 export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
   const router = useRouter()
   const t = useTranslations('auth')
+  const tRoot = useTranslations()
+  // Sign-in failure（帳密錯誤）無法歸到單一欄位，保留表單級錯誤。
   const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
-  const { register, handleSubmit } = useForm<LoginInput>({
+  const {
+    control,
+    handleSubmit,
+    formState: { isSubmitting },
+  } = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
     defaultValues: { email: '', password: '' },
   })
 
   const onSubmit = handleSubmit(async ({ email, password }) => {
     setError('')
-    setLoading(true)
     const res = await signIn('credentials', { email, password, redirect: false })
-    setLoading(false)
     if (res?.ok) {
       router.refresh()
       onSuccess()
@@ -67,33 +72,49 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
         <DialogHeaderClose>
           <DialogTitle>{t('modal.title')}</DialogTitle>
         </DialogHeaderClose>
-        <form onSubmit={onSubmit}>
+        <form onSubmit={onSubmit} noValidate>
           <FieldGroup>
-            <Field>
-              <FieldLabel htmlFor="modal-email">{t('email')}</FieldLabel>
-              <Input
-                id="modal-email"
-                type="email"
-                required
-                {...register('email')}
-              />
-            </Field>
+            <Controller
+              control={control}
+              name="email"
+              render={({ field, fieldState }) => (
+                <Field data-invalid={!!fieldState.error}>
+                  <FieldLabel htmlFor="modal-email">{t('email')}</FieldLabel>
+                  <Input
+                    id="modal-email"
+                    type="email"
+                    required
+                    aria-invalid={fieldState.invalid}
+                    {...field}
+                  />
+                  <FieldError errors={fieldState.error ? [{ message: resolveFieldError(fieldState.error, tRoot) }] : undefined} />
+                </Field>
+              )}
+            />
 
-            <Field>
-              <FieldLabel htmlFor="modal-password">{t('password')}</FieldLabel>
-              <PasswordInput
-                id="modal-password"
-                autoComplete="current-password"
-                required
-                {...register('password')}
-              />
-            </Field>
+            <Controller
+              control={control}
+              name="password"
+              render={({ field, fieldState }) => (
+                <Field data-invalid={!!fieldState.error}>
+                  <FieldLabel htmlFor="modal-password">{t('password')}</FieldLabel>
+                  <PasswordInput
+                    id="modal-password"
+                    autoComplete="current-password"
+                    required
+                    aria-invalid={fieldState.invalid}
+                    {...field}
+                  />
+                  <FieldError errors={fieldState.error ? [{ message: resolveFieldError(fieldState.error, tRoot) }] : undefined} />
+                </Field>
+              )}
+            />
 
             {error && <p className="text-sm text-destructive">{error}</p>}
 
             <Field>
-              <Button type="submit" size="lg" disabled={loading}>
-                {loading ? t('login.submitting') : t('login.submit')}
+              <Button type="submit" size="lg" disabled={isSubmitting}>
+                {isSubmitting ? t('login.submitting') : t('login.submit')}
               </Button>
             </Field>
 
