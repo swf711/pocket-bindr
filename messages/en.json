@@ -188,6 +188,16 @@
       "ZH_TW": "Traditional Chinese",
       "JA": "Japanese",
       "EN": "English"
+    },
+    "searchPlaceholderExample": "e.g. {name} or {code}",
+    "help": {
+      "triggerLabel": "Search help",
+      "title": "How to find one exact card?",
+      "setCodeLabel": "Set code",
+      "cardNumberLabel": "Card number",
+      "setCodeAndNumberLabel": "Set code + card number",
+      "legendHintBottomLeft": "Copy the set code and card number printed at the bottom-left of the card to find it precisely.",
+      "legendHintBottomRight": "Copy the set code and card number printed at the bottom-right of the card to find it precisely."
     }
   },
   "cardDetail": {

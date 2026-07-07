@@ -188,6 +188,16 @@
       "ZH_TW": "繁體中文",
       "JA": "日本語",
       "EN": "English"
+    },
+    "searchPlaceholderExample": "例如：{name} 或 {code}",
+    "help": {
+      "triggerLabel": "搜尋說明",
+      "title": "怎麼精準搜到一張卡？",
+      "setCodeLabel": "系列碼",
+      "cardNumberLabel": "卡號",
+      "setCodeAndNumberLabel": "系列碼＋卡號",
+      "legendHintBottomLeft": "照抄卡面左下角印的系列碼與卡號，即可精準搜到這張卡。",
+      "legendHintBottomRight": "照抄卡面右下角印的系列碼與卡號，即可精準搜到這張卡。"
     }
   },
   "cardDetail": {

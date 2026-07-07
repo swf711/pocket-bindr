@@ -3,7 +3,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useTranslations } from 'next-intl'
-import { CardStatus } from '@prisma/client'
+import { CardStatus, type Game, type Language } from '@prisma/client'
 import { GameSelector } from './game-selector'
 import { LanguageTabs } from './language-tabs'
 import { CardFilters } from './card-filters'
@@ -168,6 +168,8 @@ export function CardSearchClient({ initialParams }: CardSearchClientProps) {
                 groups={groups}
                 selectedSetId={setId}
                 onSetChange={handleSetChange}
+                game={game as Game}
+                language={language as Language}
               />
             </div>
 

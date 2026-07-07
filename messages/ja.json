@@ -188,6 +188,16 @@
       "ZH_TW": "繁体中国語",
       "JA": "日本語",
       "EN": "English"
+    },
+    "searchPlaceholderExample": "例：{name} または {code}",
+    "help": {
+      "triggerLabel": "検索のヒント",
+      "title": "1枚のカードを正確に見つけるには？",
+      "setCodeLabel": "型番コード",
+      "cardNumberLabel": "カード番号",
+      "setCodeAndNumberLabel": "型番コード＋カード番号",
+      "legendHintBottomLeft": "カード左下に印刷された型番コードとカード番号をそのまま入力すると、そのカードを正確に検索できます。",
+      "legendHintBottomRight": "カード右下に印刷された型番コードとカード番号をそのまま入力すると、そのカードを正確に検索できます。"
     }
   },
   "cardDetail": {

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslations } from 'next-intl'
-import { CardStatus } from '@prisma/client'
+import { CardStatus, type Game, type Language } from '@prisma/client'
 import { ArrowLeft, BookCheck, Bookmark } from 'lucide-react'
 import {
   Dialog,
@@ -190,6 +190,8 @@ export function SlotCardPickerDialog({ open, onClose, onConfirm }: SlotCardPicke
                       groups={groups}
                       selectedSetId={setId}
                       onSetChange={handleSetChange}
+                      game={game as Game}
+                      language={language as Language}
                     />
                   </div>
 
