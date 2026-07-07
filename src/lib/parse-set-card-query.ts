@@ -1,4 +1,5 @@
-import { Prisma } from '@prisma/client'
+import { Prisma, type Game, type Language } from '@prisma/client'
+import { resolvePtcgSetCodeCandidates } from './ptcg-set-code-aliases'
 
 // 卡號成分：斜線形（JA/ZH_TW 卡面印刷，numerator ≤3 位）優先，否則裸號（≤4 位，EN 常見）
 const NUM_COMPONENT_SRC = '(?:\\d{1,3}\\/[A-Za-z0-9-]{1,8}|\\d{1,4})'
@@ -67,15 +68,30 @@ export function parseSetCardQuery(q: string): ParsedSetCardQuery | null {
 
   const setOnlyMatch = trimmed.match(SET_ONLY_PATTERN)
   if (setOnlyMatch) return { setCode: setOnlyMatch[1].toLowerCase(), num: null, fullSlash: null }
+  // 註：卡面碼 → DB externalId 的語言相依解析（ZH_TW 剝尾 F、EN ptcgoCode）刻意不在此做，
+  // 放在 buildSetCard* 收 language 後展開候選碼，保持 parseSetCardQuery 語言無關。
 
   return null
 }
 
-export function buildSetCardPrismaWhere(parsed: ParsedSetCardQuery): Prisma.CardWhereInput {
+export function buildSetCardPrismaWhere(
+  parsed: ParsedSetCardQuery,
+  game?: Game | null,
+  language?: Language | null,
+): Prisma.CardWhereInput {
+  // setCode 展開為 DB externalId 候選（PTCG ZH_TW 剝尾 F、EN ptcgoCode；其餘原碼）
+  const setCandidates =
+    parsed.setCode !== null ? resolvePtcgSetCodeCandidates(parsed.setCode, game, language) : []
   const setFilter: Prisma.CardWhereInput =
-    parsed.setCode !== null
-      ? { set: { externalId: { equals: parsed.setCode, mode: 'insensitive' as const } } }
-      : {}
+    setCandidates.length === 0
+      ? {}
+      : setCandidates.length === 1
+        ? { set: { externalId: { equals: setCandidates[0], mode: 'insensitive' as const } } }
+        : {
+            set: {
+              OR: setCandidates.map(c => ({ externalId: { equals: c, mode: 'insensitive' as const } })),
+            },
+          }
 
   if (parsed.num === null && parsed.fullSlash === null) {
     return setFilter
@@ -102,13 +118,22 @@ export function buildSetCardPrismaWhere(parsed: ParsedSetCardQuery): Prisma.Card
   return { ...setFilter, OR: orParts }
 }
 
-export function buildSetCardSql(parsed: ParsedSetCardQuery): Prisma.Sql {
+export function buildSetCardSql(
+  parsed: ParsedSetCardQuery,
+  game?: Game | null,
+  language?: Language | null,
+): Prisma.Sql {
+  const setCandidates =
+    parsed.setCode !== null ? resolvePtcgSetCodeCandidates(parsed.setCode, game, language) : []
   const setClause =
-    parsed.setCode !== null
+    setCandidates.length > 0
       ? Prisma.sql`EXISTS (
     SELECT 1 FROM "CardSet" cs
     WHERE cs.id = "Card"."setId"
-      AND cs."externalId" ILIKE ${parsed.setCode}
+      AND (${Prisma.join(
+        setCandidates.map(c => Prisma.sql`cs."externalId" ILIKE ${c}`),
+        ' OR ',
+      )})
   )`
       : null
 

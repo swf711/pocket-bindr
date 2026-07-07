@@ -315,4 +315,28 @@ test.describe('PTCG set code + 卡號搜尋', () => {
       page.getByTestId('card-grid').or(page.getByText('沒有找到卡牌'))
     ).toBeVisible({ timeout: 10000 })
   })
+
+  // 卡面碼別名（feat/ptcg-face-code-aliases）：繁中卡面印 {externalId}F，需能照抄命中
+  test('PTCG ZH_TW 輸入卡面碼 M5F 004（區域後綴 F）命中 DB externalId M5 的那張卡', async ({ page }) => {
+    await page.goto('/cards?game=PTCG&language=ZH_TW')
+    await page.getByTestId('card-grid').waitFor({ timeout: 10000 })
+
+    await page.getByTestId('search-input').fill('M5F 004')
+    await expect(page).toHaveURL(/q=M5F\+004/, { timeout: 10000 })
+
+    // 剝尾 F → externalId M5，精準命中 004/081 蘭螳花ex（卡名於卡圖 alt）
+    await expect(page.getByTestId('card-grid')).toBeVisible({ timeout: 10000 })
+    await expect(page.getByAltText('蘭螳花ex')).toBeVisible({ timeout: 10000 })
+  })
+
+  test('PTCG EN 輸入卡面縮寫 OBF 197（ptcgoCode）解析為 externalId sv3 並命中', async ({ page }) => {
+    await page.goto('/cards?game=PTCG&language=EN')
+    await page.getByTestId('card-grid').waitFor({ timeout: 10000 })
+
+    await page.getByTestId('search-input').fill('OBF 197')
+    await expect(page).toHaveURL(/q=OBF\+197/, { timeout: 10000 })
+
+    await expect(page.getByTestId('card-grid')).toBeVisible({ timeout: 10000 })
+    await expect(page.getByAltText('Vengeful Punch')).toBeVisible({ timeout: 10000 })
+  })
 })

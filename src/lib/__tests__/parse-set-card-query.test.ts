@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import {
   parseSetCardQuery,
   buildSetCardPrismaWhere,
+  buildSetCardSql,
   normalizeNumComponent,
 } from '../parse-set-card-query'
 
@@ -78,6 +79,10 @@ describe('parseSetCardQuery', () => {
 
     it('前後空白容忍', () => {
       expect(parseSetCardQuery('  sv4a 036  ')).toEqual({ setCode: 'sv4a', num: '036', fullSlash: null })
+    })
+
+    it('M5F 004（卡面碼）→ parser 語言無關，setCode 原樣小寫 "m5f"（別名解析在 buildSetCard*）', () => {
+      expect(parseSetCardQuery('M5F 004')).toEqual({ setCode: 'm5f', num: '004', fullSlash: null })
     })
   })
 
@@ -260,5 +265,40 @@ describe('buildSetCardPrismaWhere', () => {
         typeof c.cardNumber === 'object' && c.cardNumber !== null && 'startsWith' in c.cardNumber,
     )
     expect(hasStartsWith).toBe(false)
+  })
+
+  it('無 game/language（既有行為回歸）→ set filter 為單一 externalId equals', () => {
+    const result = buildSetCardPrismaWhere({ setCode: 'sv8', num: null, fullSlash: null })
+    expect(result.set).toEqual({ externalId: { equals: 'sv8', mode: 'insensitive' } })
+  })
+
+  it('PTCG ZH_TW + 卡面碼 M5F → set filter 為候選 OR（externalId m5 或 m5f）', () => {
+    const result = buildSetCardPrismaWhere({ setCode: 'm5f', num: '004', fullSlash: null }, 'PTCG', 'ZH_TW')
+    expect(result.set).toEqual({
+      OR: [
+        { externalId: { equals: 'm5', mode: 'insensitive' } },
+        { externalId: { equals: 'm5f', mode: 'insensitive' } },
+      ],
+    })
+  })
+
+  it('PTCG EN + 卡面縮寫 OBF → set filter 解析為 externalId sv3', () => {
+    const result = buildSetCardPrismaWhere({ setCode: 'obf', num: '1', fullSlash: null }, 'PTCG', 'EN')
+    expect(result.set).toEqual({ externalId: { equals: 'sv3', mode: 'insensitive' } })
+  })
+})
+
+describe('buildSetCardSql（語言相依候選展開）', () => {
+  it('PTCG ZH_TW M5F → SQL 同時比對 m5 與 m5f', () => {
+    const sql = buildSetCardSql({ setCode: 'm5f', num: '004', fullSlash: null }, 'PTCG', 'ZH_TW')
+    const text = JSON.stringify(sql)
+    expect(text).toContain('m5')
+    expect(text).toContain('m5f')
+    expect(text).toContain('externalId')
+  })
+
+  it('PTCG EN OBF → SQL 比對 sv3', () => {
+    const sql = buildSetCardSql({ setCode: 'obf', num: '1', fullSlash: null }, 'PTCG', 'EN')
+    expect(JSON.stringify(sql)).toContain('sv3')
   })
 })

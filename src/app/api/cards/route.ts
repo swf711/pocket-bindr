@@ -41,7 +41,7 @@ function fetchCardPage(
           OR: [
             { name: { contains: q, mode: 'insensitive' as const } },
             { externalId: { startsWith: q, mode: 'insensitive' as const } },
-            ...(parsed ? [buildSetCardPrismaWhere(parsed)] : []),
+            ...(parsed ? [buildSetCardPrismaWhere(parsed, game as Game, lang)] : []),
             ...nameTerms.map(term => ({ name: { contains: term, mode: 'insensitive' as const } })),
             ...(cardIds.length ? [{ id: { in: cardIds } }] : []),
           ],
@@ -78,7 +78,7 @@ function fetchCardPage(
         ]
         if (q) {
           const orParts = [Prisma.sql`"name" ILIKE ${'%' + q + '%'}`, Prisma.sql`"externalId" ILIKE ${q + '%'}`]
-          if (parsed) orParts.push(buildSetCardSql(parsed))
+          if (parsed) orParts.push(buildSetCardSql(parsed, game as Game, lang))
           for (const term of nameTerms) {
             orParts.push(Prisma.sql`"name" ILIKE ${'%' + term + '%'}`)
           }
