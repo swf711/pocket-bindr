@@ -12,10 +12,13 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { UsernameForm } from './username-form'
+import { AvatarForm } from './avatar-form'
 import { PasswordForm } from './password-form'
 import { SetPasswordForm } from './set-password-form'
 import { OAuthProvidersSection } from './oauth-providers-section'
 import { DeleteAccountSection } from './delete-account-section'
+import { ReportDialog } from '@/components/report/report-dialog'
+import { Button } from '@/components/ui/button'
 import type { UserSettingsData } from '@/types/user'
 
 function SettingsToastHandler() {
@@ -49,10 +52,14 @@ function SettingsToastHandler() {
 export function SettingsClient({
   username,
   email,
+  image,
   hasPassword,
   linkedProviders,
 }: UserSettingsData) {
   const t = useTranslations('settings')
+  const tReport = useTranslations('report')
+  const tCommon = useTranslations('common')
+  const displayUsername = username ?? email?.split('@')[0] ?? tCommon('defaultUsername')
 
   return (
     <div className="space-y-6">
@@ -67,7 +74,8 @@ export function SettingsClient({
           <CardHeader>
             <CardTitle>{t('profile.title')}</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-4">
+            <AvatarForm username={displayUsername} image={image} />
             <UsernameForm username={username} email={email} />
           </CardContent>
         </Card>
@@ -116,6 +124,22 @@ export function SettingsClient({
           </CardHeader>
           <CardContent>
             <OAuthProvidersSection linkedProviders={linkedProviders} hasPassword={hasPassword} />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>{tReport('title')}</CardTitle>
+            <CardDescription>{tReport('description')}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ReportDialog
+              trigger={
+                <Button variant="outline" data-testid="settings-report-trigger">
+                  {tReport('trigger')}
+                </Button>
+              }
+            />
           </CardContent>
         </Card>
 

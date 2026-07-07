@@ -51,8 +51,9 @@ pnpm dev
 | `UPSTASH_REDIS_REST_URL` / `_TOKEN` | rate limiting | ✅ |
 | `GOOGLE_*` / `DISCORD_*` | 社群登入（不需要可留空，改用 Email/密碼） | 選填 |
 | `PTCG_API_KEY` | pokemontcg.io API（同步 PTCG EN 卡牌用） | 選填 |
-| `RESEND_API_KEY` | 寄送密碼重設信；設為 `test` 可跳過真實寄信 | 選填 |
-| `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY` | 僅本機維護腳本使用的 Storage 金鑰 | 選填 |
+| `RESEND_API_KEY` | 寄送密碼重設信、缺卡/bug 回報信；設為 `test` 可跳過真實寄信 | 選填 |
+| `REPORT_TO_EMAIL` | 缺卡/bug 回報的收件信箱 | 選填 |
+| `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY` | Storage 金鑰：本機維護腳本 + runtime 頭像上傳皆用 | 選填 |
 
 > ⚠️ `.env` / `.env.local` 已被 `.gitignore` 排除，請勿提交任何真實金鑰。
 

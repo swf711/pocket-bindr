@@ -34,6 +34,9 @@ vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }))
 vi.mock('@/components/auth/login-modal', () => ({
   LoginModal: () => null,
 }))
+vi.mock('next-auth/react', () => ({
+  useSession: () => ({ data: null }),
+}))
 
 // Mock fetch used inside AddToBinderSection (returns 401 = guest, so that section
 // renders a simple "login" button — navigation buttons are outside that section).

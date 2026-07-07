@@ -3,6 +3,7 @@ export type SupportedOAuthProvider = 'google' | 'discord'
 export interface UserSettingsData {
   username: string | null
   email: string | null
+  image: string | null
   hasPassword: boolean
   linkedProviders: string[]
 }

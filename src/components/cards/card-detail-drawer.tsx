@@ -1,8 +1,10 @@
 'use client'
 import { useState, useEffect } from 'react'
+import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
 import { CardStatus } from '@prisma/client'
 import { toast } from 'sonner'
+import { ReportDialog } from '@/components/report/report-dialog'
 import {
   Drawer, DrawerHeader, DrawerTitle, DrawerPortal,
   DrawerClose
@@ -22,7 +24,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { PILL_TABS_LIST, PILL_TABS_TRIGGER } from '@/lib/tabs-styles'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { ChevronLeft, ChevronRight, BookCheck, Bookmark, X, Minus, Plus } from 'lucide-react'
+import { ChevronLeft, ChevronRight, BookCheck, Bookmark, X, Minus, Plus, Flag } from 'lucide-react'
 import { CardWithCollectionStatus } from '@/types/card'
 import { getCardImageUrl } from '@/lib/get-card-image-url'
 import { BinderSummary } from '@/types/binder'
@@ -47,6 +49,9 @@ interface CardDetailDrawerProps {
 
 export function CardDetailDrawer({ card, open, onClose, onAddToBinder, onLoginSuccess, cards, currentIndex, onNavigate, hideAddToBinder = false, currentBinderId }: CardDetailDrawerProps) {
   const t = useTranslations('cardDetail')
+  const tReport = useTranslations('report')
+  const { data: session } = useSession()
+  const [reportOpen, setReportOpen] = useState(false)
   const isMobile = useIsMobile()
   const { containerRef: tiltRef, transformerStyle, shineStyle, handlers: tiltHandlers } = useCardTilt({
     maxRotateDeg: 15,
@@ -234,6 +239,17 @@ export function CardDetailDrawer({ card, open, onClose, onAddToBinder, onLoginSu
             <div className="flex items-center justify-between gap-2">
               {PrevButton}
               <DrawerTitle className="text-2xl min-w-0 flex-1 truncate text-center">{card.name}</DrawerTitle>
+              {session?.user && (
+                <IconTooltipButton
+                  data-testid="drawer-report-trigger"
+                  tooltip={tReport('trigger')}
+                  variant="ghost"
+                  size="icon-xs"
+                  onClick={() => setReportOpen(true)}
+                >
+                  <Flag className="size-4" />
+                </IconTooltipButton>
+              )}
               {NextButton}
             </div>
           ) : (
@@ -241,12 +257,35 @@ export function CardDetailDrawer({ card, open, onClose, onAddToBinder, onLoginSu
               <DrawerTitle className="text-2xl truncate" title={card.name}>
                 {card.name}
               </DrawerTitle>
-              <DrawerClose>
-                <X className="size-5" />
-              </DrawerClose>
+              <div className="flex items-center gap-1">
+                {session?.user && (
+                  <IconTooltipButton
+                    tooltip={tReport('trigger')}
+                    variant="ghost"
+                    size="icon-xs"
+                    onClick={() => setReportOpen(true)}
+                  >
+                    <Flag className="size-4" />
+                  </IconTooltipButton>
+                )}
+                <DrawerClose>
+                  <X className="size-5" />
+                </DrawerClose>
+              </div>
             </div>
           )}
         </DrawerHeader>
+        <ReportDialog
+          open={reportOpen}
+          onOpenChange={setReportOpen}
+          defaultType="missing_card"
+          defaultCardContext={{
+            cardId: card.id,
+            cardName: card.name,
+            setExternalId: card.set.externalId,
+            cardNumber: card.cardNumber,
+          }}
+        />
         {isMobile ? (
           <ScrollArea className="flex-1 min-h-0">
             <div

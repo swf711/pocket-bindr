@@ -65,6 +65,19 @@ export const linkUserLimiter = new Ratelimit({
   prefix: 'rl:link:user',
 })
 
+// Report (missing card / bug): 10/hr per IP, 5/hr per userId
+export const reportIpLimiter = new Ratelimit({
+  redis,
+  limiter: Ratelimit.slidingWindow(10, '60 m'),
+  prefix: 'rl:report:ip',
+})
+
+export const reportUserLimiter = new Ratelimit({
+  redis,
+  limiter: Ratelimit.slidingWindow(5, '60 m'),
+  prefix: 'rl:report:user',
+})
+
 // Card image proxy: 300/min per IP. Generous enough for a full binder page load
 // (only un-self-hosted official images are proxied; most images are direct Supabase),
 // while capping abuse as a bandwidth relay for the whitelisted hosts.

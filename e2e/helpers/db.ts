@@ -353,6 +353,17 @@ export async function createValidResetToken(email: string): Promise<string> {
 }
 
 /**
+ * 清除指定帳號的頭像（還原為 fallback 首字母），供 avatar E2E 測試間還原狀態。
+ * 不刪除 Supabase Storage 物件（best-effort，固定路徑 upsert 下次上傳會覆蓋）。
+ */
+export async function clearUserAvatar(email: string): Promise<void> {
+  await prisma.user.updateMany({
+    where: { email },
+    data: { image: null },
+  })
+}
+
+/**
  * 取得指定 email 帳號目前的 passwordHash（供驗證重設後 hash 是否改變）。
  */
 export async function getUserPasswordHash(email: string): Promise<string | null> {

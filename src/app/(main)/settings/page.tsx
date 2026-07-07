@@ -13,6 +13,7 @@ export default async function SettingsPage() {
     select: {
       username: true,
       email: true,
+      image: true,
       passwordHash: true,
       accounts: { select: { provider: true } },
     },
@@ -25,6 +26,7 @@ export default async function SettingsPage() {
       <SettingsClient
         username={user.username}
         email={user.email}
+        image={user.image}
         hasPassword={user.passwordHash !== null}
         linkedProviders={user.accounts.map((a) => a.provider)}
       />

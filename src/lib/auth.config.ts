@@ -38,9 +38,10 @@ export const authConfig: NextAuthConfig = {
     async session({ session, token }) {
       if (token.sub) session.user.id = token.sub
       if (token.name) session.user.name = token.name
+      session.user.image = (token.picture as string | null | undefined) ?? null
       return session
     },
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
       if (user) {
         token.sub = user.id
         // Prisma User has no 'name' for credentials users (uses 'username'); OAuth users
@@ -48,6 +49,11 @@ export const authConfig: NextAuthConfig = {
         // Display-name precedence: username → User.name → existing token.name.
         const u = user as { username?: string | null; name?: string | null }
         token.name = u.username ?? u.name ?? token.name ?? null
+      }
+      // Client 呼叫 useSession().update({ image }) 時觸發，讓頭像上傳/移除後不必重登
+      // 即可反映於 token（session.user.image 來自 token.picture，見上方 session callback）。
+      if (trigger === 'update' && session && 'image' in session) {
+        token.picture = (session as { image?: string | null }).image
       }
       return token
     },

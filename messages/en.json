@@ -7,6 +7,25 @@
     "defaultUsername": "User",
     "close": "Close"
   },
+  "report": {
+    "title": "Feedback",
+    "description": "Report a missing card, data error, or bug — we'll look into it.",
+    "trigger": "Report an issue",
+    "typeLabel": "Type",
+    "types": {
+      "missing_card": "Missing card",
+      "data_error": "Data error",
+      "bug": "Bug",
+      "other": "Other"
+    },
+    "messageLabel": "Description",
+    "messagePlaceholder": "Please describe the issue in detail (at least 10 characters)",
+    "cardContextLabel": "Card",
+    "submit": "Submit report",
+    "sending": "Sending…",
+    "sendSuccess": "Report sent, thank you for your help!",
+    "sendFailed": "Failed to send, please try again later"
+  },
   "nav": {
     "home": "Home",
     "cards": "Search Cards",
@@ -366,6 +385,16 @@
   },
   "settings": {
     "title": "Account Settings",
+    "avatar": {
+      "upload": "Upload avatar",
+      "uploading": "Uploading…",
+      "remove": "Remove",
+      "removing": "Removing…",
+      "uploadSuccess": "Avatar updated",
+      "uploadFailed": "Upload failed, please try again later",
+      "removeSuccess": "Avatar removed",
+      "removeFailed": "Failed to remove, please try again later"
+    },
     "profile": {
       "title": "Profile",
       "emailNotSet": "(Not set)",
@@ -610,6 +639,10 @@
     "DESCRIPTION_TOO_LONG": "Description must be at most 150 characters",
     "GRID_TYPE_INVALID": "Please select a valid binder format",
     "TOKEN_INVALID": "This link is invalid or has expired",
+    "REPORT_TYPE_INVALID": "Please select a valid report type",
+    "REPORT_MESSAGE_TOO_SHORT": "Message must be at least 10 characters",
+    "REPORT_MESSAGE_TOO_LONG": "Message must be at most 2000 characters",
+    "AVATAR_INVALID": "Invalid avatar file format or size",
     "generic": "Please check this field"
   }
 }

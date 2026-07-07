@@ -1,4 +1,99 @@
 import { Resend } from 'resend'
+import type { ReportInput } from '@/lib/schemas/report'
+
+function escapeHtml(input: string): string {
+  return input
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
+const REPORT_TYPE_LABELS: Record<ReportInput['type'], string> = {
+  missing_card: '缺卡',
+  data_error: '資料錯誤',
+  bug: 'Bug',
+  other: '其他',
+}
+
+function generateReportEmailHtml(params: {
+  reporterEmail: string | null
+  reporterId: string
+  username: string | null
+  type: ReportInput['type']
+  message: string
+  cardContext?: ReportInput['cardContext']
+}): string {
+  const { reporterEmail, reporterId, username, type, message, cardContext } = params
+  const typeLabel = REPORT_TYPE_LABELS[type]
+
+  const cardContextHtml = cardContext
+    ? `<p style="margin:0 0 8px;font-size:14px;color:#09090b;line-height:1.6;">
+        <strong>卡片：</strong>${escapeHtml(cardContext.cardName)}（${escapeHtml(cardContext.setExternalId)} ${escapeHtml(cardContext.cardNumber)}，id: ${escapeHtml(cardContext.cardId)}）
+      </p>`
+    : ''
+
+  return `<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PocketBindr 使用者回報</title>
+</head>
+<body style="margin:0;padding:0;background:#f4f4f5;font-family:system-ui,-apple-system,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f5;padding:40px 0;">
+    <tr>
+      <td align="center">
+        <table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border-radius:8px;overflow:hidden;border:1px solid #e4e4e7;">
+          <tr>
+            <td style="padding:40px 40px 24px;">
+              <h1 style="margin:0 0 8px;font-size:20px;font-weight:700;color:#09090b;">使用者回報：${escapeHtml(typeLabel)}</h1>
+              <p style="margin:0 0 16px;font-size:13px;color:#71717a;line-height:1.6;">
+                來自：${escapeHtml(username ?? '（無用戶名）')}（${escapeHtml(reporterEmail ?? '無 email')}，userId: ${escapeHtml(reporterId)}）
+              </p>
+              ${cardContextHtml}
+              <p style="margin:16px 0 0;font-size:14px;color:#09090b;line-height:1.6;white-space:pre-wrap;">${escapeHtml(message)}</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`
+}
+
+export async function sendReportEmail(params: {
+  reporterEmail: string | null
+  reporterId: string
+  username: string | null
+  type: ReportInput['type']
+  message: string
+  cardContext?: ReportInput['cardContext']
+}): Promise<void> {
+  // In test environments, skip actual email sending
+  if (!process.env.RESEND_API_KEY || process.env.RESEND_API_KEY === 'test') {
+    return
+  }
+
+  const to = process.env.REPORT_TO_EMAIL
+  if (!to) {
+    throw new Error('缺少 REPORT_TO_EMAIL（請填 .env，見 .env.example）')
+  }
+
+  const resend = new Resend(process.env.RESEND_API_KEY)
+  const { error } = await resend.emails.send({
+    from: process.env.EMAIL_FROM ?? 'PocketBindr <noreply@send.pocketbindr.app>',
+    to,
+    subject: `[PocketBindr 回報] ${REPORT_TYPE_LABELS[params.type]}`,
+    html: generateReportEmailHtml(params),
+  })
+
+  if (error) {
+    throw new Error(`Resend error: ${error.message}`)
+  }
+}
 
 function generateResetEmailHtml(token: string, username?: string): string {
   const resetUrl = `${process.env.AUTH_URL}/reset-password?token=${encodeURIComponent(token)}`

@@ -3,11 +3,15 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
+import { ReportDialog } from '@/components/report/report-dialog'
 
 export function Footer() {
   const pathname = usePathname()
   const t = useTranslations('footer')
+  const tReport = useTranslations('report')
+  const { data: session } = useSession()
 
   const HIDDEN_PATHS = ['/login', '/register', '/']
   if (
@@ -47,6 +51,15 @@ export function Footer() {
           <Link href="/privacy" className="hover:underline">
             {t('privacy')}
           </Link>
+          {session?.user && (
+            <ReportDialog
+              trigger={
+                <button type="button" data-testid="footer-report-trigger" className="hover:underline cursor-pointer">
+                  {tReport('trigger')}
+                </button>
+              }
+            />
+          )}
         </div>
       </div>
     </footer>

@@ -7,6 +7,25 @@
     "defaultUsername": "使用者",
     "close": "關閉"
   },
+  "report": {
+    "title": "意見回報",
+    "description": "回報缺卡、資料錯誤或 bug，我們會盡快處理。",
+    "trigger": "回報問題",
+    "typeLabel": "類型",
+    "types": {
+      "missing_card": "缺卡",
+      "data_error": "資料錯誤",
+      "bug": "Bug",
+      "other": "其他"
+    },
+    "messageLabel": "說明",
+    "messagePlaceholder": "請詳細描述您遇到的問題（至少 10 個字元）",
+    "cardContextLabel": "卡片",
+    "submit": "送出回報",
+    "sending": "送出中…",
+    "sendSuccess": "已送出回報，感謝您的協助！",
+    "sendFailed": "送出失敗，請稍後再試"
+  },
   "nav": {
     "home": "首頁",
     "cards": "卡牌搜尋",
@@ -366,6 +385,16 @@
   },
   "settings": {
     "title": "帳號設定",
+    "avatar": {
+      "upload": "上傳頭像",
+      "uploading": "上傳中…",
+      "remove": "移除",
+      "removing": "移除中…",
+      "uploadSuccess": "頭像已更新",
+      "uploadFailed": "上傳失敗，請稍後再試",
+      "removeSuccess": "頭像已移除",
+      "removeFailed": "移除失敗，請稍後再試"
+    },
     "profile": {
       "title": "用戶資料",
       "emailNotSet": "（未設定）",
@@ -608,6 +637,10 @@
     "DESCRIPTION_TOO_LONG": "描述最多 150 個字元",
     "GRID_TYPE_INVALID": "請選擇有效的卡冊格式",
     "TOKEN_INVALID": "此連結無效或已過期",
+    "REPORT_TYPE_INVALID": "請選擇有效的回報類型",
+    "REPORT_MESSAGE_TOO_SHORT": "說明至少需要 10 個字元",
+    "REPORT_MESSAGE_TOO_LONG": "說明最多 2000 個字元",
+    "AVATAR_INVALID": "頭像檔案格式或大小不符合要求",
     "generic": "請確認此欄位"
   }
 }

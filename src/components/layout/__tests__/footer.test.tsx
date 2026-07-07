@@ -10,6 +10,10 @@ vi.mock('next/navigation', () => ({
   usePathname: vi.fn(),
 }))
 
+vi.mock('next-auth/react', () => ({
+  useSession: () => ({ data: null }),
+}))
+
 import { usePathname } from 'next/navigation'
 
 describe('Footer', () => {
