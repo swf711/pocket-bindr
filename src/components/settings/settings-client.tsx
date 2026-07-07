@@ -15,6 +15,7 @@ import {
 import { UsernameForm } from './username-form'
 import { PasswordForm } from './password-form'
 import { SetPasswordForm } from './set-password-form'
+import { AddEmailForm } from './add-email-form'
 import { OAuthProvidersSection } from './oauth-providers-section'
 import { DeleteAccountSection } from './delete-account-section'
 import { ReportDialog } from '@/components/report/report-dialog'
@@ -97,14 +98,10 @@ export function SettingsClient({
         {!hasPassword && email == null && (
           <Card className="p-6 md:p-8 gap-7 bg-surface-container ring-0">
             <CardHeader>
-              <CardTitle>{t('setPassword.title')}</CardTitle>
-              <CardDescription>{t('setPassword.emailRequiredSubtitle')}</CardDescription>
+              <CardTitle>{t('addEmail.title')}</CardTitle>
+              <CardDescription>{t('addEmail.subtitle')}</CardDescription>
             </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                {t('setPassword.emailRequiredBody')}
-              </p>
-            </CardContent>
+            <AddEmailForm />
           </Card>
         )}
 

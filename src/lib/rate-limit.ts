@@ -52,6 +52,27 @@ export const passwordSetUserLimiter = new Ratelimit({
   prefix: 'rl:pw-set:user',
 })
 
+// Add email for pure-OAuth users — request (POST /api/user/email/request):
+// 10/hr per IP, 3/hr per userId
+export const emailRequestIpLimiter = new Ratelimit({
+  redis,
+  limiter: Ratelimit.slidingWindow(10, '60 m'),
+  prefix: 'rl:email-request:ip',
+})
+
+export const emailRequestUserLimiter = new Ratelimit({
+  redis,
+  limiter: Ratelimit.slidingWindow(3, '60 m'),
+  prefix: 'rl:email-request:user',
+})
+
+// Add email for pure-OAuth users — verify (POST /api/user/email/verify): 10/hr per IP
+export const emailVerifyIpLimiter = new Ratelimit({
+  redis,
+  limiter: Ratelimit.slidingWindow(10, '60 m'),
+  prefix: 'rl:email-verify:ip',
+})
+
 // OAuth account linking (initiate): 10/hr per IP, 5/hr per userId
 export const linkIpLimiter = new Ratelimit({
   redis,

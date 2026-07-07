@@ -40,6 +40,7 @@
 - **帳號連結採「不自動連結」策略**：社群登入若 email 撞既有帳號且未綁定，不自動合併，導回登入頁引導。
 - **密碼規則集中管理**：硬性規則（最短長度）由 server 端強制，註冊 / 改密碼 / 重設密碼共用同一份規則。
 - **忘記密碼**：採 HMAC-SHA256 stateless token（零 schema 變更）；single-use 靠密碼 hash 前綴保證，重設後舊 token 自然失效。
+- **純 OAuth 使用者補填 email**：無 email 的社群登入使用者可於設定頁自助新增並驗證 email（同樣採 HMAC-SHA256 stateless token），驗證後即可設定密碼作為登入逃生口。
 - **Rate limiting**：寫入端點與圖片代理皆經 Upstash Redis 限流（見 `src/lib/rate-limit.ts`）。
 
 > 安全機制的強度建立在環境變數中的密鑰，而非演算法的隱蔽性——公開設計不削弱安全性。

@@ -22,3 +22,10 @@ export const changePasswordSchema = z.object({
 
 export type SetPasswordInput = z.infer<typeof setPasswordSchema>
 export type ChangePasswordInput = z.infer<typeof changePasswordSchema>
+
+/** POST /api/user/email/request：純 OAuth 使用者補填 email（需經驗證信確認所有權才寫入） */
+export const addEmailSchema = z.object({
+  email: z.string().min(1, 'INVALID_EMAIL').email('INVALID_EMAIL'),
+})
+
+export type AddEmailInput = z.infer<typeof addEmailSchema>

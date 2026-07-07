@@ -122,6 +122,33 @@ export async function loginAsOAuthUser(
   ])
 }
 
+/**
+ * 以既有 userId 直接登入（比照 loginAsOAuthUser 手法鑄 JWT cookie 注入），
+ * 供補填 email E2E 使用：帳號本身無 email，無法走 loginAsOAuthUser 的
+ * email-keyed upsert，改由呼叫端先用 createOAuthUserNoEmail 建好帳號拿到
+ * userId 後傳入。
+ */
+export async function loginAsOAuthUserById(page: Page, userId: string, username: string): Promise<void> {
+  const secret = process.env.AUTH_SECRET
+  if (!secret) throw new Error('AUTH_SECRET is required to mint E2E session JWT')
+  const token = await encode({
+    token: { sub: userId, name: username },
+    secret,
+    salt: SESSION_COOKIE,
+  })
+  await page.goto('/')
+  await page.context().addCookies([
+    {
+      name: SESSION_COOKIE,
+      value: token,
+      domain: 'localhost',
+      path: '/',
+      httpOnly: true,
+      sameSite: 'Lax',
+    },
+  ])
+}
+
 // ---- 舊 API（保留為 wrapper，未遷移的呼叫點繼續可用）----
 
 export const TEST_USER: TestUser = {

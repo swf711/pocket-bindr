@@ -61,12 +61,30 @@
     "featuresTitle": "Platform Features",
     "featuresSubtitle": "Every card collection tool you need, all in one place",
     "features": {
-      "search": { "title": "Search Cards", "description": "Multilingual card search for PTCG and OPCG — quickly find target cards by series and rarity." },
-      "binder": { "title": "Build Binders", "description": "Customize formats and covers to organize your collection into beautiful virtual binders, with drag-and-drop sorting." },
-      "collection": { "title": "Manage Collection", "description": "Mark cards as owned or wanted, track collection progress for each series, with support for various binder sizes." },
-      "sync": { "title": "Device Sync", "description": "Your account data syncs to the cloud, so you can organize your collection on any device, anytime." },
-      "share": { "title": "Share Your Binders", "description": "Create a binder link and easily share your collection with friends. (Coming soon)" },
-      "more": { "title": "More Features", "description": "Under active development — stay tuned for more useful features." }
+      "search": {
+        "title": "Search Cards",
+        "description": "Multilingual card search for PTCG and OPCG — quickly find target cards by series and rarity."
+      },
+      "binder": {
+        "title": "Build Binders",
+        "description": "Customize formats and covers to organize your collection into beautiful virtual binders, with drag-and-drop sorting."
+      },
+      "collection": {
+        "title": "Manage Collection",
+        "description": "Mark cards as owned or wanted, track collection progress for each series, with support for various binder sizes."
+      },
+      "sync": {
+        "title": "Device Sync",
+        "description": "Your account data syncs to the cloud, so you can organize your collection on any device, anytime."
+      },
+      "share": {
+        "title": "Share Your Binders",
+        "description": "Create a binder link and easily share your collection with friends. (Coming soon)"
+      },
+      "more": {
+        "title": "More Features",
+        "description": "Under active development — stay tuned for more useful features."
+      }
     },
     "aboutTitle": "About",
     "aboutBody": "PocketBindr is developed solo by me, aiming to build the most intuitive and easy-to-use collection management tool for card players. If you have any suggestions or questions, feel free to reach out through the channels below."
@@ -429,8 +447,6 @@
     "setPassword": {
       "title": "Set Password",
       "subtitle": "Once set, you can log in with Email + password",
-      "emailRequiredSubtitle": "An email is required before you can set a password",
-      "emailRequiredBody": "Your account currently has no email, so you can't log in with a password. Please link a social account that has an email first.",
       "newPasswordLabel": "New Password",
       "newPasswordPlaceholder": "At least 8 characters",
       "confirmPasswordLabel": "Confirm Password",
@@ -475,6 +491,16 @@
       "OAUTH_FAILED": "Social account verification failed, please try again",
       "INVALID_STATE": "The link request is invalid or has expired, please try again",
       "generic": "Failed to link, please try again"
+    },
+    "addEmail": {
+      "title": "Add Email",
+      "subtitle": "Add and verify an email to set a password login",
+      "emailLabel": "Email",
+      "emailPlaceholder": "you@example.com",
+      "submit": "Send Verification Email",
+      "submitting": "Sending…",
+      "requestSuccess": "Verification email sent — click the link in your inbox to finish",
+      "requestFailed": "Failed to send, please try again later"
     }
   },
   "collection": {
@@ -498,11 +524,15 @@
     "sections": [
       {
         "heading": "Scope of This Policy",
-        "body": ["This policy is drafted in accordance with Taiwan's Personal Data Protection Act (PDPA) and applies to all users of the PocketBindr website and its features, including card search, account registration, binder creation and management, and public sharing."]
+        "body": [
+          "This policy is drafted in accordance with Taiwan's Personal Data Protection Act (PDPA) and applies to all users of the PocketBindr website and its features, including card search, account registration, binder creation and management, and public sharing."
+        ]
       },
       {
         "heading": "Personal Data We Collect",
-        "body": ["To provide the Service's features, we collect the following categories of personal data:"],
+        "body": [
+          "To provide the Service's features, we collect the following categories of personal data:"
+        ],
         "items": [
           "Identity data: email address (required for email/password registration; may be absent for social login users), username, display name provided by social login (name), avatar image URL (image)",
           "Authentication and authorization data: password hash (bcrypt-hashed; we never store plaintext passwords); if you sign in with Google or Discord, we store the access token and refresh token issued by that provider to maintain your login session",
@@ -513,7 +543,9 @@
       },
       {
         "heading": "Purposes of Collection",
-        "body": ["We collect the personal data above for the following purposes:"],
+        "body": [
+          "We collect the personal data above for the following purposes:"
+        ],
         "items": [
           "Providing account registration, login, and identity verification",
           "Providing core features such as card search, collection marking, and binder creation and management",
@@ -525,7 +557,9 @@
       },
       {
         "heading": "Retention Period, Region, Recipients, and Method of Use",
-        "body": ["Your personal data is used throughout the operation of the Service and is processed by the following recipients within the scope necessary for their respective functions. Aside from these service providers accessing your personal data as required by their functions, we do not sell, rent, or use your personal data for marketing purposes with unrelated third parties."],
+        "body": [
+          "Your personal data is used throughout the operation of the Service and is processed by the following recipients within the scope necessary for their respective functions. Aside from these service providers accessing your personal data as required by their functions, we do not sell, rent, or use your personal data for marketing purposes with unrelated third parties."
+        ],
         "items": [
           "Google LLC (social login authentication)",
           "Discord Inc. (social login authentication)",
@@ -538,11 +572,15 @@
       },
       {
         "heading": "International Data Transfers",
-        "body": ["The Service's database is primarily hosted in Japan (Supabase, ap-northeast-1 region), and the website server is also deployed in Tokyo, Japan (Vercel hnd1 region). However, because some of the service providers we use (such as Google, Discord, Resend, Upstash, and Cloudflare) may have their corporate entities or data processing facilities located outside Taiwan, including in the United States, your personal data may be transferred to and processed in regions outside Taiwan as a result. We require these service providers to protect your personal data in accordance with their own privacy policies and applicable law."]
+        "body": [
+          "The Service's database is primarily hosted in Japan (Supabase, ap-northeast-1 region), and the website server is also deployed in Tokyo, Japan (Vercel hnd1 region). However, because some of the service providers we use (such as Google, Discord, Resend, Upstash, and Cloudflare) may have their corporate entities or data processing facilities located outside Taiwan, including in the United States, your personal data may be transferred to and processed in regions outside Taiwan as a result. We require these service providers to protect your personal data in accordance with their own privacy policies and applicable law."
+        ]
       },
       {
         "heading": "Your Rights",
-        "body": ["Under Taiwan's PDPA, you may exercise the following rights regarding the personal data we hold about you:"],
+        "body": [
+          "Under Taiwan's PDPA, you may exercise the following rights regarding the personal data we hold about you:"
+        ],
         "items": [
           "Access: you can view your account data and collection in the Settings page; for a complete copy of your personal data, please contact us using the details below",
           "Correction or supplementation: you can update your username and password yourself in the Settings page; to correct your email address or social login display name, please contact us using the details below",
@@ -552,24 +590,37 @@
       },
       {
         "heading": "Data Security",
-        "body": ["We take the following measures to protect your personal data: passwords are hashed using bcrypt, so no one at the Service can see your plaintext password; password reset and account linking flows use HMAC-SHA256-signed, single-use, time-limited tokens; sensitive actions (such as account deletion or unlinking a social account) require an authenticated session."]
+        "body": [
+          "We take the following measures to protect your personal data: passwords are hashed using bcrypt, so no one at the Service can see your plaintext password; password reset and account linking flows use HMAC-SHA256-signed, single-use, time-limited tokens; sensitive actions (such as account deletion or unlinking a social account) require an authenticated session."
+        ]
       },
       {
         "heading": "Cookies and Similar Technologies",
-        "body": ["The Service uses essential cookies to maintain your login session and remember your language preference (NEXT_LOCALE). These cookies are necessary to provide the Service and are not used for third-party advertising tracking."]
+        "body": [
+          "The Service uses essential cookies to maintain your login session and remember your language preference (NEXT_LOCALE). These cookies are necessary to provide the Service and are not used for third-party advertising tracking."
+        ]
       },
       {
         "heading": "Children's Personal Data",
-        "body": ["The Service does not knowingly collect personal data from children under 13. If you are a parent or guardian and believe a child under 13 has provided personal data to the Service without your consent, please contact us using the details below and we will promptly delete the relevant data."]
+        "body": [
+          "The Service does not knowingly collect personal data from children under 13. If you are a parent or guardian and believe a child under 13 has provided personal data to the Service without your consent, please contact us using the details below and we will promptly delete the relevant data."
+        ]
       },
       {
         "heading": "Changes to This Policy",
-        "body": ["We may revise this policy from time to time; the \"Last updated\" date on this page will be updated accordingly. We will notify you of material changes by reasonable means (such as a notice on the website). We encourage you to review this page periodically."]
+        "body": [
+          "We may revise this policy from time to time; the \"Last updated\" date on this page will be updated accordingly. We will notify you of material changes by reasonable means (such as a notice on the website). We encourage you to review this page periodically."
+        ]
       },
       {
         "heading": "Contact Us",
-        "body": ["If you have any questions about this policy or wish to exercise the rights described above, please contact us:"],
-        "items": ["Email: support@pocketbindr.app", "GitHub Issues: https://github.com/swf711/pocket-bindr/issues"]
+        "body": [
+          "If you have any questions about this policy or wish to exercise the rights described above, please contact us:"
+        ],
+        "items": [
+          "Email: support@pocketbindr.app",
+          "GitHub Issues: https://github.com/swf711/pocket-bindr/issues"
+        ]
       }
     ]
   },
@@ -582,7 +633,9 @@
     "sections": [
       {
         "heading": "Description of Service",
-        "body": ["The Service provides trading card game (TCG) data search, collection marking (owned/wanted), and custom-format virtual binder creation and management, currently supporting Pokémon TCG and One Piece TCG, with Traditional Chinese, Japanese, and English interface languages. Sources for card data and images are described in the site footer and related pages."]
+        "body": [
+          "The Service provides trading card game (TCG) data search, collection marking (owned/wanted), and custom-format virtual binder creation and management, currently supporting Pokémon TCG and One Piece TCG, with Traditional Chinese, Japanese, and English interface languages. Sources for card data and images are described in the site footer and related pages."
+        ]
       },
       {
         "heading": "Account Registration and Conduct",
@@ -600,7 +653,9 @@
       },
       {
         "heading": "Prohibited Conduct",
-        "body": ["When using the Service, you agree not to:"],
+        "body": [
+          "When using the Service, you agree not to:"
+        ],
         "items": [
           "Use automated means (such as scrapers or bots) to access or interfere with the Service's normal operation at scale",
           "Attempt to gain unauthorized access to another user's account or the Service's systems",
@@ -624,16 +679,25 @@
       },
       {
         "heading": "Governing Law and Jurisdiction",
-        "body": ["These Terms shall be governed by and construed in accordance with the laws of the Republic of China (Taiwan). Any dispute arising from or relating to these Terms shall be subject to the exclusive jurisdiction of the Taipei District Court in Taiwan as the court of first instance."]
+        "body": [
+          "These Terms shall be governed by and construed in accordance with the laws of the Republic of China (Taiwan). Any dispute arising from or relating to these Terms shall be subject to the exclusive jurisdiction of the Taipei District Court in Taiwan as the court of first instance."
+        ]
       },
       {
         "heading": "Changes to These Terms",
-        "body": ["We may revise these Terms from time to time; the \"Last updated\" date on this page will be updated accordingly. Revised Terms take effect upon posting; your continued use of the Service after revisions constitutes acceptance of the revised Terms."]
+        "body": [
+          "We may revise these Terms from time to time; the \"Last updated\" date on this page will be updated accordingly. Revised Terms take effect upon posting; your continued use of the Service after revisions constitutes acceptance of the revised Terms."
+        ]
       },
       {
         "heading": "Contact Us",
-        "body": ["If you have any questions about these Terms, please contact us:"],
-        "items": ["Email: support@pocketbindr.app", "GitHub Issues: https://github.com/swf711/pocket-bindr/issues"]
+        "body": [
+          "If you have any questions about these Terms, please contact us:"
+        ],
+        "items": [
+          "Email: support@pocketbindr.app",
+          "GitHub Issues: https://github.com/swf711/pocket-bindr/issues"
+        ]
       }
     ]
   },
@@ -653,6 +717,25 @@
     "REPORT_MESSAGE_TOO_LONG": "Message must be at most 2000 characters",
     "ATTACHMENT_INVALID": "Invalid attachment format, size, or count",
     "AVATAR_INVALID": "Invalid avatar file format or size",
-    "generic": "Please check this field"
+    "generic": "Please check this field",
+    "INVALID_EMAIL": "Please enter a valid email",
+    "EMAIL_ALREADY_USED": "This email is already used by another account",
+    "EMAIL_ALREADY_SET": "Your account already has an email set"
+  },
+  "verifyEmail": {
+    "verifying": "Verifying…",
+    "successToast": "Email verified successfully",
+    "success": {
+      "title": "Email Verified",
+      "subtitle": "You can now set a password in Settings",
+      "backToSettings": "Back to Settings"
+    },
+    "error": {
+      "expired": "This link has expired, please request a new one",
+      "invalid": "This link is invalid",
+      "already_used": "This email is already used by another account",
+      "forbidden": "Please log in with the account that requested this link",
+      "backToSettings": "Back to Settings"
+    }
   }
 }

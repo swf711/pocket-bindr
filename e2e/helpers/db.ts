@@ -7,6 +7,7 @@ config({ path: '.env.local', override: true })
 import bcrypt from 'bcryptjs'
 import { prisma } from '../../src/lib/prisma'
 import { createResetToken } from '../../src/lib/reset-password'
+import { createEmailVerifyToken } from '../../src/lib/email-verify-token'
 import { TEST_USER } from './auth'
 
 // Only import Redis when UPSTASH_REDIS_REST_URL is set (CI may not have it).
@@ -372,4 +373,52 @@ export async function getUserPasswordHash(email: string): Promise<string | null>
     select: { passwordHash: true },
   })
   return user?.passwordHash ?? null
+}
+
+// ─── 純 OAuth 補填 email E2E helpers ──────────────────────────────────────────
+
+/**
+ * 建立純 OAuth 測試用戶（User.email = null，無 passwordHash），供補填 email
+ * E2E 測試使用。與 createOAuthUser 不同：後者以 email 為 upsert key，本函式
+ * 用 username 識別（因帳號本身就沒有 email）。
+ */
+export async function createOAuthUserNoEmail(
+  username: string,
+  provider: 'google' | 'discord',
+  providerAccountId: string,
+): Promise<{ userId: string }> {
+  const existing = await prisma.user.findUnique({ where: { username } })
+  const user = existing
+    ? await prisma.user.update({ where: { id: existing.id }, data: { email: null, passwordHash: null } })
+    : await prisma.user.create({ data: { username, email: null, passwordHash: null } })
+  await prisma.account.upsert({
+    where: { provider_providerAccountId: { provider, providerAccountId } },
+    create: { userId: user.id, provider, providerAccountId, type: 'oauth' },
+    update: {},
+  })
+  return { userId: user.id }
+}
+
+/**
+ * 建立有效的補填 email 驗證 token（直接使用 createEmailVerifyToken，繞過寄信），
+ * 供 E2E 測試直接導航至 /verify-email?token=... 驗收完整流程。
+ */
+export function createValidEmailVerifyToken(userId: string, email: string): string {
+  return createEmailVerifyToken(userId, email)
+}
+
+/**
+ * 取得指定 userId 的 email（供驗證補填流程是否成功寫入）。
+ */
+export async function getUserEmailById(userId: string): Promise<string | null> {
+  const user = await prisma.user.findUnique({ where: { id: userId }, select: { email: true } })
+  return user?.email ?? null
+}
+
+/**
+ * 刪除指定 userId 帳號（含所有 Account/UserCard/Binder，由 cascade 處理）。
+ * 供 createOAuthUserNoEmail 建立的測試帳號清理（無 email 無法用 deleteUserByEmail）。
+ */
+export async function deleteUserById(userId: string): Promise<void> {
+  await prisma.user.deleteMany({ where: { id: userId } })
 }
