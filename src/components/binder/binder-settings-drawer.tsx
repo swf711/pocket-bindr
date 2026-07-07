@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useTranslations } from 'next-intl'
 import { GridType } from '@prisma/client'
 import { toast } from 'sonner'
-import { Settings, Trash2, GripVertical, Copy, Share2 } from 'lucide-react'
+import { Settings, Trash2, GripVertical, Copy, Share2, X } from 'lucide-react'
 import {
   DndContext,
   DragEndEvent,
@@ -28,6 +28,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import {
   Drawer,
+  DrawerClose,
   DrawerContent,
   DrawerHeader,
   DrawerTitle,
@@ -35,12 +36,12 @@ import {
 } from '@/components/ui/drawer'
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
+  AlertDialogMedia,
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
@@ -136,21 +137,28 @@ function SortablePageRow({
             <p>{t('deleteThisPage')}</p>
           </TooltipContent>
         </Tooltip>
-        <AlertDialogContent>
+        <AlertDialogContent size="sm">
           <AlertDialogHeader>
+            <AlertDialogMedia className="bg-error-container text-on-error-container">
+              <Trash2 />
+            </AlertDialogMedia>
             <AlertDialogTitle>{t('deletePageConfirmTitle', { page })}</AlertDialogTitle>
             <AlertDialogDescription>
               {t('deletePageConfirmDescription')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
-            <AlertDialogAction
+            <AlertDialogCancel variant="outline" size="lg" className="rounded-full!">
+              {t('cancel')}
+            </AlertDialogCancel>
+            <Button
+              variant="destructive"
+              size="lg"
               onClick={() => onDelete(page)}
               data-testid={`page-delete-confirm-${page}`}
             >
               {t('delete')}
-            </AlertDialogAction>
+            </Button>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -339,7 +347,12 @@ export function BinderSettingsDrawer({
       </Tooltip>
       <DrawerContent className="h-full w-80 right-0 left-auto">
         <DrawerHeader>
-          <DrawerTitle>{t('binderSettings')}</DrawerTitle>
+          <div className="flex justify-between items-center">
+            <DrawerTitle>{t('binderSettings')}</DrawerTitle>
+            <DrawerClose>
+              <X className="size-5" />
+            </DrawerClose>
+          </div>
         </DrawerHeader>
         <div className="flex flex-col gap-6 p-4 overflow-y-auto">
           {/* 基本設定 */}

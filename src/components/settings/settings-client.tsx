@@ -8,11 +8,11 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
 import { UsernameForm } from './username-form'
-import { AvatarForm } from './avatar-form'
 import { PasswordForm } from './password-form'
 import { SetPasswordForm } from './set-password-form'
 import { OAuthProvidersSection } from './oauth-providers-section'
@@ -58,8 +58,6 @@ export function SettingsClient({
 }: UserSettingsData) {
   const t = useTranslations('settings')
   const tReport = useTranslations('report')
-  const tCommon = useTranslations('common')
-  const displayUsername = username ?? email?.split('@')[0] ?? tCommon('defaultUsername')
 
   return (
     <div className="space-y-6">
@@ -70,41 +68,34 @@ export function SettingsClient({
       <h1 className="text-2xl font-bold">{t('title')}</h1>
 
       <div className='grid md:grid-cols-2 gap-4'>
-        <Card>
+        <Card className="p-6 md:p-8 gap-7 bg-surface-container ring-0">
           <CardHeader>
             <CardTitle>{t('profile.title')}</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <AvatarForm username={displayUsername} image={image} />
-            <UsernameForm username={username} email={email} />
-          </CardContent>
+          <UsernameForm username={username} email={email} image={image} />
         </Card>
 
         {hasPassword && (
-          <Card>
+          <Card className="p-6 md:p-8 gap-7 bg-surface-container ring-0">
             <CardHeader>
               <CardTitle>{t('changePassword.title')}</CardTitle>
             </CardHeader>
-            <CardContent>
-              <PasswordForm />
-            </CardContent>
+            <PasswordForm />
           </Card>
         )}
 
         {!hasPassword && email != null && (
-          <Card>
+          <Card className="p-6 md:p-8 gap-7 bg-surface-container ring-0">
             <CardHeader>
               <CardTitle>{t('setPassword.title')}</CardTitle>
               <CardDescription>{t('setPassword.subtitle')}</CardDescription>
             </CardHeader>
-            <CardContent>
-              <SetPasswordForm />
-            </CardContent>
+            <SetPasswordForm />
           </Card>
         )}
 
         {!hasPassword && email == null && (
-          <Card>
+          <Card className="p-6 md:p-8 gap-7 bg-surface-container ring-0">
             <CardHeader>
               <CardTitle>{t('setPassword.title')}</CardTitle>
               <CardDescription>{t('setPassword.emailRequiredSubtitle')}</CardDescription>
@@ -117,7 +108,7 @@ export function SettingsClient({
           </Card>
         )}
 
-        <Card>
+        <Card className="p-6 md:p-8 gap-7 bg-surface-container ring-0">
           <CardHeader>
             <CardTitle>{t('oauth.title')}</CardTitle>
             <CardDescription>{t('oauth.subtitle')}</CardDescription>
@@ -127,12 +118,12 @@ export function SettingsClient({
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="p-6 md:p-8 gap-7 bg-surface-container ring-0">
           <CardHeader>
             <CardTitle>{tReport('title')}</CardTitle>
             <CardDescription>{tReport('description')}</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardFooter className="justify-end border-t-0 bg-transparent">
             <ReportDialog
               trigger={
                 <Button variant="outline" data-testid="settings-report-trigger">
@@ -140,17 +131,17 @@ export function SettingsClient({
                 </Button>
               }
             />
-          </CardContent>
+          </CardFooter>
         </Card>
 
-        <Card>
+        <Card className="p-6 md:p-8 gap-7 bg-surface-container ring-0">
           <CardHeader>
             <CardTitle>{t('dangerZone.title')}</CardTitle>
             <CardDescription>{t('dangerZone.subtitle')}</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardFooter className="justify-end border-t-0 bg-transparent">
             <DeleteAccountSection />
-          </CardContent>
+          </CardFooter>
         </Card>
       </div>
     </div>

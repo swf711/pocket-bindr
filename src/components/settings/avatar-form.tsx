@@ -87,7 +87,7 @@ export function AvatarForm({ username, image }: AvatarFormProps) {
           <Button
             type="button"
             size="sm"
-            variant="outline"
+            variant="tertiary"
             disabled={isUploading}
             onClick={() => fileInputRef.current?.click()}
           >
@@ -97,7 +97,7 @@ export function AvatarForm({ username, image }: AvatarFormProps) {
             <Button
               type="button"
               size="sm"
-              variant="ghost"
+              variant="secondary"
               disabled={isRemoving}
               onClick={handleRemove}
             >

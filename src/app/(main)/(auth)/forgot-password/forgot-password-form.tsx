@@ -53,7 +53,11 @@ export function ForgotPasswordForm() {
         </CardHeader>
         <CardContent className="space-y-4">
           {rateLimited && (
-            <Alert variant="destructive" data-testid="rate-limit-alert">
+            <Alert
+              variant="destructive"
+              data-testid="rate-limit-alert"
+              className="bg-error-container text-error-foreground border-none"
+            >
               <AlertDescription>{t('forgot.rateLimited')}</AlertDescription>
             </Alert>
           )}

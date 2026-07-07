@@ -78,7 +78,11 @@ export function LoginForm({ oauthError, accountDeleted, passwordReset }: LoginFo
             </Alert>
           )}
           {oauthMessage && (
-            <Alert variant="destructive" data-testid="oauth-error-alert">
+            <Alert
+              variant="destructive"
+              data-testid="oauth-error-alert"
+              className="bg-error-container text-error-foreground border-none"
+            >
               <AlertDescription>{oauthMessage}</AlertDescription>
             </Alert>
           )}

@@ -3,16 +3,17 @@
 import { useState } from 'react'
 import { signOut } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
+import { Trash2Icon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
+  AlertDialogMedia,
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
@@ -42,8 +43,11 @@ export function DeleteAccountSection() {
       <AlertDialogTrigger asChild>
         <Button size="lg" variant="destructive">{t('deleteAccount')}</Button>
       </AlertDialogTrigger>
-      <AlertDialogContent>
+      <AlertDialogContent size="sm">
         <AlertDialogHeader>
+          <AlertDialogMedia className="bg-error-container text-on-error-container">
+            <Trash2Icon />
+          </AlertDialogMedia>
           <AlertDialogTitle>{t('confirmTitle')}</AlertDialogTitle>
           <AlertDialogDescription>
             {t('confirmDescription')}
@@ -56,15 +60,23 @@ export function DeleteAccountSection() {
           placeholder={t('confirmPlaceholder')}
         />
         <AlertDialogFooter>
-          <AlertDialogCancel onClick={() => setConfirmInput('')}>{t('cancel')}</AlertDialogCancel>
-          <AlertDialogAction
+          <AlertDialogCancel
+            variant="outline"
+            size="lg"
+            className="rounded-full!"
+            onClick={() => setConfirmInput('')}
+          >
+            {t('cancel')}
+          </AlertDialogCancel>
+          <Button
+            variant="destructive"
+            size="lg"
             data-testid="confirm-delete-btn"
             disabled={!canDelete || loading}
             onClick={handleDelete}
-            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
           >
             {loading ? t('deleting') : t('confirmDelete')}
-          </AlertDialogAction>
+          </Button>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

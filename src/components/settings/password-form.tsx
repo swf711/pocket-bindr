@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { toast } from 'sonner'
 import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
+import { CardContent, CardFooter } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { PasswordInput } from '@/components/auth/password-input'
 import { Progress } from '@/components/ui/progress'
@@ -62,61 +63,65 @@ export function PasswordForm() {
   })
 
   return (
-    <form onSubmit={onSubmit} className="space-y-3">
-      <Controller
-        control={control}
-        name="currentPassword"
-        render={({ field, fieldState }) => (
-          <div className="space-y-1.5">
-            <Label htmlFor="current-password">{t('currentPasswordLabel')}</Label>
-            <PasswordInput
-              id="current-password"
-              data-testid="current-password-input"
-              aria-invalid={fieldState.invalid}
-              autoComplete="current-password"
-              {...field}
-            />
-          </div>
-        )}
-      />
-      <Controller
-        control={control}
-        name="newPassword"
-        render={({ field, fieldState }) => (
-          <div className="space-y-1.5">
-            <Label htmlFor="new-password">{t('newPasswordLabel')}</Label>
-            <PasswordInput
-              id="new-password"
-              data-testid="new-password-input"
-              aria-invalid={fieldState.invalid}
-              autoComplete="new-password"
-              placeholder={t('newPasswordPlaceholder')}
-              {...field}
-            />
-            {newPassword.length > 0 && (
-              <div className="space-y-1" data-testid="password-strength">
-                <Progress value={((strength.score + 1) / 4) * 100} className="h-1.5" />
-                <FieldDescription>{tAuth('strength.label', { level: tAuth(`strength.${strength.score}`) })}</FieldDescription>
-              </div>
-            )}
-            {combinedError && (
-              <p data-testid="password-error" className="text-sm text-destructive">
-                {combinedError.type === 'server'
-                  ? combinedError.message
-                  : resolveFieldError(combinedError, tGlobal)}
-              </p>
-            )}
-          </div>
-        )}
-      />
-      <Button
-        size="lg"
-        type="submit"
-        data-testid="save-password-btn"
-        disabled={isSubmitting}
-      >
-        {isSubmitting ? t('updating') : t('submit')}
-      </Button>
+    <form onSubmit={onSubmit}>
+      <CardContent className="space-y-3">
+        <Controller
+          control={control}
+          name="currentPassword"
+          render={({ field, fieldState }) => (
+            <div className="space-y-1.5">
+              <Label htmlFor="current-password">{t('currentPasswordLabel')}</Label>
+              <PasswordInput
+                id="current-password"
+                data-testid="current-password-input"
+                aria-invalid={fieldState.invalid}
+                autoComplete="current-password"
+                {...field}
+              />
+            </div>
+          )}
+        />
+        <Controller
+          control={control}
+          name="newPassword"
+          render={({ field, fieldState }) => (
+            <div className="space-y-1.5">
+              <Label htmlFor="new-password">{t('newPasswordLabel')}</Label>
+              <PasswordInput
+                id="new-password"
+                data-testid="new-password-input"
+                aria-invalid={fieldState.invalid}
+                autoComplete="new-password"
+                placeholder={t('newPasswordPlaceholder')}
+                {...field}
+              />
+              {newPassword.length > 0 && (
+                <div className="space-y-1" data-testid="password-strength">
+                  <Progress value={((strength.score + 1) / 4) * 100} className="h-1.5" />
+                  <FieldDescription>{tAuth('strength.label', { level: tAuth(`strength.${strength.score}`) })}</FieldDescription>
+                </div>
+              )}
+              {combinedError && (
+                <p data-testid="password-error" className="text-sm text-destructive">
+                  {combinedError.type === 'server'
+                    ? combinedError.message
+                    : resolveFieldError(combinedError, tGlobal)}
+                </p>
+              )}
+            </div>
+          )}
+        />
+      </CardContent>
+      <CardFooter className="justify-end border-t-0 bg-transparent">
+        <Button
+          size="lg"
+          type="submit"
+          data-testid="save-password-btn"
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? t('updating') : t('submit')}
+        </Button>
+      </CardFooter>
     </form>
   )
 }

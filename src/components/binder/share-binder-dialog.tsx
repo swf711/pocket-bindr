@@ -5,16 +5,9 @@ import { useTranslations } from 'next-intl'
 import { Copy, Share2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogTitle,
-} from '@/components/ui/dialog'
-import { DialogHeaderClose } from '@/components/common/dialog-header-close'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogMedia, AlertDialogTitle } from '../ui/alert-dialog'
+import { AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogMedia, AlertDialogTitle } from '../ui/alert-dialog'
 
 interface ShareBinderDialogProps {
   binderId: string

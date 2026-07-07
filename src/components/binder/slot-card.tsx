@@ -8,12 +8,12 @@ import { Button } from '@/components/ui/button'
 import { ButtonGroup } from '@/components/ui/button-group'
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
+  AlertDialogMedia,
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
@@ -172,16 +172,27 @@ export function SlotCard({
                     <p>{t('removeCard')}</p>
                   </TooltipContent>
                 </Tooltip>
-                <AlertDialogContent>
+                <AlertDialogContent size="sm">
                   <AlertDialogHeader>
+                    <AlertDialogMedia className="bg-error-container text-on-error-container">
+                      <Trash2 />
+                    </AlertDialogMedia>
                     <AlertDialogTitle>{t('removeCard')}</AlertDialogTitle>
                     <AlertDialogDescription>
                       {t('removeCardConfirm', { cardName: slot.card.name })}
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
-                    <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => onDelete(slot.id)}>{t('confirmRemove')}</AlertDialogAction>
+                    <AlertDialogCancel variant="outline" size="lg" className="rounded-full!">
+                      {t('cancel')}
+                    </AlertDialogCancel>
+                    <Button
+                      variant="destructive"
+                      size="lg"
+                      onClick={() => onDelete(slot.id)}
+                    >
+                      {t('confirmRemove')}
+                    </Button>
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
