@@ -49,7 +49,7 @@ export function CreateBinderDialog({
   onCreated,
 }: CreateBinderDialogProps) {
   const t = useTranslations('binderList.createDialog')
-  const tValidation = useTranslations('validation')
+  const tGlobal = useTranslations()
   const {
     control,
     handleSubmit,
@@ -110,7 +110,7 @@ export function CreateBinderDialog({
                   {...field}
                   value={field.value ?? ''}
                 />
-                <FieldError>{fieldState.error && resolveFieldError(fieldState.error, tValidation)}</FieldError>
+                <FieldError>{fieldState.error && resolveFieldError(fieldState.error, tGlobal)}</FieldError>
               </Field>
             )}
           />
@@ -130,7 +130,7 @@ export function CreateBinderDialog({
                   {...field}
                   value={field.value ?? ''}
                 />
-                <FieldError>{fieldState.error && resolveFieldError(fieldState.error, tValidation)}</FieldError>
+                <FieldError>{fieldState.error && resolveFieldError(fieldState.error, tGlobal)}</FieldError>
               </Field>
             )}
           />
@@ -158,7 +158,7 @@ export function CreateBinderDialog({
                     ))}
                   </TabsList>
                 </Tabs>
-                <FieldError>{fieldState.error && resolveFieldError(fieldState.error, tValidation)}</FieldError>
+                <FieldError>{fieldState.error && resolveFieldError(fieldState.error, tGlobal)}</FieldError>
               </Field>
             )}
           />
@@ -169,7 +169,7 @@ export function CreateBinderDialog({
               <Field data-invalid={fieldState.invalid}>
                 <Label>{t('coverColor')}</Label>
                 <CoverColorPicker value={field.value ?? DEFAULT_COVER_COLOR} onChange={field.onChange} />
-                <FieldError>{fieldState.error && resolveFieldError(fieldState.error, tValidation)}</FieldError>
+                <FieldError>{fieldState.error && resolveFieldError(fieldState.error, tGlobal)}</FieldError>
               </Field>
             )}
           />

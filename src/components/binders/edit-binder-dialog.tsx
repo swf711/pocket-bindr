@@ -44,7 +44,7 @@ export function EditBinderDialog({
   onUpdated,
 }: EditBinderDialogProps) {
   const t = useTranslations('binderList.editDialog')
-  const tValidation = useTranslations('validation')
+  const tGlobal = useTranslations()
   const {
     control,
     handleSubmit,
@@ -116,7 +116,7 @@ export function EditBinderDialog({
                   {...field}
                   value={field.value ?? ''}
                 />
-                <FieldError>{fieldState.error && resolveFieldError(fieldState.error, tValidation)}</FieldError>
+                <FieldError>{fieldState.error && resolveFieldError(fieldState.error, tGlobal)}</FieldError>
               </Field>
             )}
           />
@@ -136,7 +136,7 @@ export function EditBinderDialog({
                   {...field}
                   value={field.value ?? ''}
                 />
-                <FieldError>{fieldState.error && resolveFieldError(fieldState.error, tValidation)}</FieldError>
+                <FieldError>{fieldState.error && resolveFieldError(fieldState.error, tGlobal)}</FieldError>
               </Field>
             )}
           />
@@ -164,7 +164,7 @@ export function EditBinderDialog({
                     ))}
                   </TabsList>
                 </Tabs>
-                <FieldError>{fieldState.error && resolveFieldError(fieldState.error, tValidation)}</FieldError>
+                <FieldError>{fieldState.error && resolveFieldError(fieldState.error, tGlobal)}</FieldError>
               </Field>
             )}
           />
@@ -175,7 +175,7 @@ export function EditBinderDialog({
               <Field data-invalid={fieldState.invalid}>
                 <Label>{t('coverColor')}</Label>
                 <CoverColorPicker value={field.value ?? DEFAULT_COVER_COLOR} onChange={field.onChange} />
-                <FieldError>{fieldState.error && resolveFieldError(fieldState.error, tValidation)}</FieldError>
+                <FieldError>{fieldState.error && resolveFieldError(fieldState.error, tGlobal)}</FieldError>
               </Field>
             )}
           />
