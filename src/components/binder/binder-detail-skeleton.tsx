@@ -25,7 +25,9 @@ export function BinderSpreadSkeleton({
   return (
     <div className="flex flex-col flex-1 min-h-0 h-[calc(100vh-57px)] p-4">
       {/* ── 桌面 Spread 雙頁展開 ── */}
-      <div className="hidden md:flex flex-col flex-1 min-h-0">
+      {/* max-w 對齊 BinderSpreadView 的 SPREAD_NATURAL_WIDTH（Snowglobe 縮放後置中呈現），
+          避免寬螢幕下 skeleton 撐滿整個容器、與實際版面不一致。無法 pixel-perfect 對齊 runtime scale（依 viewport 高度），僅求置中近似。 */}
+      <div className="hidden md:flex flex-col flex-1 min-h-0 max-w-300 w-full mx-auto">
         <div className="flex items-center justify-between" style={{ height: 56 }}>
           <div className="flex items-center gap-3">
             {showBackButton && <Skeleton className="h-9 w-9 rounded-md" />}

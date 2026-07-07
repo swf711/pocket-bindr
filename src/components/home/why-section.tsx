@@ -3,7 +3,7 @@ import { Mail } from 'lucide-react'
 import { getTranslations } from 'next-intl/server'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar'
-import Image from 'next/image'
+import { FooterContent } from '@/components/layout/footer-content'
 
 function LinkedInIcon({ className }: { className?: string }) {
   return (
@@ -35,7 +35,6 @@ function GitHubIcon({ className }: { className?: string }) {
 
 export async function WhySection() {
   const t = await getTranslations('home')
-  const tFooter = await getTranslations('footer')
   return (
     <section
       className="min-h-screen snap-start flex flex-col"
@@ -87,30 +86,9 @@ export async function WhySection() {
         </div>
       </div>
 
-      {/* Inline footer */}
+      {/* Inline footer — 內容與全站 Footer 共用，見 FooterContent（避免兩處漂移） */}
       <footer className="shrink-0 border-t py-6" data-testid="inline-footer">
-        <div className="container mx-auto px-4 text-center space-y-2">
-          <Image
-            src="/logo-light.svg"
-            alt='logo'
-            width={150}
-            height={100}
-            className="light:block dark:hidden mx-auto"
-          />
-          <Image
-            src="/logo-dark.svg"
-            alt='logo'
-            width={150}
-            height={100}
-            className="dark:block hidden mx-auto"
-          />
-          <p className="text-sm text-muted-foreground">
-            {tFooter('rights')}
-          </p>
-          <p className="text-xs text-muted-foreground max-w-2xl mx-auto">
-            {tFooter('disclaimer')}
-          </p>
-        </div>
+        <FooterContent />
       </footer>
     </section>
   )

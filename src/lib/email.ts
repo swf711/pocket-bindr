@@ -24,14 +24,19 @@ function generateReportEmailHtml(params: {
   type: ReportInput['type']
   message: string
   cardContext?: ReportInput['cardContext']
+  attachments?: ReportEmailAttachment[]
 }): string {
-  const { reporterEmail, reporterId, username, type, message, cardContext } = params
+  const { reporterEmail, reporterId, username, type, message, cardContext, attachments } = params
   const typeLabel = REPORT_TYPE_LABELS[type]
 
   const cardContextHtml = cardContext
     ? `<p style="margin:0 0 8px;font-size:14px;color:#09090b;line-height:1.6;">
         <strong>卡片：</strong>${escapeHtml(cardContext.cardName)}（${escapeHtml(cardContext.setExternalId)} ${escapeHtml(cardContext.cardNumber)}，id: ${escapeHtml(cardContext.cardId)}）
       </p>`
+    : ''
+
+  const attachmentsHtml = attachments?.length
+    ? `<p style="margin:8px 0 0;font-size:13px;color:#71717a;line-height:1.6;">附件：${attachments.length} 張圖片（見信件附件）</p>`
     : ''
 
   return `<!DOCTYPE html>
@@ -54,6 +59,7 @@ function generateReportEmailHtml(params: {
               </p>
               ${cardContextHtml}
               <p style="margin:16px 0 0;font-size:14px;color:#09090b;line-height:1.6;white-space:pre-wrap;">${escapeHtml(message)}</p>
+              ${attachmentsHtml}
             </td>
           </tr>
         </table>
@@ -64,6 +70,12 @@ function generateReportEmailHtml(params: {
 </html>`
 }
 
+export interface ReportEmailAttachment {
+  filename: string
+  content: string // base64
+  contentType: string
+}
+
 export async function sendReportEmail(params: {
   reporterEmail: string | null
   reporterId: string
@@ -71,6 +83,7 @@ export async function sendReportEmail(params: {
   type: ReportInput['type']
   message: string
   cardContext?: ReportInput['cardContext']
+  attachments?: ReportEmailAttachment[]
 }): Promise<void> {
   // In test environments, skip actual email sending
   if (!process.env.RESEND_API_KEY || process.env.RESEND_API_KEY === 'test') {
@@ -88,6 +101,11 @@ export async function sendReportEmail(params: {
     to,
     subject: `[PocketBindr 回報] ${REPORT_TYPE_LABELS[params.type]}`,
     html: generateReportEmailHtml(params),
+    attachments: params.attachments?.map((a) => ({
+      filename: a.filename,
+      content: a.content,
+      contentType: a.contentType,
+    })),
   })
 
   if (error) {

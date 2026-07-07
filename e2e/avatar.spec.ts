@@ -33,9 +33,17 @@ test.describe('頭像上傳', () => {
     await expect(page.getByText('頭像已更新')).toBeVisible()
     await expect(page.locator('[data-slot="avatar-image"]')).toBeVisible()
 
+    // Header 右上角頭像應即時同步（router.refresh() 觸發 Server Component 重渲染），不需重新導航
+    await expect(
+      page.locator('[data-testid="user-menu-trigger"] [data-slot="avatar-image"]')
+    ).toBeVisible()
+
     await page.getByRole('button', { name: '移除' }).click()
     await expect(page.getByText('頭像已移除')).toBeVisible()
     await expect(page.locator('[data-slot="avatar-image"]')).toHaveCount(0)
     await expect(page.getByText(fallbackInitial, { exact: true }).first()).toBeVisible()
+    await expect(
+      page.locator('[data-testid="user-menu-trigger"] [data-slot="avatar-image"]')
+    ).toHaveCount(0)
   })
 })

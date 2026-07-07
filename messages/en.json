@@ -24,7 +24,14 @@
     "submit": "Submit report",
     "sending": "Sending…",
     "sendSuccess": "Report sent, thank you for your help!",
-    "sendFailed": "Failed to send, please try again later"
+    "sendFailed": "Failed to send, please try again later",
+    "attachLabel": "Attach images (optional)",
+    "attachAdd": "Add image",
+    "attachHint": "Up to 3 images, 2MB each",
+    "attachRemove": "Remove attachment",
+    "attachTooMany": "You can attach up to 3 images",
+    "attachTooLarge": "Attachments are too large — remove some or use smaller images",
+    "attachInvalidType": "Only PNG / JPEG / WebP images are supported"
   },
   "nav": {
     "home": "Home",
@@ -500,7 +507,8 @@
           "Identity data: email address (required for email/password registration; may be absent for social login users), username, display name provided by social login (name), avatar image URL (image)",
           "Authentication and authorization data: password hash (bcrypt-hashed; we never store plaintext passwords); if you sign in with Google or Discord, we store the access token and refresh token issued by that provider to maintain your login session",
           "User content: your collection status (owned/wanted), quantity, and notes for cards you mark; binder names, descriptions, cover colors, and page layouts you create",
-          "Connection and abuse-prevention data: to prevent abuse of features such as password reset, we temporarily record your IP address and the email address you provide for rate limiting; this data is stored in Upstash Redis and automatically expires"
+          "Feedback content: text descriptions you submit through the in-site \"Feedback\" form, and images you optionally attach (up to 3). This content is only sent via a notification email to the developer's inbox and is not otherwise stored in the Service's database or cloud storage",
+          "Connection and abuse-prevention data: to prevent abuse of features such as password reset and feedback submission, we temporarily record your IP address (and your user account ID for feedback submissions) and the email address you provide for rate limiting; this data is stored in Upstash Redis and automatically expires"
         ]
       },
       {
@@ -510,6 +518,7 @@
           "Providing account registration, login, and identity verification",
           "Providing core features such as card search, collection marking, and binder creation and management",
           "Sending password reset notification emails when requested",
+          "Receiving and processing missing-card, data-error, or bug reports you submit through the feedback form",
           "Preventing automated attacks, brute-force attempts, and other abuse to maintain service security",
           "Providing binder public sharing at your choice"
         ]
@@ -522,7 +531,7 @@
           "Discord Inc. (social login authentication)",
           "Supabase (database hosting, servers located in Japan)",
           "Vercel Inc. (website hosting, servers located in Tokyo, Japan)",
-          "Resend (password reset email delivery)",
+          "Resend (password reset and feedback notification email delivery)",
           "Upstash (temporary data storage for rate limiting)",
           "Cloudflare (DNS and email forwarding)"
         ]
@@ -642,6 +651,7 @@
     "REPORT_TYPE_INVALID": "Please select a valid report type",
     "REPORT_MESSAGE_TOO_SHORT": "Message must be at least 10 characters",
     "REPORT_MESSAGE_TOO_LONG": "Message must be at most 2000 characters",
+    "ATTACHMENT_INVALID": "Invalid attachment format, size, or count",
     "AVATAR_INVALID": "Invalid avatar file format or size",
     "generic": "Please check this field"
   }

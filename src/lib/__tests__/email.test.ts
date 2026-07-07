@@ -61,4 +61,23 @@ describe('sendReportEmail', () => {
       expect.objectContaining({ to: 'owner@example.com' }),
     )
   })
+
+  it('attachments 轉為 Resend attachments 格式', async () => {
+    process.env.RESEND_API_KEY = 'real-key'
+    process.env.REPORT_TO_EMAIL = 'owner@example.com'
+    mockSend.mockResolvedValue({ error: null })
+    await sendReportEmail({
+      reporterEmail: 'a@b.com',
+      reporterId: 'user-1',
+      username: 'brian',
+      type: 'bug',
+      message: 'hello',
+      attachments: [{ filename: 'a.webp', content: 'base64data', contentType: 'image/webp' }],
+    })
+    expect(mockSend).toHaveBeenCalledWith(
+      expect.objectContaining({
+        attachments: [{ filename: 'a.webp', content: 'base64data', contentType: 'image/webp' }],
+      }),
+    )
+  })
 })

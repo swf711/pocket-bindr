@@ -28,12 +28,18 @@ import { POST } from '../route'
 import { prisma } from '@/lib/prisma'
 import { reportIpLimiter, reportUserLimiter } from '@/lib/rate-limit'
 
-function makeRequest(body: unknown) {
+function makeRequest(body: unknown, files: File[] = []) {
+  const formData = new FormData()
+  formData.append('payload', JSON.stringify(body))
+  for (const file of files) formData.append('attachments', file)
   return new NextRequest('http://localhost/api/report', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
+    body: formData,
   })
+}
+
+function makeFile(name: string, type: string, size: number): File {
+  return new File([new Uint8Array(size)], name, { type })
 }
 
 const validBody = { type: 'bug', message: 'A sufficiently long bug description.' }
@@ -106,5 +112,62 @@ describe('POST /api/report', () => {
     expect(res.status).toBe(500)
     const data = await res.json()
     expect(data.error).toBe('SEND_FAILED')
+  })
+
+  it('附件超過 3 張回傳 400 ATTACHMENT_INVALID', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'user-1' } })
+    const files = [
+      makeFile('a.webp', 'image/webp', 100),
+      makeFile('b.webp', 'image/webp', 100),
+      makeFile('c.webp', 'image/webp', 100),
+      makeFile('d.webp', 'image/webp', 100),
+    ]
+    const res = await POST(makeRequest(validBody, files))
+    expect(res.status).toBe(400)
+    const data = await res.json()
+    expect(data.error).toBe('ATTACHMENT_INVALID')
+  })
+
+  it('單檔超過大小上限回傳 400 ATTACHMENT_INVALID', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'user-1' } })
+    const files = [makeFile('big.webp', 'image/webp', 3 * 1024 * 1024)]
+    const res = await POST(makeRequest(validBody, files))
+    expect(res.status).toBe(400)
+    const data = await res.json()
+    expect(data.error).toBe('ATTACHMENT_INVALID')
+  })
+
+  it('不支援的檔案型別回傳 400 ATTACHMENT_INVALID', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'user-1' } })
+    const files = [makeFile('a.gif', 'image/gif', 100)]
+    const res = await POST(makeRequest(validBody, files))
+    expect(res.status).toBe(400)
+    const data = await res.json()
+    expect(data.error).toBe('ATTACHMENT_INVALID')
+  })
+
+  it('合法附件成功送出並以 base64 attachments 呼叫 sendReportEmail', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'user-1' } })
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({ email: 'a@b.com', username: 'brian' } as never)
+    const files = [makeFile('a.webp', 'image/webp', 100)]
+    const res = await POST(makeRequest(validBody, files))
+    expect(res.status).toBe(200)
+    expect(mockSendReportEmail).toHaveBeenCalledWith(
+      expect.objectContaining({
+        attachments: [
+          expect.objectContaining({ contentType: 'image/webp', content: expect.any(String) }),
+        ],
+      }),
+    )
+  })
+
+  it('無附件仍正常送出（維持既有契約）', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'user-1' } })
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({ email: 'a@b.com', username: 'brian' } as never)
+    const res = await POST(makeRequest(validBody))
+    expect(res.status).toBe(200)
+    expect(mockSendReportEmail).toHaveBeenCalledWith(
+      expect.objectContaining({ attachments: undefined }),
+    )
   })
 })
