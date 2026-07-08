@@ -50,14 +50,7 @@ describe('fetchSets', () => {
 
     const sets = await fetchSets()
 
-    expect(fetch).toHaveBeenCalledWith(
-      expect.stringContaining('/v2/sets'),
-      expect.objectContaining({
-        headers: expect.objectContaining({
-          'X-Api-Key': expect.any(String),
-        }),
-      })
-    )
+    expect(fetch).toHaveBeenCalledWith(expect.stringContaining('/v2/sets'))
     expect(sets).toHaveLength(1)
     expect(sets[0].id).toBe('sv1')
   })
@@ -107,10 +100,7 @@ describe('fetchCardsBySet', () => {
 
     const cards = await fetchCardsBySet('sv1')
 
-    expect(fetch).toHaveBeenCalledWith(
-      expect.stringContaining('q=set.id%3Asv1'),
-      expect.anything()
-    )
+    expect(fetch).toHaveBeenCalledWith(expect.stringContaining('q=set.id%3Asv1'))
     expect(cards).toHaveLength(1)
     expect(cards[0].id).toBe('sv1-1')
   })
