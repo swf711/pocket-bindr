@@ -1,0 +1,28 @@
+name: Supabase Keep-Alive (prod)
+
+on:
+  schedule:
+    # 每 3 天 07:00 UTC ping 一次 production DB，遠低於 Supabase 免費方案 7 天閒置暫停上限
+    - cron: "0 7 */3 * *"
+  workflow_dispatch: {}
+
+jobs:
+  ping:
+    name: Ping production DB (read-only)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Read-only keep-alive query
+        env:
+          # PROD_DIRECT_URL 必須是 Supabase Session Pooler 字串（pooler host, port 5432）。
+          # 勿用 db.<ref>.supabase.co 真直連——那是 IPv6-only，GitHub runner 只有 IPv4 連不上。
+          PROD_DIRECT_URL: ${{ secrets.PROD_DIRECT_URL }}
+          PGCONNECT_TIMEOUT: "15"
+        run: |
+          if [ -z "$PROD_DIRECT_URL" ]; then
+            echo "::error::PROD_DIRECT_URL secret is not set"
+            exit 1
+          fi
+          psql "$PROD_DIRECT_URL" \
+            --no-psqlrc \
+            -v ON_ERROR_STOP=1 \
+            -c "SELECT 1 AS keepalive, now();"
