@@ -47,7 +47,7 @@
 
 ## 受保護路由
 
-- middleware 保護：`/binders`、`/binders/[id]`、`/settings`、`/collection`（未登入導向 `/login`）。
+- proxy 保護：`/binders`、`/binders/[id]`、`/settings`、`/collection`（未登入導向 `/login`）。
 - `/cards`（搜尋）未登入可瀏覽；收藏動作觸發登入 modal，登入後自動續行原動作。
 - `/b/[token]`（公開分享）為唯讀，不需登入。
 
