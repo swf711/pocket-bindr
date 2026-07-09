@@ -166,12 +166,12 @@ export function SlotCardPickerDialog({ open, onClose, onConfirm }: SlotCardPicke
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="flex max-h-[85vh] flex-col gap-0 overflow-hidden p-0 sm:max-w-[calc(100%-2rem)] lg:max-w-5xl" data-testid="slot-card-picker-dialog" showCloseButton={false}>
-        <DialogHeaderClose className="shrink-0 border-b px-6 py-4">
+      <DialogContent className="gap-0 overflow-hidden p-0 sm:max-w-[calc(100%-2rem)] lg:max-w-5xl" data-testid="slot-card-picker-dialog" showCloseButton={false}>
+        <DialogHeaderClose className="border-b px-6 py-4">
           <DialogTitle>{selectedCard ? t('selectStatus') : t('selectCard')}</DialogTitle>
         </DialogHeaderClose>
 
-        <ScrollArea className="flex-1 min-h-0">
+        <ScrollArea className="max-h-[calc(85vh-4.5rem)]">
           {!selectedCard ? (
             <div className="space-y-4 px-6 py-4">
               {!game && <GameSelector selected={game} onSelect={handleGameChange} />}
