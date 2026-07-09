@@ -4,6 +4,8 @@
 支援雙頁展開瀏覽、拖拉排列格位，以及唯讀公開分享連結。目前涵蓋 Pokémon TCG 與 One Piece TCG
 （英文 / 日文 / 繁體中文）。
 
+🌐 **線上服務**：<https://pocketbindr.app>
+
 ## 技術棧
 
 - **Next.js 16**（App Router, TypeScript）
@@ -18,7 +20,7 @@
 
 ## 快速開始
 
-需求：Node.js 20+、pnpm、一個 PostgreSQL 資料庫（建議 Supabase）。
+需求：Node.js 22+、pnpm、一個 PostgreSQL 資料庫（建議 Supabase）。
 
 ```bash
 # 1. 安裝依賴
@@ -60,7 +62,7 @@ pnpm dev
 
 新 clone 的資料庫是空的。各資料源的取得方式不同：
 
-- **PTCG（英文）**：來自公開的 [pokemontcg.io](https://pokemontcg.io) API，設定 `PTCG_API_KEY` 後可自行同步。
+- **PTCG（英文）**：來自公開的 [pokemontcg.io](https://pokemontcg.io) API，無需 API key 即可請求、自行同步。
 - **PTCG（日文 / 繁中）、One Piece TCG（全語言）**：來自各官方網站，依賴**未隨本專案散布**的內部維護腳本，
   外部開發者無法直接重建這批資料。
 

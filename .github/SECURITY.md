@@ -4,7 +4,7 @@
 
 若你發現安全性漏洞，**請勿**開公開 issue 或在 PR 中揭露細節。
 
-請改以 email 私下回報至 **your-email@example.com**，並盡量包含：
+請改以 email 私下回報至 **support@pocketbindr.app**，並盡量包含：
 
 - 漏洞的描述與影響範圍
 - 重現步驟或 proof of concept
