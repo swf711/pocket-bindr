@@ -78,7 +78,7 @@ describe('PATCH /api/user/username', () => {
     expect(data.success).toBe(true)
   })
 
-  it('合法 username 更新成功回傳 200', async () => {
+  it('合法 username 更新成功回傳 200，body 含 username（供前端 useSession().update 同步 token.name）', async () => {
     mockAuth.mockResolvedValue({ user: { id: 'user-1' } })
     vi.mocked(prisma.user.findUnique).mockResolvedValue(null)
     vi.mocked(prisma.user.update).mockResolvedValue({} as never)
@@ -86,6 +86,7 @@ describe('PATCH /api/user/username', () => {
     expect(res.status).toBe(200)
     const data = await res.json()
     expect(data.success).toBe(true)
+    expect(data.username).toBe('valid_name')
   })
 
   it('Prisma P2002 錯誤被捕捉並回傳 409 USERNAME_TAKEN', async () => {

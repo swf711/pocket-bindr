@@ -322,7 +322,7 @@ export function BinderSpreadView({
                         {isLastSpread ? (
                           <Button
                             variant="outline"
-                            size="sm"
+                            size="lg"
                             data-testid="spread-add-page-btn"
                             onClick={onAddPage}
                             disabled={isDragging}

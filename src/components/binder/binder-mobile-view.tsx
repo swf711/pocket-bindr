@@ -15,7 +15,7 @@ import {
   useSensor,
   useSensors,
 } from '@dnd-kit/core'
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Plus, PlusCircle } from 'lucide-react'
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Pagination,
@@ -387,11 +387,12 @@ export function BinderMobileView({
                 {isLastMobilePage ? (
                   <Button
                     variant="outline"
+                    size="icon-lg"
                     data-testid="mobile-add-page-btn"
                     onClick={onAddPage}
                     aria-label={t('addPage')}
                   >
-                    <PlusCircle />
+                    <Plus />
                   </Button>
                 ) : (
                   <IconTooltipButton

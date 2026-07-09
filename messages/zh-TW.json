@@ -223,7 +223,9 @@
     "comingSoon": "即將推出",
     "adding": "加入中...",
     "ownedCount": "擁有 {count}",
-    "wantedCount": "想要 {count}"
+    "wantedCount": "想要 {count}",
+    "copyName": "複製卡牌名稱",
+    "nameCopied": "已複製卡牌名稱"
   },
   "theme": {
     "toggle": "切換主題"
@@ -245,6 +247,17 @@
   "metadata": {
     "title": "PocketBindr",
     "description": "線上 TCG 卡牌收藏管理——搜尋卡牌、標記擁有／想要、放入自訂格式卡冊。"
+  },
+  "notFound": {
+    "title": "找不到頁面",
+    "description": "您要造訪的頁面不存在，或已被移除。",
+    "backHome": "回首頁"
+  },
+  "error": {
+    "title": "發生未預期的錯誤",
+    "description": "系統暫時發生問題，請稍後再試。",
+    "retry": "重試",
+    "backHome": "回首頁"
   },
   "binder": {
     "back": "返回",

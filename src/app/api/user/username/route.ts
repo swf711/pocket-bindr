@@ -30,7 +30,7 @@ export async function PATCH(request: Request) {
       data: { username: parsed.data },
     })
 
-    return Response.json({ success: true })
+    return Response.json({ success: true, username: parsed.data })
   } catch (err) {
     if ((err as { code?: string }).code === 'P2002') {
       return Response.json({ error: 'USERNAME_TAKEN' }, { status: 409 })

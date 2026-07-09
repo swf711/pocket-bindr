@@ -55,6 +55,10 @@ export const authConfig: NextAuthConfig = {
       if (trigger === 'update' && session && 'image' in session) {
         token.picture = (session as { image?: string | null }).image
       }
+      // 同上，讓 username 改名後不必重登即可反映於 token.name（Header 顯示名來源）。
+      if (trigger === 'update' && session && 'name' in session) {
+        token.name = (session as { name?: string | null }).name ?? null
+      }
       return token
     },
   },

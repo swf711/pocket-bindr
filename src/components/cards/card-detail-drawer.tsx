@@ -24,7 +24,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { PILL_TABS_LIST, PILL_TABS_TRIGGER } from '@/lib/tabs-styles'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { ChevronLeft, ChevronRight, BookCheck, Bookmark, X, Minus, Plus, Flag } from 'lucide-react'
+import { ChevronLeft, ChevronRight, BookCheck, Bookmark, X, Minus, Plus, Flag, Copy } from 'lucide-react'
 import { CardWithCollectionStatus } from '@/types/card'
 import { getCardImageUrl } from '@/lib/get-card-image-url'
 import { BinderSummary } from '@/types/binder'
@@ -116,6 +116,11 @@ export function CardDetailDrawer({ card, open, onClose, onAddToBinder, onLoginSu
   }, [open, currentIndex, cards, onNavigate])
 
   if (!card) return null
+
+  const handleCopyName = async () => {
+    await navigator.clipboard.writeText(card.name)
+    toast.success(t('nameCopied'))
+  }
 
   const imageUrl =
     getCardImageUrl(!card.isCollectible && card.canonicalCard ? card.canonicalCard.imageLarge : card.imageLarge) ||
@@ -239,6 +244,15 @@ export function CardDetailDrawer({ card, open, onClose, onAddToBinder, onLoginSu
             <div className="flex items-center justify-between gap-2">
               {PrevButton}
               <DrawerTitle className="text-2xl min-w-0 flex-1 truncate text-center">{card.name}</DrawerTitle>
+              <IconTooltipButton
+                data-testid="drawer-copy-name-trigger"
+                tooltip={t('copyName')}
+                variant="ghost"
+                size="icon-xs"
+                onClick={handleCopyName}
+              >
+                <Copy className="size-4" />
+              </IconTooltipButton>
               {session?.user && (
                 <IconTooltipButton
                   data-testid="drawer-report-trigger"
@@ -258,6 +272,15 @@ export function CardDetailDrawer({ card, open, onClose, onAddToBinder, onLoginSu
                 {card.name}
               </DrawerTitle>
               <div className="flex items-center gap-1">
+                <IconTooltipButton
+                  data-testid="drawer-copy-name-trigger"
+                  tooltip={t('copyName')}
+                  variant="ghost"
+                  size="icon-xs"
+                  onClick={handleCopyName}
+                >
+                  <Copy className="size-4" />
+                </IconTooltipButton>
                 {session?.user && (
                   <IconTooltipButton
                     tooltip={tReport('trigger')}

@@ -9,6 +9,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination"
+import { cn } from "@/lib/utils"
 
 interface PaginationProps {
   currentPage: number
@@ -34,7 +35,16 @@ export function CardPagination({ currentPage, totalPages, onPageChange, classNam
     <Pagination data-testid={props['data-testid']} className={className}>
       <PaginationContent>
         <PaginationItem>
-          <PaginationPrevious href="#" onClick={() => onPageChange(currentPage - 1)} />
+          <PaginationPrevious
+            href="#"
+            aria-disabled={currentPage === 1}
+            tabIndex={currentPage === 1 ? -1 : undefined}
+            className={cn(currentPage === 1 && "pointer-events-none opacity-50")}
+            onClick={() => {
+              if (currentPage <= 1) return
+              onPageChange(currentPage - 1)
+            }}
+          />
         </PaginationItem>
         <PaginationItem>
           <PaginationLink
@@ -76,7 +86,16 @@ export function CardPagination({ currentPage, totalPages, onPageChange, classNam
           </PaginationLink>
         </PaginationItem>
         <PaginationItem>
-          <PaginationNext href="#" onClick={() => onPageChange(currentPage + 1)} />
+          <PaginationNext
+            href="#"
+            aria-disabled={currentPage === totalPages}
+            tabIndex={currentPage === totalPages ? -1 : undefined}
+            className={cn(currentPage === totalPages && "pointer-events-none opacity-50")}
+            onClick={() => {
+              if (currentPage >= totalPages) return
+              onPageChange(currentPage + 1)
+            }}
+          />
         </PaginationItem>
       </PaginationContent>
     </Pagination>
