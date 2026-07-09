@@ -246,6 +246,17 @@
     "title": "PocketBindr",
     "description": "Online TCG card collection manager — search cards, mark owned/wanted, and organize them into custom binders."
   },
+  "notFound": {
+    "title": "Page not found",
+    "description": "The page you're looking for doesn't exist or has been removed.",
+    "backHome": "Back to home"
+  },
+  "error": {
+    "title": "Something went wrong",
+    "description": "An unexpected error occurred. Please try again.",
+    "retry": "Retry",
+    "backHome": "Back to home"
+  },
   "binder": {
     "back": "Back",
     "backToList": "Back to binder list",
