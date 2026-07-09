@@ -1,0 +1,78 @@
+name: Production DB Backup (encrypted)
+
+on:
+  schedule:
+    # 每日 03:00 UTC pg_dump production DB,錯開 keep-alive 的 07:00 UTC
+    - cron: "0 3 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: backup-prod
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    name: Dump + encrypt + upload artifact
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Install PostgreSQL client (PGDG, matches Supabase major)
+        run: |
+          set -euo pipefail
+          curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc \
+            | sudo gpg --dearmor -o /usr/share/keyrings/pgdg.gpg
+          echo "deb [signed-by=/usr/share/keyrings/pgdg.gpg] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" \
+            | sudo tee /etc/apt/sources.list.d/pgdg.list > /dev/null
+          sudo apt-get update
+          # 新版 pg_dump 可 dump 同版或舊版 server;裝 17 覆蓋現行所有 Supabase(≤17)。
+          sudo apt-get install -y postgresql-client-17
+
+      - name: Dump (read-only) + encrypt
+        env:
+          # PROD_DIRECT_URL 必須是 Supabase Session Pooler 字串(pooler host, port 5432)。
+          # 勿用 db.<ref>.supabase.co(IPv6-only,runner 連不上);勿用 6543 transaction pooler(pg_dump 不支援)。
+          PROD_DIRECT_URL: ${{ secrets.PROD_DIRECT_URL }}
+          # 對稱加密 passphrase。遺失 = 所有備份無法還原,務必存密碼管理器。
+          BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+          PGCONNECT_TIMEOUT: "15"
+        run: |
+          set -euo pipefail
+          if [ -z "${PROD_DIRECT_URL:-}" ];   then echo "::error::PROD_DIRECT_URL secret is not set"; exit 1; fi
+          if [ -z "${BACKUP_PASSPHRASE:-}" ]; then echo "::error::BACKUP_PASSPHRASE secret is not set"; exit 1; fi
+
+          STAMP="$(date -u +%Y%m%d)"
+          DUMP="pocketbindr-backup-${STAMP}.dump"
+
+          # server 版本非敏感,記錄以佐證 client >= server;不 echo 連線字串。
+          psql "$PROD_DIRECT_URL" --no-psqlrc -tAc "select version();"
+
+          # 唯讀 dump:只匯出 public schema(全部 app 資料),不含 owner/privilege 便於跨環境還原。
+          pg_dump "$PROD_DIRECT_URL" \
+            --format=custom \
+            --schema=public \
+            --no-owner --no-privileges \
+            --file="$DUMP"
+
+          # 加密:passphrase 走 stdin fd(不進 argv/process list)。custom format 已壓縮 → 不再 gzip。
+          printf '%s' "$BACKUP_PASSPHRASE" \
+            | gpg --batch --yes --symmetric --cipher-algo AES256 --compress-algo none \
+                  --passphrase-fd 0 --output "${DUMP}.gpg" "$DUMP"
+          rm -f "$DUMP"
+
+          echo "ARTIFACT_NAME=pocketbindr-backup-${STAMP}" >> "$GITHUB_ENV"
+          echo "ARTIFACT_FILE=${DUMP}.gpg"                >> "$GITHUB_ENV"
+          echo "::notice::backup ready ${DUMP}.gpg ($(du -h "${DUMP}.gpg" | cut -f1))"
+
+      # ── 未來替換點 ──────────────────────────────────────────────
+      # 要換 Cloudflare R2:只改下面這一步(改成 rclone / aws s3 cp 到 R2 私有 bucket),
+      # 上方 dump+encrypt 完全不動;交接產物固定是 ${ARTIFACT_FILE}(已加密 blob)。
+      - name: Upload encrypted artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.ARTIFACT_NAME }}
+          path: ${{ env.ARTIFACT_FILE }}
+          retention-days: 30
+          if-no-files-found: error
