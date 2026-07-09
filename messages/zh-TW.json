@@ -223,7 +223,9 @@
     "comingSoon": "即將推出",
     "adding": "加入中...",
     "ownedCount": "擁有 {count}",
-    "wantedCount": "想要 {count}"
+    "wantedCount": "想要 {count}",
+    "copyName": "複製卡牌名稱",
+    "nameCopied": "已複製卡牌名稱"
   },
   "theme": {
     "toggle": "切換主題"

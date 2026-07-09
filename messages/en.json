@@ -223,7 +223,9 @@
     "comingSoon": "Coming soon",
     "adding": "Adding...",
     "ownedCount": "Owned {count}",
-    "wantedCount": "Wanted {count}"
+    "wantedCount": "Wanted {count}",
+    "copyName": "Copy card name",
+    "nameCopied": "Card name copied"
   },
   "theme": {
     "toggle": "Toggle theme"

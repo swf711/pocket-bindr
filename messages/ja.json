@@ -223,7 +223,9 @@
     "comingSoon": "近日公開",
     "adding": "追加中...",
     "ownedCount": "所有 {count}",
-    "wantedCount": "欲しい {count}"
+    "wantedCount": "欲しい {count}",
+    "copyName": "カード名をコピー",
+    "nameCopied": "カード名をコピーしました"
   },
   "theme": {
     "toggle": "テーマを切り替え"
