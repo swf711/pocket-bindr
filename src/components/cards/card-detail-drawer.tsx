@@ -27,6 +27,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { ChevronLeft, ChevronRight, BookCheck, Bookmark, X, Minus, Plus, Flag, Copy } from 'lucide-react'
 import { CardWithCollectionStatus } from '@/types/card'
 import { getCardImageUrl } from '@/lib/get-card-image-url'
+import { getLastAddedBinderId, setLastAddedBinderId } from '@/lib/last-binder-store'
 import { BinderSummary } from '@/types/binder'
 import { LoginModal } from '@/components/auth/login-modal'
 import { CreateBinderDialog } from '@/components/binders/create-binder-dialog'
@@ -427,7 +428,14 @@ function AddToBinderSection({
           const list: BinderSummary[] = Array.isArray(data) ? data : (data.binders ?? [])
           setBinders(list)
           if (list.length === 0) setNoBinders(true)
-          else setSelectedBinderId(list.find(b => b.id === currentBinderId)?.id ?? list[0].id)
+          else {
+            const remembered = getLastAddedBinderId()
+            setSelectedBinderId(
+              list.find(b => b.id === currentBinderId)?.id ??
+              list.find(b => b.id === remembered)?.id ??
+              list[0].id
+            )
+          }
         }
       })
       .catch(() => { })
@@ -458,7 +466,14 @@ function AddToBinderSection({
                 const list: BinderSummary[] = Array.isArray(data) ? data : (data.binders ?? [])
                 setBinders(list)
                 if (list.length === 0) setNoBinders(true)
-                else setSelectedBinderId(list.find(b => b.id === currentBinderId)?.id ?? list[0].id)
+                else {
+                  const remembered = getLastAddedBinderId()
+                  setSelectedBinderId(
+                    list.find(b => b.id === currentBinderId)?.id ??
+                    list.find(b => b.id === remembered)?.id ??
+                    list[0].id
+                  )
+                }
               }
             })
             onLoginSuccess?.()
@@ -494,6 +509,7 @@ function AddToBinderSection({
     setLoading(true)
     try {
       await onAddToBinder(selectedBinderId, selectedStatus, quantity)
+      setLastAddedBinderId(selectedBinderId)
       setQuantity(1)
       toast.success(t('addedSuccess', { quantity }))
     } catch {
