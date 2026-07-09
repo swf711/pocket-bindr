@@ -1,5 +1,6 @@
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { deleteAvatar } from '@/lib/avatar-storage'
 
 export async function DELETE(_request: Request) {
   try {
@@ -11,6 +12,8 @@ export async function DELETE(_request: Request) {
 
     await prisma.user.delete({ where: { id: userId } })
     // Cascade removes: Account / Session / UserCard / Binder / BinderSlot
+
+    await deleteAvatar(userId) // purge Supabase Storage avatar so deletion is complete
 
     return Response.json({ success: true })
   } catch {

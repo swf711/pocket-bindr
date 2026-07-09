@@ -15,6 +15,11 @@ vi.mock('@/lib/auth', () => ({
   auth: () => mockAuth(),
 }))
 
+const mockDeleteAvatar = vi.fn()
+vi.mock('@/lib/avatar-storage', () => ({
+  deleteAvatar: (userId: string) => mockDeleteAvatar(userId),
+}))
+
 import { DELETE } from '../route'
 
 describe('DELETE /api/user', () => {
@@ -36,5 +41,7 @@ describe('DELETE /api/user', () => {
     expect(data.success).toBe(true)
     // 確認 userId 只來自 session，而非外部輸入
     expect(mockDeleteUser).toHaveBeenCalledWith({ where: { id: 'user-42' } })
+    // DB 刪除後接著清除 Supabase Storage 頭像
+    expect(mockDeleteAvatar).toHaveBeenCalledWith('user-42')
   })
 })
