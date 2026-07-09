@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { toDisplaySlot } from '../slot-display'
 
 const jaCard = { id: 'ja-1', name: 'ルフィ', imageSmall: 'ja.png', language: 'JA' as const, cardNumber: 'OP01-001', rarity: null }
-const zhCard = { id: 'zh-1', name: '魯夫', imageSmall: 'ja.png', language: 'ZH_TW' as const, cardNumber: 'OP01-001', rarity: null }
+const zhCard = { id: 'zh-1', name: '魯夫', imageSmall: 'zh.png', language: 'ZH_TW' as const, cardNumber: 'OP01-001', rarity: null }
 
 function makeRawSlot(over: Partial<Parameters<typeof toDisplaySlot>[0]> = {}) {
   return {
@@ -34,5 +34,10 @@ describe('toDisplaySlot', () => {
     // canonical id 不外露，cardId 與 card.id 一致為顯示卡 id
     expect(slot.cardId).toBe('zh-1')
     expect(slot.card.id).toBe('zh-1')
+  })
+
+  it('有 displayCard 時 imageSmall 固定取 canonical（OPCG ZH_TW alias 無實體印刷圖，圖片指向 JA）', () => {
+    const slot = toDisplaySlot(makeRawSlot({ displayCardId: 'zh-1', displayCard: zhCard }))
+    expect(slot.card.imageSmall).toBe('ja.png')
   })
 })
