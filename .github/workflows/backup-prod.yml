@@ -76,7 +76,7 @@ jobs:
       # 要換 Cloudflare R2:只改下面這一步(改成 rclone / aws s3 cp 到 R2 私有 bucket),
       # 上方 dump+encrypt 完全不動;交接產物固定是 ${ARTIFACT_FILE}(已加密 blob)。
       - name: Upload encrypted artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ env.ARTIFACT_NAME }}
           path: ${{ env.ARTIFACT_FILE }}
