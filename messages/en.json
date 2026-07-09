@@ -528,7 +528,7 @@
   "privacy": {
     "title": "Privacy Policy",
     "lastUpdatedLabel": "Last updated",
-    "lastUpdated": "2026-07-03",
+    "lastUpdated": "2026-07-09",
     "governingNotice": "This document is provided in Traditional Chinese as the authoritative version. This English translation is for reference only; in case of any discrepancy, the Traditional Chinese version shall prevail.",
     "intro": "PocketBindr (\"the Service\") is independently developed and operated by solo developer Brian Shao (邵尉夫). This policy explains how the Service collects, uses, retains, and protects your personal data, and applies to the Service's website and related features. By using the Service, you acknowledge that you have read and agree to this policy.",
     "sections": [
@@ -576,14 +576,15 @@
           "Supabase (database hosting, servers located in Japan)",
           "Vercel Inc. (website hosting, servers located in Tokyo, Japan)",
           "Resend (password reset and feedback notification email delivery)",
-          "Upstash (temporary data storage for rate limiting)",
-          "Cloudflare (DNS and email forwarding)"
+          "Upstash (temporary data storage for rate limiting, servers located in Japan)",
+          "Cloudflare (DNS and email forwarding)",
+          "GitHub, Inc. (storage of daily encrypted database backups; backup contents are AES256-encrypted and cannot be read by GitHub, retained for 30 days then deleted)"
         ]
       },
       {
         "heading": "International Data Transfers",
         "body": [
-          "The Service's database is primarily hosted in Japan (Supabase, ap-northeast-1 region), and the website server is also deployed in Tokyo, Japan (Vercel hnd1 region). However, because some of the service providers we use (such as Google, Discord, Resend, Upstash, and Cloudflare) may have their corporate entities or data processing facilities located outside Taiwan, including in the United States, your personal data may be transferred to and processed in regions outside Taiwan as a result. We require these service providers to protect your personal data in accordance with their own privacy policies and applicable law."
+          "The Service's database (Supabase, ap-northeast-1), website server (Vercel, hnd1), and rate-limiting temporary data (Upstash) are all hosted in Japan. Daily encrypted database backups are stored on GitHub (located in the United States, contents AES256-encrypted). In addition, some of the service providers we use (such as Google, Discord, Resend, GitHub, and Cloudflare) have corporate entities or data processing facilities located outside Taiwan, including in the United States, so your personal data may be transferred to and processed in regions outside Taiwan as a result. We require these service providers to protect your personal data in accordance with their own privacy policies and applicable law."
         ]
       },
       {
@@ -601,7 +602,7 @@
       {
         "heading": "Data Security",
         "body": [
-          "We take the following measures to protect your personal data: passwords are hashed using bcrypt, so no one at the Service can see your plaintext password; password reset and account linking flows use HMAC-SHA256-signed, single-use, time-limited tokens; sensitive actions (such as account deletion or unlinking a social account) require an authenticated session."
+          "We take the following measures to protect your personal data: passwords are hashed using bcrypt, so no one at the Service can see your plaintext password; password reset and account linking flows use HMAC-SHA256-signed, single-use, time-limited tokens; sensitive actions (such as account deletion or unlinking a social account) require an authenticated session; daily database backups are stored encrypted with the AES256 symmetric algorithm and cannot be read without authorization."
         ]
       },
       {

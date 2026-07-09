@@ -14,7 +14,7 @@ describe('LegalDocument', () => {
   it('privacy：渲染標題、更新日期與 intro', async () => {
     render(await LegalDocument({ namespace: 'privacy' }))
     expect(screen.getByRole('heading', { level: 1, name: '隱私權政策' })).toBeInTheDocument()
-    expect(screen.getByText(/最後更新：2026-07-03/)).toBeInTheDocument()
+    expect(screen.getByText(/最後更新：2026-07-09/)).toBeInTheDocument()
   })
 
   it('privacy：渲染所有 section 標題', async () => {

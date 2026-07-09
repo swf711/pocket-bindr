@@ -39,4 +39,33 @@ test.describe('法律文件頁（訪客瀏覽，無 DB 寫入）', () => {
     await page.goto('/b/nonexistent-token-legal-spec')
     await expect(page.getByText('找不到卡冊')).toBeVisible()
   })
+
+  test('/privacy 顯示事實核對修訂後的內容（GitHub 備份、國際傳輸、資料安全、更新日期）', async ({ page }) => {
+    await page.goto('/privacy')
+    await expect(page.getByRole('heading', { level: 1, name: '隱私權政策' })).toBeVisible()
+    await expect(page.getByText('GitHub, Inc.')).toBeVisible()
+    await expect(page.getByText(/均儲存於日本/)).toBeVisible()
+    await expect(page.getByText(/AES256/).first()).toBeVisible()
+    await expect(page.getByText('2026-07-09')).toBeVisible()
+  })
+
+  test('EN locale：/privacy 顯示事實核對修訂後的內容', async ({ page, context }) => {
+    await context.addCookies([
+      { name: 'NEXT_LOCALE', value: 'en', url: 'http://localhost:3000' },
+    ])
+    await page.goto('/privacy')
+    await expect(page.getByRole('heading', { level: 1, name: 'Privacy Policy' })).toBeVisible()
+    await expect(page.getByText('GitHub, Inc.')).toBeVisible()
+    await expect(page.getByText(/hosted in Japan/)).toBeVisible()
+  })
+
+  test('JA locale：/privacy 顯示事實核對修訂後的內容', async ({ page, context }) => {
+    await context.addCookies([
+      { name: 'NEXT_LOCALE', value: 'ja', url: 'http://localhost:3000' },
+    ])
+    await page.goto('/privacy')
+    await expect(page.getByRole('heading', { level: 1, name: 'プライバシーポリシー' })).toBeVisible()
+    await expect(page.getByText('GitHub, Inc.')).toBeVisible()
+    await expect(page.getByText(/日本に保存/).first()).toBeVisible()
+  })
 })
