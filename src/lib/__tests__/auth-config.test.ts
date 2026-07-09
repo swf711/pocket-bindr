@@ -55,6 +55,38 @@ describe('authConfig.jwt callback — display-name mapping', () => {
   })
 })
 
+describe('authConfig.jwt callback — trigger:update 同步', () => {
+  const jwt = authConfig.callbacks!.jwt!
+
+  it("trigger==='update' 帶 name 時更新 token.name", async () => {
+    const result = await jwt({
+      token: { name: 'old' } as JWT,
+      trigger: 'update',
+      session: { name: 'new_name' },
+    } as Parameters<typeof jwt>[0])
+    expect(result!.name).toBe('new_name')
+  })
+
+  it("trigger==='update' 帶 image 時更新 token.picture（既有行為不回歸）", async () => {
+    const result = await jwt({
+      token: { picture: 'old.png' } as JWT,
+      trigger: 'update',
+      session: { image: 'new.png' },
+    } as Parameters<typeof jwt>[0])
+    expect(result!.picture).toBe('new.png')
+  })
+
+  it("trigger==='update' 未帶 name/image 時不動 token", async () => {
+    const result = await jwt({
+      token: { name: 'kept', picture: 'kept.png' } as JWT,
+      trigger: 'update',
+      session: {},
+    } as Parameters<typeof jwt>[0])
+    expect(result!.name).toBe('kept')
+    expect(result!.picture).toBe('kept.png')
+  })
+})
+
 // Contract test: the standard @auth/prisma-adapter createUser forwards the
 // provider profile (name/email/emailVerified/image) straight to user.create.
 // This is the call that broke production until User.name existed in the schema.

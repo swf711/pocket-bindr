@@ -5,6 +5,8 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { toast } from 'sonner'
 import { useTranslations } from 'next-intl'
+import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { CardContent, CardFooter } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -41,6 +43,8 @@ export function UsernameForm({ username, email, image }: UsernameFormProps) {
   const t = useTranslations('settings.profile')
   const tGlobal = useTranslations()
   const tCommon = useTranslations('common')
+  const { update } = useSession()
+  const router = useRouter()
   const displayUsername = username ?? email?.split('@')[0] ?? tCommon('defaultUsername')
   const {
     control,
@@ -70,6 +74,9 @@ export function UsernameForm({ username, email, image }: UsernameFormProps) {
         }
         return
       }
+      const data = await res.json()
+      await update({ name: data.username })
+      router.refresh()
       toast(t('updateSuccess'))
     } catch {
       toast.error(t('updateFailed'))
