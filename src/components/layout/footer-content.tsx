@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
 import { ReportDialog } from '@/components/report/report-dialog'
+import { GitHubIcon } from '@/components/icons/provider-icons'
 
 /**
  * 全站 footer 內容（logo/rights/disclaimer/terms/privacy/report），
@@ -45,6 +46,15 @@ export function FooterContent() {
         <Link href="/privacy" className="hover:underline">
           {t('privacy')}
         </Link>
+        <a
+          href="https://github.com/swf711/pocket-bindr"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1 hover:underline"
+        >
+          <GitHubIcon className="size-3.5" />
+          GitHub
+        </a>
         {session?.user && (
           <ReportDialog
             trigger={

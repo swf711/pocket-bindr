@@ -85,4 +85,13 @@ describe('Footer', () => {
     expect(screen.getByRole('link', { name: '服務條款' })).toHaveAttribute('href', '/terms')
     expect(screen.getByRole('link', { name: '隱私權政策' })).toHaveAttribute('href', '/privacy')
   })
+
+  it('包含 GitHub repo 連結', () => {
+    vi.mocked(usePathname).mockReturnValue('/cards')
+    render(<Footer />)
+    const link = screen.getByRole('link', { name: /GitHub/ })
+    expect(link).toHaveAttribute('href', 'https://github.com/swf711/pocket-bindr')
+    expect(link).toHaveAttribute('target', '_blank')
+    expect(link).toHaveAttribute('rel', 'noopener noreferrer')
+  })
 })
