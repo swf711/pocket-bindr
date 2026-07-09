@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - name: Install PostgreSQL client (PGDG, matches Supabase major)
+      - name: Install PostgreSQL 17 client (PGDG)
         run: |
           set -euo pipefail
           curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc \
@@ -27,8 +27,12 @@ jobs:
           echo "deb [signed-by=/usr/share/keyrings/pgdg.gpg] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" \
             | sudo tee /etc/apt/sources.list.d/pgdg.list > /dev/null
           sudo apt-get update
-          # 新版 pg_dump 可 dump 同版或舊版 server;裝 17 覆蓋現行所有 Supabase(≤17)。
+          # Supabase server 為 PG 17.x;裝 17 client(pg_dump 需 >= server)。
           sudo apt-get install -y postgresql-client-17
+          # ⚠️ runner 內建 postgresql-client-16,/usr/bin/pg_dump(pg_wrapper)會選到 16 造成
+          # server version mismatch。把 v17 bin 前置到後續步驟 PATH,並在 dump 步驟以絕對路徑呼叫,雙保險。
+          echo "/usr/lib/postgresql/17/bin" >> "$GITHUB_PATH"
+          /usr/lib/postgresql/17/bin/pg_dump --version  # 必須印出 17.x,否則 set -e 讓步驟紅燈
 
       - name: Dump (read-only) + encrypt
         env:
@@ -38,6 +42,8 @@ jobs:
           # 對稱加密 passphrase。遺失 = 所有備份無法還原,務必存密碼管理器。
           BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
           PGCONNECT_TIMEOUT: "15"
+          # 絕對路徑呼叫 v17 binary,繞開 runner 內建 pg_wrapper 選到 client 16 的問題。
+          PG_BIN: /usr/lib/postgresql/17/bin
         run: |
           set -euo pipefail
           if [ -z "${PROD_DIRECT_URL:-}" ];   then echo "::error::PROD_DIRECT_URL secret is not set"; exit 1; fi
@@ -47,10 +53,10 @@ jobs:
           DUMP="pocketbindr-backup-${STAMP}.dump"
 
           # server 版本非敏感,記錄以佐證 client >= server;不 echo 連線字串。
-          psql "$PROD_DIRECT_URL" --no-psqlrc -tAc "select version();"
+          "$PG_BIN/psql" "$PROD_DIRECT_URL" --no-psqlrc -tAc "select version();"
 
           # 唯讀 dump:只匯出 public schema(全部 app 資料),不含 owner/privilege 便於跨環境還原。
-          pg_dump "$PROD_DIRECT_URL" \
+          "$PG_BIN/pg_dump" "$PROD_DIRECT_URL" \
             --format=custom \
             --schema=public \
             --no-owner --no-privileges \
