@@ -1,5 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
+// next-auth 的 top-level entry 會拉入 next/server 相關 code，在 vitest（非 Next.js 打包環境）下
+// 解析失敗；這裡只需要 CredentialsSignin 這個基底 class 讓 EmailNotVerifiedError 可 extends，故 mock
+// 一個等價 stub，避免載入整包 next-auth。
+vi.mock('next-auth', () => ({
+  CredentialsSignin: class CredentialsSignin extends Error {
+    code = 'credentials'
+  },
+}))
+
 vi.mock('@/lib/prisma', () => ({
   prisma: {
     user: {
@@ -16,7 +25,7 @@ vi.mock('bcryptjs', () => ({
   },
 }))
 
-import { registerUser, verifyCredentials } from '@/lib/auth-utils'
+import { registerUser, verifyCredentials, EmailNotVerifiedError } from '@/lib/auth-utils'
 import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
 
@@ -32,6 +41,8 @@ const mockUser = {
   createdAt: new Date(),
   updatedAt: new Date(),
 }
+
+const verifiedUser = { ...mockUser, emailVerified: new Date() }
 
 describe('registerUser', () => {
   beforeEach(() => vi.clearAllMocks())
@@ -95,8 +106,8 @@ describe('registerUser', () => {
 describe('verifyCredentials', () => {
   beforeEach(() => vi.clearAllMocks())
 
-  it('正確的 email + password 回傳 user', async () => {
-    vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser)
+  it('正確的 email + password（已驗證）回傳 user', async () => {
+    vi.mocked(prisma.user.findUnique).mockResolvedValue(verifiedUser)
     vi.mocked(bcrypt.compare).mockResolvedValue(true as never)
 
     const result = await verifyCredentials({
@@ -106,6 +117,30 @@ describe('verifyCredentials', () => {
 
     expect(result).not.toBeNull()
     expect(result?.id).toBe('user-123')
+  })
+
+  it('emailVerified 為 null（未驗證）→ throw EmailNotVerifiedError', async () => {
+    vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser)
+    vi.mocked(bcrypt.compare).mockResolvedValue(true as never)
+
+    await expect(
+      verifyCredentials({ email: 'test@test.com', password: 'password123' }),
+    ).rejects.toBeInstanceOf(EmailNotVerifiedError)
+  })
+
+  it('純 OAuth（passwordHash 為 null）不受 emailVerified 影響，回傳 null（帳密不合走原有分支）', async () => {
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({
+      ...mockUser,
+      passwordHash: null,
+      emailVerified: null,
+    })
+
+    const result = await verifyCredentials({
+      email: 'test@test.com',
+      password: 'password123',
+    })
+
+    expect(result).toBeNull()
   })
 
   it('找不到 email 時回傳 null', async () => {

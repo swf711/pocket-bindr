@@ -114,9 +114,14 @@
       "subtitle": "PocketBindr アカウントにログインして、すべてのバインダー機能を利用しましょう",
       "submit": "ログイン",
       "submitting": "ログイン中...",
+      "passwordResetTitle": "パスワードを再設定しました",
       "passwordResetAlert": "パスワードがリセットされました。新しいパスワードでログインしてください。",
+      "accountDeletedTitle": "アカウントを削除しました",
       "accountDeletedAlert": "アカウントが削除されました。ご利用ありがとうございました。",
       "invalidCredentials": "メールアドレスまたはパスワードが正しくありません",
+      "emailNotVerifiedTitle": "Email 未確認",
+      "emailNotVerified": "このアカウントのメールアドレスはまだ確認されていません。確認メール内のリンクをクリックしてからログインしてください。",
+      "oauthErrorTitle": "ログインに問題が発生しました",
       "genericOauthError": "ログイン中にエラーが発生しました。もう一度お試しください。",
       "forgotPassword": "パスワードをお忘れですか？",
       "orLoginWith": "または以下の方法でログイン",
@@ -140,7 +145,9 @@
         "EMAIL_TAKEN": "このメールアドレスは既に使用されています",
         "USERNAME_TAKEN": "このユーザー名は既に使用されています",
         "INVALID_INPUT": "すべての項目を入力してください",
-        "SERVER_ERROR": "サーバーエラーが発生しました。しばらくしてからお試しください"
+        "SERVER_ERROR": "サーバーエラーが発生しました。しばらくしてからお試しください",
+        "DISPOSABLE_EMAIL": "使い捨てメールアドレスでの登録はサポートされていません",
+        "INVALID_EMAIL_DOMAIN": "このメールアドレスのドメインは無効のようです。入力内容をご確認ください"
       }
     },
     "modal": {
@@ -150,7 +157,9 @@
     "forgot": {
       "title": "パスワードをお忘れの方",
       "subtitle": "メールアドレスを入力してください。アカウントがあればパスワードリセットリンクをお送りします",
+      "rateLimitedTitle": "リクエストが多すぎます",
       "rateLimited": "リクエストが多すぎます。しばらくしてからお試しください。",
+      "successTitle": "リセットメールを送信しました",
       "successAlert": "このメールアドレスにアカウントがある場合、数分以内にリセットメールが届きます。迷惑メールフォルダもご確認ください。",
       "submit": "リセットリンクを送信",
       "submitting": "送信中...",
@@ -159,12 +168,14 @@
     "reset": {
       "title": "新しいパスワードを設定",
       "subtitle": "新しいパスワードを入力してください。このリンクは15分間有効です。",
+      "invalidLinkTitle": "無効なリンク",
       "invalidLink": "無効なリンクです。もう一度お申し込みください。",
       "reapply": "リセットリンクを再申請",
       "submit": "新しいパスワードを設定",
       "submitting": "設定中...",
       "tokenExpired": "このリンクは期限切れです。もう一度お申し込みください。",
       "tokenInvalid": "このリンクは無効か、既に使用されています。もう一度お申し込みください。",
+      "errorTitle": "パスワードの再設定に失敗しました",
       "genericError": "エラーが発生しました。しばらくしてからお試しください。"
     }
   },
@@ -767,6 +778,44 @@
       "already_used": "この Email は既に他のアカウントで使用されています",
       "forbidden": "このリンクをリクエストしたアカウントでログインしてから再度お試しください",
       "backToSettings": "設定ページへ戻る"
+    },
+    "errorTitle": {
+      "expired": "確認リンクの期限切れ",
+      "invalid": "無効なリンク",
+      "already_used": "Email は使用済みです",
+      "forbidden": "アカウントが一致しません"
     }
+  },
+  "verifySignup": {
+    "checkEmail": {
+      "title": "メールをご確認ください",
+      "subtitle": "{email} 宛に確認メールを送信しました。15分以内にメール内のリンクをクリックして確認を完了すると、ログインできるようになります。",
+      "backToLogin": "ログインへ戻る"
+    },
+    "verifying": "確認中…",
+    "verifySuccess": {
+      "title": "Email 確認完了",
+      "subtitle": "このアカウントでログインできるようになりました",
+      "goToLogin": "ログインへ"
+    },
+    "alreadyVerified": {
+      "title": "確認済み",
+      "subtitle": "このアカウントの Email は既に確認済みです。そのままログインしてください"
+    },
+    "verifyError": {
+      "expired": "このリンクは有効期限が切れています。再度登録するか確認メールを再送信してください",
+      "invalid": "このリンクは無効です",
+      "backToRegister": "登録へ戻る"
+    },
+    "verifyErrorTitle": {
+      "expired": "確認リンクの期限切れ",
+      "invalid": "無効なリンク"
+    },
+    "resend": "確認メールを再送信",
+    "resending": "送信中...",
+    "resendSent": "送信しました",
+    "resendSuccess": "このメールアドレスに未確認のアカウントがある場合、まもなく確認メールが届きます",
+    "resendFailed": "送信に失敗しました。しばらくしてからお試しください",
+    "resendRateLimited": "リクエストが多すぎます。しばらくしてからお試しください"
   }
 }

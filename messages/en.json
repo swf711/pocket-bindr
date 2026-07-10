@@ -114,9 +114,14 @@
       "subtitle": "Sign in to your PocketBindr account to use all binder features",
       "submit": "Log in",
       "submitting": "Logging in...",
+      "passwordResetTitle": "Password reset",
       "passwordResetAlert": "Your password has been reset. Please log in with your new password.",
+      "accountDeletedTitle": "Account deleted",
       "accountDeletedAlert": "Your account has been deleted. Thank you for using our service.",
       "invalidCredentials": "Incorrect email or password",
+      "emailNotVerifiedTitle": "Email not verified",
+      "emailNotVerified": "This account's email hasn't been verified yet. Please click the link in your verification email before logging in.",
+      "oauthErrorTitle": "Sign-in problem",
       "genericOauthError": "An error occurred during sign in. Please try again.",
       "forgotPassword": "Forgot password?",
       "orLoginWith": "Or sign in with",
@@ -140,7 +145,9 @@
         "EMAIL_TAKEN": "This email is already in use",
         "USERNAME_TAKEN": "This username is already taken",
         "INVALID_INPUT": "Please fill in all fields",
-        "SERVER_ERROR": "Server error, please try again later"
+        "SERVER_ERROR": "Server error, please try again later",
+        "DISPOSABLE_EMAIL": "Disposable email addresses aren't supported for registration",
+        "INVALID_EMAIL_DOMAIN": "This email domain looks invalid, please check the spelling"
       }
     },
     "modal": {
@@ -150,7 +157,9 @@
     "forgot": {
       "title": "Forgot password",
       "subtitle": "Enter your email, and if an account exists you'll receive a password reset link",
+      "rateLimitedTitle": "Too many requests",
       "rateLimited": "Too many requests. Please try again later.",
+      "successTitle": "Reset email sent",
       "successAlert": "If an account exists for this email, you'll receive a reset email within a few minutes. Please also check your spam folder.",
       "submit": "Send reset link",
       "submitting": "Sending...",
@@ -159,12 +168,14 @@
     "reset": {
       "title": "Set a new password",
       "subtitle": "Enter your new password. This link is valid for 15 minutes.",
+      "invalidLinkTitle": "Invalid link",
       "invalidLink": "Invalid link. Please request a new one.",
       "reapply": "Request a new reset link",
       "submit": "Set new password",
       "submitting": "Setting...",
       "tokenExpired": "This link has expired. Please request a new one.",
       "tokenInvalid": "This link is invalid or has already been used. Please request a new one.",
+      "errorTitle": "Password reset failed",
       "genericError": "An error occurred. Please try again later."
     }
   },
@@ -767,6 +778,44 @@
       "already_used": "This email is already used by another account",
       "forbidden": "Please log in with the account that requested this link",
       "backToSettings": "Back to Settings"
+    },
+    "errorTitle": {
+      "expired": "Verification link expired",
+      "invalid": "Invalid link",
+      "already_used": "Email already used",
+      "forbidden": "Account mismatch"
     }
+  },
+  "verifySignup": {
+    "checkEmail": {
+      "title": "Check your email",
+      "subtitle": "We've sent a verification email to {email}. Click the link within 15 minutes to complete verification, then you can log in.",
+      "backToLogin": "Back to login"
+    },
+    "verifying": "Verifying…",
+    "verifySuccess": {
+      "title": "Email Verified",
+      "subtitle": "You can now log in with this account",
+      "goToLogin": "Go to login"
+    },
+    "alreadyVerified": {
+      "title": "Already Verified",
+      "subtitle": "This account's email has already been verified. Please log in directly"
+    },
+    "verifyError": {
+      "expired": "This link has expired, please register again or request a new verification email",
+      "invalid": "This link is invalid",
+      "backToRegister": "Back to registration"
+    },
+    "verifyErrorTitle": {
+      "expired": "Verification link expired",
+      "invalid": "Invalid link"
+    },
+    "resend": "Resend verification email",
+    "resending": "Sending...",
+    "resendSent": "Sent",
+    "resendSuccess": "If this email has an unverified account, you'll receive a verification email shortly",
+    "resendFailed": "Failed to send, please try again later",
+    "resendRateLimited": "Too many requests, please try again later"
   }
 }

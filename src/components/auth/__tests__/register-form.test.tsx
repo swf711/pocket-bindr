@@ -121,17 +121,30 @@ describe('RegisterForm', () => {
     })
   })
 
-  it('成功後呼叫 signIn 並導向 /cards', async () => {
+  it('成功後顯示「請查收信箱」狀態，不自動 signIn（強制 email 驗證）', async () => {
     vi.mocked(fetch).mockResolvedValue({
       json: () => Promise.resolve({ success: true }),
     } as Response)
-    mockSignIn.mockResolvedValue({ ok: true })
+    renderForm()
+    fillForm({ email: 'new@b.com' })
+    fireEvent.click(screen.getByRole('button', { name: '註冊' }))
+    await waitFor(() => {
+      expect(screen.getByText('請查收信箱')).toBeInTheDocument()
+      expect(screen.getByText(/new@b\.com/)).toBeInTheDocument()
+    })
+    expect(mockSignIn).not.toHaveBeenCalledWith('credentials', expect.anything())
+    expect(mockPush).not.toHaveBeenCalled()
+  })
+
+  it('拋棄式信箱網域回傳 DISPOSABLE_EMAIL 時顯示於 email 欄位（D7）', async () => {
+    vi.mocked(fetch).mockResolvedValue({
+      json: () => Promise.resolve({ success: false, error: 'DISPOSABLE_EMAIL' }),
+    } as Response)
     renderForm()
     fillForm()
     fireEvent.click(screen.getByRole('button', { name: '註冊' }))
     await waitFor(() => {
-      expect(mockSignIn).toHaveBeenCalledWith('credentials', expect.objectContaining({ email: 'new@b.com' }))
-      expect(mockPush).toHaveBeenCalledWith('/cards')
+      expect(screen.getByText('不支援使用拋棄式信箱註冊')).toBeInTheDocument()
     })
   })
 

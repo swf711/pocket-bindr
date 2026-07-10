@@ -73,6 +73,26 @@ export const emailVerifyIpLimiter = new Ratelimit({
   prefix: 'rl:email-verify:ip',
 })
 
+// Signup email verification (POST /api/auth/verify-signup, unauthenticated): 10/hr per IP
+export const signupVerifyIpLimiter = new Ratelimit({
+  redis,
+  limiter: Ratelimit.slidingWindow(10, '60 m'),
+  prefix: 'rl:signup-verify:ip',
+})
+
+// Resend signup verification email (POST /api/auth/resend-verification): 10/hr per IP, 3/hr per email
+export const resendVerificationIpLimiter = new Ratelimit({
+  redis,
+  limiter: Ratelimit.slidingWindow(10, '60 m'),
+  prefix: 'rl:resend-verify:ip',
+})
+
+export const resendVerificationEmailLimiter = new Ratelimit({
+  redis,
+  limiter: Ratelimit.slidingWindow(3, '60 m'),
+  prefix: 'rl:resend-verify:email',
+})
+
 // OAuth account linking (initiate): 10/hr per IP, 5/hr per userId
 export const linkIpLimiter = new Ratelimit({
   redis,

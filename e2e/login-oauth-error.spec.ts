@@ -19,8 +19,9 @@ test('登入頁顯示 Discord 登入按鈕', async ({ page }) => {
 
 test('/login?account_deleted=true 顯示帳號已刪除 Alert', async ({ page }) => {
   await page.goto('/login?account_deleted=true')
-  await expect(page.getByTestId('account-deleted-alert')).toBeVisible()
-  await expect(page.getByText('帳號已刪除')).toBeVisible()
+  const alert = page.getByTestId('account-deleted-alert')
+  await expect(alert).toBeVisible()
+  await expect(alert).toContainText('帳號已刪除')
 })
 
 test('帶有 ?error=OAuthAccountNotLinked 時，正確憑證仍可成功登入', async ({ page }) => {

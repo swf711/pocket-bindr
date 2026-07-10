@@ -8,8 +8,24 @@ vi.mock('@/lib/rate-limit', () => ({
   registerEmailLimiter: { limit: vi.fn().mockResolvedValue({ success: true }) },
 }))
 
+vi.mock('@/lib/email-precheck', () => ({
+  isDisposableEmailDomain: vi.fn().mockReturnValue(false),
+  hasValidMxRecord: vi.fn().mockResolvedValue(true),
+}))
+
+vi.mock('@/lib/email-verify-token', () => ({
+  createEmailVerifyToken: vi.fn().mockReturnValue('mock-token'),
+}))
+
+vi.mock('@/lib/email', () => ({
+  sendSignupVerificationEmail: vi.fn().mockResolvedValue(undefined),
+}))
+
 import { POST } from '../route'
 import { registerUser } from '@/lib/auth-utils'
+import { isDisposableEmailDomain, hasValidMxRecord } from '@/lib/email-precheck'
+import { createEmailVerifyToken } from '@/lib/email-verify-token'
+import { sendSignupVerificationEmail } from '@/lib/email'
 
 function makeRequest(body: unknown) {
   return new NextRequest('http://localhost/api/auth/register', {
@@ -52,10 +68,28 @@ describe('POST /api/auth/register', () => {
     expect((await res.json()).error).toBe('USERNAME_TAKEN')
   })
 
-  it('成功回 201', async () => {
+  it('成功回 201 且寄出 verify-signup 驗證信', async () => {
     vi.mocked(registerUser).mockResolvedValue({ success: true, userId: 'user-1' })
     const res = await POST(makeRequest(validBody))
     expect(res.status).toBe(201)
     expect((await res.json()).success).toBe(true)
+    expect(createEmailVerifyToken).toHaveBeenCalledWith('user-1', validBody.email, 'verify-signup')
+    expect(sendSignupVerificationEmail).toHaveBeenCalledWith(validBody.email, 'mock-token', validBody.username)
+  })
+
+  it('拋棄式信箱網域回 400 DISPOSABLE_EMAIL 且不呼叫 registerUser（D7）', async () => {
+    vi.mocked(isDisposableEmailDomain).mockReturnValueOnce(true)
+    const res = await POST(makeRequest(validBody))
+    expect(res.status).toBe(400)
+    expect((await res.json()).error).toBe('DISPOSABLE_EMAIL')
+    expect(registerUser).not.toHaveBeenCalled()
+  })
+
+  it('MX record 查無 → 400 INVALID_EMAIL_DOMAIN 且不呼叫 registerUser（D7）', async () => {
+    vi.mocked(hasValidMxRecord).mockResolvedValueOnce(false)
+    const res = await POST(makeRequest(validBody))
+    expect(res.status).toBe(400)
+    expect((await res.json()).error).toBe('INVALID_EMAIL_DOMAIN')
+    expect(registerUser).not.toHaveBeenCalled()
   })
 })

@@ -3,7 +3,7 @@
  */
 import '@testing-library/jest-dom/vitest'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
 import { BinderView } from '../binder-view'
 import type { BinderDetailResponse } from '@/types/binder'
 
@@ -114,6 +114,10 @@ describe('BinderView 方向鍵翻頁', () => {
     render(<BinderView binder={makeBinder()} />)
     fireEvent.click(screen.getByTestId('trigger-view'))
     await waitFor(() => expect(screen.getByTestId('view-open')).toBeInTheDocument())
+    // waitFor 只保證 render 已 commit；keydown guard 的 useEffect（deps 含 viewCard）
+    // 重新註冊 listener 是另一個 passive effect，可能尚未 flush。強制 drain 一次，
+    // 確保接下來的 keyDown 打中已更新的 guard closure，而非仍捕捉 viewCard===null 的舊 closure。
+    await act(async () => {})
 
     fireEvent.keyDown(window, { key: 'ArrowRight' })
     expect(screen.getByTestId('spread-index')).toHaveTextContent('0')

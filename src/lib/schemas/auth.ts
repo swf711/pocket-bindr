@@ -33,7 +33,20 @@ export const resetPasswordSchema = z.object({
   newPassword: passwordSchema,
 })
 
+export const verifySignupSchema = z.object({
+  token: z.string().min(1, 'TOKEN_INVALID'),
+})
+
+/**
+ * POST /api/auth/resend-verification 專用：與 forgotPasswordLenientSchema 同理，
+ * 防 enumeration 需一律回 200，故不套用 email() 格式驗證，只做型別窄化。
+ */
+export const resendVerificationSchema = z.object({
+  email: z.string().trim().min(1).optional(),
+})
+
 export type RegisterInput = z.infer<typeof registerSchema>
 export type LoginInput = z.infer<typeof loginSchema>
 export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>
+export type VerifySignupInput = z.infer<typeof verifySignupSchema>

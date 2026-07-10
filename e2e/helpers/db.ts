@@ -322,8 +322,13 @@ export async function createMultiPageBinder(
 // ─── Forgot-password E2E helpers ──────────────────────────────────────────────
 
 /**
- * 建立有 email + passwordHash 的測試帳號，供 forgot-password E2E 使用。
- * 若帳號已存在則直接回傳現有 userId。
+ * 建立有 email + passwordHash 的測試帳號，供 forgot-password 等 E2E 使用。
+ * 若帳號已存在則直接回傳現有 userId。emailVerified 一律蓋為 now()——
+ * 本 helper 的語意是「可直接登入的測試帳號」，強制 email 驗證上線後
+ * verifyCredentials 會擋未驗證帳號登入（見 CLAUDE.md），故 create/update
+ * 皆需確保 emailVerified 非 null，否則會讓所有依賴此 helper 的既有 E2E
+ * 在走真實 UI 登入表單時被擋。需要「未驗證」情境請改用
+ * createUnverifiedPasswordUser。
  */
 export async function createPasswordUser(
   email: string,
@@ -333,11 +338,48 @@ export async function createPasswordUser(
   const passwordHash = await bcrypt.hash(password, 12)
   const user = await prisma.user.upsert({
     where: { email },
-    create: { email, username, passwordHash },
-    update: {},
+    create: { email, username, passwordHash, emailVerified: new Date() },
+    update: { emailVerified: new Date() },
     select: { id: true },
   })
   return { userId: user.id }
+}
+
+/**
+ * 建立有 email + passwordHash 但 emailVerified 為 null 的測試帳號，
+ * 供全站強制 email 驗證 E2E（verify-signup）測試「未驗證登入被擋」與
+ * 「驗證後可登入」情境使用。
+ */
+export async function createUnverifiedPasswordUser(
+  email: string,
+  username: string,
+  password: string,
+): Promise<{ userId: string }> {
+  const passwordHash = await bcrypt.hash(password, 12)
+  const user = await prisma.user.upsert({
+    where: { email },
+    create: { email, username, passwordHash, emailVerified: null },
+    update: { emailVerified: null, passwordHash },
+    select: { id: true },
+  })
+  return { userId: user.id }
+}
+
+/**
+ * 建立有效的 signup 驗證 token（直接使用 createEmailVerifyToken + purpose
+ * 'verify-signup'，繞過 email 寄送），供 E2E 測試直接導航至
+ * /verify-signup?token=... 驗收完整流程。
+ */
+export function createValidSignupVerifyToken(userId: string, email: string): string {
+  return createEmailVerifyToken(userId, email, 'verify-signup')
+}
+
+/**
+ * 取得指定 email 帳號的 emailVerified 時間戳（供驗證流程測試斷言）。
+ */
+export async function getUserEmailVerifiedAt(email: string): Promise<Date | null> {
+  const user = await prisma.user.findUnique({ where: { email }, select: { emailVerified: true } })
+  return user?.emailVerified ?? null
 }
 
 /**
