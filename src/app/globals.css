@@ -9,8 +9,12 @@
  * design/material-theme.json（Material Theme Builder 匯出，單一真相）產生。
  * 改色請回 Theme Builder 重匯出 JSON 後重跑腳本，不要手調下方色值。
  * shadcn token ↔ M3 role 映射表詳見 docs/PATTERNS.md。
+ *
+ * .light 與 :root 共用 light scheme：讓 `<div class="light">` 能在 dark 頁面內
+ * 強制淺色 token（就近繼承蓋過祖先 .dark），供需固定淺色子樹的區塊使用。
  */
-:root {
+:root,
+.light {
   --radius: 0.625rem;
   --background: oklch(98.1% 0.014 110.9);
   --foreground: oklch(22.2% 0.012 122.4);
@@ -126,7 +130,8 @@
 
 /* M3 high-contrast scheme（使用者於 OS 開啟「增加對比度」時生效） */
 @media (prefers-contrast: more) {
-  :root {
+  :root,
+  .light {
     --background: oklch(98.1% 0.014 110.9);
     --foreground: oklch(0.0% 0 0);
     --card: oklch(98.1% 0.014 110.9);
