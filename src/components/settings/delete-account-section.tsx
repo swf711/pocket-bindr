@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { signOut } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
+import { toast } from 'sonner'
 import { Trash2Icon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -32,6 +33,8 @@ export function DeleteAccountSection() {
       const res = await fetch('/api/user', { method: 'DELETE' })
       if (res.ok) {
         await signOut({ callbackUrl: '/login?account_deleted=true' })
+      } else {
+        toast.error(t('deleteFailed'))
       }
     } finally {
       setLoading(false)

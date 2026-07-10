@@ -51,7 +51,7 @@ export function VerifyEmailClient({ token }: VerifyEmailClientProps) {
           // renders, and router.refresh() itself triggers a re-render —
           // combining them in a dependent effect caused an infinite
           // toast/refresh loop.
-          toast(t('successToast'))
+          toast.success(t('successToast'))
           router.refresh()
           return
         }

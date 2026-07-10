@@ -89,7 +89,7 @@ export function SetPasswordForm() {
         }
         return
       }
-      toast(t('setSuccess'))
+      toast.success(t('setSuccess'))
       reset({ newPassword: '', confirmPassword: '' })
       router.refresh()
     } catch {

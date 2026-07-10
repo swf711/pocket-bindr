@@ -275,6 +275,11 @@
     "addCardFailed": "Failed to add, please try again",
     "copiedCard": "Card copied",
     "copyCardFailed": "Failed to copy, please try again",
+    "pageAdded": "Page added",
+    "deleteSlotFailed": "Failed to remove card, please try again",
+    "toggleStatusFailed": "Failed to change status, please try again",
+    "moveSlotFailed": "Failed to move card, please try again",
+    "swapSlotFailed": "Failed to swap cards, please try again",
     "slotCard": {
       "switchToWanted": "Mark as wanted",
       "switchToOwned": "Mark as owned",
@@ -308,6 +313,7 @@
       "updateFailed": "Update failed",
       "formatUpdated": "Format updated — {count} card(s) moved to pages {from}–{to}",
       "settingsSaved": "Settings saved",
+      "settingsSaveFailed": "Failed to save settings, please try again",
       "enableShareSuccess": "Public sharing enabled",
       "enableShareFailed": "Failed to enable, please try again",
       "revokeShareSuccess": "Public sharing revoked",
@@ -505,7 +511,8 @@
       "confirmPlaceholder": "Type DELETE to confirm",
       "cancel": "Cancel",
       "deleting": "Deleting...",
-      "confirmDelete": "Confirm Delete"
+      "confirmDelete": "Confirm Delete",
+      "deleteFailed": "Failed to delete account, please try again"
     },
     "linkSuccess": "Successfully linked {provider} account",
     "linkErrors": {

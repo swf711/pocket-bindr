@@ -83,8 +83,8 @@ export function CreateBinderDialog({
       onCreated(data)
       reset(DEFAULT_VALUES)
       onOpenChange(false)
-    } catch (err) {
-      toast((err as Error).message)
+    } catch {
+      toast.error(t('createFailed'))
     }
   })
 

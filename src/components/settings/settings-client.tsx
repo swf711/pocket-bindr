@@ -38,7 +38,7 @@ function SettingsToastHandler() {
     const error = searchParams.get('link_error')
     if (success) {
       const label = success === 'google' ? 'Google' : 'Discord'
-      toast(t('linkSuccess', { provider: label }))
+      toast.success(t('linkSuccess', { provider: label }))
       router.replace('/settings')
       router.refresh()
     } else if (error) {

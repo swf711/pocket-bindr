@@ -19,7 +19,7 @@ async function patchSlotSwap(input: SwapInput) {
   })
   if (!res.ok) {
     const err = await res.json().catch(() => ({}))
-    throw new Error((err as { error?: string }).error ?? 'スワップ失敗')
+    throw new Error((err as { error?: string }).error ?? 'Swap failed')
   }
   return res.json()
 }

@@ -55,7 +55,7 @@ export function PasswordForm() {
         }
         return
       }
-      toast(t('updateSuccess'))
+      toast.success(t('updateSuccess'))
       reset({ currentPassword: '', newPassword: '' })
     } catch {
       toast.error(t('updateFailed'))

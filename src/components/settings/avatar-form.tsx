@@ -48,7 +48,7 @@ export function AvatarForm({ username, image }: AvatarFormProps) {
       setCurrentImage(data.image)
       await update({ image: data.image })
       router.refresh()
-      toast(t('uploadSuccess'))
+      toast.success(t('uploadSuccess'))
     } catch {
       toast.error(t('uploadFailed'))
     } finally {
@@ -67,7 +67,7 @@ export function AvatarForm({ username, image }: AvatarFormProps) {
       setCurrentImage(null)
       await update({ image: null })
       router.refresh()
-      toast(t('removeSuccess'))
+      toast.success(t('removeSuccess'))
     } catch {
       toast.error(t('removeFailed'))
     } finally {
