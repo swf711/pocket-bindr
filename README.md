@@ -18,30 +18,36 @@
 
 ## 主要功能
 
-### 三語支援
-
-英 / 日 / 繁中，卡牌資料與 UI 皆完整在地化——同一張卡可在三種語言間切換檢視。
-
-<p align="center">
-  <img src=".github/assets/multilang.png" alt="EN/JA/ZH_TW 三語卡牌與介面對比" width="900">
-</p>
-
 <table>
   <tr>
-    <td width="33%" valign="top">
+    <td width="50%" valign="top" align="center">
+      <b>拖拉排列</b><br>
+      以 dnd-kit 拖放卡片格位，直覺地重新安排卡冊版面。<br><br>
       <img src=".github/assets/drag-drop.gif" alt="拖拉卡片重排卡冊格位的動態示範" width="100%">
-      <br><b>拖拉排列</b><br>
-      以 dnd-kit 拖放卡片格位，直覺地重新安排卡冊版面。
     </td>
-    <td width="33%" valign="top">
+    <td width="50%" rowspan="3" valign="top" align="center">
+      <b>三語支援</b><br>
+      英 / 日 / 繁中，卡牌資料與 UI 皆完整在地化。<br><br>
+      <b>繁體中文</b><br>
+      <img src=".github/assets/multilang-zh.png" alt="繁體中文卡牌詳情" width="100%"><br><br>
+      <b>日本語</b><br>
+      <img src=".github/assets/multilang-ja.png" alt="日文卡牌詳情" width="100%"><br><br>
+      <b>English</b><br>
+      <img src=".github/assets/multilang-en.png" alt="英文卡牌詳情" width="100%">
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top" align="center">
+      <b>智慧搜尋</b><br>
+      卡號格式提示，涵蓋 PTCG 與 One Piece TCG 的編號。<br><br>
       <img src=".github/assets/search.png" alt="帶卡號格式提示的搜尋框" width="100%">
-      <br><b>智慧搜尋</b><br>
-      卡號格式提示，涵蓋 PTCG 與 One Piece TCG 的編號。
     </td>
-    <td width="33%" valign="top">
+  </tr>
+  <tr>
+    <td width="50%" valign="top" align="center">
+      <b>公開分享</b><br>
+      產生唯讀公開連結，任何人無需登入即可瀏覽整本收藏。<br><br>
       <img src=".github/assets/share.png" alt="公開唯讀分享頁的卡冊檢視" width="100%">
-      <br><b>公開分享</b><br>
-      產生唯讀公開連結，任何人無需登入即可瀏覽整本收藏。
     </td>
   </tr>
 </table>
@@ -85,16 +91,16 @@ pnpm dev
 
 完整清單與說明見 [`.env.example`](./.env.example)。重點：
 
-| 變數 | 用途 | 本機開發是否必填 |
-| --- | --- | --- |
-| `DATABASE_URL` / `DIRECT_URL` | PostgreSQL 連線（pooled / 直連） | ✅ |
-| `AUTH_SECRET` / `AUTH_URL` | NextAuth session 簽章與站點 URL | ✅ |
-| `LINK_STATE_SECRET` / `RESET_TOKEN_SECRET` / `EMAIL_VERIFY_SECRET` | OAuth 連結、密碼重設、純 OAuth 使用者補填 email 驗證的 HMAC 簽章密鑰（各自獨立、lazy 載入，用到該功能才需要，不影響 app 啟動與核心卡冊功能） | 選填 |
-| `UPSTASH_REDIS_REST_URL` / `_TOKEN` | rate limiting | ✅ |
-| `GOOGLE_*` / `DISCORD_*` | 社群登入（不需要可留空，改用 Email/密碼） | 選填 |
-| `RESEND_API_KEY` | 寄送密碼重設信、email 補填驗證信、缺卡/bug 回報信；設為 `test` 可跳過真實寄信 | 選填 |
-| `REPORT_TO_EMAIL` | 缺卡/bug 回報的收件信箱 | 選填 |
-| `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY` | Storage 金鑰：本機維護腳本 + runtime 頭像上傳皆用 | 選填 |
+| 變數                                                               | 用途                                                                                                                                         | 本機開發是否必填 |
+| ------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------- | ---------------- |
+| `DATABASE_URL` / `DIRECT_URL`                                      | PostgreSQL 連線（pooled / 直連）                                                                                                             | ✅               |
+| `AUTH_SECRET` / `AUTH_URL`                                         | NextAuth session 簽章與站點 URL                                                                                                              | ✅               |
+| `LINK_STATE_SECRET` / `RESET_TOKEN_SECRET` / `EMAIL_VERIFY_SECRET` | OAuth 連結、密碼重設、純 OAuth 使用者補填 email 驗證的 HMAC 簽章密鑰（各自獨立、lazy 載入，用到該功能才需要，不影響 app 啟動與核心卡冊功能） | 選填             |
+| `UPSTASH_REDIS_REST_URL` / `_TOKEN`                                | rate limiting                                                                                                                                | ✅               |
+| `GOOGLE_*` / `DISCORD_*`                                           | 社群登入（不需要可留空，改用 Email/密碼）                                                                                                    | 選填             |
+| `RESEND_API_KEY`                                                   | 寄送密碼重設信、email 補填驗證信、缺卡/bug 回報信；設為 `test` 可跳過真實寄信                                                                | 選填             |
+| `REPORT_TO_EMAIL`                                                  | 缺卡/bug 回報的收件信箱                                                                                                                      | 選填             |
+| `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY`                       | Storage 金鑰：本機維護腳本 + runtime 頭像上傳皆用                                                                                            | 選填             |
 
 > ⚠️ `.env` / `.env.local` 已被 `.gitignore` 排除，請勿提交任何真實金鑰。
 
