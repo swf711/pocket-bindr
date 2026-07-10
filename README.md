@@ -1,10 +1,50 @@
-# PocketBindr
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="public/logo-dark.svg">
+    <source media="(prefers-color-scheme: light)" srcset="public/logo-light.svg">
+    <img alt="PocketBindr" src="public/logo-light.svg" width="400">
+  </picture>
+</p>
+
+<p align="center">
+  <img src=".github/assets/hero-binder.png" alt="PocketBindr 雙頁展開卡冊主畫面" width="800">
+</p>
 
 線上 TCG 卡牌收藏管理網站。訪客可搜尋卡牌；登入後可標記**擁有／想要**並放入自訂格式的**卡冊（binder）**，
 支援雙頁展開瀏覽、拖拉排列格位，以及唯讀公開分享連結。目前涵蓋 Pokémon TCG 與 One Piece TCG
 （英文 / 日文 / 繁體中文）。
 
 🌐 **線上服務**：<https://pocketbindr.app>
+
+## 主要功能
+
+### 三語支援
+
+英 / 日 / 繁中，卡牌資料與 UI 皆完整在地化——同一張卡可在三種語言間切換檢視。
+
+<p align="center">
+  <img src=".github/assets/multilang.png" alt="EN/JA/ZH_TW 三語卡牌與介面對比" width="900">
+</p>
+
+<table>
+  <tr>
+    <td width="33%" valign="top">
+      <img src=".github/assets/drag-drop.gif" alt="拖拉卡片重排卡冊格位的動態示範" width="100%">
+      <br><b>拖拉排列</b><br>
+      以 dnd-kit 拖放卡片格位，直覺地重新安排卡冊版面。
+    </td>
+    <td width="33%" valign="top">
+      <img src=".github/assets/search.png" alt="帶卡號格式提示的搜尋框" width="100%">
+      <br><b>智慧搜尋</b><br>
+      卡號格式提示，涵蓋 PTCG 與 One Piece TCG 的編號。
+    </td>
+    <td width="33%" valign="top">
+      <img src=".github/assets/share.png" alt="公開唯讀分享頁的卡冊檢視" width="100%">
+      <br><b>公開分享</b><br>
+      產生唯讀公開連結，任何人無需登入即可瀏覽整本收藏。
+    </td>
+  </tr>
+</table>
 
 ## 技術棧
 
