@@ -86,6 +86,14 @@ describe('Footer', () => {
     expect(screen.getByRole('link', { name: '隱私權政策' })).toHaveAttribute('href', '/privacy')
   })
 
+  it('顯示應用程式版號（顯示層加 v 前綴）', () => {
+    vi.stubEnv('NEXT_PUBLIC_APP_VERSION', '1.0.0')
+    vi.mocked(usePathname).mockReturnValue('/cards')
+    render(<Footer />)
+    expect(screen.getByTestId('site-footer')).toHaveTextContent('v1.0.0')
+    vi.unstubAllEnvs()
+  })
+
   it('包含 GitHub repo 連結', () => {
     vi.mocked(usePathname).mockReturnValue('/cards')
     render(<Footer />)
