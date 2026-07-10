@@ -46,10 +46,10 @@ export function DeleteBinderDialog({
         throw new Error(err?.error ?? t('deleteFailed'))
       }
       onDeleted(binder.id)
-      toast(tList('deleted'))
+      toast.success(tList('deleted'))
       onOpenChange(false)
-    } catch (err) {
-      toast((err as Error).message)
+    } catch {
+      toast.error(t('deleteFailed'))
     } finally {
       setLoading(false)
     }

@@ -85,12 +85,12 @@ export function EditBinderDialog({
       }
       const data: PatchBinderResponse = await res.json()
       if (data.affectedSlotsCount && data.affectedSlotsCount > 0) {
-        toast(t('formatUpdated', { count: data.affectedSlotsCount }))
+        toast.success(t('formatUpdated', { count: data.affectedSlotsCount }))
       }
       onUpdated(data as unknown as BinderSummary)
       onOpenChange(false)
-    } catch (err) {
-      toast((err as Error).message)
+    } catch {
+      toast.error(t('updateFailed'))
     }
   })
 

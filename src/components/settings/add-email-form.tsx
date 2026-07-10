@@ -47,7 +47,7 @@ export function AddEmailForm() {
         }
         return
       }
-      toast(t('requestSuccess'))
+      toast.success(t('requestSuccess'))
       reset({ email: '' })
     } catch {
       toast.error(t('requestFailed'))

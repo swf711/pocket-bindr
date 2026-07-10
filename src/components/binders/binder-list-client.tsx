@@ -53,17 +53,17 @@ export function BinderListClient({ initialBinders }: BinderListClientProps) {
 
   function handleCreated(binder: BinderSummary) {
     setBinderList(prev => [...prev, binder])
-    toast(t('created'))
+    toast.success(t('created'))
   }
 
   function handleUpdated(binder: BinderSummary) {
     setBinderList(prev => prev.map(b => (b.id === binder.id ? binder : b)))
-    toast(t('updated'))
+    toast.success(t('updated'))
   }
 
   function handleDeleted(id: string) {
     setBinderList(prev => prev.filter(b => b.id !== id))
-    toast(t('deleted'))
+    toast.success(t('deleted'))
   }
 
   function openEdit(binder: BinderSummary) {

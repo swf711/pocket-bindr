@@ -235,13 +235,13 @@ export function BinderSettingsDrawer({
           newSlots: refreshData.slots,
           newTotalPages,
         })
-        toast(t('formatUpdated', { count: affectedSlotsCount, from: totalPages + 1, to: newTotalPages }))
+        toast.success(t('formatUpdated', { count: affectedSlotsCount, from: totalPages + 1, to: newTotalPages }))
       } else {
         onSettingsUpdate({ name, gridType: localGridType, coverColor: localCoverColor, description: description || null })
-        toast(t('settingsSaved'))
+        toast.success(t('settingsSaved'))
       }
-    } catch (err) {
-      toast((err as Error).message)
+    } catch {
+      toast.error(t('settingsSaveFailed'))
     } finally {
       setSavingSettings(false)
     }
@@ -255,7 +255,7 @@ export function BinderSettingsDrawer({
       const data = await res.json()
       setLocalShareToken(data.shareToken)
       onShareTokenChange(data.shareToken)
-      toast(t('enableShareSuccess'))
+      toast.success(t('enableShareSuccess'))
     } catch {
       toast.error(t('enableShareFailed'))
     } finally {
@@ -270,7 +270,7 @@ export function BinderSettingsDrawer({
       if (!res.ok) throw new Error()
       setLocalShareToken(null)
       onShareTokenChange(null)
-      toast(t('revokeShareSuccess'))
+      toast.success(t('revokeShareSuccess'))
     } catch {
       toast.error(t('revokeShareFailed'))
     } finally {
@@ -282,7 +282,7 @@ export function BinderSettingsDrawer({
     if (!localShareToken) return
     const shareUrl = `${window.location.origin}/b/${localShareToken}`
     await navigator.clipboard.writeText(shareUrl)
-    toast(t('linkCopied'))
+    toast.success(t('linkCopied'))
   }
 
   async function handleDragEnd(event: DragEndEvent) {
@@ -304,8 +304,8 @@ export function BinderSettingsDrawer({
       const data = await res.json()
       onPageReorder(data.slots)
       setPageOrder(Array.from({ length: totalPages }, (_, i) => i + 1))
-    } catch (err) {
-      toast((err as Error).message)
+    } catch {
+      toast.error(t('reorderFailed'))
       setPageOrder(Array.from({ length: totalPages }, (_, i) => i + 1))
     }
   }
@@ -323,9 +323,9 @@ export function BinderSettingsDrawer({
       const data = await res.json()
       onPageDelete(pageNumber, data.slots)
       onTotalPagesChange(data.totalPages)
-      toast(t('pageDeleted', { page: pageNumber }))
-    } catch (err) {
-      toast((err as Error).message)
+      toast.success(t('pageDeleted', { page: pageNumber }))
+    } catch {
+      toast.error(t('deletePageFailed'))
     } finally {
       setDeletingPage(null)
     }

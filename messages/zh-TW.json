@@ -275,6 +275,11 @@
     "addCardFailed": "加入失敗，請重試",
     "copiedCard": "已複製卡片",
     "copyCardFailed": "複製失敗，請重試",
+    "pageAdded": "已新增內頁",
+    "deleteSlotFailed": "移除卡片失敗，請重試",
+    "toggleStatusFailed": "切換狀態失敗，請重試",
+    "moveSlotFailed": "移動卡片失敗，請重試",
+    "swapSlotFailed": "交換卡片失敗，請重試",
     "slotCard": {
       "switchToWanted": "切換為想要",
       "switchToOwned": "切換為擁有",
@@ -308,6 +313,7 @@
       "updateFailed": "更新失敗",
       "formatUpdated": "格式已更新，{count} 張卡牌已搬移至第 {from}～{to} 頁",
       "settingsSaved": "設定已儲存",
+      "settingsSaveFailed": "設定儲存失敗，請再試一次",
       "enableShareSuccess": "已啟用公開分享",
       "enableShareFailed": "啟用失敗，請再試一次",
       "revokeShareSuccess": "已撤銷公開分享",
@@ -505,7 +511,8 @@
       "confirmPlaceholder": "輸入 DELETE 確認",
       "cancel": "取消",
       "deleting": "刪除中...",
-      "confirmDelete": "確認刪除"
+      "confirmDelete": "確認刪除",
+      "deleteFailed": "刪除帳號失敗，請再試一次"
     },
     "linkSuccess": "已成功連結 {provider} 帳號",
     "linkErrors": {

@@ -62,7 +62,11 @@ export function BinderView({ binder }: { binder: BinderDetailResponse }) {
   }, [isMobile, viewCard, pickerTarget, spreads.length, totalPages])
 
   const handleDelete = async (slotId: string) => {
-    await fetch(`/api/binders/${binder.id}/slots/${slotId}`, { method: 'DELETE' })
+    const res = await fetch(`/api/binders/${binder.id}/slots/${slotId}`, { method: 'DELETE' })
+    if (!res.ok) {
+      toast.error(t('deleteSlotFailed'))
+      return
+    }
     setSlots((prev) => prev.filter((s) => s.id !== slotId))
   }
 
@@ -94,6 +98,7 @@ export function BinderView({ binder }: { binder: BinderDetailResponse }) {
               return s
             }),
           )
+          toast.error(t('swapSlotFailed'))
         },
       },
     )
@@ -107,6 +112,7 @@ export function BinderView({ binder }: { binder: BinderDetailResponse }) {
     const res = await fetch(`/api/binders/${binder.id}/slots/${slotId}/status`, { method: 'PATCH' })
     if (!res.ok) {
       setSlots((prev) => prev.map((s) => (s.id === slotId ? { ...s, status: slot.status } : s)))
+      toast.error(t('toggleStatusFailed'))
     }
   }
 
@@ -129,6 +135,7 @@ export function BinderView({ binder }: { binder: BinderDetailResponse }) {
           s.id === slotId ? { ...s, pageNumber: prevPage, slotIndex: prevIndex } : s,
         ),
       )
+      toast.error(t('moveSlotFailed'))
     }
   }
 
@@ -141,6 +148,7 @@ export function BinderView({ binder }: { binder: BinderDetailResponse }) {
     if (res.ok) {
       const data = await res.json()
       setTotalPages(data.totalPages)
+      toast.success(t('pageAdded'))
     }
   }
 

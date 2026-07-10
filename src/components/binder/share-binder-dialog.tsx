@@ -38,7 +38,7 @@ export function ShareBinderDialog({
       const data = await res.json()
       setToken(data.shareToken)
       onTokenChange(data.shareToken)
-      toast(t('enableSuccess'))
+      toast.success(t('enableSuccess'))
     } catch {
       toast.error(t('enableFailed'))
     } finally {
@@ -53,7 +53,7 @@ export function ShareBinderDialog({
       if (!res.ok) throw new Error()
       setToken(null)
       onTokenChange(null)
-      toast(t('revokeSuccess'))
+      toast.success(t('revokeSuccess'))
     } catch {
       toast.error(t('revokeFailed'))
     } finally {
@@ -63,7 +63,7 @@ export function ShareBinderDialog({
 
   async function handleCopy() {
     await navigator.clipboard.writeText(shareUrl)
-    toast(t('linkCopied'))
+    toast.success(t('linkCopied'))
   }
 
   return (

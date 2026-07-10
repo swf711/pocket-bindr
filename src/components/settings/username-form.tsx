@@ -77,7 +77,7 @@ export function UsernameForm({ username, email, image }: UsernameFormProps) {
       const data = await res.json()
       await update({ name: data.username })
       router.refresh()
-      toast(t('updateSuccess'))
+      toast.success(t('updateSuccess'))
     } catch {
       toast.error(t('updateFailed'))
     }

@@ -275,6 +275,11 @@
     "addCardFailed": "追加に失敗しました。もう一度お試しください",
     "copiedCard": "カードを複製しました",
     "copyCardFailed": "複製に失敗しました。もう一度お試しください",
+    "pageAdded": "ページを追加しました",
+    "deleteSlotFailed": "カードの削除に失敗しました。もう一度お試しください",
+    "toggleStatusFailed": "ステータスの変更に失敗しました。もう一度お試しください",
+    "moveSlotFailed": "カードの移動に失敗しました。もう一度お試しください",
+    "swapSlotFailed": "カードの入れ替えに失敗しました。もう一度お試しください",
     "slotCard": {
       "switchToWanted": "欲しいに切り替え",
       "switchToOwned": "所有に切り替え",
@@ -308,6 +313,7 @@
       "updateFailed": "更新に失敗しました",
       "formatUpdated": "フォーマットを更新しました。{count} 枚のカードが {from}〜{to} ページ目に移動しました",
       "settingsSaved": "設定を保存しました",
+      "settingsSaveFailed": "設定の保存に失敗しました。もう一度お試しください",
       "enableShareSuccess": "公開共有を有効にしました",
       "enableShareFailed": "有効化に失敗しました。もう一度お試しください",
       "revokeShareSuccess": "公開共有を無効にしました",
@@ -505,7 +511,8 @@
       "confirmPlaceholder": "確認のため DELETE と入力",
       "cancel": "キャンセル",
       "deleting": "削除中...",
-      "confirmDelete": "削除を確定"
+      "confirmDelete": "削除を確定",
+      "deleteFailed": "アカウントの削除に失敗しました。もう一度お試しください"
     },
     "linkSuccess": "{provider} アカウントの連携に成功しました",
     "linkErrors": {

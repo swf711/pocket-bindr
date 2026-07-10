@@ -35,7 +35,7 @@ export function OAuthProvidersSection({ linkedProviders, hasPassword }: OAuthPro
     const res = await fetch(`/api/user/accounts/${provider}`, { method: 'DELETE' })
     if (res.ok) {
       router.refresh()
-      toast(t('unlinked'))
+      toast.success(t('unlinked'))
     } else {
       const data = await res.json() as { error?: string }
       const msg =

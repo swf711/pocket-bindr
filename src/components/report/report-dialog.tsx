@@ -153,7 +153,7 @@ export function ReportDialog({
         toast.error(t('sendFailed'))
         return
       }
-      toast(t('sendSuccess'))
+      toast.success(t('sendSuccess'))
       reset({ type: defaultType, message: '' })
       resetAttachments()
       setDialogOpen(false)
