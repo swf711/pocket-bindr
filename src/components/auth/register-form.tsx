@@ -5,11 +5,11 @@ import { useForm, Controller, type FieldError as RHFFieldError } from 'react-hoo
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { signIn } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { ResendVerificationButton } from '@/components/auth/resend-verification-button'
 import {
   Field,
   FieldDescription,
@@ -56,11 +56,13 @@ const registerFormSchema = registerSchema
 type RegisterFormValues = z.infer<typeof registerFormSchema>
 
 export function RegisterForm() {
-  const router = useRouter()
   const t = useTranslations('auth')
+  const tVerify = useTranslations('verifySignup')
   const tRoot = useTranslations()
   // 無法歸到單一欄位的伺服器錯誤（INVALID_INPUT / SERVER_ERROR / generic）走表單級錯誤。
   const [error, setError] = useState('')
+  // 註冊成功後不再自動登入（強制 email 驗證，見 CLAUDE.md）；改顯示「請查收信箱」狀態。
+  const [registeredEmail, setRegisteredEmail] = useState<string | null>(null)
   const {
     control,
     handleSubmit,
@@ -89,8 +91,8 @@ export function RegisterForm() {
     if (!data.success) {
       const code = data.error as string
       // 可歸欄位的錯誤 inline 貼回該欄位；其餘走表單級錯誤。
-      if (code === 'EMAIL_TAKEN') {
-        setFieldError('email', { type: 'server', message: t('register.errors.EMAIL_TAKEN') })
+      if (code === 'EMAIL_TAKEN' || code === 'DISPOSABLE_EMAIL' || code === 'INVALID_EMAIL_DOMAIN') {
+        setFieldError('email', { type: 'server', message: t(`register.errors.${code}`) })
       } else if (code === 'USERNAME_TAKEN') {
         setFieldError('username', { type: 'server', message: t('register.errors.USERNAME_TAKEN') })
       } else if (['INVALID_INPUT', 'SERVER_ERROR'].includes(code)) {
@@ -101,10 +103,28 @@ export function RegisterForm() {
       return
     }
 
-    await signIn('credentials', { email, password, redirect: false })
-    router.push('/cards')
-    router.refresh()
+    // 強制 email 驗證（D1）：註冊成功但需點驗證信連結才可登入，不自動登入。
+    setRegisteredEmail(email)
   })
+
+  if (registeredEmail) {
+    return (
+      <div className="flex flex-col gap-6">
+        <Card className="p-6 md:p-8 gap-7 bg-surface-container ring-0">
+          <CardHeader className="text-center">
+            <CardTitle className="text-2xl" role="heading" aria-level={1}>{tVerify('checkEmail.title')}</CardTitle>
+            <CardDescription>{tVerify('checkEmail.subtitle', { email: registeredEmail })}</CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col items-center gap-4">
+            <ResendVerificationButton email={registeredEmail} variant="secondary" />
+            <Link href="/login" className="text-sm text-primary underline-offset-4 hover:underline">
+              {tVerify('checkEmail.backToLogin')}
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
 
   return (
     <div className="flex flex-col gap-6">

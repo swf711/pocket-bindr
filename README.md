@@ -95,10 +95,10 @@ pnpm dev
 | ------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------- | ---------------- |
 | `DATABASE_URL` / `DIRECT_URL`                                      | PostgreSQL 連線（pooled / 直連）                                                                                                             | ✅               |
 | `AUTH_SECRET` / `AUTH_URL`                                         | NextAuth session 簽章與站點 URL                                                                                                              | ✅               |
-| `LINK_STATE_SECRET` / `RESET_TOKEN_SECRET` / `EMAIL_VERIFY_SECRET` | OAuth 連結、密碼重設、純 OAuth 使用者補填 email 驗證的 HMAC 簽章密鑰（各自獨立、lazy 載入，用到該功能才需要，不影響 app 啟動與核心卡冊功能） | 選填             |
+| `LINK_STATE_SECRET` / `RESET_TOKEN_SECRET` / `EMAIL_VERIFY_SECRET` | OAuth 連結、密碼重設、email 驗證（含註冊強制驗證與純 OAuth 補填 email）的 HMAC 簽章密鑰（各自獨立、lazy 載入）；`EMAIL_VERIFY_SECRET` 為 email/password 註冊必經路徑，需先設定否則註冊會失敗 | 選填（`EMAIL_VERIFY_SECRET` 若要測試 email/password 註冊則必填） |
 | `UPSTASH_REDIS_REST_URL` / `_TOKEN`                                | rate limiting                                                                                                                                | ✅               |
 | `GOOGLE_*` / `DISCORD_*`                                           | 社群登入（不需要可留空，改用 Email/密碼）                                                                                                    | 選填             |
-| `RESEND_API_KEY`                                                   | 寄送密碼重設信、email 補填驗證信、缺卡/bug 回報信；設為 `test` 可跳過真實寄信                                                                | 選填             |
+| `RESEND_API_KEY`                                                   | 寄送密碼重設信、註冊驗證信、email 補填驗證信、缺卡/bug 回報信；設為 `test` 可跳過真實寄信                                                    | 選填             |
 | `REPORT_TO_EMAIL`                                                  | 缺卡/bug 回報的收件信箱                                                                                                                      | 選填             |
 | `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY`                       | Storage 金鑰：本機維護腳本 + runtime 頭像上傳皆用                                                                                            | 選填             |
 

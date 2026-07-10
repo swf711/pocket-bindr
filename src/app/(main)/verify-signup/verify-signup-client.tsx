@@ -1,36 +1,29 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
-import { toast } from 'sonner'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { AlertCircleIcon } from 'lucide-react'
 
-type VerifyState = 'pending' | 'success' | 'expired' | 'invalid' | 'already_used' | 'forbidden'
+type VerifyState = 'pending' | 'success' | 'expired' | 'invalid' | 'already_verified'
 
-interface VerifyEmailClientProps {
+interface VerifySignupClientProps {
   token?: string
 }
 
 const ERROR_TO_STATE: Record<string, VerifyState> = {
   TOKEN_EXPIRED: 'expired',
   TOKEN_INVALID: 'invalid',
-  EMAIL_ALREADY_USED: 'already_used',
-  EMAIL_ALREADY_SET: 'already_used',
-  FORBIDDEN: 'forbidden',
+  ALREADY_VERIFIED: 'already_verified',
 }
 
-// Calls POST /api/user/email/verify on mount with the token from the query
-// string. The endpoint itself re-checks session.user.id against the token's
-// userId and re-checks email uniqueness inside a transaction (TOCTOU) — this
-// component only renders whichever of the four outcomes comes back.
-export function VerifyEmailClient({ token }: VerifyEmailClientProps) {
-  const router = useRouter()
-  const t = useTranslations('verifyEmail')
+// 免登入呼叫 POST /api/auth/verify-signup（與 /verify-email 不同，不需 session）。
+// 重放（ALREADY_VERIFIED）視為 no-op，顯示「已驗證，請登入」而非錯誤（D5）。
+export function VerifySignupClient({ token }: VerifySignupClientProps) {
+  const t = useTranslations('verifySignup')
   const [state, setState] = useState<VerifyState>(token ? 'pending' : 'invalid')
 
   useEffect(() => {
@@ -39,7 +32,7 @@ export function VerifyEmailClient({ token }: VerifyEmailClientProps) {
     let cancelled = false
     async function run() {
       try {
-        const res = await fetch('/api/user/email/verify', {
+        const res = await fetch('/api/auth/verify-signup', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ token }),
@@ -47,13 +40,6 @@ export function VerifyEmailClient({ token }: VerifyEmailClientProps) {
         if (cancelled) return
         if (res.ok) {
           setState('success')
-          // Fired once here (not in a separate effect keyed on `state`/`t`):
-          // `t` from useTranslations isn't referentially stable across
-          // renders, and router.refresh() itself triggers a re-render —
-          // combining them in a dependent effect caused an infinite
-          // toast/refresh loop.
-          toast.success(t('successToast'))
-          router.refresh()
           return
         }
         const data = await res.json().catch(() => ({}))
@@ -66,7 +52,6 @@ export function VerifyEmailClient({ token }: VerifyEmailClientProps) {
     return () => {
       cancelled = true
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token])
 
   if (state === 'pending') {
@@ -79,16 +64,20 @@ export function VerifyEmailClient({ token }: VerifyEmailClientProps) {
     )
   }
 
-  if (state === 'success') {
+  if (state === 'success' || state === 'already_verified') {
     return (
       <Card className="p-6 md:p-8 gap-7 bg-surface-container ring-0">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl" role="heading" aria-level={1}>{t('success.title')}</CardTitle>
-          <CardDescription>{t('success.subtitle')}</CardDescription>
+          <CardTitle className="text-2xl" role="heading" aria-level={1}>
+            {t(state === 'success' ? 'verifySuccess.title' : 'alreadyVerified.title')}
+          </CardTitle>
+          <CardDescription>
+            {t(state === 'success' ? 'verifySuccess.subtitle' : 'alreadyVerified.subtitle')}
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <Button asChild size="lg" className="w-full">
-            <Link href="/settings">{t('success.backToSettings')}</Link>
+            <Link href="/login">{t('verifySuccess.goToLogin')}</Link>
           </Button>
         </CardContent>
       </Card>
@@ -98,13 +87,13 @@ export function VerifyEmailClient({ token }: VerifyEmailClientProps) {
   return (
     <Card className="p-6 md:p-8 gap-7 bg-surface-container ring-0">
       <CardContent className="space-y-4">
-        <Alert variant="destructive" data-testid="verify-email-error-alert" className="bg-error-container text-error-foreground border-none">
+        <Alert variant="destructive" data-testid="verify-signup-error-alert" className="bg-error-container text-error-foreground border-none">
           <AlertCircleIcon />
-          <AlertTitle>{t(`errorTitle.${state}`)}</AlertTitle>
-          <AlertDescription>{t(`error.${state}`)}</AlertDescription>
+          <AlertTitle>{t(`verifyErrorTitle.${state}`)}</AlertTitle>
+          <AlertDescription>{t(`verifyError.${state}`)}</AlertDescription>
         </Alert>
         <Button asChild size="lg" className="w-full">
-          <Link href="/settings">{t('error.backToSettings')}</Link>
+          <Link href="/register">{t('verifyError.backToRegister')}</Link>
         </Button>
       </CardContent>
     </Card>

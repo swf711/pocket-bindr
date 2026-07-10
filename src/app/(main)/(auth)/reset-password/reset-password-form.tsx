@@ -11,7 +11,8 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Field, FieldError as FieldErrorText, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { PasswordInput } from '@/components/auth/password-input'
-import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { AlertCircleIcon } from 'lucide-react'
 import { Progress } from '@/components/ui/progress'
 import { getPasswordStrength, MIN_PASSWORD_LENGTH } from '@/lib/password-policy'
 import { resetPasswordSchema } from '@/lib/schemas/auth'
@@ -81,6 +82,8 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
       <Card className="p-6 md:p-8 gap-7 bg-surface-container ring-0">
         <CardContent className="space-y-4">
           <Alert variant="destructive" data-testid="reset-invalid-alert" className="bg-error-container text-error-foreground border-none">
+            <AlertCircleIcon />
+            <AlertTitle>{t('reset.invalidLinkTitle')}</AlertTitle>
             <AlertDescription>{t('reset.invalidLink')}</AlertDescription>
           </Alert>
           <Button asChild size="lg" className="w-full">
@@ -130,6 +133,8 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
       <CardContent className="space-y-4">
         {error && (
           <Alert variant="destructive" data-testid="reset-error-alert" className="bg-error-container text-error-foreground border-none">
+            <AlertCircleIcon />
+            <AlertTitle>{canReapply ? t('reset.invalidLinkTitle') : t('reset.errorTitle')}</AlertTitle>
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}

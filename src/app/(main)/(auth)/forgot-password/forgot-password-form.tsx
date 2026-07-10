@@ -9,7 +9,8 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Field, FieldError, FieldGroup, FieldLabel, FieldDescription } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
-import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { AlertCircleIcon, CheckCircle2Icon } from 'lucide-react'
 import { forgotPasswordSchema, type ForgotPasswordInput } from '@/lib/schemas/auth'
 import { resolveFieldError } from '@/lib/schemas/field-error'
 
@@ -60,11 +61,15 @@ export function ForgotPasswordForm() {
               data-testid="rate-limit-alert"
               className="bg-error-container text-error-foreground border-none"
             >
+              <AlertCircleIcon />
+              <AlertTitle>{t('forgot.rateLimitedTitle')}</AlertTitle>
               <AlertDescription>{t('forgot.rateLimited')}</AlertDescription>
             </Alert>
           )}
           {submitted ? (
             <Alert data-testid="forgot-password-success-alert">
+              <CheckCircle2Icon />
+              <AlertTitle>{t('forgot.successTitle')}</AlertTitle>
               <AlertDescription>
                 {t('forgot.successAlert')}
               </AlertDescription>

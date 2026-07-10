@@ -19,10 +19,12 @@ import {
 } from "@/components/ui/field"
 import { Input } from '@/components/ui/input'
 import { PasswordInput } from '@/components/auth/password-input'
-import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { consentChunks } from '@/components/auth/consent-chunks'
 import { loginSchema, type LoginInput } from '@/lib/schemas/auth'
 import { resolveFieldError } from '@/lib/schemas/field-error'
+import { ResendVerificationButton } from '@/components/auth/resend-verification-button'
+import { AlertCircleIcon, CheckCircle2Icon, InfoIcon } from 'lucide-react'
 
 interface LoginFormProps {
   oauthError?: string
@@ -36,6 +38,10 @@ export function LoginForm({ oauthError, accountDeleted, passwordReset }: LoginFo
   const tRoot = useTranslations()
   // Sign-in failure（帳密錯誤）無法歸到單一欄位，保留表單級錯誤。
   const [error, setError] = useState('')
+  // EMAIL_NOT_VERIFIED（D1/D2：只作用於 credentials 登入）走專屬 Alert + 重寄入口，
+  // 而非泛用的帳密錯誤訊息。next-auth signIn(redirect:false) 的 res.code 帶回
+  // EmailNotVerifiedError 設定的自訂 code（見 src/lib/auth-utils.ts）。
+  const [unverifiedEmail, setUnverifiedEmail] = useState<string | null>(null)
   const {
     control,
     handleSubmit,
@@ -47,9 +53,14 @@ export function LoginForm({ oauthError, accountDeleted, passwordReset }: LoginFo
 
   const onSubmit = handleSubmit(async ({ email, password }) => {
     setError('')
+    setUnverifiedEmail(null)
     const res = await signIn('credentials', { email, password, redirect: false, callbackUrl: '/cards' })
     if (res?.error) {
-      setError(t('login.invalidCredentials'))
+      if (res.code === 'EMAIL_NOT_VERIFIED') {
+        setUnverifiedEmail(email)
+      } else {
+        setError(t('login.invalidCredentials'))
+      }
     } else {
       router.push('/cards')
       router.refresh()
@@ -58,8 +69,8 @@ export function LoginForm({ oauthError, accountDeleted, passwordReset }: LoginFo
 
   const oauthMessage = oauthError
     ? (oauthError === 'OAuthAccountNotLinked'
-        ? t('oauthErrors.OAuthAccountNotLinked')
-        : t('login.genericOauthError'))
+      ? t('oauthErrors.OAuthAccountNotLinked')
+      : t('login.genericOauthError'))
     : undefined
 
   return (
@@ -74,11 +85,15 @@ export function LoginForm({ oauthError, accountDeleted, passwordReset }: LoginFo
         <CardContent className="space-y-4">
           {passwordReset && (
             <Alert data-testid="password-reset-alert">
+              <CheckCircle2Icon />
+              <AlertTitle>{t('login.passwordResetTitle')}</AlertTitle>
               <AlertDescription>{t('login.passwordResetAlert')}</AlertDescription>
             </Alert>
           )}
           {accountDeleted && (
             <Alert data-testid="account-deleted-alert">
+              <InfoIcon />
+              <AlertTitle>{t('login.accountDeletedTitle')}</AlertTitle>
               <AlertDescription>{t('login.accountDeletedAlert')}</AlertDescription>
             </Alert>
           )}
@@ -88,7 +103,23 @@ export function LoginForm({ oauthError, accountDeleted, passwordReset }: LoginFo
               data-testid="oauth-error-alert"
               className="bg-error-container text-error-foreground border-none"
             >
+              <AlertCircleIcon />
+              <AlertTitle>{t('login.oauthErrorTitle')}</AlertTitle>
               <AlertDescription>{oauthMessage}</AlertDescription>
+            </Alert>
+          )}
+          {unverifiedEmail && (
+            <Alert
+              variant="destructive"
+              data-testid="email-not-verified-alert"
+              className="bg-error-container text-error-foreground border-none"
+            >
+              <AlertCircleIcon />
+              <AlertTitle>{t('login.emailNotVerifiedTitle')}</AlertTitle>
+              <AlertDescription className="flex flex-col items-start gap-2">
+                <span>{t('login.emailNotVerified')}</span>
+                <ResendVerificationButton email={unverifiedEmail} variant="destructive" />
+              </AlertDescription>
             </Alert>
           )}
           <form onSubmit={onSubmit} className="space-y-4" noValidate>
@@ -158,7 +189,7 @@ export function LoginForm({ oauthError, accountDeleted, passwordReset }: LoginFo
                   </svg>
                   <span className="sr-only">{t('loginWithGoogle')}</span>
                 </Button>
-              
+
                 <Button variant="outline" size="lg" type="button" className="bg-surface-container hover:bg-surface-container-highest" onClick={() => signIn('discord', { callbackUrl: '/cards' })}>
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
                     <path

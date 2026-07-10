@@ -114,9 +114,14 @@
       "subtitle": "登入 PocketBindr 帳號以使用完整卡冊功能",
       "submit": "登入",
       "submitting": "登入中...",
+      "passwordResetTitle": "密碼已重設",
       "passwordResetAlert": "密碼已重設，請使用新密碼登入。",
+      "accountDeletedTitle": "帳號已刪除",
       "accountDeletedAlert": "帳號已刪除，感謝您的使用。",
       "invalidCredentials": "Email 或密碼錯誤",
+      "emailNotVerifiedTitle": "Email 尚未驗證",
+      "emailNotVerified": "此帳號的 Email 尚未驗證，請點擊驗證信中的連結後再登入。",
+      "oauthErrorTitle": "登入發生問題",
       "genericOauthError": "登入時發生錯誤，請再試一次。",
       "forgotPassword": "忘記密碼？",
       "orLoginWith": "或以下方式登入",
@@ -140,7 +145,9 @@
         "EMAIL_TAKEN": "此 Email 已被使用",
         "USERNAME_TAKEN": "此使用者名稱已被使用",
         "INVALID_INPUT": "請填寫所有欄位",
-        "SERVER_ERROR": "伺服器錯誤，請稍後再試"
+        "SERVER_ERROR": "伺服器錯誤，請稍後再試",
+        "DISPOSABLE_EMAIL": "不支援使用拋棄式信箱註冊",
+        "INVALID_EMAIL_DOMAIN": "此 Email 網域看起來無效，請確認拼寫"
       }
     },
     "modal": {
@@ -150,7 +157,9 @@
     "forgot": {
       "title": "忘記密碼",
       "subtitle": "輸入您的 email，若有帳號將收到密碼重設連結",
+      "rateLimitedTitle": "請求過於頻繁",
       "rateLimited": "請求過於頻繁，請稍後再試。",
+      "successTitle": "重設信已送出",
       "successAlert": "若此 email 有帳號，您將在幾分鐘內收到重設信。請也確認垃圾郵件資料夾。",
       "submit": "送出重設連結",
       "submitting": "送出中...",
@@ -159,12 +168,14 @@
     "reset": {
       "title": "設定新密碼",
       "subtitle": "請輸入您的新密碼，連結 15 分鐘內有效",
+      "invalidLinkTitle": "連結無效",
       "invalidLink": "連結無效，請重新申請。",
       "reapply": "重新申請重設連結",
       "submit": "設定新密碼",
       "submitting": "設定中...",
       "tokenExpired": "連結已過期，請重新申請。",
       "tokenInvalid": "連結無效或已被使用，請重新申請。",
+      "errorTitle": "重設密碼失敗",
       "genericError": "發生錯誤，請稍後再試。"
     }
   },
@@ -765,6 +776,44 @@
       "already_used": "此 Email 已被其他帳號使用",
       "forbidden": "請使用申請驗證信的帳號登入後再點擊此連結",
       "backToSettings": "回到設定頁"
+    },
+    "errorTitle": {
+      "expired": "驗證信已過期",
+      "invalid": "連結無效",
+      "already_used": "Email 已被使用",
+      "forbidden": "帳號不符"
     }
+  },
+  "verifySignup": {
+    "checkEmail": {
+      "title": "請查收信箱",
+      "subtitle": "我們已寄送驗證信至 {email}，請在 15 分鐘內點擊信中連結完成驗證後即可登入。",
+      "backToLogin": "返回登入"
+    },
+    "verifying": "驗證中…",
+    "verifySuccess": {
+      "title": "Email 已驗證",
+      "subtitle": "您現在可以使用此帳號登入",
+      "goToLogin": "前往登入"
+    },
+    "alreadyVerified": {
+      "title": "已驗證",
+      "subtitle": "此帳號的 Email 已完成驗證，請直接登入"
+    },
+    "verifyError": {
+      "expired": "此連結已過期，請重新註冊或申請重寄驗證信",
+      "invalid": "此連結無效",
+      "backToRegister": "返回註冊"
+    },
+    "verifyErrorTitle": {
+      "expired": "驗證信已過期",
+      "invalid": "連結無效"
+    },
+    "resend": "重寄驗證信",
+    "resending": "寄送中...",
+    "resendSent": "已寄出",
+    "resendSuccess": "若此 email 有帳號且尚未驗證，您將在幾分鐘內收到驗證信",
+    "resendFailed": "寄送失敗，請稍後再試",
+    "resendRateLimited": "請求過於頻繁，請稍後再試"
   }
 }

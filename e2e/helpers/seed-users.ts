@@ -60,6 +60,9 @@ async function withRetry<T>(fn: () => Promise<T>, attempts = 4, delayMs = 600): 
  * 冪等預種所有 E2E 密碼帳號（upsert-on-email，語意同 e2e/helpers/db.ts createPasswordUser）。
  * 供 playwright globalSetup 與 fresh DB / CI bootstrap 使用：一次建立全部帳號，
  * 避免逐 spec 首次登入才 lazy upsert，且完全繞過 register API 的 IP 限流。
+ * emailVerified 一律蓋為 now()——強制 email 驗證上線後 verifyCredentials 會擋
+ * 未驗證帳號登入（見 CLAUDE.md），這裡預種的帳號語意是「可直接登入」，
+ * 需要「未驗證」情境的 spec 應改用 e2e/helpers/db.ts createUnverifiedPasswordUser。
  * 回傳實際處理的帳號數。
  */
 export async function seedTestUsers(): Promise<number> {
@@ -71,8 +74,8 @@ export async function seedTestUsers(): Promise<number> {
         const passwordHash = await bcrypt.hash(u.password, 12)
         await prisma.user.upsert({
           where: { email: u.email },
-          create: { email: u.email, username: u.username, passwordHash },
-          update: {},
+          create: { email: u.email, username: u.username, passwordHash, emailVerified: new Date() },
+          update: { emailVerified: new Date() },
           select: { id: true },
         })
       })

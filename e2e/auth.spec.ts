@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+import { prisma } from '../src/lib/prisma'
 
 const TEST_EMAIL = `e2e-${Date.now()}@pocketbindr.com`
 const TEST_USERNAME = `e2euser${Date.now()}`
@@ -18,7 +19,7 @@ test.describe.serial('Auth Flow', () => {
     expect(page.url()).not.toContain('/login')
   })
 
-  test('3. Register new account → auto login → redirect to /cards', async ({ page }) => {
+  test('3. Register new account → 顯示請查收信箱（強制 email 驗證，不自動登入）', async ({ page }) => {
     await page.goto('/register')
     await page.waitForLoadState('networkidle')
 
@@ -28,8 +29,11 @@ test.describe.serial('Auth Flow', () => {
     await page.getByLabel('確認密碼').fill(TEST_PASSWORD)
     await page.getByRole('button', { name: '註冊' }).click()
 
-    await page.waitForURL('**/cards**', { timeout: 15000 })
-    expect(page.url()).toContain('/cards')
+    await expect(page.getByRole('heading', { name: '請查收信箱' })).toBeVisible({ timeout: 15000 })
+    expect(page.url()).toContain('/register')
+
+    // 模擬點擊驗證信連結（後續 4-6 測試需要一個已驗證帳號才能走 UI 登入）。
+    await prisma.user.update({ where: { email: TEST_EMAIL }, data: { emailVerified: new Date() } })
   })
 
   test('4. Sign out → session cleared', async ({ page }) => {

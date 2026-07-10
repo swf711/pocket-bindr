@@ -1,17 +1,23 @@
 import { createHmac, timingSafeEqual } from 'crypto'
 
+export type EmailVerifyPurpose = 'verify-email' | 'verify-signup'
+
 export interface EmailVerifyTokenPayload {
   userId: string
   email: string
-  purpose: 'verify-email'
+  purpose: EmailVerifyPurpose
   exp: number
 }
 
-export function createEmailVerifyToken(userId: string, email: string): string {
+export function createEmailVerifyToken(
+  userId: string,
+  email: string,
+  purpose: EmailVerifyPurpose = 'verify-email',
+): string {
   const payload: EmailVerifyTokenPayload = {
     userId,
     email,
-    purpose: 'verify-email',
+    purpose,
     exp: Date.now() + 15 * 60 * 1000,
   }
   const data = Buffer.from(JSON.stringify(payload)).toString('base64url')
@@ -21,7 +27,10 @@ export function createEmailVerifyToken(userId: string, email: string): string {
   return `${data}.${sig}`
 }
 
-export function verifyEmailVerifyToken(token: string): EmailVerifyTokenPayload {
+export function verifyEmailVerifyToken(
+  token: string,
+  expectedPurpose: EmailVerifyPurpose = 'verify-email',
+): EmailVerifyTokenPayload {
   const dotIndex = token.lastIndexOf('.')
   if (dotIndex === -1) throw new Error('TOKEN_INVALID')
 
@@ -49,7 +58,7 @@ export function verifyEmailVerifyToken(token: string): EmailVerifyTokenPayload {
     throw new Error('TOKEN_INVALID')
   }
 
-  if (!payload.userId || !payload.email || payload.purpose !== 'verify-email' || !payload.exp) {
+  if (!payload.userId || !payload.email || payload.purpose !== expectedPurpose || !payload.exp) {
     throw new Error('TOKEN_INVALID')
   }
   if (payload.exp < Date.now()) throw new Error('TOKEN_EXPIRED')

@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { registerUser } from '@/lib/auth-utils'
 import { registerIpLimiter, registerEmailLimiter } from '@/lib/rate-limit'
 import { registerSchema } from '@/lib/schemas/auth'
+import { isDisposableEmailDomain, hasValidMxRecord } from '@/lib/email-precheck'
+import { createEmailVerifyToken } from '@/lib/email-verify-token'
+import { sendSignupVerificationEmail } from '@/lib/email'
 
 export async function POST(req: NextRequest) {
   const ip = req.headers.get('x-forwarded-for') ?? '127.0.0.1'
@@ -35,12 +38,25 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  // D7：便宜預檢，降噪 + 省寄信額度，不取代所有權驗證（見下方仍會寄驗證信）。
+  if (isDisposableEmailDomain(email)) {
+    return NextResponse.json({ success: false, error: 'DISPOSABLE_EMAIL' }, { status: 400 })
+  }
+  if (!(await hasValidMxRecord(email))) {
+    return NextResponse.json({ success: false, error: 'INVALID_EMAIL_DOMAIN' }, { status: 400 })
+  }
+
   try {
     const result = await registerUser({ email, username, password })
     if (!result.success) {
       const status = result.error === 'WEAK_PASSWORD' ? 400 : 409
       return NextResponse.json(result, { status })
     }
+
+    // 強制 email 驗證（D1）：註冊仍成功建帳號，但需點驗證信連結才可登入（見 verifyCredentials）。
+    const token = createEmailVerifyToken(result.userId!, email, 'verify-signup')
+    await sendSignupVerificationEmail(email, token, username)
+
     return NextResponse.json(result, { status: 201 })
   } catch (err) {
     console.error('[register] error:', err)
