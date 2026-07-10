@@ -118,6 +118,41 @@ test.describe('OPCG ZH_TW alias card canonicalization', () => {
     expect(displaySlot.card.language).toBe('ZH_TW')
   })
 
+  test('加入 ZH_TW alias 至卡冊 → 卡冊格位圖片與 Drawer 一致，皆為 JA canonical（www.onepiece-cardgame.com，不含 asia-tc）', async ({ page }) => {
+    const aliasData = await getOpcgZhTwAliasCard()
+    if (!aliasData) {
+      test.skip()
+      return
+    }
+
+    await loginAs(page, USER)
+    const userId = await getUserIdByEmail(USER.email)
+    const binder = await prisma.binder.create({
+      data: { userId, name: 'E2E Slot Image Binder', gridType: 'grid_3x3' },
+    })
+
+    const addRes = await page.request.post(`/api/binders/${binder.id}/cards`, {
+      data: { cardId: aliasData.zhTwCardId, status: 'owned', quantity: 1 },
+    })
+    expect(addRes.ok()).toBeTruthy()
+
+    await page.goto(`/binders/${binder.id}`)
+    const slot = await prisma.binderSlot.findFirst({
+      where: { binderId: binder.id, cardId: aliasData.jaCardId },
+    })
+    expect(slot).toBeTruthy()
+
+    const slotImg = page.getByTestId(`slot-card-${slot!.id}`).locator('img')
+    await expect(slotImg).toBeVisible({ timeout: 10000 })
+    const src = await slotImg.getAttribute('src')
+    expect(src).toBeTruthy()
+    if (src && src.includes('proxy-image')) {
+      const decoded = decodeURIComponent(src)
+      expect(decoded).toContain('onepiece-cardgame.com')
+      expect(decoded).not.toContain('asia-tc')
+    }
+  })
+
   test('/collection 語言篩選：ZH_TW alias 收藏在「繁中」可見、「日文」不可見', async ({ page }) => {
     const aliasData = await getOpcgZhTwAliasCard()
     if (!aliasData) {

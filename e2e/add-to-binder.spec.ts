@@ -105,6 +105,61 @@ test.describe('加入卡冊功能', () => {
   })
 })
 
+test.describe('加入卡冊 - 記住當頁上次加入的卡冊', () => {
+  test.beforeEach(async ({ page }) => {
+    await clearUserCardsByEmail(USER.email)
+    await clearUserBindersByEmail(USER.email)
+    await loginAs(page, USER)
+
+    const resA = await page.request.post('/api/binders', {
+      data: { name: 'E2E Binder A', gridType: 'grid_3x3' },
+    })
+    expect(resA.status()).toBe(201)
+    const resB = await page.request.post('/api/binders', {
+      data: { name: 'E2E Binder B', gridType: 'grid_3x3' },
+    })
+    expect(resB.status()).toBe(201)
+  })
+
+  test.afterAll(async () => {
+    await clearUserCardsByEmail(USER.email)
+    await clearUserBindersByEmail(USER.email)
+  })
+
+  test('同頁再開另一張卡的 Drawer，卡冊下拉預選上次加入的卡冊；重整頁面後恢復預設', async ({ page }) => {
+    await page.goto('/cards?game=PTCG')
+    await page.getByTestId('card-grid').waitFor({ timeout: 10000 })
+
+    // 首次開啟：無記憶，預選第一本（Binder A）
+    await page.getByTestId('card-item').nth(0).click()
+    await expect(page.getByRole('dialog')).toBeVisible()
+    await expect(page.getByTestId('modal-binder-select')).toContainText('E2E Binder A', { timeout: 8000 })
+
+    // 選 Binder B 並加入
+    await page.getByTestId('modal-binder-select').click()
+    await page.getByRole('option', { name: 'E2E Binder B' }).click()
+    await page.getByTestId('modal-add-btn').click()
+    await expect(page.getByText(/已加入/)).toBeVisible({ timeout: 5000 })
+
+    // 關閉 Drawer，開另一張卡
+    await page.keyboard.press('Escape')
+    await expect(page.getByRole('dialog')).not.toBeVisible()
+    await page.getByTestId('card-item').nth(1).click()
+    await expect(page.getByRole('dialog')).toBeVisible()
+
+    // 預選記住上次加入的 Binder B
+    await expect(page.getByTestId('modal-binder-select')).toContainText('E2E Binder B', { timeout: 8000 })
+    await page.keyboard.press('Escape')
+
+    // 硬重整後記憶歸零，恢復預選第一本
+    await page.reload()
+    await page.getByTestId('card-grid').waitFor({ timeout: 10000 })
+    await page.getByTestId('card-item').nth(0).click()
+    await expect(page.getByRole('dialog')).toBeVisible()
+    await expect(page.getByTestId('modal-binder-select')).toContainText('E2E Binder A', { timeout: 8000 })
+  })
+})
+
 test.describe('加入卡冊 - 無卡冊情境', () => {
   test.beforeEach(async ({ page }) => {
     await clearUserCardsByEmail(USER.email)
@@ -169,7 +224,7 @@ test.describe('加入卡冊 - 未登入情境', () => {
     // 以訪客身分搜尋同一張卡（同名卡牌可能有多張，需以圖片網址鎖定唯一一張）
     await page.goto(`/cards?game=PTCG&language=${card.language}`)
     await page.getByTestId('card-grid').waitFor({ timeout: 10000 })
-    await page.getByPlaceholder(/搜尋/).fill(card.name)
+    await page.getByTestId('search-input').fill(card.name)
     const targetCardItem = page.getByTestId('card-item').filter({ has: page.locator(`img[src*="${encodeURIComponent(card.imageSmall)}"]`) })
     await expect(targetCardItem).toHaveCount(1, { timeout: 8000 })
     await targetCardItem.click()

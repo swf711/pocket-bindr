@@ -53,18 +53,21 @@ type RawSlotForDisplay = {
 }
 
 /**
- * 將原始格位投影成「顯示身份」：card = displayCard ?? card、cardId = 顯示卡 id。
+ * 將原始格位投影成「顯示身份」：name/id/language = displayCard ?? card，
+ * 但 imageSmall 固定取 canonical（slot.card）——OPCG ZH_TW alias 無實體印刷圖，
+ * 圖片一律指向 JA canonical；名稱/身份與 CardDetailDrawer 對齊，圖片與其一致。
  * canonical id 不外露給前端（前端無需感知 alias）。僅用於已填卡的格位。
  */
 export function toDisplaySlot(slot: RawSlotForDisplay): SlotWithCard {
-  const card = slot.displayCard ?? slot.card!
+  const identity = slot.displayCard ?? slot.card!
+  const canonical = slot.card!
   return {
     id: slot.id,
     binderId: slot.binderId,
-    cardId: card.id,
+    cardId: identity.id,
     pageNumber: slot.pageNumber,
     slotIndex: slot.slotIndex,
     status: slot.status as 'owned' | 'wanted',
-    card,
+    card: { ...identity, imageSmall: canonical.imageSmall },
   }
 }

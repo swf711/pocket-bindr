@@ -94,4 +94,30 @@ test.describe('格位驅動加入卡片', () => {
     await filledSlot.click()
     await expect(page.getByTestId('slot-card-picker-dialog')).not.toBeVisible()
   })
+
+  test('選卡 Dialog 內系列篩選下拉可用滑鼠滾輪滾動（巢狀 Popover-in-Dialog scroll-lock 迴歸測試）', async ({ page }) => {
+    const userId = await getUserIdByEmail(USER.email)
+    const { binder } = await createMultiPageBinder(userId, { pageCount: 1 })
+
+    await page.goto(`/binders/${binder.id}`)
+    await page.getByTestId('binder-spread-view').waitFor()
+
+    await page.getByTestId('empty-slot-add-1-1').click()
+    await expect(page.getByTestId('slot-card-picker-dialog')).toBeVisible()
+    await page.getByTestId('game-btn-ptcg').click()
+
+    await page.getByTestId('set-combobox').click()
+    const commandList = page.locator('[data-slot="command-list"]')
+    await expect(commandList).toBeVisible({ timeout: 5000 })
+
+    const scrollBefore = await commandList.evaluate(el => el.scrollTop)
+    const box = await commandList.boundingBox()
+    if (box) {
+      await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2)
+      await page.mouse.wheel(0, 400)
+    }
+    await expect
+      .poll(() => commandList.evaluate(el => el.scrollTop), { timeout: 5000 })
+      .toBeGreaterThan(scrollBefore)
+  })
 })

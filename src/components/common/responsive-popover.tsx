@@ -60,7 +60,12 @@ export function ResponsivePopover({
   return (
     <Popover open={open} onOpenChange={onOpenChange}>
       <PopoverTrigger asChild>{trigger}</PopoverTrigger>
-      <PopoverContent align={align} side={side} className={cn(popoverClassName)}>
+      <PopoverContent
+        align={align}
+        side={side}
+        className={cn(popoverClassName)}
+        onWheel={(e) => e.stopPropagation()}
+      >
         {children}
       </PopoverContent>
     </Popover>
