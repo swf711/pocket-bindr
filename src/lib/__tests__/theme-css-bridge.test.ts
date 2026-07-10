@@ -11,7 +11,9 @@ describe('globals.css: @theme inline 橋接完整性', () => {
   const cssPath = path.resolve(__dirname, '../../app/globals.css')
   const css = readFileSync(cssPath, 'utf-8')
 
-  const rootBlockMatch = css.match(/:root\s*{([^}]*)}/)
+  // light 區塊選擇器為 `:root, .light {`（.light 供強制淺色子樹用，見 docs/PATTERNS.md）；
+  // `[^{]*` 容忍 :root 後接 `, .light` 等額外選擇器。
+  const rootBlockMatch = css.match(/:root[^{]*{([^}]*)}/)
   if (!rootBlockMatch) throw new Error('找不到 :root 區塊，globals.css 結構可能已變更')
   const rootBlock = rootBlockMatch[1]
 
