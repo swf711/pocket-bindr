@@ -39,6 +39,9 @@ export function FooterContent() {
       <p className="text-xs text-muted-foreground max-w-2xl mx-auto">
         {t('disclaimer')}
       </p>
+      <p className="text-xs text-muted-foreground">
+        v{process.env.NEXT_PUBLIC_APP_VERSION}
+      </p>
       <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
         <Link href="/terms" className="hover:underline">
           {t('terms')}
