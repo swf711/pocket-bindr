@@ -15,12 +15,14 @@ function makeSet(overrides: {
   id?: string
   name?: string
   series?: string
+  externalId?: string
   releaseDate?: Date | null
 }) {
   return {
     id: overrides.id ?? 'set-1',
     name: overrides.name ?? 'Test Set',
     series: overrides.series ?? 'Series A',
+    externalId: overrides.externalId ?? overrides.id ?? 'set-1',
     releaseDate: overrides.releaseDate !== undefined ? overrides.releaseDate : new Date('2024-01-01'),
   }
 }
@@ -86,6 +88,36 @@ describe('GET /api/sets', () => {
     expect(group.sets[0].id).toBe('s1')
     expect(group.sets[1].id).toBe('s2')
     expect(group.sets[2].id).toBe('s3')
+  })
+
+  it('促銷 set 在其 series group 內排最後', async () => {
+    vi.mocked(prisma.cardSet.findMany).mockResolvedValue([
+      makeSet({ id: 's1', name: '特典卡 劍&盾', series: 'Sword & Shield', externalId: 'S-P', releaseDate: new Date('2022-12-15') }),
+      makeSet({ id: 's2', name: '擴充包「星星誕生」', series: 'Sword & Shield', externalId: 'S9', releaseDate: new Date('2022-01-28') }),
+      makeSet({ id: 's3', name: '擴充包「思維激盪」', series: 'Sword & Shield', externalId: 'S12', releaseDate: new Date('2022-11-04') }),
+    ] as never)
+
+    const req = new NextRequest('http://localhost/api/sets?game=PTCG')
+    const res = await GET(req)
+    const data = await res.json()
+
+    const group = data.groups[0]
+    expect(group.sets.map((s: { id: string }) => s.id)).toEqual(['s3', 's2', 's1'])
+  })
+
+  it('同發售日 set 依 externalId 遞減', async () => {
+    vi.mocked(prisma.cardSet.findMany).mockResolvedValue([
+      makeSet({ id: 's1', name: 'スタートデッキ A', series: 'One Piece', externalId: 'ST31', releaseDate: new Date('2026-07-11') }),
+      makeSet({ id: 's2', name: 'スタートデッキ B', series: 'One Piece', externalId: 'ST32', releaseDate: new Date('2026-07-11') }),
+      makeSet({ id: 's3', name: 'スタートデッキ C', series: 'One Piece', externalId: 'ST33', releaseDate: new Date('2026-07-11') }),
+    ] as never)
+
+    const req = new NextRequest('http://localhost/api/sets?game=OPCG')
+    const res = await GET(req)
+    const data = await res.json()
+
+    const group = data.groups[0]
+    expect(group.sets.map((s: { externalId: string }) => s.externalId)).toEqual(['ST33', 'ST32', 'ST31'])
   })
 
   it('language=ZH_TW 時以 ZH_TW 篩選並回傳 { groups }', async () => {
