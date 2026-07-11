@@ -14,19 +14,35 @@ function toIso(d: Date | string | null): string | null {
   return d instanceof Date ? d.toISOString() : d
 }
 
+/** 跨語言促銷卡名關鍵字；已對現有資料稽核無誤中（EN 僅 Black Star Promos、JA 僅プロモ、ZH_TW 僅特典卡） */
+export const PROMO_NAME_PATTERN = /プロモ|特典|promo/i
+
+export function isPromoSet(name: string): boolean {
+  return PROMO_NAME_PATTERN.test(name)
+}
+
 /**
  * 同 series group 內排序：
- * - 有 releaseDate 者依日期由新到舊
- * - releaseDate 為 null 者排在有日期者之後
- * - 多個 null 之間以 externalId 降冪遞補
+ * - 促銷卡（名稱含 プロモ／特典／promo）一律釘在該組最後，不論日期
+ * - 非促銷 set 依 releaseDate 由新到舊；null 排在有日期者之後
+ * - 同一發售日（或皆為 null）之間以 externalId 降冪遞補
  */
-export function sortSetsWithinGroup<T extends { externalId: string; releaseDate: Date | string | null }>(
-  sets: T[]
-): T[] {
+export function sortSetsWithinGroup<
+  T extends { name: string; externalId: string; releaseDate: Date | string | null }
+>(sets: T[]): T[] {
   return [...sets].sort((a, b) => {
+    const pa = isPromoSet(a.name) ? 1 : 0
+    const pb = isPromoSet(b.name) ? 1 : 0
+    if (pa !== pb) return pa - pb
+
     const da = toIso(a.releaseDate)
     const db = toIso(b.releaseDate)
-    if (da && db) return new Date(db).getTime() - new Date(da).getTime()
+    if (da && db) {
+      const diff = new Date(db).getTime() - new Date(da).getTime()
+      if (diff !== 0) return diff
+      // 同一發售日 → externalId 降冪
+      return b.externalId.localeCompare(a.externalId)
+    }
     if (da && !db) return -1
     if (!da && db) return 1
     // 皆為 null → externalId 降冪
