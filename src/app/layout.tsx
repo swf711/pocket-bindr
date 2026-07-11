@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages, getTranslations } from "next-intl/server";
+import { LOCALES, type Locale } from "@/i18n/locale";
+import { SITE_URL, OG_LOCALE } from "@/lib/og";
 import { SessionProvider } from "@/components/providers/session-provider";
 import { TanstackQueryProvider } from "@/components/providers/tanstack-query-provider";
 import { Header } from "@/components/layout/header";
@@ -21,9 +24,28 @@ const geistMono = Geist_Mono({
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("metadata");
+  const locale = (await getLocale()) as Locale;
+  const title = t("title");
+  const description = t("description");
+  const ogLocale = OG_LOCALE[locale] ?? OG_LOCALE["zh-TW"];
   return {
-    title: t("title"),
-    description: t("description"),
+    metadataBase: new URL(SITE_URL),
+    title,
+    description,
+    openGraph: {
+      type: "website",
+      siteName: "PocketBindr",
+      title,
+      description,
+      url: "/",
+      locale: ogLocale,
+      alternateLocale: LOCALES.map((l) => OG_LOCALE[l]).filter((l) => l !== ogLocale),
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+    },
   };
 }
 
@@ -59,6 +81,7 @@ export default async function RootLayout({
                   {children}
                 </main>
                 <Toaster richColors />
+                <Analytics />
               </TooltipProvider>
             </ThemeProvider>
           </SessionProvider>

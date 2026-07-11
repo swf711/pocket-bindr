@@ -1,29 +1,41 @@
-import { unstable_cache } from 'next/cache'
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { getTranslations } from 'next-intl/server'
-import { prisma } from '@/lib/prisma'
-import { publicBinderTag } from '@/lib/binder-cache'
 import { BinderPublicView } from '@/components/binder/binder-public-view'
-import { slotDisplaySelect, toDisplaySlot } from '@/lib/slot-display'
+import { toDisplaySlot } from '@/lib/slot-display'
+import { fetchPublicBinder } from '@/lib/public-binder'
 import type { BinderPublicData } from '@/types/binder'
 
-function fetchPublicBinder(token: string) {
-  return unstable_cache(
-    () =>
-      prisma.binder.findUnique({
-        where: { shareToken: token },
-        include: {
-          user: { select: { username: true } },
-          slots: {
-            where: { cardId: { not: null } },
-            orderBy: [{ pageNumber: 'asc' }, { slotIndex: 'asc' }],
-            select: slotDisplaySelect,
-          },
-        },
-      }),
-    ['binder-public', token],
-    { revalidate: 300, tags: [publicBinderTag(token)] },
-  )()
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ token: string }>
+}): Promise<Metadata> {
+  const { token } = await params
+  const binder = await fetchPublicBinder(token)
+  if (!binder) return {}
+
+  const t = await getTranslations('metadata')
+  const owner = binder.user.username ?? (await getTranslations('binder'))('defaultOwnerName')
+  const title = `${binder.name} · PocketBindr`
+  const description = binder.description ?? t('ogBinderDescription', { owner })
+
+  return {
+    title,
+    description,
+    openGraph: {
+      type: 'website',
+      siteName: 'PocketBindr',
+      title,
+      description,
+      url: `/b/${token}`,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+    },
+  }
 }
 
 export default async function PublicBinderPage({ params }: { params: Promise<{ token: string }> }) {

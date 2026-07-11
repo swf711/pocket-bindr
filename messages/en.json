@@ -257,7 +257,9 @@
   },
   "metadata": {
     "title": "PocketBindr",
-    "description": "Online TCG card collection manager — search cards, mark owned/wanted, and organize them into custom binders."
+    "description": "Search, collect, and organize your trading cards. Build your own binders and track your collection anytime.",
+    "ogBinderDescription": "{owner}'s TCG card binder on PocketBindr.",
+    "ogBinderCount": "{count} cards"
   },
   "notFound": {
     "title": "Page not found",

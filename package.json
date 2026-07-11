@@ -1,10 +1,10 @@
 {
   "name": "pocket-bindr",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "private": false,
   "license": "MIT",
   "author": "邵尉夫 Brian Shao",
-  "description": "線上 TCG 卡牌收藏管理網站：搜尋卡牌、標記擁有／想要、放入自訂格式卡冊。",
+  "description": "搜尋、收藏、整理你的集換式卡牌。建立專屬卡冊，隨時掌握收藏進度。",
   "repository": {
     "type": "git",
     "url": "https://github.com/swf711/pocket-bindr.git"
@@ -36,6 +36,7 @@
     "@tanstack/react-query": "^5.101.0",
     "@upstash/ratelimit": "^2.0.8",
     "@upstash/redis": "^1.38.0",
+    "@vercel/analytics": "^2.0.1",
     "bcryptjs": "^3.0.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
