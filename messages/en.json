@@ -378,7 +378,8 @@
       "pageLabel": "Page {page}"
     },
     "publicView": {
-      "ownerBinder": "{ownerName}'s Binder"
+      "ownerBinder": "{ownerName}'s Binder",
+      "ctaButton": "Create your own binder — free"
     },
     "notFound": {
       "title": "Binder Not Found",

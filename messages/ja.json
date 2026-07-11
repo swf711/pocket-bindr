@@ -378,7 +378,8 @@
       "pageLabel": "{page} ページ目"
     },
     "publicView": {
-      "ownerBinder": "{ownerName} のバインダー"
+      "ownerBinder": "{ownerName} のバインダー",
+      "ctaButton": "無料で自分のバインダーを作る"
     },
     "notFound": {
       "title": "バインダーが見つかりません",

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { getTranslations } from 'next-intl/server'
+import { auth } from '@/lib/auth'
 import { BinderPublicView } from '@/components/binder/binder-public-view'
 import { toDisplaySlot } from '@/lib/slot-display'
 import { fetchPublicBinder } from '@/lib/public-binder'
@@ -42,7 +43,7 @@ export default async function PublicBinderPage({ params }: { params: Promise<{ t
   const { token } = await params
   const t = await getTranslations('binder')
 
-  const binder = await fetchPublicBinder(token)
+  const [binder, session] = await Promise.all([fetchPublicBinder(token), auth()])
 
   if (!binder) notFound()
 
@@ -61,5 +62,5 @@ export default async function PublicBinderPage({ params }: { params: Promise<{ t
     ownerName: binder.user.username ?? t('defaultOwnerName'),
   }
 
-  return <BinderPublicView binder={data} />
+  return <BinderPublicView binder={data} isAuthenticated={!!session?.user} />
 }

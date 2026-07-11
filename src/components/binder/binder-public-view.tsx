@@ -19,6 +19,7 @@ import {
 import { ButtonGroup } from '@/components/ui/button-group'
 import { IconTooltipButton } from '@/components/common/icon-tooltip-button'
 import { ReadOnlySlotCard } from './read-only-slot-card'
+import { PublicShareCta } from './public-share-cta'
 import { CardDetailDrawer } from '@/components/cards/card-detail-drawer'
 import { useScaleFit } from '@/hooks/use-scale-fit'
 import { useIsMobile } from '@/hooks/use-is-mobile'
@@ -209,7 +210,13 @@ function PublicPanelContent({
 
 // ─── 主元件 ───────────────────────────────────────────────────────────────────
 
-export function BinderPublicView({ binder }: { binder: BinderPublicData }) {
+export function BinderPublicView({
+  binder,
+  isAuthenticated,
+}: {
+  binder: BinderPublicData
+  isAuthenticated: boolean
+}) {
   const t = useTranslations('binder')
   const [spreadIndex, setSpreadIndex] = useState(0)
   const [mobilePageIndex, setMobilePageIndex] = useState(0)
@@ -588,6 +595,8 @@ export function BinderPublicView({ binder }: { binder: BinderPublicData }) {
           </Pagination>
         </div>
       </div>
+
+      {!isAuthenticated && <PublicShareCta />}
 
       <CardDetailDrawer
         card={viewCard}
