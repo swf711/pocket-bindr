@@ -257,7 +257,9 @@
   },
   "metadata": {
     "title": "PocketBindr",
-    "description": "オンラインTCGカードコレクション管理——カードを検索し、所有／欲しいを記録し、カスタムバインダーに整理。"
+    "description": "トレーディングカードを検索・収集・整理。自分だけのバインダーを作り、いつでもコレクションの進捗を把握。",
+    "ogBinderDescription": "{owner}さんのPocketBindr TCGカードバインダー。",
+    "ogBinderCount": "{count}枚"
   },
   "notFound": {
     "title": "ページが見つかりません",

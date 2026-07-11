@@ -257,7 +257,9 @@
   },
   "metadata": {
     "title": "PocketBindr",
-    "description": "線上 TCG 卡牌收藏管理——搜尋卡牌、標記擁有／想要、放入自訂格式卡冊。"
+    "description": "搜尋、收藏、整理你的集換式卡牌。建立專屬卡冊，隨時掌握收藏進度。",
+    "ogBinderDescription": "{owner} 在 PocketBindr 上的 TCG 卡冊收藏。",
+    "ogBinderCount": "共 {count} 張"
   },
   "notFound": {
     "title": "找不到頁面",

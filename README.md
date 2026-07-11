@@ -10,9 +10,10 @@
   <img src=".github/assets/hero-binder.png" alt="PocketBindr 雙頁展開卡冊主畫面" width="800">
 </p>
 
-線上 TCG 卡牌收藏管理網站。訪客可搜尋卡牌；登入後可標記**擁有／想要**並放入自訂格式的**卡冊（binder）**，
-支援雙頁展開瀏覽、拖拉排列格位，以及唯讀公開分享連結。目前涵蓋 Pokémon TCG 與 One Piece TCG
-（英文 / 日文 / 繁體中文）。
+**搜尋、收藏、整理你的集換式卡牌。建立專屬卡冊，隨時掌握收藏進度。**
+
+訪客可搜尋卡牌；登入後可標記**擁有／想要**並放入自訂格式的**卡冊（binder）**，支援雙頁展開瀏覽、
+拖拉排列格位，以及唯讀公開分享連結。目前涵蓋 Pokémon TCG 與 One Piece TCG（英文 / 日文 / 繁體中文）。
 
 🌐 **線上服務**：<https://pocketbindr.app>
 
