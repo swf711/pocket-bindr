@@ -148,6 +148,29 @@ test.describe('卡冊公開分享', () => {
     await clearBinderShareToken(binder.id)
   })
 
+  test('公開頁：未登入訪客顯示註冊 CTA，連結指向 /register', async ({ page }) => {
+    const userId = await getUserIdByEmail(USER.email)
+    const card = await getCardWithImage('PTCG', 'EN')
+    const { binder } = await createBinderWithSlots(
+      userId,
+      'grid_3x3',
+      [{ cardId: card.id, status: 'owned', pageNumber: 1, slotIndex: 0 }],
+    )
+
+    const token = 'e2etesttoken00000000000000000004'
+    await prisma.binder.update({ where: { id: binder.id }, data: { shareToken: token } })
+
+    await page.goto(`/b/${token}`)
+
+    // 未登入訪客看到頁尾 CTA
+    await expect(page.getByTestId('public-share-cta').filter({ visible: true })).toBeVisible()
+    const register = page.getByTestId('public-share-cta-register').filter({ visible: true })
+    await expect(register).toBeVisible()
+    await expect(register).toHaveAttribute('href', /\/register/)
+
+    await clearBinderShareToken(binder.id)
+  })
+
   test('公開頁：未登入訪客點格位 → 卡牌詳情顯示登入引導', async ({ page }) => {
     const userId = await getUserIdByEmail(USER.email)
     const card = await getCardWithImage('PTCG', 'EN')
@@ -196,6 +219,10 @@ test.describe('卡冊公開分享', () => {
     expect(visitorRes.status()).toBe(201)
 
     await page.goto(`/b/${token}`)
+
+    // 已登入訪客不顯示註冊 CTA
+    await expect(page.getByTestId('public-share-cta')).toHaveCount(0)
+
     await page.locator(`img[alt="${card.name}"]`).first().click()
     await expect(page.getByTestId('card-detail-drawer').filter({ visible: true })).toBeVisible()
 

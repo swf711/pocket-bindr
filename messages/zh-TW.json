@@ -378,7 +378,8 @@
       "pageLabel": "第 {page} 頁"
     },
     "publicView": {
-      "ownerBinder": "{ownerName} 的卡冊"
+      "ownerBinder": "{ownerName} 的卡冊",
+      "ctaButton": "免費建立我的卡冊"
     },
     "notFound": {
       "title": "找不到卡冊",
