@@ -14,6 +14,9 @@ export type LatestSet = {
 
 export type ShowcaseCard = {
   id: string
+  externalId: string
+  game: Game
+  language: Language
   name: string
   imageSmall: string
   imageLarge: string

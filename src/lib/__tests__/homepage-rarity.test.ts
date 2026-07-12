@@ -5,6 +5,9 @@ import type { ShowcaseCard } from '@/types/homepage'
 function makeCard(overrides: Partial<ShowcaseCard>): ShowcaseCard {
   return {
     id: 'card-1',
+    externalId: 'sv1-1',
+    game: 'PTCG',
+    language: 'EN',
     name: 'Test Card',
     imageSmall: '/img.png',
     imageLarge: '/img-large.png',

@@ -50,6 +50,9 @@
 
 - proxy 保護：`/binders`、`/binders/[id]`、`/settings`、`/collection`（未登入導向 `/login`）。
 - `/cards`（搜尋）未登入可瀏覽；收藏動作觸發登入 modal，登入後自動續行原動作。
+- `/cards/[game]/[language]/[externalId]`：單張卡片的公開、可 SEO 索引獨立頁面。與 `/cards` 列表以
+  Next.js Parallel + Intercepting Routes 組成——從列表點卡呈現為 Modal（URL 同步更新，可分享），
+  直接訪問或重整則為完整伺服器渲染頁面。
 - `/b/[token]`（公開分享）為唯讀，不需登入。
 
 ## 命名規範

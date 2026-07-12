@@ -41,6 +41,9 @@ beforeEach(() => {
 function makeCard(id: string): ShowcaseCard {
   return {
     id,
+    externalId: id,
+    game: 'PTCG',
+    language: 'EN',
     name: `Card ${id}`,
     imageSmall: `https://example.com/${id}.png`,
     imageLarge: `https://example.com/${id}_large.png`,

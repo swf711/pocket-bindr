@@ -3,7 +3,9 @@ import { test, expect, type Page } from '@playwright/test'
 // 此 spec 不需 auth（卡牌搜尋頁為公開），不需 DB cleanup
 
 async function openFirstCardDrawer(page: Page) {
-  const firstCard = page.getByTestId('card-grid').locator('button').first()
+  // 搜尋頁卡片現為 <Link>（觸發 Intercepting Route 攔截），非 <button>；
+  // 以 data-testid 選取與其他 spec 一致，不依賴底層元素標籤。
+  const firstCard = page.getByTestId('card-item').first()
   await firstCard.click()
   await expect(page.getByTestId('card-detail-drawer')).toBeVisible({ timeout: 8000 })
 }
@@ -72,7 +74,7 @@ test.describe('卡牌 3D 傾斜效果（桌面 Drawer）', () => {
     await page.goto('/cards?game=PTCG&language=EN')
     await page.getByTestId('card-grid').waitFor({ timeout: 15000 })
 
-    const firstCard = page.getByTestId('card-grid').locator('button').first()
+    const firstCard = page.getByTestId('card-item').first()
     await firstCard.click()
     await expect(page.getByTestId('card-detail-drawer')).toBeVisible({ timeout: 8000 })
 
