@@ -15,9 +15,10 @@ import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { ChevronLeft, ChevronRight, BookCheck, Bookmark, X, Flag, Copy } from 'lucide-react'
+import { ChevronLeft, ChevronRight, BookCheck, Bookmark, X, Flag, Share2 } from 'lucide-react'
 import { CardWithCollectionStatus } from '@/types/card'
 import { resolveCardDisplayImage } from '@/lib/resolve-card-image'
+import { buildCardShareUrl, shareOrCopy } from '@/lib/share-card'
 import { AddToBinderSection } from '@/components/cards/add-to-binder-section'
 import { useIsMobile } from '@/hooks/use-is-mobile'
 import { useCardTilt } from '@/hooks/use-card-tilt'
@@ -106,9 +107,17 @@ export function CardDetailDrawer({ card, open, onClose, onAddToBinder, onLoginSu
 
   if (!card) return null
 
-  const handleCopyName = async () => {
-    await navigator.clipboard.writeText(card.name)
-    toast.success(t('nameCopied'))
+  const handleShare = async () => {
+    // 網址必須由 card 自身組出，不可取 window.location.href——本 Drawer 也被
+    // /binders/[id]、/collection、/b/[token] 重用，那些頁面的網址是卡冊的。
+    const url = buildCardShareUrl(card, window.location.origin)
+    try {
+      const outcome = await shareOrCopy(url, card.name)
+      // 'shared' / 'dismissed' 皆不提示：系統分享單本身已是回饋。
+      if (outcome === 'copied') toast.success(t('linkCopied'))
+    } catch {
+      toast.error(t('shareFailed'))
+    }
   }
 
   const imageUrl = resolveCardDisplayImage(card).large
@@ -145,7 +154,13 @@ export function CardDetailDrawer({ card, open, onClose, onAddToBinder, onLoginSu
   )
 
   const infoBlock = (
-    <div className="flex flex-col gap-3 text-sm md:grid md:grid-cols-[auto_1fr] md:items-center md:gap-x-4 md:gap-y-3">
+    // select-text 覆寫 vaul 對 [data-vaul-drawer] 下的 user-select:none（僅 pointer:fine 命中）；
+    // data-vaul-no-drag 讓 vaul 的 shouldDrag 跳過此子樹，拖選文字才不會變成拖曳關閉 Drawer。
+    // ⚠️ 兩者只能加在子元素——vaul 的 CSS 是 unlayered，加在 content 根元素會贏過 @layer utilities。
+    <div
+      data-vaul-no-drag
+      className="flex flex-col gap-3 text-sm select-text md:grid md:grid-cols-[auto_1fr] md:items-center md:gap-x-4 md:gap-y-3"
+    >
       <div className="flex flex-col gap-0.5 md:contents">
         <span className="text-xs text-muted-foreground">{t('series')}</span>
         <span>
@@ -229,15 +244,20 @@ export function CardDetailDrawer({ card, open, onClose, onAddToBinder, onLoginSu
           {isMobile ? (
             <div className="flex items-center justify-between gap-2">
               {PrevButton}
-              <DrawerTitle className="text-2xl min-w-0 flex-1 truncate text-center">{card.name}</DrawerTitle>
+              <DrawerTitle
+                data-vaul-no-drag
+                className="text-2xl min-w-0 flex-1 truncate text-center select-text"
+              >
+                {card.name}
+              </DrawerTitle>
               <IconTooltipButton
-                data-testid="drawer-copy-name-trigger"
-                tooltip={t('copyName')}
+                data-testid="drawer-share-trigger"
+                tooltip={t('share')}
                 variant="ghost"
                 size="icon-xs"
-                onClick={handleCopyName}
+                onClick={handleShare}
               >
-                <Copy className="size-4" />
+                <Share2 className="size-4" />
               </IconTooltipButton>
               {session?.user && (
                 <IconTooltipButton
@@ -254,18 +274,22 @@ export function CardDetailDrawer({ card, open, onClose, onAddToBinder, onLoginSu
             </div>
           ) : (
             <div className='flex justify-between items-center pr-2'>
-              <DrawerTitle className="text-2xl truncate" title={card.name}>
+              <DrawerTitle
+                data-vaul-no-drag
+                className="text-2xl truncate select-text"
+                title={card.name}
+              >
                 {card.name}
               </DrawerTitle>
               <div className="flex items-center gap-1">
                 <IconTooltipButton
-                  data-testid="drawer-copy-name-trigger"
-                  tooltip={t('copyName')}
+                  data-testid="drawer-share-trigger"
+                  tooltip={t('share')}
                   variant="ghost"
                   size="icon-xs"
-                  onClick={handleCopyName}
+                  onClick={handleShare}
                 >
-                  <Copy className="size-4" />
+                  <Share2 className="size-4" />
                 </IconTooltipButton>
                 {session?.user && (
                   <IconTooltipButton
