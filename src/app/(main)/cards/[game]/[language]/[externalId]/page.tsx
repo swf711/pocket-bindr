@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { getTranslations } from 'next-intl/server'
 import { parseCardPathParams, cardPath, CARD_OG_LOCALE } from '@/lib/card-url'
 import { getPublicCardByTriple, getSameSetCards } from '@/lib/public-card'
+import { buildCardBreadcrumbItems, buildCardJsonLd } from '@/lib/card-jsonld'
 import { CardStandaloneView } from '@/components/cards/card-standalone-view'
 import { PageContainer } from '@/components/layout/page-container'
 
@@ -58,10 +59,17 @@ export default async function CardStandalonePage({ params }: { params: Promise<P
   if (!card) notFound()
 
   const sameSetCards = await getSameSetCards(card.setId, card.id, 6)
+  const tNav = await getTranslations('nav')
+  const breadcrumbItems = buildCardBreadcrumbItems(card, { home: tNav('home'), cards: tNav('cards') })
+  const jsonLd = buildCardJsonLd(card, breadcrumbItems)
 
   return (
     <PageContainer>
-      <CardStandaloneView card={card} sameSetCards={sameSetCards} />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <CardStandaloneView card={card} sameSetCards={sameSetCards} breadcrumbItems={breadcrumbItems} />
     </PageContainer>
   )
 }

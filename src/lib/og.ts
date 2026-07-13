@@ -18,14 +18,18 @@ export const OG_LOCALE: Record<Locale, string> = {
   ja: 'ja_JP',
 }
 
+/** 相對路徑（如 PTCG/OPCG 代理圖 `/api/proxy-image?...`）補成絕對 URL；已是絕對 URL 則原樣返回。 */
+export function toAbsoluteUrl(url: string): string {
+  return url.startsWith('http') ? url : `${SITE_URL}${url}`
+}
+
 /**
  * 抓遠端圖片轉 data URI（供 OG image 預先內嵌，避免 Satori render 時單張 fetch 失敗整張 500）。
  * 失敗回 null，呼叫端 filter 掉即可。
  */
 export async function fetchImageDataUri(url: string): Promise<string | null> {
   try {
-    // 相對 URL（如 PTCG 代理圖 /api/proxy-image?...）需以 SITE_URL 補成絕對 URL 才能 node fetch
-    const absolute = url.startsWith('http') ? url : `${SITE_URL}${url}`
+    const absolute = toAbsoluteUrl(url)
     const res = await fetch(absolute)
     if (!res.ok) return null
     const type = res.headers.get('content-type') ?? 'image/jpeg'
