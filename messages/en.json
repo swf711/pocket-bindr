@@ -235,8 +235,9 @@
     "adding": "Adding...",
     "ownedCount": "Owned {count}",
     "wantedCount": "Wanted {count}",
-    "copyName": "Copy card name",
-    "nameCopied": "Card name copied"
+    "share": "Share card",
+    "linkCopied": "Card link copied",
+    "shareFailed": "Share failed, please try again"
   },
   "cardStandalone": {
     "metaDescription": "{name} — {setName} {cardNumber} — View card details on PocketBindr and add it to your binder.",

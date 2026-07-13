@@ -235,8 +235,9 @@
     "adding": "追加中...",
     "ownedCount": "所有 {count}",
     "wantedCount": "欲しい {count}",
-    "copyName": "カード名をコピー",
-    "nameCopied": "カード名をコピーしました"
+    "share": "カードを共有",
+    "linkCopied": "カードのリンクをコピーしました",
+    "shareFailed": "共有に失敗しました。もう一度お試しください"
   },
   "cardStandalone": {
     "metaDescription": "{name}｜{setName} {cardNumber}｜PocketBindrでカード詳細を見る。バインダーに追加できます。",
