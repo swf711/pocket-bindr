@@ -16,18 +16,12 @@ test.describe('Loading UX — route skeleton + 頂部進度條', () => {
 
     // 先確保 /binders 的 prefetch（loading.tsx 邊界 = skeleton 殼）已快取完成再點擊：
     // App Router 的 auto prefetch 只快取到 loading 邊界、非同步觸發，若 prefetch 未完成就 click，
-    // Next 會停在舊頁等整包 RSC（被下方延遲）而不顯示 skeleton → 競態 flaky。
-    // hover 觸發 prefetch 並等其 response 完成；若 goto 期間已 prefetch 過則不再發、catch 放行。
-    const prefetchDone = page
-      .waitForResponse(
-        (res) =>
-          res.url().includes('/binders') &&
-          Boolean(res.request().headers()['next-router-prefetch']),
-        { timeout: 10_000 },
-      )
-      .catch(() => null)
+    // Next 會停在舊頁等整包 RSC（被下方延遲）而不顯示 skeleton。
+    // ⚠️ 只等「第一發 prefetch response」不夠——實測 hover 會觸發不只一發 prefetch，等到第一發就
+    // 放行時第二發仍在飛，Next 仍拿不到已快取的邊界 → 停在舊頁、skeleton 不出現（舊版競態根因）。
+    // 改以 networkidle 等所有 prefetch 完全落地。
     await page.getByTestId('nav-binders').hover()
-    await prefetchDone
+    await page.waitForLoadState('networkidle')
 
     // 只延遲「實際導航」的 RSC，放行 prefetch。以 next-router-prefetch header 區分。
     await page.route('**/binders**', async (route) => {

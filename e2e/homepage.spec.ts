@@ -98,12 +98,20 @@ test.describe('首頁', () => {
   test('Scenario 7: 開發者介紹區塊顯示聯絡連結', async ({ page }) => {
     await page.goto('/')
 
-    const devSection = page.getByTestId('why-section')
-    await expect(devSection).toBeVisible()
+    await expect(page.getByTestId('why-section')).toBeVisible()
 
-    await expect(devSection.getByRole('link', { name: /LinkedIn/ })).toBeVisible()
-    await expect(devSection.getByRole('link', { name: /GitHub/ })).toBeVisible()
-    await expect(devSection.getByRole('link', { name: /Email/ })).toBeVisible()
+    // why-section 的 DOM 子樹刻意包住 inline-footer（首頁最後一區的釘底 footer），
+    // footer 內另有一個 GitHub 連結 → 以整個 section 當 scope 會 strict-mode 命中 2 個。
+    // 斷言範圍窄化到開發者聯絡按鈕組本身。
+    const aboutLinks = page.getByTestId('about-links')
+
+    await expect(aboutLinks.getByRole('link', { name: /LinkedIn/ })).toBeVisible()
+    await expect(aboutLinks.getByRole('link', { name: /GitHub/ })).toBeVisible()
+
+    const emailLink = aboutLinks.getByRole('link', { name: /Email/ })
+    await expect(emailLink).toBeVisible()
+    // href 必須是真實信箱，不可是 placeholder（曾誤留 mailto:your-email@example.com）
+    await expect(emailLink).toHaveAttribute('href', /^mailto:(?!your-email@example\.com).+@.+/)
   })
 
   test('Scenario 8: 全站 Footer 在首頁隱藏，改由 inline footer 呈現', async ({ page }) => {

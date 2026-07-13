@@ -1,6 +1,6 @@
 import { ImageResponse } from 'next/og'
 import { OG_SIZE, OG_CONTENT_TYPE, OG_DARK_BG, loadOgFonts, fetchImageDataUri } from '@/lib/og'
-import { logoDataUri, LOGO_ASPECT, LOGO_SM_ASPECT } from '@/lib/og-logo'
+import { logoDataUri, LOGO_ASPECT } from '@/lib/og-logo'
 import { resolveCardDisplayImage } from '@/lib/resolve-card-image'
 import { parseCardPathParams } from '@/lib/card-url'
 import { getPublicCardByTriple } from '@/lib/public-card'
@@ -83,8 +83,8 @@ export default async function CardOgImage({ params }: { params: Promise<PagePara
         >
           <div style={{ display: 'flex', marginBottom: 24, filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.45))' }}>
             <img
-              src={logoDataUri('sm')}
-              width={Math.round(BRAND_LOGO_HEIGHT * LOGO_SM_ASPECT)}
+              src={logoDataUri()}
+              width={Math.round(BRAND_LOGO_HEIGHT * LOGO_ASPECT)}
               height={BRAND_LOGO_HEIGHT}
               alt="PocketBindr"
             />
