@@ -7,11 +7,14 @@ import { resolveCardDisplayImage } from '@/lib/resolve-card-image'
 import { cardPath } from '@/lib/card-url'
 import { CardStandaloneInteractive } from '@/components/cards/card-standalone-interactive'
 import { CardTiltImage } from '@/components/cards/card-tilt-image'
+import { CardBreadcrumb } from '@/components/cards/card-breadcrumb'
 import type { PublicCardRow, SameSetCardRow } from '@/lib/public-card'
+import type { CardBreadcrumbItem } from '@/lib/card-jsonld'
 
 interface CardStandaloneViewProps {
   card: PublicCardRow
   sameSetCards: SameSetCardRow[]
+  breadcrumbItems: CardBreadcrumbItem[]
 }
 
 /**
@@ -20,13 +23,15 @@ interface CardStandaloneViewProps {
  * 下方＝同系列其他卡（滿寬）。欄位比照 CardDetailDrawer 的 infoBlock，純 server render 以利爬蟲索引；
  * user-specific 部分交給 CardStandaloneInteractive。
  */
-export async function CardStandaloneView({ card, sameSetCards }: CardStandaloneViewProps) {
+export async function CardStandaloneView({ card, sameSetCards, breadcrumbItems }: CardStandaloneViewProps) {
   const t = await getTranslations('cardDetail')
   const tStandalone = await getTranslations('cardStandalone')
   const image = resolveCardDisplayImage(card)
 
   return (
     <div className="flex flex-col gap-10">
+      <CardBreadcrumb items={breadcrumbItems} />
+
       {/* 上方 block：大卡圖（左）+ 窄操作欄（右），整組於容器內置中 */}
       <div className="flex flex-col gap-8 md:flex-row md:items-start md:justify-center md:gap-10">
         <div className="mx-auto w-full max-w-xs sm:max-w-sm md:mx-0 md:max-w-md md:shrink-0">

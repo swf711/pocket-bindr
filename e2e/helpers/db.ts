@@ -464,3 +464,32 @@ export async function getUserEmailById(userId: string): Promise<string | null> {
 export async function deleteUserById(userId: string): Promise<void> {
   await prisma.user.deleteMany({ where: { id: userId } })
 }
+
+export type MinimalCardRef = { game: string; language: string; externalId: string; name: string }
+
+/**
+ * 卡片頁 JSON-LD 條件輸出驗收用：找一張特定欄位為空（null 或空字串/空陣列）的真實卡，
+ * 供 schema 測試斷言「該欄位整個省略、不輸出空值」（見 CLAUDE.md B1 決策）。
+ * 各欄位空值分布已知（DB 實查）：rarity 對 PTCG ZH_TW 全 null；supertype 有 3,215 張為空字串（非 null）；
+ * hp/types 對非寶可夢卡為空；releaseDate 對 OPCG 聚合/促銷 set、PTCG JA SV-P/M-P 為 null。
+ */
+export async function findCardMissingField(
+  field: 'rarity' | 'supertype' | 'hp' | 'types' | 'releaseDate',
+): Promise<MinimalCardRef> {
+  const select = { game: true, language: true, externalId: true, name: true } as const
+
+  if (field === 'rarity') {
+    return prisma.card.findFirstOrThrow({ where: { game: 'PTCG', language: 'ZH_TW', rarity: null }, select })
+  }
+  if (field === 'supertype') {
+    return prisma.card.findFirstOrThrow({ where: { supertype: '' }, select })
+  }
+  if (field === 'hp') {
+    return prisma.card.findFirstOrThrow({ where: { hp: null }, select })
+  }
+  if (field === 'types') {
+    return prisma.card.findFirstOrThrow({ where: { types: { isEmpty: true } }, select })
+  }
+  // releaseDate：set 層欄位，經 relation 篩選
+  return prisma.card.findFirstOrThrow({ where: { set: { releaseDate: null } }, select })
+}

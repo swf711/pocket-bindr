@@ -11,6 +11,7 @@ vi.mock('@/lib/prisma', () => ({
 }))
 
 import {
+  ALLOWED_PATHS,
   DISALLOWED_PATHS,
   STATIC_ROUTES,
   buildSitemapIndex,
@@ -96,6 +97,16 @@ describe('STATIC_ROUTES / DISALLOWED_PATHS', () => {
     for (const protectedRoute of protectedRoutes) {
       expect(DISALLOWED_PATHS).toContain(protectedRoute)
     }
+  })
+})
+
+describe('ALLOWED_PATHS', () => {
+  it('放行 /api/proxy-image（供卡片頁 JSON-LD schema image 可被 Googlebot 抓取）', () => {
+    expect(ALLOWED_PATHS).toContain('/api/proxy-image')
+  })
+
+  it('DISALLOWED_PATHS 仍保留 /api/（robots.txt 最長匹配讓 Allow: /api/proxy-image 例外生效）', () => {
+    expect(DISALLOWED_PATHS).toContain('/api/')
   })
 })
 

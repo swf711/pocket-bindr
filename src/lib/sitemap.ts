@@ -21,6 +21,14 @@ export const DISALLOWED_PATHS: readonly string[] = [
   '/reset-password',
 ]
 
+/**
+ * robots Allow 例外：`/api/` 整包 Disallow，但卡圖代理需放行，否則走 proxy 的卡
+ * （PTCG JA/ZH_TW、OPCG 官網圖，約 39k+ 張）其 JSON-LD/schema image Google 抓不到。
+ * robots.txt 以最長匹配優先，`Allow: /api/proxy-image` 會勝過 `Disallow: /api/`，
+ * 兩條規則並存不衝突。不涉及 rate-limit（見 src/lib/rate-limit.ts，B1 刻意不動）。
+ */
+export const ALLOWED_PATHS: readonly string[] = ['/', '/api/proxy-image']
+
 export function escapeXml(value: string): string {
   return value
     .replace(/&/g, '&amp;')
