@@ -1,5 +1,5 @@
 // Requires running server and test database
-import { test, expect } from '@playwright/test'
+import { test, expect } from './helpers/test'
 import { getTestUser, loginAs } from './helpers/auth'
 import {
   clearUserCardsByEmail,

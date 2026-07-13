@@ -4,9 +4,20 @@ export default defineConfig({
   testDir: './e2e',
   // 套件啟動前冪等預種所有 E2E 密碼帳號（fresh DB / CI 自舉，繞過 register 限流）。
   globalSetup: './e2e/global-setup.ts',
-  // Specs share a single dev server + DB; several reuse test accounts/cards.
-  // Serial execution avoids cross-spec race conditions (see CLAUDE.md / TECH_DEBT).
-  workers: 1,
+  // 並行執行。三個前提缺一不可（詳見 docs/PATTERNS.md「E2E 並行化前提」）：
+  //   1. 每個 spec 持有專屬測試帳號（helpers/auth.ts 的 getTestUser('<specname>')），
+  //      且 DB 清理一律以 email 鎖自己帳號；無 spec 寫入 Card/CardSet 等共享資料。
+  //   2. 會打 rate-limited endpoint 的 spec 注入唯一 x-forwarded-for
+  //      （helpers/rate-limit-ip.ts）——limiter 多為 IP 維度，否則各 worker 擠同一視窗。
+  //   3. ⚠️ fullyParallel 維持預設 false：同一檔案內的 test 仍在同一 worker 序列執行，
+  //      這是 settings-providers / oauth-add-email 等檔（檔內共用固定帳號 + afterAll 刪帳號）
+  //      不 race 的前提。**不可開啟。**
+  //   4. 所有 spec 一律 `import { test } from './helpers/test'`（**不可**直接 import
+  //      '@playwright/test'）：該入口覆寫 page.goto，導航後自動等 React 串流內容歸位。
+  //      CPU 被多個 Chromium 搶用時，React 的 $RC 搬移 script 會被延遲，隱藏暫存區
+  //      <div hidden id="S:0"> 內的副本與真實位置同時存在，Playwright strict mode 會把兩份
+  //      都算進匹配數而拋 strict mode violation（見 helpers/hydration.ts）。
+  workers: process.env.CI ? 2 : 4,
   // 吸收兩處「本質時序抖動」的 flaky（非掩蓋邏輯 bug，兩者的測試等待條件都已寫到位）：
   // 1. binder-view.spec.ts DnD 互換 —— dnd-kit collision detection 對合成 pointer 事件的時序敏感
   // 2. loading-ux.spec.ts skeleton —— App Router prefetch 完成時機與點擊的競態

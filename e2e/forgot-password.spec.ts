@@ -1,16 +1,29 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from './helpers/test'
 import { getTestUser, loginAs } from './helpers/auth'
+import { uniqueTestIp, forwardedHeaders } from './helpers/rate-limit-ip'
 import {
   createPasswordUser,
   createValidResetToken,
   getUserPasswordHash,
   deleteUserByEmail,
+  clearRateLimitKey,
 } from './helpers/db'
 
 const user = getTestUser('forgotpw')
 
+// 本檔走 UI 表單觸發 POST /api/auth/forgot-password（rl:forgot:ip，5/15m——全專案最緊的窗口）。
+// 唯一 IP identity 讓本檔不與其他 spec／其他 worker 共用該視窗（見 helpers/rate-limit-ip.ts）。
+test.use({ extraHTTPHeaders: forwardedHeaders(uniqueTestIp()) })
+
+// 表單送出的兩個 email 都是固定值，而 rl:forgot:email 的 quota 只有 3/60m 且跨執行累積：
+// 短時間內反覆重跑整套（開發期常見）會在第二、三輪耗盡額度而 429。IP 維度已由上方唯一 XFF
+// 隔離，email 維度則於此清掉自己的 sliding window（比照 email-verification.spec.ts 既有作法）。
+const ENUMERATION_PROBE_EMAIL = 'nonexistent@example.com'
+
 test.beforeAll(async () => {
   await createPasswordUser(user.email, user.username, user.password)
+  await clearRateLimitKey('rl:forgot:email', user.email.toLowerCase())
+  await clearRateLimitKey('rl:forgot:email', ENUMERATION_PROBE_EMAIL)
 })
 
 test.afterAll(async () => {
@@ -35,7 +48,7 @@ test.describe('忘記密碼頁面', () => {
 
   test('提交任意 email 後顯示統一成功訊息（防 enumeration）', async ({ page }) => {
     await page.goto('/forgot-password')
-    await page.getByLabel('Email').fill('nonexistent@example.com')
+    await page.getByLabel('Email').fill(ENUMERATION_PROBE_EMAIL)
     await page.getByRole('button', { name: '送出重設連結' }).click()
     await expect(page.getByTestId('forgot-password-success-alert')).toBeVisible()
     await expect(page.getByTestId('forgot-password-success-alert')).toContainText('若此 email 有帳號')

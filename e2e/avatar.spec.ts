@@ -1,6 +1,6 @@
 // Requires running server, test database, and real Supabase Storage credentials
 // (writes to the `avatars` bucket + User.image — see docs/TECH_DEBT.md if CI lacks Supabase).
-import { test, expect } from '@playwright/test'
+import { test, expect } from './helpers/test'
 import { getTestUser, loginAs } from './helpers/auth'
 import { clearUserAvatar } from './helpers/db'
 

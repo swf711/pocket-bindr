@@ -1,7 +1,11 @@
 // Requires running server and test database
-import { test, expect } from '@playwright/test'
+import { test, expect } from './helpers/test'
 import { getTestUser, loginAs } from './helpers/auth'
-import { resetUserPassword, resetUserUsername } from './helpers/db'
+import { resetUserPassword, resetUserUsername, clearRateLimitKey, getUserIdByEmail } from './helpers/db'
+import { uniqueTestIp, forwardedHeaders } from './helpers/rate-limit-ip'
+
+// 改密碼表單觸發 rl:pw-change:ip（10/15m）。唯一 IP identity 見 helpers/rate-limit-ip.ts。
+test.use({ extraHTTPHeaders: forwardedHeaders(uniqueTestIp()) })
 
 const USER = getTestUser('settings')
 const INITIAL_PASSWORD = 'E2eTest1234!'
@@ -12,6 +16,14 @@ test('未登入進入 /settings 導向 /login', async ({ page }) => {
 })
 
 test.describe('設定頁', () => {
+  // rl:pw-change:user 只有 5/15m，且以 userId 為 key（固定 seeded 帳號 → 跨執行累積）。
+  // 本檔每輪送出 2 次改密碼，短時間內反覆重跑整套會耗盡額度而 429。IP 維度已由上方唯一 XFF
+  // 隔離，user 維度於此清掉自己的 sliding window（比照 report / forgot-password 的既有作法）。
+  test.beforeAll(async () => {
+    const userId = await getUserIdByEmail(USER.email)
+    await clearRateLimitKey('rl:pw-change:user', userId)
+  })
+
   test.beforeEach(async ({ page }) => {
     await loginAs(page, USER)
     await page.goto('/settings')

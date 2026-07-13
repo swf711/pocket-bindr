@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from './helpers/test'
 
 /**
  * PTCG JA 舊世代卡牌的自存圖片（Supabase Storage）瀏覽驗證。

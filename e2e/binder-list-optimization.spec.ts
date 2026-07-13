@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from './helpers/test'
 import { getTestUser, loginAs } from './helpers/auth'
 import { clearUserBindersByEmail, getUserIdByEmail } from './helpers/db'
 import { prisma } from '../src/lib/prisma'

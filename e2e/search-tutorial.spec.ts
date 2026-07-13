@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from './helpers/test'
 
 /**
  * 搜尋教學引導 E2E：

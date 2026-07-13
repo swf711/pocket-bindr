@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from './helpers/test'
 import { getCardWithImage, getOpcgZhTwAliasCard, findCardMissingField } from './helpers/db'
 
 function toPath(game: string, card: { language: string; externalId: string }): string {

@@ -63,6 +63,12 @@ export async function getUserIdByEmail(email: string): Promise<string> {
   return user.id
 }
 
+/** 同 getUserIdByEmail，但帳號不存在時回 null（供「帳號可能尚未建立」的清理前置使用）。 */
+export async function getUserIdIfExists(email: string): Promise<string | null> {
+  const user = await prisma.user.findUnique({ where: { email }, select: { id: true } })
+  return user?.id ?? null
+}
+
 // ---- 舊 API（保留為 wrapper，未遷移的呼叫點繼續可用）----
 
 /** @deprecated 改用 clearUserCardsByEmail(user.email) */

@@ -1,4 +1,4 @@
-import { test, expect, type Page } from '@playwright/test'
+import { test, expect, type Page } from './helpers/test'
 
 /**
  * 卡牌搜尋頁：選擇語言。
