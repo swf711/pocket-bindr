@@ -32,6 +32,9 @@ import type { ShowcaseCard } from '@/types/homepage'
 function makeCard(id: string, name: string): ShowcaseCard {
   return {
     id,
+    externalId: id,
+    game: 'PTCG',
+    language: 'EN',
     name,
     imageSmall: `https://example.com/${id}.png`,
     imageLarge: `https://example.com/${id}_large.png`,

@@ -18,6 +18,9 @@ export const getTotalCardCount = unstable_cache(
 
 const showcaseCardSelect = {
   id: true,
+  externalId: true,
+  game: true,
+  language: true,
   name: true,
   imageSmall: true,
   imageLarge: true,
@@ -48,6 +51,9 @@ function showcaseSupertypeFilter(game: Game): Prisma.CardWhereInput {
 function mapToShowcaseCard(card: ShowcaseCardRow): ShowcaseCard {
   return {
     id: card.id,
+    externalId: card.externalId,
+    game: card.game,
+    language: card.language,
     name: card.name,
     imageSmall: getCardImageUrl(card.imageSmall) ?? card.imageSmall,
     imageLarge: getCardImageUrl(card.imageLarge) ?? card.imageLarge,

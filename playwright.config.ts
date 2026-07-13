@@ -7,6 +7,11 @@ export default defineConfig({
   // Specs share a single dev server + DB; several reuse test accounts/cards.
   // Serial execution avoids cross-spec race conditions (see CLAUDE.md / TECH_DEBT).
   workers: 1,
+  // /cards 點卡開啟卡片詳情由 feat/card-detail-url 起改走 Intercepting Route——點擊需 Next 取回
+  // @modal 路由的 RSC payload 才顯示 Drawer（production 靠 <Link> prefetch 感覺即時，但 E2E 立即
+  // 程式化點擊常搶在 prefetch 完成前，首次/負載下偶超過預設 5s）。全域 expect 逾時提高到 10s 吸收此
+  // 變動，涵蓋所有點卡開 modal 的斷言點，避免逐一 patch 遺漏。
+  expect: { timeout: 10_000 },
   use: {
     baseURL: 'http://localhost:3000',
     // Pin the browser's Accept-Language to zh-TW so first-visit locale detection

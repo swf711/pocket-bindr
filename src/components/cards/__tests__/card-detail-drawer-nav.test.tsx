@@ -48,6 +48,9 @@ import { CardWithCollectionStatus } from '@/types/card'
 function makeCard(id: string, name: string, overrides: Partial<CardWithCollectionStatus> = {}): CardWithCollectionStatus {
   return {
     id,
+    externalId: `SV1-${id}`,
+    game: 'PTCG',
+    language: 'EN',
     name,
     imageSmall: '',
     imageLarge: '',

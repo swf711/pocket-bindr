@@ -238,6 +238,11 @@
     "copyName": "複製卡牌名稱",
     "nameCopied": "已複製卡牌名稱"
   },
+  "cardStandalone": {
+    "metaDescription": "{name}｜{setName} {cardNumber}｜在 PocketBindr 查看卡牌詳情，加入你的收藏卡冊。",
+    "sameSetTitle": "同系列其他卡",
+    "viewAllInSet": "查看完整系列"
+  },
   "theme": {
     "toggle": "切換主題"
   },

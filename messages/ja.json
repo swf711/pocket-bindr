@@ -238,6 +238,11 @@
     "copyName": "カード名をコピー",
     "nameCopied": "カード名をコピーしました"
   },
+  "cardStandalone": {
+    "metaDescription": "{name}｜{setName} {cardNumber}｜PocketBindrでカード詳細を見る。バインダーに追加できます。",
+    "sameSetTitle": "同じシリーズの他のカード",
+    "viewAllInSet": "シリーズ全体を見る"
+  },
   "theme": {
     "toggle": "テーマを切り替え"
   },

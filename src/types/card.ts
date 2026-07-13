@@ -28,6 +28,9 @@ export interface CanonicalCardRef {
 
 export interface CardWithCollectionStatus {
   id: string
+  externalId: string
+  game: Game
+  language: Language
   name: string
   imageSmall: string
   imageLarge: string

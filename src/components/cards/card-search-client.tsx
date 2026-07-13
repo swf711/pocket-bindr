@@ -1,20 +1,18 @@
 'use client'
 
-import { useState, useCallback, useRef, useEffect } from 'react'
+import { useState, useCallback, useMemo, useRef, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useTranslations } from 'next-intl'
-import { CardStatus, type Game, type Language } from '@prisma/client'
+import { type Game, type Language } from '@prisma/client'
 import { GameSelector } from './game-selector'
 import { LanguageTabs } from './language-tabs'
 import { CardFilters } from './card-filters'
 import { CardGrid } from './card-grid'
 import { CardPagination } from './card-pagination'
-import { CardDetailDrawer } from './card-detail-drawer'
 import { SetGroup } from '@/types/card'
-import { useQueryClient } from '@tanstack/react-query'
 import { useCardSearch } from '@/hooks/use-card-search'
-import { useAddToBinder } from '@/hooks/use-add-to-binder'
-import { queryKeys } from '@/lib/query-keys'
+import { cardPath } from '@/lib/card-url'
+import { publishCardNavList } from '@/lib/card-nav-store'
 
 const DEFAULT_LANGUAGE = 'ZH_TW'
 const VALID_LANGUAGES = ['EN', 'JA', 'ZH_TW']
@@ -44,7 +42,6 @@ export function CardSearchClient({ initialParams }: CardSearchClientProps) {
       : DEFAULT_LANGUAGE
   )
   const [groups, setGroups] = useState<SetGroup[]>([])
-  const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -52,15 +49,17 @@ export function CardSearchClient({ initialParams }: CardSearchClientProps) {
     ? { game, language, q: query || undefined, setId: setId ?? undefined, page }
     : { game: '', language, page }
 
-  const qc = useQueryClient()
   const { data, isPending, isError } = useCardSearch(filters)
-  const addToBinder = useAddToBinder()
 
-  const cards = data?.cards ?? []
+  const cards = useMemo(() => data?.cards ?? [], [data])
   const total = data?.total ?? 0
   const totalPages = data?.totalPages ?? 0
 
-  const selectedCard = selectedIndex !== null ? cards[selectedIndex] ?? null : null
+  // 攔截路由的 modal（card-modal-client.tsx）從此 in-memory store 取當前卡 + prev/next，
+  // 免在 URL 夾帶 filter context；零 server round-trip 才能維持「點卡立刻出現」的手感。
+  useEffect(() => {
+    publishCardNavList(cards)
+  }, [cards])
 
   const updateParams = useCallback(
     (updates: Record<string, string | null>) => {
@@ -136,16 +135,6 @@ export function CardSearchClient({ initialParams }: CardSearchClientProps) {
     updateParams({ page: String(p) })
   }
 
-  const handleAddToBinder = async (binderId: string, status: CardStatus, quantity: number) => {
-    if (!selectedCard) return
-    await addToBinder.mutateAsync({
-      card: selectedCard,
-      binderId,
-      status,
-      quantity,
-    })
-  }
-
   return (
     <div>
       <h1 className="text-2xl font-bold mb-6">{t('title')}</h1>
@@ -195,7 +184,8 @@ export function CardSearchClient({ initialParams }: CardSearchClientProps) {
                 </div>
                 <CardGrid
                   cards={cards}
-                  onCardClick={(card) => setSelectedIndex(cards.indexOf(card))}
+                  onCardClick={() => {}}
+                  cardHref={cardPath}
                 />
                 <CardPagination
                   currentPage={page}
@@ -207,20 +197,6 @@ export function CardSearchClient({ initialParams }: CardSearchClientProps) {
           </>
         )}
       </div>
-
-      <CardDetailDrawer
-        card={selectedCard}
-        open={!!selectedCard}
-        onClose={() => setSelectedIndex(null)}
-        onAddToBinder={handleAddToBinder}
-        onLoginSuccess={() => {
-          // 登入後 collectionStatus 以 session 為依據，需強制重抓搜尋結果
-          qc.invalidateQueries({ queryKey: queryKeys.cards.all })
-        }}
-        cards={cards}
-        currentIndex={selectedIndex ?? 0}
-        onNavigate={setSelectedIndex}
-      />
     </div>
   )
 }

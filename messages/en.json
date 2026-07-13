@@ -238,6 +238,11 @@
     "copyName": "Copy card name",
     "nameCopied": "Card name copied"
   },
+  "cardStandalone": {
+    "metaDescription": "{name} — {setName} {cardNumber} — View card details on PocketBindr and add it to your binder.",
+    "sameSetTitle": "More from this set",
+    "viewAllInSet": "View full set"
+  },
   "theme": {
     "toggle": "Toggle theme"
   },
