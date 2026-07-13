@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from './helpers/test'
 import { getTestUser, loginAs } from './helpers/auth'
 
 test('OAuthAccountNotLinked error 顯示 Alert 含正確文案', async ({ page }) => {

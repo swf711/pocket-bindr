@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from './helpers/test'
 
 // 卡牌名稱僅存在於 img alt（無文字節點），需以 img name 比對（同 card-language.spec.ts 慣例）
 function cardWithName(page: import('@playwright/test').Page, namePattern: RegExp) {

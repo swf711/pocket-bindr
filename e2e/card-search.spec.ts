@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from './helpers/test'
 import { getTestUser, loginAs } from './helpers/auth'
 import { clearUserCardsByEmail, clearUserBindersByEmail } from './helpers/db'
 
@@ -16,7 +16,9 @@ test.describe('卡牌搜尋頁', () => {
     await page.getByTestId('game-btn-ptcg').click()
     await expect(page.getByTestId('card-grid')).toBeVisible({ timeout: 10000 })
     await expect(page.getByTestId('set-combobox')).toBeVisible()
-    expect(page.url()).toContain('game=PTCG')
+    // query string 由 client 端更新：用 auto-retry 的 toHaveURL，不可用同步的 page.url()
+    // （並行負載下 URL 更新會晚於 grid 出現，同步斷言會搶跑）
+    await expect(page).toHaveURL(/game=PTCG/)
   })
 
   test('關鍵字搜尋更新 URL 和結果', async ({ page }) => {
@@ -36,8 +38,7 @@ test.describe('卡牌搜尋頁', () => {
     const nextBtn = page.getByTestId('page-next')
     if (await nextBtn.isVisible()) {
       await nextBtn.click()
-      await page.waitForTimeout(500)
-      expect(page.url()).toContain('page=2')
+      await expect(page).toHaveURL(/page=2/)
     }
   })
 

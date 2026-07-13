@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from './helpers/test'
 
 /**
  * 卡牌搜尋頁 UI 改版 E2E：

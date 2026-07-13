@@ -4,18 +4,18 @@
  * Requires a real Upstash Redis connection (UPSTASH_REDIS_REST_URL).
  * All tests are skipped in CI environments that don't have Redis configured.
  */
-import { test, expect } from '@playwright/test'
+import { test, expect } from './helpers/test'
 import { clearRateLimitKey } from './helpers/db'
+import { uniqueTestIp, forwardedHeaders } from './helpers/rate-limit-ip'
 
 const hasRedis = !!process.env.UPSTASH_REDIS_REST_URL
 
 // 以顯式 x-forwarded-for 固定 IP identity（next start 會保留 client 提供的值）。
 // 不可依賴 socket 位址：本機可能是 ::1（IPv6），與 clearRateLimitKey 清理的 key 對不上，
-// 且會與 suite 其他 spec 的請求共用同一 identity（suite 加速後 15/60 分鐘窗互相污染）。
-// 每輪產生唯一 IP：@upstash/ratelimit 的 in-process ephemeralCache 會把被 block 的
-// identifier 記在 server 記憶體直到窗口重置，清 Redis 無效；唯一 IP 讓兩層都天然乾淨。
-const TEST_IP = `10.${(Date.now() >> 16) & 255}.${(Date.now() >> 8) & 255}.${Date.now() & 255}`
-const FORWARDED_HEADERS = { 'x-forwarded-for': TEST_IP }
+// 且會與 suite 其他 spec 的請求共用同一 identity（並行執行後 15/60 分鐘窗互相污染）。
+// 唯一 IP 的理由詳見 helpers/rate-limit-ip.ts。
+const TEST_IP = uniqueTestIp()
+const FORWARDED_HEADERS = forwardedHeaders(TEST_IP)
 const TEST_EMAIL = 'ratelimit-e2e@pocketbindr.com'
 
 test.describe('Rate limit — POST /api/auth/forgot-password', () => {

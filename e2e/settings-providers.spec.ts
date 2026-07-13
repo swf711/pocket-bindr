@@ -1,7 +1,12 @@
 // Requires running server and test database
-import { test, expect } from '@playwright/test'
+import { test, expect } from './helpers/test'
 import { getTestUser, loginAs, loginAsOAuthUser } from './helpers/auth'
-import { clearUserPassword, deleteUserByEmail } from './helpers/db'
+import { clearUserPassword, deleteUserByEmail, clearRateLimitKey, getUserIdIfExists } from './helpers/db'
+import { uniqueTestIp, forwardedHeaders } from './helpers/rate-limit-ip'
+
+// 設定密碼（rl:pw-set:ip）與主動連結 OAuth（rl:link:ip）各 10/60m。
+// 唯一 IP identity 見 helpers/rate-limit-ip.ts。
+test.use({ extraHTTPHeaders: forwardedHeaders(uniqueTestIp()) })
 
 const USER = getTestUser('settingsprov')
 
@@ -160,6 +165,11 @@ test.describe('純 OAuth 使用者設定密碼', () => {
   test.beforeEach(async () => {
     // 還原為純 OAuth 狀態（前一測試可能已設過密碼）
     await clearUserPassword(SET_PW_EMAIL)
+
+    // rl:pw-set:user 只有 3/60m，而本 describe 每輪就送出 3 次——毫無餘裕，任何 retry 都會 429。
+    // 帳號在 afterAll 會被刪、下輪 userId 通常是新的，但同輪內必須清，否則第三個 case 卡在上限。
+    const userId = await getUserIdIfExists(SET_PW_EMAIL)
+    if (userId) await clearRateLimitKey('rl:pw-set:user', userId)
   })
 
   test.afterAll(async () => {

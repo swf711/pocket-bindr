@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from './helpers/test'
 import { getTestUser } from './helpers/auth'
 import {
   clearUserBindersByEmail,

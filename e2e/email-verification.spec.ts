@@ -1,5 +1,6 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from './helpers/test'
 import { getTestUser } from './helpers/auth'
+import { uniqueTestIp, forwardedHeaders } from './helpers/rate-limit-ip'
 import {
   createUnverifiedPasswordUser,
   createValidSignupVerifyToken,
@@ -20,10 +21,10 @@ const freshEmail = `e2e-emailverify-fresh-${Date.now()}@pocketbindr.com`
 const freshUsername = `e2ev${Date.now().toString(36)}`
 
 // 本檔連續呼叫多次 /api/auth/register / verify-signup / resend-verification，
-// 皆以來源 IP 計入限流；比照 rate-limit.spec.ts 模式，用每輪唯一 IP 讓本檔
-// 不受同機重複跑（本機除錯）或其他 spec 共用 127.0.0.1 的限流視窗污染。
-const TEST_IP = `10.${(Date.now() >> 16) & 255}.${(Date.now() >> 8) & 255}.${Date.now() & 255}`
-test.use({ extraHTTPHeaders: { 'x-forwarded-for': TEST_IP } })
+// 皆以來源 IP 計入限流；用每輪唯一 IP 讓本檔不受同機重複跑（本機除錯）或其他 spec
+// 共用 127.0.0.1 的限流視窗污染（詳見 helpers/rate-limit-ip.ts）。
+const TEST_IP = uniqueTestIp()
+test.use({ extraHTTPHeaders: forwardedHeaders(TEST_IP) })
 
 // resendVerificationEmailLimiter 以 email 為維度（3/hr），與上面的 IP 隔離無關；
 // user.email 是固定的 getTestUser 帳號，重複跑本檔會累積用掉額度，需另外清空。

@@ -1,5 +1,10 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from './helpers/test'
 import { prisma } from '../src/lib/prisma'
+import { uniqueTestIp, forwardedHeaders } from './helpers/rate-limit-ip'
+
+// 本檔走 UI /register 表單，多次觸發 rl:register:ip（10/60m）。唯一 IP identity 讓本檔
+// 不與其他 spec／其他 worker 共用該視窗（見 helpers/rate-limit-ip.ts）。
+test.use({ extraHTTPHeaders: forwardedHeaders(uniqueTestIp()) })
 
 const TEST_EMAIL = `e2e-${Date.now()}@pocketbindr.com`
 const TEST_USERNAME = `e2euser${Date.now()}`

@@ -1,5 +1,6 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from './helpers/test'
 import { loginAsOAuthUserById } from './helpers/auth'
+import { uniqueTestIp, forwardedHeaders } from './helpers/rate-limit-ip'
 import {
   createOAuthUserNoEmail,
   createValidEmailVerifyToken,
@@ -9,13 +10,13 @@ import {
 
 // This spec makes several real POST /api/user/email/verify calls (emailVerifyIpLimiter:
 // 10/hr per IP). @upstash/ratelimit's in-process ephemeralCache remembers blocked
-// identifiers on the long-running dev server regardless of Redis state (see
-// rate-limit.spec.ts), so clearing Redis between runs isn't enough — a unique
-// x-forwarded-for identity per run is the established workaround in this codebase.
-const TEST_IP = `10.${(Date.now() >> 16) & 255}.${(Date.now() >> 8) & 255}.${Date.now() & 255}`
+// identifiers on the long-running server regardless of Redis state, so clearing Redis
+// between runs isn't enough — a unique x-forwarded-for identity per run is the
+// established workaround in this codebase (see helpers/rate-limit-ip.ts).
+const TEST_IP = uniqueTestIp()
 
 test.describe('純 OAuth 使用者自助補填 email', () => {
-  test.use({ extraHTTPHeaders: { 'x-forwarded-for': TEST_IP } })
+  test.use({ extraHTTPHeaders: forwardedHeaders(TEST_IP) })
 
   test('email == null 時設定頁顯示補填表單', async ({ page }) => {
     const { userId } = await createOAuthUserNoEmail('e2eaddemail1', 'discord', 'discord-add-email-1')

@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from './helpers/test'
 
 /**
  * E2E tests for the three search improvements shipped by Dev Agents 1–3:

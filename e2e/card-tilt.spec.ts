@@ -1,4 +1,4 @@
-import { test, expect, type Page } from '@playwright/test'
+import { test, expect, type Page } from './helpers/test'
 
 // 此 spec 不需 auth（卡牌搜尋頁為公開），不需 DB cleanup
 

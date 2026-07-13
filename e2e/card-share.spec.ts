@@ -1,5 +1,5 @@
 // Requires running server and test database
-import { test, expect, type Page } from '@playwright/test'
+import { test, expect, type Page } from './helpers/test'
 import { getTestUser, loginAs } from './helpers/auth'
 import {
   clearUserBindersByEmail,

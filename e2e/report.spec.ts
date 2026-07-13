@@ -1,6 +1,12 @@
 // Requires running server and test database
-import { test, expect } from '@playwright/test'
+import { test, expect } from './helpers/test'
 import { getTestUser, loginAs } from './helpers/auth'
+import { uniqueTestIp, forwardedHeaders } from './helpers/rate-limit-ip'
+import { clearRateLimitKey, getUserIdByEmail } from './helpers/db'
+
+// POST /api/report 有 IP（10/60m）與 user（5/60m）雙維度限流。user 維度靠本檔專屬帳號隔離；
+// IP 維度需唯一 identity，否則並行時與其他 spec 擠同一視窗（見 helpers/rate-limit-ip.ts）。
+test.use({ extraHTTPHeaders: forwardedHeaders(uniqueTestIp()) })
 
 const USER = getTestUser('report')
 
@@ -13,6 +19,14 @@ test.describe('缺卡/bug 回報', () => {
   // （reportUserLimiter，src/lib/rate-limit.ts），以同一 seeded 帳號計算。每次重試都是一次真實
   // submit，會多燒 quota，把「短時間內反覆整套重跑撞 429」的既有問題放大。
   test.describe.configure({ retries: 0 })
+
+  // user 維度 quota 以帳號計、跨執行累積：本檔每輪送出 2 次，短時間內反覆重跑整套（開發期常見）
+  // 會在第 3 輪撞到 5/hr 上限而 429。IP 維度已由上方唯一 XFF 隔離，user 維度則於此清掉自己的
+  // sliding window（比照 email-verification.spec.ts 對 rl:resend-verify:email 的既有作法）。
+  test.beforeAll(async () => {
+    const userId = await getUserIdByEmail(USER.email)
+    await clearRateLimitKey('rl:report:user', userId)
+  })
 
   test.beforeEach(async ({ page }) => {
     await loginAs(page, USER)

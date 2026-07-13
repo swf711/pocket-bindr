@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from './helpers/test'
 
 test.describe('法律文件頁（訪客瀏覽，無 DB 寫入）', () => {
   test('未登入訪客可直接開啟 /terms', async ({ page }) => {
