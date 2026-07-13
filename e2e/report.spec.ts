@@ -9,6 +9,11 @@ const TINY_PNG_BASE64 =
   'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII='
 
 test.describe('缺卡/bug 回報', () => {
+  // 全域 retries（playwright.config.ts）在此關閉：POST /api/report 有 user 維度 5/hr rate limit
+  // （reportUserLimiter，src/lib/rate-limit.ts），以同一 seeded 帳號計算。每次重試都是一次真實
+  // submit，會多燒 quota，把「短時間內反覆整套重跑撞 429」的既有問題放大。
+  test.describe.configure({ retries: 0 })
+
   test.beforeEach(async ({ page }) => {
     await loginAs(page, USER)
     await page.goto('/settings')
