@@ -5,7 +5,9 @@ import {
   sitemapChildPaths,
 } from '@/lib/sitemap'
 
-export const revalidate = 86400
+// 無 [id] 路由段，Next 會嘗試在 build 期靜態預渲染（需連 DB）；build 環境（CI）DB 不可達會導致 build 失敗。
+// 強制 dynamic 改在 request time 渲染，快取改交給 src/lib/sitemap.ts 的 unstable_cache（86400 秒）負責。
+export const dynamic = 'force-dynamic'
 
 export async function GET() {
   const cardCount = await getCardCount()

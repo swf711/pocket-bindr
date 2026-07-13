@@ -8,7 +8,8 @@ import {
   SITEMAP_CHUNK_SIZE,
 } from '@/lib/sitemap'
 
-export const revalidate = 86400
+// 有 [id] 路由段，天然 dynamic render，不會被 build 期靜態預渲染（無需 force-dynamic）。
+// 快取由 src/lib/sitemap.ts 的 unstable_cache（86400 秒）負責，此處不重複宣告 revalidate。
 
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
