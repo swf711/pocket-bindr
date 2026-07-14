@@ -1,6 +1,7 @@
 import { ImageResponse } from 'next/og'
-import { getTranslations } from 'next-intl/server'
-import { OG_SIZE, OG_CONTENT_TYPE, OG_DARK_BG, loadOgFonts, fetchImageDataUri } from '@/lib/og'
+import { OG_SIZE, OG_CONTENT_TYPE, OG_DARK_BG, OG_CACHE_LONG, fetchImageDataUri } from '@/lib/og'
+import { ogFonts } from '@/lib/og-fonts'
+import { ogMessage } from '@/lib/og-messages'
 import { logoDataUri, LOGO_ASPECT } from '@/lib/og-logo'
 import { getShowcaseCards } from '@/lib/homepage-queries'
 
@@ -8,6 +9,10 @@ export const runtime = 'nodejs'
 export const size = OG_SIZE
 export const contentType = OG_CONTENT_TYPE
 export const alt = 'PocketBindr'
+// D4 移除 getTranslations() 後本路由不再有 dynamic API 依賴，Next 會將其判為可 SSG 的 static route——
+// 但 getShowcaseCards 讀 DB、資料會隨爬蟲 backfill 變動而部署不會，靜態化等於凍結在 build 當下的展示卡。
+// 明確 force-dynamic 維持「每次請求即時 render、靠 Cache-Control 控快取」的既有語意（D5 鎖定：不做靜態 PNG）。
+export const dynamic = 'force-dynamic'
 
 const LOGO_HEIGHT = 96
 const CARD_W = 116
@@ -19,9 +24,8 @@ const BOX_BORDER = 3
 const BOX_W = CARD_W * 3 + CARD_GAP * 2 + BOX_PAD * 2 + BOX_BORDER * 2 + 6
 
 export default async function OgImage() {
-  const t = await getTranslations('home')
-  const tagline = t('tagline')
-  const fonts = await loadOgFonts(tagline)
+  const tagline = ogMessage('home.tagline')
+  const fonts = ogFonts()
   const hasFont = fonts.length > 0
 
   // 取首頁 hero 同款展示卡（PTCG 繁中 + OPCG 日文交錯），預抓成 data URI 濾掉失敗者
@@ -106,6 +110,6 @@ export default async function OgImage() {
         </div>
       </div>
     ),
-    { ...size, fonts },
+    { ...size, fonts, headers: { 'Cache-Control': OG_CACHE_LONG } },
   )
 }

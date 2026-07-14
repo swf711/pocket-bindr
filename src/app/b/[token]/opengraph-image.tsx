@@ -1,6 +1,7 @@
 import { ImageResponse } from 'next/og'
-import { getTranslations } from 'next-intl/server'
-import { OG_SIZE, OG_CONTENT_TYPE, OG_DARK_BG, loadOgFonts, fetchImageDataUri } from '@/lib/og'
+import { OG_SIZE, OG_CONTENT_TYPE, OG_DARK_BG, OG_CACHE_SHORT, fetchImageDataUri } from '@/lib/og'
+import { ogFonts } from '@/lib/og-fonts'
+import { ogMessage } from '@/lib/og-messages'
 import { logoDataUri, LOGO_ASPECT, LOGO_SM_ASPECT } from '@/lib/og-logo'
 import { fetchPublicBinder } from '@/lib/public-binder'
 
@@ -30,7 +31,7 @@ function brandFallback() {
         <img src={logoDataUri()} width={Math.round(120 * LOGO_ASPECT)} height={120} alt="PocketBindr" />
       </div>
     ),
-    { ...size },
+    { ...size, headers: { 'Cache-Control': OG_CACHE_SHORT } },
   )
 }
 
@@ -39,10 +40,9 @@ export default async function BinderOgImage({ params }: { params: Promise<{ toke
   const binder = await fetchPublicBinder(token)
   if (!binder) return brandFallback()
 
-  const t = await getTranslations('metadata')
-  const owner = binder.user.username ?? (await getTranslations('binder'))('defaultOwnerName')
+  const owner = binder.user.username ?? ogMessage('binder.defaultOwnerName')
   const cardCount = binder.slots.length
-  const meta = t('ogBinderCount', { count: cardCount })
+  const meta = ogMessage('metadata.ogBinderCount', { count: cardCount })
   const rawImages = binder.slots
     .map((s) => s.card?.imageSmall)
     .filter((url): url is string => Boolean(url))
@@ -51,7 +51,7 @@ export default async function BinderOgImage({ params }: { params: Promise<{ toke
     (u): u is string => Boolean(u),
   )
 
-  const fonts = await loadOgFonts(`${binder.name}${owner}${meta}`)
+  const fonts = ogFonts()
   const hasFont = fonts.length > 0
 
   return new ImageResponse(
@@ -136,6 +136,6 @@ export default async function BinderOgImage({ params }: { params: Promise<{ toke
         )}
       </div>
     ),
-    { ...size, fonts },
+    { ...size, fonts, headers: { 'Cache-Control': OG_CACHE_SHORT } },
   )
 }

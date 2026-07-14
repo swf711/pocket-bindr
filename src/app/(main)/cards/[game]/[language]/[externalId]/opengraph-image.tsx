@@ -1,5 +1,6 @@
 import { ImageResponse } from 'next/og'
-import { OG_SIZE, OG_CONTENT_TYPE, OG_DARK_BG, loadOgFonts, fetchImageDataUri } from '@/lib/og'
+import { OG_SIZE, OG_CONTENT_TYPE, OG_DARK_BG, OG_CACHE_LONG, OG_CACHE_SHORT, fetchImageDataUri } from '@/lib/og'
+import { ogFonts } from '@/lib/og-fonts'
 import { logoDataUri, LOGO_ASPECT } from '@/lib/og-logo'
 import { resolveCardDisplayImage } from '@/lib/resolve-card-image'
 import { parseCardPathParams } from '@/lib/card-url'
@@ -29,7 +30,7 @@ function brandFallback() {
         <img src={logoDataUri()} width={Math.round(120 * LOGO_ASPECT)} height={120} alt="PocketBindr" />
       </div>
     ),
-    { ...size },
+    { ...size, headers: { 'Cache-Control': OG_CACHE_SHORT } },
   )
 }
 
@@ -47,7 +48,7 @@ export default async function CardOgImage({ params }: { params: Promise<PagePara
   const cardImageDataUri = image.large ? await fetchImageDataUri(image.large) : null
 
   const meta = `${card.set.externalId} ${card.cardNumber}`
-  const fonts = await loadOgFonts(`${card.name}${card.set.name}${meta}`)
+  const fonts = ogFonts()
   const hasFont = fonts.length > 0
 
   return new ImageResponse(
@@ -112,6 +113,6 @@ export default async function CardOgImage({ params }: { params: Promise<PagePara
         </div>
       </div>
     ),
-    { ...size, fonts },
+    { ...size, fonts, headers: { 'Cache-Control': OG_CACHE_LONG } },
   )
 }
