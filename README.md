@@ -139,6 +139,13 @@ E2E 以 `pnpm build && pnpm start` 啟動正式 build（非 dev mode），並需
 歡迎貢獻。請先閱讀 [貢獻指南](./.github/CONTRIBUTING.md)；架構概覽見 [ARCHITECTURE.md](./ARCHITECTURE.md)。
 回報安全性問題請見 [SECURITY.md](./.github/SECURITY.md)。
 
+## 支持這個專案
+
+PocketBindr 是一個免費、開源的 side project。如果它對你有幫助，歡迎請我喝杯咖啡，
+幫忙分攤 Supabase / Vercel 的基礎設施費用。
+
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/pocketbindr)
+
 ## 授權與免責
 
 本專案程式碼以 [MIT License](./LICENSE) 授權。
