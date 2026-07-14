@@ -47,34 +47,38 @@ export function FooterContent() {
       <p className="text-xs text-muted-foreground">
         v{process.env.NEXT_PUBLIC_APP_VERSION}
       </p>
-      <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
-        <Link href="/terms" className="hover:underline">
-          {t('terms')}
-        </Link>
-        <Link href="/privacy" className="hover:underline">
-          {t('privacy')}
-        </Link>
-        {session?.user && (
-          <ReportDialog
-            trigger={
-              <button type="button" data-testid="footer-report-trigger" className="hover:underline cursor-pointer">
-                {tReport('trigger')}
-              </button>
-            }
-          />
-        )}
-        <Button asChild variant="default" size="xs">
-          <a href="https://github.com/swf711/pocket-bindr" target="_blank" rel="noopener noreferrer">
-            <GitHubIcon />
-            GitHub
-          </a>
-        </Button>
-        <Button asChild variant="default" size="xs">
-          <a href={KOFI_URL} target="_blank" rel="noopener noreferrer" data-testid="footer-kofi-link">
-            <Coffee />
-            {tSupport('kofiCta')}
-          </a>
-        </Button>
+      <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 text-xs text-muted-foreground">
+        <div className="flex items-center justify-center gap-4">
+          <Link href="/terms" className="hover:underline">
+            {t('terms')}
+          </Link>
+          <Link href="/privacy" className="hover:underline">
+            {t('privacy')}
+          </Link>
+          {session?.user && (
+            <ReportDialog
+              trigger={
+                <button type="button" data-testid="footer-report-trigger" className="hover:underline cursor-pointer">
+                  {tReport('trigger')}
+                </button>
+              }
+            />
+          )}
+        </div>
+        <div className="flex items-center justify-center gap-2">
+          <Button asChild variant="default" size="xs">
+            <a href="https://github.com/swf711/pocket-bindr" target="_blank" rel="noopener noreferrer">
+              <GitHubIcon />
+              GitHub
+            </a>
+          </Button>
+          <Button asChild variant="default" size="xs">
+            <a href={KOFI_URL} target="_blank" rel="noopener noreferrer" data-testid="footer-kofi-link">
+              <Coffee />
+              {tSupport('kofiCta')}
+            </a>
+          </Button>
+        </div>
       </div>
     </div>
   )
