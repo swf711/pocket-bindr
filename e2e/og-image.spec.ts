@@ -36,18 +36,34 @@ async function getOfficialSourceCard() {
   return card
 }
 
-async function getSelfHostedCard() {
+/**
+ * 圖片為 Satori 可解碼格式（**非 webp**）的卡——「OG 應該有卡圖」的基準卡。
+ * ⚠️ 刻意不以「自存 Supabase」為條件：自存圖目前 100% 是 webp（爬蟲一律存 webp），
+ * 拿它當基準會讓「有卡圖」的斷言靜默失去意義（Satori 不支援 webp，OG 會跳過該圖）。
+ */
+async function getRenderableCard() {
   const card = await prisma.card.findFirst({
-    where: { imageSmall: { contains: 'supabase.co' } },
+    where: {
+      imageSmall: { not: '' },
+      NOT: { imageSmall: { endsWith: '.webp' } },
+    },
     include: { set: true },
   })
-  if (!card) throw new Error('找不到自存 Supabase 圖片的卡')
+  if (!card) throw new Error('找不到非 webp 圖片的卡（無法建立「OG 有卡圖」的基準）')
   return card
+}
+
+/** 圖片為 webp 的卡（Satori 不支援）——驗證 OG 優雅降級：有文字、無卡圖、不 crash。 */
+async function getWebpCard() {
+  return prisma.card.findFirst({
+    where: { imageSmall: { endsWith: '.webp' } },
+    include: { set: true },
+  })
 }
 
 test.describe('單卡 OG image', () => {
   test('回 200 image/png，且含卡圖（bytes 明顯大於 brandFallback 純 logo）', async ({ page }) => {
-    const card = await getSelfHostedCard()
+    const card = await getRenderableCard()
     const ogPath = await resolveCardOgImagePath(page, cardPath(card))
     const res = await page.request.get(ogPath)
     expect(res.status()).toBe(200)
@@ -60,24 +76,44 @@ test.describe('單卡 OG image', () => {
 
   test('官網來源卡（PROXY_HOSTNAMES）同樣有圖，不因缺 Referer 而退化成純文字/fallback', async ({ page }) => {
     const officialCard = await getOfficialSourceCard()
-    const selfHostedCard = await getSelfHostedCard()
+    const renderableCard = await getRenderableCard()
 
     const officialOgPath = await resolveCardOgImagePath(page, cardPath(officialCard))
-    const selfHostedOgPath = await resolveCardOgImagePath(page, cardPath(selfHostedCard))
+    const renderableOgPath = await resolveCardOgImagePath(page, cardPath(renderableCard))
     const officialRes = await page.request.get(officialOgPath)
-    const selfHostedRes = await page.request.get(selfHostedOgPath)
+    const renderableRes = await page.request.get(renderableOgPath)
 
     expect(officialRes.status()).toBe(200)
     const officialBody = await officialRes.body()
-    const selfHostedBody = await selfHostedRes.body()
+    const renderableBody = await renderableRes.body()
 
     // 兩者應同量級（含卡圖），不應是「有圖 vs 純文字色塊」的數量級落差
     expect(officialBody.byteLength).toBeGreaterThan(15_000)
-    expect(officialBody.byteLength).toBeGreaterThan(selfHostedBody.byteLength * 0.3)
+    expect(officialBody.byteLength).toBeGreaterThan(renderableBody.byteLength * 0.3)
+  })
+
+  test('webp 來源卡：OG 優雅降級（200、有文字、無卡圖），不 crash', async ({ page }) => {
+    const webpCard = await getWebpCard()
+    // 資料層 backfill 完成後 webp 應歸零，屆時此案例自動跳過（guard 仍留在 og.ts 作防線）
+    test.skip(!webpCard, 'DB 中已無 webp 卡（資料層已根治）')
+
+    const ogPath = await resolveCardOgImagePath(page, cardPath(webpCard!))
+    const res = await page.request.get(ogPath)
+
+    // 關鍵：不得 500、不得斷線——Satori 餵到 webp 會讓整個 render 崩潰，這條守住 guard 有生效
+    expect(res.status()).toBe(200)
+    expect(res.headers()['content-type']).toContain('image/png')
+
+    // 有文字（版面仍完整）但無卡圖 → bytes 明顯小於有卡圖的版本
+    const renderableCard = await getRenderableCard()
+    const withImagePath = await resolveCardOgImagePath(page, cardPath(renderableCard))
+    const withImageBody = await (await page.request.get(withImagePath)).body()
+    const webpBody = await res.body()
+    expect(webpBody.byteLength).toBeLessThan(withImageBody.byteLength)
   })
 
   test('Cache-Control 為 7 天長 TTL', async ({ page }) => {
-    const card = await getSelfHostedCard()
+    const card = await getRenderableCard()
     const ogPath = await resolveCardOgImagePath(page, cardPath(card))
     const res = await page.request.get(ogPath)
     expect(res.headers()['cache-control']).toContain('s-maxage=604800')
@@ -86,7 +122,7 @@ test.describe('單卡 OG image', () => {
   test('非法路徑回 200 brandFallback（不 500），且短 TTL', async ({ page }) => {
     // 非法（不存在的）externalId 的頁面本身即 404，og:image meta 不存在——
     // 改用真實卡的 hash 後綴路徑，帶入不存在的 externalId 驗證 brandFallback。
-    const card = await getSelfHostedCard()
+    const card = await getRenderableCard()
     const ogPath = await resolveCardOgImagePath(page, cardPath(card))
     const fakeOgPath = ogPath.replace(encodeURIComponent(card.externalId), 'this-card-does-not-exist-xyz')
 
@@ -142,7 +178,7 @@ test.describe('分享頁 OG image', () => {
   test('Cache-Control 為 5 分鐘短 TTL', async ({ page }) => {
     await loginAs(page, USER)
     const userId = await getUserIdByEmail(USER.email)
-    const card = await getSelfHostedCard()
+    const card = await getRenderableCard()
     const { binder } = await createBinderWithSlots(userId, 'grid_3x3', [
       { cardId: card.id, status: 'owned', pageNumber: 1, slotIndex: 0 },
     ])

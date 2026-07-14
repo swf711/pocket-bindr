@@ -72,30 +72,27 @@ describe('fetchImageDataUri', () => {
     expect(global.fetch).toHaveBeenCalledTimes(1)
   })
 
-  it('WebP 等 Satori 不支援的格式先轉 PNG 再內嵌（曾導致整個 OG render 斷線崩潰）', async () => {
-    // 1x1 白色 PNG，供跨過 sharp 真實解碼（不 mock sharp，才能驗證到真正的轉檔行為）
-    const onePixelPng = Buffer.from(
-      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAACXBIWXMAAAPoAAAD6AG1e1JrAAAADElEQVQImWP4//8/AAX+Av5Y8msOAAAAAElFTkSuQmCC',
-      'base64',
-    )
-    vi.mocked(global.fetch).mockResolvedValueOnce({
-      ok: true,
-      headers: new Headers({ 'content-type': 'image/webp' }),
-      arrayBuffer: async () => onePixelPng.buffer.slice(onePixelPng.byteOffset, onePixelPng.byteOffset + onePixelPng.byteLength),
-    } as unknown as Response)
-
-    const result = await fetchImageDataUri('https://xxx.supabase.co/card.webp')
-    expect(result).toMatch(/^data:image\/png;base64,/)
-  })
-
-  it('宣稱 webp 但實際不是合法圖片（sharp 解碼失敗）→ 回 null，不 throw', async () => {
+  it('WebP（Satori 不支援，會讓整個 render 斷線崩潰）→ 回 null 優雅降級，不轉檔、不 throw', async () => {
+    // runtime 刻意不引入 sharp 等原生解碼器（在 serverless 會於 module load 階段炸掉整站）；
+    // 正解是資料層不產出 webp，此 guard 僅為最後防線。
     vi.mocked(global.fetch).mockResolvedValue({
       ok: true,
       headers: new Headers({ 'content-type': 'image/webp' }),
       arrayBuffer: async () => new Uint8Array([1, 2, 3]).buffer,
     } as unknown as Response)
 
-    await expect(fetchImageDataUri('https://xxx.supabase.co/broken.webp')).resolves.toBeNull()
+    await expect(fetchImageDataUri('https://xxx.supabase.co/card.webp')).resolves.toBeNull()
+  })
+
+  it('不支援的格式不浪費 retry（格式問題重試也不會變成支援的格式）', async () => {
+    vi.mocked(global.fetch).mockResolvedValue({
+      ok: true,
+      headers: new Headers({ 'content-type': 'image/avif' }),
+      arrayBuffer: async () => new Uint8Array([1, 2, 3]).buffer,
+    } as unknown as Response)
+
+    await expect(fetchImageDataUri('https://xxx.supabase.co/card.avif')).resolves.toBeNull()
+    expect(global.fetch).toHaveBeenCalledTimes(1)
   })
 
   it('首次拋錯、retry 成功 → 回 data URI', async () => {

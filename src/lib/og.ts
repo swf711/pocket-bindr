@@ -1,4 +1,3 @@
-import sharp from 'sharp'
 import type { Locale } from '@/i18n/locale'
 import { PROXY_HOSTNAMES } from '@/lib/get-card-image-url'
 
@@ -76,22 +75,20 @@ async function fetchWithTimeout(url: string, headers: HeadersInit): Promise<Resp
   return fetch(url, { headers, signal: AbortSignal.timeout(OG_IMAGE_FETCH_TIMEOUT_MS) })
 }
 
-/** Satori/resvg（next/og 底層）可安全解碼的格式；WebP 等其餘格式會讓整個 ImageResponse render 崩潰
- *  （非優雅降級，是直接斷線）——實測發現：JA 舊世代／OPCG DON!! 卡的 backfill 自存圖存的是 .webp
- *  （見 CLAUDE.md「不 hotlink，改下載自存」），這類卡的單卡／分享頁 OG 過去必然整張失敗。 */
+/** Satori/resvg（next/og 底層）可安全解碼的格式。**WebP 等其餘格式會讓整個 ImageResponse render
+ *  直接斷線崩潰（非優雅降級）**——這是實測到的事實，不是推測。
+ *
+ *  ⚠️ 此 guard 是最後防線，**不得移除**：runtime 刻意不做格式轉換（不引入 sharp 等原生解碼器——
+ *  那會在 serverless 環境因原生 binary 無法載入而在 module load 階段炸掉整站，且 og.ts 被
+ *  card-jsonld/sitemap/robots 廣泛 import，爆炸半徑遠超 OG 路由本身）。
+ *  正解是**資料層不產出 webp**（自存圖一律 JPEG，見 docs/DATA_SOURCES.md）；此處僅負責在
+ *  萬一又混進不支援格式時優雅降級（該圖不放，OG 仍正常出圖），而非讓 render 崩潰。 */
 const SATORI_SAFE_IMAGE_TYPES = new Set(['image/png', 'image/jpeg', 'image/gif'])
 
-/** 非安全格式（如 webp）先經 sharp 轉 PNG 再內嵌，轉檔失敗視同抓取失敗回 null（不 500）。 */
-async function toSatoriSafeDataUri(buf: Buffer, contentType: string): Promise<string | null> {
-  if (SATORI_SAFE_IMAGE_TYPES.has(contentType)) {
-    return `data:${contentType};base64,${buf.toString('base64')}`
-  }
-  try {
-    const png = await sharp(buf).png().toBuffer()
-    return `data:image/png;base64,${png.toString('base64')}`
-  } catch {
-    return null
-  }
+/** 非 Satori 可解碼格式一律回 null（該圖不內嵌），呼叫端 filter 掉——不轉檔、不 throw、不 500。 */
+function toSatoriSafeDataUri(buf: Buffer, contentType: string): string | null {
+  if (!SATORI_SAFE_IMAGE_TYPES.has(contentType)) return null
+  return `data:${contentType};base64,${buf.toString('base64')}`
 }
 
 /**
@@ -109,8 +106,8 @@ export async function fetchImageDataUri(url: string): Promise<string | null> {
       if (!res.ok) continue
       const type = res.headers.get('content-type') ?? 'image/jpeg'
       const buf = Buffer.from(await res.arrayBuffer())
-      const dataUri = await toSatoriSafeDataUri(buf, type)
-      if (dataUri) return dataUri
+      // 格式不支援時直接放棄這張圖（retry 也不會變成支援的格式），不再耗用剩餘 attempt
+      return toSatoriSafeDataUri(buf, type)
     } catch {
       continue
     }
