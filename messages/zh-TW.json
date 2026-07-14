@@ -48,6 +48,9 @@
     "terms": "服務條款",
     "privacy": "隱私權政策"
   },
+  "support": {
+    "kofiCta": "請我喝杯咖啡"
+  },
   "home": {
     "tagline": "搜尋、收藏、整理你的集換式卡牌。建立專屬卡冊，隨時掌握收藏進度。",
     "startSearch": "開始搜尋",

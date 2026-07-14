@@ -2,10 +2,14 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
+import { Coffee } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
+import { Button } from '@/components/ui/button'
 import { ReportDialog } from '@/components/report/report-dialog'
 import { GitHubIcon } from '@/components/icons/provider-icons'
+
+const KOFI_URL = 'https://ko-fi.com/pocketbindr'
 
 /**
  * 全站 footer 內容（logo/rights/disclaimer/terms/privacy/report），
@@ -15,6 +19,7 @@ import { GitHubIcon } from '@/components/icons/provider-icons'
 export function FooterContent() {
   const t = useTranslations('footer')
   const tReport = useTranslations('report')
+  const tSupport = useTranslations('support')
   const { data: session } = useSession()
 
   return (
@@ -49,15 +54,6 @@ export function FooterContent() {
         <Link href="/privacy" className="hover:underline">
           {t('privacy')}
         </Link>
-        <a
-          href="https://github.com/swf711/pocket-bindr"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-1 hover:underline"
-        >
-          <GitHubIcon className="size-3.5" />
-          GitHub
-        </a>
         {session?.user && (
           <ReportDialog
             trigger={
@@ -67,6 +63,18 @@ export function FooterContent() {
             }
           />
         )}
+        <Button asChild variant="default" size="xs">
+          <a href="https://github.com/swf711/pocket-bindr" target="_blank" rel="noopener noreferrer">
+            <GitHubIcon />
+            GitHub
+          </a>
+        </Button>
+        <Button asChild variant="default" size="xs">
+          <a href={KOFI_URL} target="_blank" rel="noopener noreferrer" data-testid="footer-kofi-link">
+            <Coffee />
+            {tSupport('kofiCta')}
+          </a>
+        </Button>
       </div>
     </div>
   )

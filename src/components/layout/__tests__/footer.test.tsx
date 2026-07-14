@@ -102,4 +102,13 @@ describe('Footer', () => {
     expect(link).toHaveAttribute('target', '_blank')
     expect(link).toHaveAttribute('rel', 'noopener noreferrer')
   })
+
+  it('包含 Ko-fi 贊助連結', () => {
+    vi.mocked(usePathname).mockReturnValue('/cards')
+    render(<Footer />)
+    const link = screen.getByTestId('footer-kofi-link')
+    expect(link).toHaveAttribute('href', 'https://ko-fi.com/pocketbindr')
+    expect(link).toHaveAttribute('target', '_blank')
+    expect(link).toHaveAttribute('rel', 'noopener noreferrer')
+  })
 })

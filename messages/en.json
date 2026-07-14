@@ -48,6 +48,9 @@
     "terms": "Terms of Service",
     "privacy": "Privacy Policy"
   },
+  "support": {
+    "kofiCta": "Buy me a coffee"
+  },
   "home": {
     "tagline": "Search, collect, and organize your trading cards. Build your own binders and track your collection anytime.",
     "startSearch": "Start Searching",
