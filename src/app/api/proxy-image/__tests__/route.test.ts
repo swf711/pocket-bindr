@@ -5,6 +5,7 @@ import { GET } from '../route'
 const mockIpLimit = vi.fn()
 vi.mock('@/lib/rate-limit', () => ({
   proxyImageIpLimiter: { limit: () => mockIpLimit() },
+  getClientIp: () => '127.0.0.1',
 }))
 
 const mockFetch = vi.fn()
@@ -16,14 +17,38 @@ beforeEach(() => {
   mockIpLimit.mockResolvedValue({ success: true })
 })
 
-function makeRequest(urlParam?: string) {
+function makeRequest(urlParam?: string, headers?: Record<string, string>) {
   const url = urlParam
     ? `http://localhost/api/proxy-image?url=${encodeURIComponent(urlParam)}`
     : 'http://localhost/api/proxy-image'
-  return new NextRequest(url)
+  return new NextRequest(url, { headers })
 }
 
 describe('GET /api/proxy-image', () => {
+  it('cross-origin Referer 一律視為 hotlink 回 403，不呼叫 IP 限流（檢查排在限流前）', async () => {
+    const res = await GET(
+      makeRequest('https://asia-tc.onepiece-cardgame.com/images/card.png', {
+        referer: 'https://evil.example.com/steal',
+      })
+    )
+    expect(res.status).toBe(403)
+    expect(mockIpLimit).not.toHaveBeenCalled()
+    expect(mockFetch).not.toHaveBeenCalled()
+  })
+
+  it('same-origin Referer 不視為 hotlink，正常放行至限流/whitelist 檢查', async () => {
+    mockFetch.mockResolvedValue(
+      new Response(new ReadableStream(), { status: 200, headers: { 'Content-Type': 'image/png' } })
+    )
+    const res = await GET(
+      makeRequest('https://asia-tc.onepiece-cardgame.com/images/card.png', {
+        referer: 'http://localhost:3000/cards',
+      })
+    )
+    expect(res.status).not.toBe(403)
+    expect(mockIpLimit).toHaveBeenCalled()
+  })
+
   it('returns 429 when the IP rate limit is exceeded', async () => {
     mockIpLimit.mockResolvedValue({ success: false })
     const res = await GET(makeRequest('https://asia-tc.onepiece-cardgame.com/images/card.png'))

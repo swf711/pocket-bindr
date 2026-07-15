@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { PROXY_HOSTNAMES } from '@/lib/get-card-image-url'
-import { proxyImageIpLimiter } from '@/lib/rate-limit'
+import { proxyImageIpLimiter, getClientIp } from '@/lib/rate-limit'
+import { isCrossOriginHotlink } from '@/lib/same-origin'
+import { SITE_URL } from '@/lib/og'
 
 const API_WHITELIST = [...PROXY_HOSTNAMES, 'images.pokemontcg.io']
+const SITE_ORIGIN = new URL(SITE_URL).origin
 
 // 官網來源偶發慢/掛時，避免 serverless function 一路掛到平台逾時（比照 src/lib/og.ts 的
 // fetchImageDataUri 對 OG render path 的處理，runtime 圖片路徑同型補上）。
@@ -24,7 +27,16 @@ async function fetchUpstream(url: string, headers: HeadersInit): Promise<Respons
 }
 
 export async function GET(req: NextRequest) {
-  const ip = req.headers.get('x-forwarded-for') ?? '127.0.0.1'
+  // Referer/Origin 檢查排在限流之前（省 Redis 呼叫）。缺 Referer/Origin 一律放行——
+  // 保留 CLAUDE.md B1 決策讓 Googlebot 抓 schema.org image，只擋「有來源且為外站」的隨手 hotlink。
+  if (isCrossOriginHotlink(req.headers.get('referer'), req.headers.get('origin'), SITE_ORIGIN)) {
+    return new NextResponse('Forbidden', {
+      status: 403,
+      headers: { 'Cache-Control': 'no-store' },
+    })
+  }
+
+  const ip = getClientIp(req)
   const { success } = await proxyImageIpLimiter.limit(ip)
   if (!success) {
     return new NextResponse('Too Many Requests', {

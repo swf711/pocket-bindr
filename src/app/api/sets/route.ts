@@ -2,8 +2,14 @@ import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { Game, Language } from '@prisma/client'
 import { groupAndSortSets } from '@/lib/sort-card-sets'
+import { cardsReadIpLimiter, getClientIp } from '@/lib/rate-limit'
 
 export async function GET(req: NextRequest) {
+  const { success } = await cardsReadIpLimiter.limit(getClientIp(req))
+  if (!success) {
+    return Response.json({ error: 'RATE_LIMITED' }, { status: 429, headers: { 'Cache-Control': 'no-store' } })
+  }
+
   const game = req.nextUrl.searchParams.get('game')
   if (!game || !Object.values(Game).includes(game as Game)) {
     return Response.json({ error: 'game is required' }, { status: 400 })
