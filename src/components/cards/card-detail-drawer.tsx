@@ -20,6 +20,7 @@ import { CardWithCollectionStatus } from '@/types/card'
 import { resolveCardDisplayImage } from '@/lib/resolve-card-image'
 import { buildCardShareUrl, shareOrCopy } from '@/lib/share-card'
 import { AddToBinderSection } from '@/components/cards/add-to-binder-section'
+import { CardImage } from '@/components/cards/card-image'
 import { useIsMobile } from '@/hooks/use-is-mobile'
 import { useCardTilt } from '@/hooks/use-card-tilt'
 import { cn } from '@/lib/utils'
@@ -383,7 +384,7 @@ export function CardDetailDrawer({ card, open, onClose, onAddToBinder, onLoginSu
                     {...tiltHandlers}
                   >
                     <div style={transformerStyle} className={cn(isMobile && 'h-full')}>
-                      <img
+                      <CardImage
                         data-testid="card-detail-image"
                         src={imageUrl}
                         alt={card.name}

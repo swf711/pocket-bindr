@@ -18,6 +18,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 import { getCardImageUrl } from '@/lib/get-card-image-url'
+import { CardImage } from '../cards/card-image'
 import type { SlotWithCard } from '@/types/binder'
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
 
@@ -78,19 +79,18 @@ export function SlotCard({
         } ${isOver && !isDragOverlay ? 'ring-2 ring-primary' : ''} ${isHighlighted ? 'ring-2 ring-primary animate-pulse' : ''
         }`}
     >
-      {imageUrl ? (
-        <img
-          src={imageUrl}
-          alt={slot.card.name}
-          className={`h-full w-full object-cover${slot.status === 'wanted' ? ' grayscale' : ''}`}
-          loading="lazy"
-          draggable={false}
-        />
-      ) : (
-        <div className="flex h-full w-full flex-col items-center justify-center bg-muted text-muted-foreground">
-          <span className="text-xs text-center px-1">{slot.card.name}</span>
-        </div>
-      )}
+      <CardImage
+        src={imageUrl}
+        alt={slot.card.name}
+        className={`h-full w-full object-cover${slot.status === 'wanted' ? ' grayscale' : ''}`}
+        loading="lazy"
+        draggable={false}
+        fallback={
+          <div className="flex h-full w-full flex-col items-center justify-center bg-muted text-muted-foreground">
+            <span className="text-xs text-center px-1">{slot.card.name}</span>
+          </div>
+        }
+      />
 
       {/* 操作按鈕 overlay — ButtonGroup 底部中央，counter-scale 保持自然視覺尺寸；桌面 hover 顯示，行動裝置 tap 顯示 */}
       {!isDragOverlay && (

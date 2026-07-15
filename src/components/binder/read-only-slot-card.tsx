@@ -1,6 +1,7 @@
 'use client'
 
 import { getCardImageUrl } from '@/lib/get-card-image-url'
+import { CardImage } from '../cards/card-image'
 import type { SlotWithCard } from '@/types/binder'
 
 interface ReadOnlySlotCardProps {
@@ -18,19 +19,18 @@ export function ReadOnlySlotCard({ slot, onView }: ReadOnlySlotCardProps) {
       }`}
       onClick={onView ? () => onView(slot.card.id) : undefined}
     >
-      {imageUrl ? (
-        <img
-          src={imageUrl}
-          alt={slot.card.name}
-          className={`h-full w-full object-cover${slot.status === 'wanted' ? ' grayscale' : ''}`}
-          loading="lazy"
-          draggable={false}
-        />
-      ) : (
-        <div className="flex h-full w-full flex-col items-center justify-center bg-muted text-muted-foreground">
-          <span className="text-xs text-center px-1">{slot.card.name}</span>
-        </div>
-      )}
+      <CardImage
+        src={imageUrl}
+        alt={slot.card.name}
+        className={`h-full w-full object-cover${slot.status === 'wanted' ? ' grayscale' : ''}`}
+        loading="lazy"
+        draggable={false}
+        fallback={
+          <div className="flex h-full w-full flex-col items-center justify-center bg-muted text-muted-foreground">
+            <span className="text-xs text-center px-1">{slot.card.name}</span>
+          </div>
+        }
+      />
     </div>
   )
 }

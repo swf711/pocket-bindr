@@ -19,6 +19,7 @@ import { GameSelector } from '@/components/cards/game-selector'
 import { LanguageTabs } from '@/components/cards/language-tabs'
 import { CardFilters } from '@/components/cards/card-filters'
 import { CardGrid } from '@/components/cards/card-grid'
+import { CardImage } from '@/components/cards/card-image'
 import { CardPagination } from '@/components/cards/card-pagination'
 import { getCardImageUrl } from '@/lib/get-card-image-url'
 import type { CardWithCollectionStatus, SetGroup } from '@/types/card'
@@ -231,13 +232,11 @@ export function SlotCardPickerDialog({ open, onClose, onConfirm }: SlotCardPicke
               </Button>
 
               <div className="flex flex-col items-center gap-3">
-                {displayImage && (
-                  <img
-                    src={displayImage}
-                    alt={selectedCard.name}
-                    className="w-40 rounded-md"
-                  />
-                )}
+                <CardImage
+                  src={displayImage}
+                  alt={selectedCard.name}
+                  className="w-40 rounded-md"
+                />
                 <p className="font-semibold">{selectedCard.name}</p>
               </div>
 

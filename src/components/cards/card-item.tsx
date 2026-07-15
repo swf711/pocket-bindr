@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 import { CardWithCollectionStatus } from '@/types/card'
 import { getCardImageUrl } from '@/lib/get-card-image-url'
+import { CardImage } from './card-image'
 
 interface CardItemProps {
   card: CardWithCollectionStatus
@@ -22,22 +23,23 @@ export function CardItem({ card, onClick, href }: CardItemProps) {
     : card.imageSmall
   const resolvedImageUrl = getCardImageUrl(displayImageSmall)
 
-  const content = resolvedImageUrl ? (
-    <img
+  const content = (
+    <CardImage
       src={resolvedImageUrl}
       alt={card.name}
       className="h-full w-full object-cover"
       loading="lazy"
+      fallback={
+        <div
+          data-testid="card-image-fallback"
+          className="flex h-full w-full flex-col items-center
+                     justify-center bg-muted text-muted-foreground"
+        >
+          <span className="text-xs">{card.name}</span>
+          <span className="text-xs">{t('noImage')}</span>
+        </div>
+      }
     />
-  ) : (
-    <div
-      data-testid="card-image-fallback"
-      className="flex h-full w-full flex-col items-center
-                 justify-center bg-muted text-muted-foreground"
-    >
-      <span className="text-xs">{card.name}</span>
-      <span className="text-xs">{t('noImage')}</span>
-    </div>
   )
 
   // href 存在時（搜尋頁）render 為 <Link>，觸發 Next.js Intercepting Route 攔截；
