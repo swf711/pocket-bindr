@@ -493,3 +493,42 @@ describe('GET /api/cards - 跨語言展開', () => {
     })
   })
 })
+
+describe('GET /api/cards - enum cast 索引正確性（回歸守門）', () => {
+  beforeEach(() => { vi.clearAllMocks(); resetDefaults() })
+
+  // raw SQL 必須 cast「參數」（"game" = $1::"Game"）而非「欄位」（"game"::text = $1）。
+  // 後者會讓複合索引 Card_game_language_externalId_key 失效退化 Seq Scan。
+  it('無 setId 的 $queryRaw：game/language 以參數 cast（::"Game" / ::"Language"），非欄位 ::text', async () => {
+    mockAuth.mockResolvedValue(null)
+    const req = new NextRequest('http://localhost/api/cards?game=PTCG&language=JA')
+    await GET(req)
+    expect(prisma.$queryRaw).toHaveBeenCalled()
+    const sqlArg = vi.mocked(prisma.$queryRaw).mock.calls[0][0] as { strings: string[]; values: unknown[] }
+    const sql = sqlArg.strings.join('')
+    // 參數 cast（正確：索引可用）
+    expect(sql).toContain('::"Game"')
+    expect(sql).toContain('::"Language"')
+    // 欄位 cast（錯誤：退化 Seq Scan）—— 必須不存在
+    expect(sql).not.toContain('"game"::text')
+    expect(sql).not.toContain('"language"::text')
+    // enum 值仍作為 bound parameter，非字面拼接
+    expect(sqlArg.values).toEqual(expect.arrayContaining(['PTCG', 'JA']))
+  })
+
+  it('無 setId 時回傳 cards 順序依 $queryRaw 的 pageIds（排序行為不變）', async () => {
+    mockAuth.mockResolvedValue(null)
+    // $queryRaw 決定順序 c2 → c1
+    vi.mocked(prisma.$queryRaw).mockResolvedValue([{ id: 'c2' }, { id: 'c1' }] as never)
+    // findMany 刻意回傳相反順序，驗證 route 以 pageIds 還原
+    vi.mocked(prisma.card.findMany).mockResolvedValue([
+      { id: 'c1', name: 'A', imageSmall: '', rarity: null, cardNumber: '001', set: { name: 'S' } },
+      { id: 'c2', name: 'B', imageSmall: '', rarity: null, cardNumber: '002', set: { name: 'S' } },
+    ] as never)
+    vi.mocked(prisma.card.count).mockResolvedValue(2)
+    const req = new NextRequest('http://localhost/api/cards?game=PTCG&language=JA')
+    const res = await GET(req)
+    const data = await res.json()
+    expect(data.cards.map((c: { id: string }) => c.id)).toEqual(['c2', 'c1'])
+  })
+})

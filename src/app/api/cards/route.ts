@@ -74,8 +74,11 @@ function fetchCardPage(
         })
         const orderedSetIds = groupAndSortSets(setRows).flatMap(g => g.sets.map(s => s.id))
         const conds: Prisma.Sql[] = [
-          Prisma.sql`"game"::text = ${game}`,
-          Prisma.sql`"language"::text = ${language}`,
+          // Cast the bound parameter to the enum type (not the column) so the
+          // composite index Card_game_language_externalId_key stays usable.
+          // Casting the column ("game"::text = $1) forces a full Seq Scan.
+          Prisma.sql`"game" = ${game}::"Game"`,
+          Prisma.sql`"language" = ${language}::"Language"`,
         ]
         if (q) {
           const orParts = [Prisma.sql`"name" ILIKE ${'%' + q + '%'}`, Prisma.sql`"externalId" ILIKE ${q + '%'}`]
