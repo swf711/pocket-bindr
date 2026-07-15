@@ -23,6 +23,14 @@ const WHITELIST = new Set([
 
 const UPSTREAM_TIMEOUT_MS = 5000
 const UPSTREAM_RETRIES = 1
+// 上線後診斷（2026-07-16）：13 次觀測到的 502 全數為 TimeoutError，且兩次嘗試都精準跑滿
+// UPSTREAM_TIMEOUT_MS（origin 完全無回應，非快速拒絕），集中在同一小段時間窗口、同一 host——
+// 與官網短時間內大量併發請求時的節流/丟包行為特徵相符。原本重試「緊接著」第一次失敗立即發生，
+// 若 origin 端節流窗口尚未過去，重試等於原地再撞一次同一道牆。加短暫延遲（比照 CardImage
+// 前端重試已驗證有效的做法：src/components/cards/card-image.tsx 的 500ms + jitter）讓重試
+// 盡量落在節流窗口外——為根因未知的緩解性調整，非保證根治（根因在 origin 端，不受我方控制）。
+const RETRY_DELAY_MS = 500
+const RETRY_JITTER_MS = 300
 // CF edge 暖存 TTL（秒）：暫時性快取，非永久圖庫——與現行 Vercel s-maxage=86400 同數量級,
 // 拉長至 7 天以更有效攤提向官網的重複請求（暖存不等於自存，逾期即需重新 fetch upstream）。
 const CACHE_TTL_SECONDS = 604800
@@ -77,6 +85,10 @@ async function fetchUpstream(url, headers) {
       console.error(
         `UPSTREAM_FAIL attempt=${attempt} ms=${Date.now() - t0} name=${err?.name} msg=${err?.message} url=${url}`,
       )
+      if (attempt < UPSTREAM_RETRIES) {
+        const delay = RETRY_DELAY_MS + Math.random() * RETRY_JITTER_MS
+        await new Promise((resolve) => setTimeout(resolve, delay))
+      }
     }
   }
   throw lastErr
