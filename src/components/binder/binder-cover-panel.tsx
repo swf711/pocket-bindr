@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Progress } from '@/components/ui/progress'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { getCardImageUrl } from '@/lib/get-card-image-url'
+import { CardImage } from '@/components/cards/card-image'
 import { computeBinderStats } from '@/lib/binder-utils'
 import { MAX_PAGES_PER_BINDER } from '@/lib/binder-limits'
 import type { SlotWithCard } from '@/types/binder'
@@ -200,8 +201,8 @@ export function BinderCoverPanel({
                     className="flex items-center gap-2 rounded px-2 py-1 text-left hover:bg-foreground/10 transition-colors"
                     data-testid={`cover-search-result-${slot.id}`}
                   >
-                    <img
-                      src={getCardImageUrl(slot.card.imageSmall) ?? ''}
+                    <CardImage
+                      src={getCardImageUrl(slot.card.imageSmall)}
                       alt={slot.card.name}
                       className="h-8 w-6 rounded-xs object-cover shrink-0"
                     />

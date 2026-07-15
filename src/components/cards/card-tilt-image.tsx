@@ -1,6 +1,7 @@
 'use client'
 import { useCardTilt } from '@/hooks/use-card-tilt'
 import { cn } from '@/lib/utils'
+import { CardImage } from './card-image'
 
 interface CardTiltImageProps {
   src: string
@@ -26,7 +27,7 @@ export function CardTiltImage({ src, alt, className }: CardTiltImageProps) {
       {...handlers}
     >
       <div style={transformerStyle}>
-        <img
+        <CardImage
           data-testid="card-detail-image"
           src={src}
           alt={alt}

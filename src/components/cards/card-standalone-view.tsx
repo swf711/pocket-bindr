@@ -7,6 +7,7 @@ import { resolveCardDisplayImage } from '@/lib/resolve-card-image'
 import { cardPath } from '@/lib/card-url'
 import { CardStandaloneInteractive } from '@/components/cards/card-standalone-interactive'
 import { CardTiltImage } from '@/components/cards/card-tilt-image'
+import { CardImage } from '@/components/cards/card-image'
 import { CardBreadcrumb } from '@/components/cards/card-breadcrumb'
 import type { PublicCardRow, SameSetCardRow } from '@/lib/public-card'
 import type { CardBreadcrumbItem } from '@/lib/card-jsonld'
@@ -121,18 +122,17 @@ export async function CardStandaloneView({ card, sameSetCards, breadcrumbItems }
                   href={cardPath(sc)}
                   className="group relative aspect-2.5/3.5 overflow-hidden rounded-lg shadow-sm transition-transform hover:scale-105"
                 >
-                  {scImage.small ? (
-                    <img
-                      src={scImage.small}
-                      alt={sc.name}
-                      className="h-full w-full object-cover"
-                      loading="lazy"
-                    />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center bg-muted p-1 text-center text-xs text-muted-foreground">
-                      {sc.name}
-                    </div>
-                  )}
+                  <CardImage
+                    src={scImage.small}
+                    alt={sc.name}
+                    className="h-full w-full object-cover"
+                    loading="lazy"
+                    fallback={
+                      <div className="flex h-full w-full items-center justify-center bg-muted p-1 text-center text-xs text-muted-foreground">
+                        {sc.name}
+                      </div>
+                    }
+                  />
                 </a>
               )
             })}
