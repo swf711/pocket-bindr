@@ -29,6 +29,16 @@ const CACHE_TTL_SECONDS = 604800
 const BROWSER_CACHE_CONTROL = 'public, max-age=604800'
 
 /**
+ * ⚠️ 修復（2026-07-16 上線後回報「部分卡圖不定期 502」）：原用 `cacheEverything: true` + 單一
+ * `cacheTtl`，CF 官方文件證實 `cacheEverything` 不排除非 2xx 回應——官網偶發一次暫時性錯誤
+ * （502/503）就會連同 7 天 TTL 一起被 CF edge cache 釘住，該張卡圖之後持續吃到快取的錯誤回應，
+ * 直到 TTL 到期才自然恢復（症狀完全對應「特定幾張卡不定期持續失敗」，非隨機性的單次抖動）。
+ * 改用 `cacheTtlByStatus`：只快取 2xx，其餘一律不快取（`-1` 依官方文件語意為完全不快取，
+ * 比 `0`「立即過期」更乾淨、不留 cache entry），錯誤永遠即時重打 origin，不會被錯誤自己鎖住。
+ */
+const CACHE_TTL_BY_STATUS = { '200-299': CACHE_TTL_SECONDS, '300-599': -1 }
+
+/**
  * 判斷是否為「應擋的外站 hotlink」。缺 Referer/Origin 一律放行（fail-open）——
  * Googlebot 抓圖常不帶 Referer，若一併擋掉會打臉 CLAUDE.md B1 的 SEO 目標；
  * 只在能正向確認來源 origin 不在 allowedOrigins 內時才視為外站 hotlink。
@@ -55,8 +65,8 @@ async function fetchUpstream(url, headers) {
       return await fetch(url, {
         headers,
         signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS),
-        // CF 原生 fetch cache 控制：edge 暖存，暫時性，非落地儲存。
-        cf: { cacheTtl: CACHE_TTL_SECONDS, cacheEverything: true },
+        // CF 原生 fetch cache 控制：edge 暖存，暫時性，非落地儲存。只快取成功回應（見上方說明）。
+        cf: { cacheTtlByStatus: CACHE_TTL_BY_STATUS },
       })
     } catch (err) {
       lastErr = err
