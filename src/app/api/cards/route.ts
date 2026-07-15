@@ -9,6 +9,7 @@ import { getCollectionStatusMap, resolveCollectionLookupId } from '@/lib/card-co
 import { parseSetCardQuery, buildSetCardPrismaWhere, buildSetCardSql } from '@/lib/parse-set-card-query'
 import { buildCrossLangExpansion } from '@/lib/cross-language-search'
 import { gameSchema } from '@/lib/schemas/collection'
+import { cardsSearchIpLimiter, getClientIp } from '@/lib/rate-limit'
 
 export async function GET(req: NextRequest) {
   try {
@@ -111,6 +112,11 @@ function fetchCardPage(
 }
 
 async function handleGet(req: NextRequest) {
+  const { success } = await cardsSearchIpLimiter.limit(getClientIp(req))
+  if (!success) {
+    return Response.json({ error: 'RATE_LIMITED' }, { status: 429, headers: { 'Cache-Control': 'no-store' } })
+  }
+
   const { searchParams } = req.nextUrl
   const game = searchParams.get('game')
   const q = searchParams.get('q') ?? ''

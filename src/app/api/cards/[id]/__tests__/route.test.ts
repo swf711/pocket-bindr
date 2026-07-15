@@ -12,6 +12,11 @@ vi.mock('@/lib/auth', () => ({
   auth: () => mockAuth(),
 }))
 
+vi.mock('@/lib/rate-limit', () => ({
+  cardsReadIpLimiter: { limit: vi.fn().mockResolvedValue({ success: true }) },
+  getClientIp: () => '127.0.0.1',
+}))
+
 import { GET } from '../route'
 import { prisma } from '@/lib/prisma'
 

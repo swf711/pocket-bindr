@@ -1,4 +1,4 @@
-import { Ratelimit } from '@upstash/ratelimit'
+import { Ratelimit, type Duration } from '@upstash/ratelimit'
 import { redis } from './redis'
 
 export const forgotPasswordIpLimiter = new Ratelimit({
@@ -140,3 +140,43 @@ export const proxyImageIpLimiter = new Ratelimit({
   limiter: Ratelimit.slidingWindow(300, '1 m'),
   prefix: 'rl:proxy-img:ip',
 })
+
+// 讀取端防爬限流（feat/anti-scrape-read-limits）：閾值刻意讀 env，不寫死於原始碼——
+// 本 repo 開源，寫死數字等於公開告訴爬蟲「N 次以下安全」；既有 auth 限流器對爬蟲無價值故維持硬編碼不動。
+export function envInt(name: string, fallback: number): number {
+  const v = parseInt(process.env[name] ?? '', 10)
+  return Number.isFinite(v) && v > 0 ? v : fallback
+}
+
+export function envWindow(name: string, fallback: Duration): Duration {
+  const v = process.env[name]
+  return v && /^\d+\s*(ms|s|m|h|d)$/.test(v) ? (v as Duration) : fallback
+}
+
+// 列表/搜尋（GET /api/cards）：單頁可達 100 筆，批量抓取最省事的火力口。
+// 預設值比照既有 proxyImageIpLimiter（300/min）的理由——共用 IP（NAT／辦公網路／多分頁同時瀏覽）
+// 的真人快速翻頁 + 篩選 + debounce 觸發的請求量遠高於單人單請求，閾值過緊會誤傷真人（E2E 4 workers
+// 平行對同一 fallback IP '127.0.0.1' 的真實搜尋流量已實測撞到 60/min，證實該值對合理平行使用場景過緊）。
+export const cardsSearchIpLimiter = new Ratelimit({
+  redis,
+  limiter: Ratelimit.slidingWindow(
+    envInt('RL_CARDS_SEARCH_LIMIT', 300),
+    envWindow('RL_CARDS_SEARCH_WINDOW', '1 m'),
+  ),
+  prefix: 'rl:cards-search:ip',
+})
+
+// 單卡詳情（GET /api/cards/[id]）與系列列表（GET /api/sets）共用，較輕量，理由同上。
+export const cardsReadIpLimiter = new Ratelimit({
+  redis,
+  limiter: Ratelimit.slidingWindow(
+    envInt('RL_CARDS_READ_LIMIT', 300),
+    envWindow('RL_CARDS_READ_WINDOW', '1 m'),
+  ),
+  prefix: 'rl:cards-read:ip',
+})
+
+/** 共用 client IP 取值：取 XFF 首段（沿用 POST /api/report 既有慣例），無 trusted-proxy 驗證。 */
+export function getClientIp(req: { headers: { get(name: string): string | null } }): string {
+  return (req.headers.get('x-forwarded-for') ?? '127.0.0.1').split(',')[0].trim()
+}
