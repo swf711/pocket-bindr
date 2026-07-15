@@ -119,6 +119,19 @@ export const reportUserLimiter = new Ratelimit({
   prefix: 'rl:report:user',
 })
 
+// Batch add cards to binder (POST /api/binders/[id]/cards/batch): 40/min per IP, 20/min per userId
+export const batchAddIpLimiter = new Ratelimit({
+  redis,
+  limiter: Ratelimit.slidingWindow(40, '1 m'),
+  prefix: 'rl:binder-batch:ip',
+})
+
+export const batchAddUserLimiter = new Ratelimit({
+  redis,
+  limiter: Ratelimit.slidingWindow(20, '1 m'),
+  prefix: 'rl:binder-batch:user',
+})
+
 // Card image proxy: 300/min per IP. Generous enough for a full binder page load
 // (only un-self-hosted official images are proxied; most images are direct Supabase),
 // while capping abuse as a bandwidth relay for the whitelisted hosts.

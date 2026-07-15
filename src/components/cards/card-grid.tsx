@@ -11,12 +11,24 @@ interface CardGridProps {
   loading?: boolean
   /** 有值時卡片 render 為 <Link href>（觸發 Intercepting Route 攔截）；不傳則維持既有 onClick 行為。 */
   cardHref?: (card: CardWithCollectionStatus) => string
+  /** 多選模式：為真時卡片改為勾選 button，忽略 cardHref（不觸發攔截 modal）。 */
+  selectable?: boolean
+  selectedIds?: Set<string>
+  onToggleSelect?: (card: CardWithCollectionStatus) => void
 }
 
 export const cardGridClassName =
   'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4'
 
-export function CardGrid({ cards, onCardClick, loading = false, cardHref }: CardGridProps) {
+export function CardGrid({
+  cards,
+  onCardClick,
+  loading = false,
+  cardHref,
+  selectable,
+  selectedIds,
+  onToggleSelect,
+}: CardGridProps) {
   const t = useTranslations('cards')
   if (loading) {
     return (
@@ -37,7 +49,15 @@ export function CardGrid({ cards, onCardClick, loading = false, cardHref }: Card
   return (
     <div data-testid="card-grid" className={cardGridClassName}>
       {cards.map(card => (
-        <CardItem key={card.id} card={card} onClick={onCardClick} href={cardHref?.(card)} />
+        <CardItem
+          key={card.id}
+          card={card}
+          onClick={onCardClick}
+          href={cardHref?.(card)}
+          selectable={selectable}
+          selected={selectedIds?.has(card.id)}
+          onToggleSelect={onToggleSelect}
+        />
       ))}
     </div>
   )

@@ -141,6 +141,12 @@ export interface AddToBinderResult {
   updatedTotalPages?: number
 }
 
+export interface BatchAddToBinderResult {
+  slotsAdded: number
+  cardsAdded: number
+  updatedTotalPages?: number
+}
+
 export interface CardCollectionSummary {
   ownedCount: number
   wantedCount: number

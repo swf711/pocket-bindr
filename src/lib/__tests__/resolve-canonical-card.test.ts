@@ -1,10 +1,16 @@
 import { describe, it, expect, vi } from 'vitest'
-import { resolveCanonicalCardId, deriveDisplayCardId } from '../resolve-canonical-card'
+import { resolveCanonicalCardId, deriveDisplayCardId, resolveCanonicalCardIds } from '../resolve-canonical-card'
 
 function mockClient(responses: unknown[]) {
   const findUnique = vi.fn()
   responses.forEach((r) => findUnique.mockResolvedValueOnce(r))
   return { card: { findUnique } } as never
+}
+
+function mockBatchClient(findManyResponses: unknown[][]) {
+  const findMany = vi.fn()
+  findManyResponses.forEach((r) => findMany.mockResolvedValueOnce(r))
+  return { card: { findMany } } as never
 }
 
 describe('resolveCanonicalCardId', () => {
@@ -36,6 +42,40 @@ describe('resolveCanonicalCardId', () => {
     ])
     const result = await resolveCanonicalCardId(client, 'zhtw-c1')
     expect(result).toEqual({ status: 'canonical_missing' })
+  })
+})
+
+describe('resolveCanonicalCardIds', () => {
+  it('批次 resolve：一般卡→自身、OPCG ZH_TW alias→canonical', async () => {
+    const client = mockBatchClient([
+      [
+        { id: 'c1', isCollectible: true, canonicalCardId: null },
+        { id: 'zhtw-c1', isCollectible: false, canonicalCardId: 'ja-c1' },
+      ],
+      [{ id: 'ja-c1' }],
+    ])
+    const result = await resolveCanonicalCardIds(client, ['c1', 'zhtw-c1'])
+    expect(result.get('c1')).toEqual({ status: 'ok', resolvedCardId: 'c1' })
+    expect(result.get('zhtw-c1')).toEqual({ status: 'ok', resolvedCardId: 'ja-c1' })
+  })
+
+  it('canonical 缺失→canonical_missing、id 不存在→not_found', async () => {
+    const client = mockBatchClient([
+      [{ id: 'zhtw-c1', isCollectible: false, canonicalCardId: 'ja-missing' }],
+      [], // canonical existence check returns none
+    ])
+    const result = await resolveCanonicalCardIds(client, ['zhtw-c1', 'unknown'])
+    expect(result.get('zhtw-c1')).toEqual({ status: 'canonical_missing' })
+    expect(result.get('unknown')).toEqual({ status: 'not_found' })
+  })
+
+  it('去重 cardIds，不重複查詢', async () => {
+    const client = mockBatchClient([
+      [{ id: 'c1', isCollectible: true, canonicalCardId: null }],
+    ])
+    const result = await resolveCanonicalCardIds(client, ['c1', 'c1'])
+    expect(result.size).toBe(1)
+    expect(result.get('c1')).toEqual({ status: 'ok', resolvedCardId: 'c1' })
   })
 })
 

@@ -4,12 +4,15 @@ import { useState, useCallback, useMemo, useRef, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { type Game, type Language } from '@prisma/client'
+import { ListChecks, X } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import { GameSelector } from './game-selector'
 import { LanguageTabs } from './language-tabs'
 import { CardFilters } from './card-filters'
 import { CardGrid } from './card-grid'
 import { CardPagination } from './card-pagination'
-import { SetGroup } from '@/types/card'
+import { BatchAddBar } from './batch-add-bar'
+import { SetGroup, CardWithCollectionStatus } from '@/types/card'
 import { useCardSearch } from '@/hooks/use-card-search'
 import { cardPath } from '@/lib/card-url'
 import { publishCardNavList } from '@/lib/card-nav-store'
@@ -31,6 +34,7 @@ export function CardSearchClient({ initialParams }: CardSearchClientProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const t = useTranslations('cards')
+  const tBatch = useTranslations('cards.batch')
 
   const [game, setGame] = useState<string | null>(initialParams.game ?? null)
   const [query, setQuery] = useState(initialParams.q ?? '')
@@ -42,6 +46,8 @@ export function CardSearchClient({ initialParams }: CardSearchClientProps) {
       : DEFAULT_LANGUAGE
   )
   const [groups, setGroups] = useState<SetGroup[]>([])
+  const [selectMode, setSelectMode] = useState(false)
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -96,6 +102,7 @@ export function CardSearchClient({ initialParams }: CardSearchClientProps) {
     setSetId(null)
     setPage(1)
     setGroups([])
+    setSelectedIds(new Set())
     updateParams({ game: g, q: null, setId: null, page: null })
     fetchSets(g, language)
   }
@@ -104,6 +111,7 @@ export function CardSearchClient({ initialParams }: CardSearchClientProps) {
     setLanguage(lang)
     setSetId(null)
     setPage(1)
+    setSelectedIds(new Set())
     updateParams({
       language: lang === DEFAULT_LANGUAGE ? null : lang,
       setId: null,
@@ -120,6 +128,7 @@ export function CardSearchClient({ initialParams }: CardSearchClientProps) {
     if (debounceRef.current) clearTimeout(debounceRef.current)
     debounceRef.current = setTimeout(() => {
       setPage(1)
+      setSelectedIds(new Set())
       updateParams({ q: q || null, page: null })
     }, 300)
   }
@@ -127,12 +136,28 @@ export function CardSearchClient({ initialParams }: CardSearchClientProps) {
   const handleSetChange = (sid: string | null) => {
     setSetId(sid)
     setPage(1)
+    setSelectedIds(new Set())
     updateParams({ setId: sid, page: null })
   }
 
   const handlePageChange = (p: number) => {
     setPage(p)
+    setSelectedIds(new Set())
     updateParams({ page: String(p) })
+  }
+
+  const handleToggleSelectMode = () => {
+    setSelectMode((prev) => !prev)
+    setSelectedIds(new Set())
+  }
+
+  const handleToggleSelect = (card: CardWithCollectionStatus) => {
+    const next = new Set(selectedIds)
+    if (next.has(card.id)) next.delete(card.id)
+    else next.add(card.id)
+    setSelectedIds(next)
+    // 取消勾選至歸零視同退出多選模式（回到一般點卡開卡片的狀態）
+    if (next.size === 0) setSelectMode(false)
   }
 
   return (
@@ -171,9 +196,21 @@ export function CardSearchClient({ initialParams }: CardSearchClientProps) {
             ) : (
               <>
                 <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                  <p data-testid="result-total" className="text-center">
-                    {t('resultPrefix')} <span className="md:text-2xl font-bold">{total}</span> {t('resultSuffix')}
-                  </p>
+                  <div className="flex items-center justify-between gap-3 md:justify-start">
+                    <p data-testid="result-total">
+                      {t('resultPrefix')} <span className="md:text-2xl font-bold">{total}</span> {t('resultSuffix')}
+                    </p>
+                    <Button
+                      data-testid="batch-select-mode-toggle"
+                      variant={selectMode ? 'secondary' : 'outline'}
+                      size="sm"
+                      onClick={handleToggleSelectMode}
+                      className="shrink-0"
+                    >
+                      {selectMode ? <X /> : <ListChecks />}
+                      {selectMode ? tBatch('cancel') : tBatch('enter')}
+                    </Button>
+                  </div>
                   <CardPagination
                     data-testid="card-pagination-top"
                     className="md:mx-0 md:w-auto md:justify-end"
@@ -182,21 +219,45 @@ export function CardSearchClient({ initialParams }: CardSearchClientProps) {
                     onPageChange={handlePageChange}
                   />
                 </div>
+                {/* cardHref 兩種模式都傳（維持 <Link>，避免切換多選時整批卡圖重掛/重載）；
+                    多選時由 CardItem 內 onClick preventDefault 攔下導航改勾選 */}
                 <CardGrid
                   cards={cards}
                   onCardClick={() => {}}
                   cardHref={cardPath}
+                  selectable={selectMode}
+                  selectedIds={selectedIds}
+                  onToggleSelect={handleToggleSelect}
                 />
                 <CardPagination
                   currentPage={page}
                   totalPages={totalPages}
                   onPageChange={handlePageChange}
                 />
+                {/* 批次 bar 為 fixed 覆蓋層，留一段等高 spacer 讓最後一排卡片可捲到 bar 上方、不被遮住 */}
+                {selectMode && selectedIds.size > 0 && (
+                  <div aria-hidden className="h-24" />
+                )}
               </>
             )}
           </>
         )}
       </div>
+
+      {selectMode && selectedIds.size > 0 && (
+        <BatchAddBar
+          selectedIds={Array.from(selectedIds)}
+          onSuccess={() => {
+            setSelectMode(false)
+            setSelectedIds(new Set())
+          }}
+          onCancel={() => {
+            // 取消視同退出多選模式
+            setSelectMode(false)
+            setSelectedIds(new Set())
+          }}
+        />
+      )}
     </div>
   )
 }

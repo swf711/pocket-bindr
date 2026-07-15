@@ -212,6 +212,17 @@
       "setCodeAndNumberLabel": "Set code + card number",
       "legendHintBottomLeft": "Copy the set code and card number printed at the bottom-left of the card to find it precisely.",
       "legendHintBottomRight": "Copy the set code and card number printed at the bottom-right of the card to find it precisely."
+    },
+    "batch": {
+      "enter": "Select multiple",
+      "cancel": "Cancel",
+      "selected": "{count} selected",
+      "submit": "Add to Binder",
+      "configureTitle": "Add options",
+      "addedSuccess": "Added {count} cards to binder",
+      "capacityExceeded": "Binder is full, reduce the quantity or free up some slots",
+      "rateLimited": "Too many attempts, please try again later",
+      "addFailed": "Failed to add, please try again"
     }
   },
   "cardDetail": {
