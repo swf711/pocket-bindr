@@ -57,10 +57,14 @@ function isCrossOriginHotlink(referer, origin, allowedOrigins) {
   }
 }
 
-/** 逾時/網路錯誤重試 UPSTREAM_RETRIES 次；非 2xx 不在此重試，交由呼叫端依 status 決定快取策略。 */
+/** 逾時/網路錯誤重試 UPSTREAM_RETRIES 次；非 2xx 不在此重試，交由呼叫端依 status 決定快取策略。
+ *  ⚠️ 診斷用 console.error（2026-07-16 上線後追查持續 502）：wrangler tail 的 "Ok"/"Error" 只反映
+ *  Worker 腳本本身有無 throw，不反映回傳的 HTTP status——502 這類「捕捉例外後回應」在 tail 一律顯示
+ *  Ok，之前排查因此完全看不到失敗細節。此處明確記錄每次嘗試失敗的原因/耗時，供 wrangler tail 過濾。 */
 async function fetchUpstream(url, headers) {
   let lastErr
   for (let attempt = 0; attempt <= UPSTREAM_RETRIES; attempt++) {
+    const t0 = Date.now()
     try {
       return await fetch(url, {
         headers,
@@ -70,6 +74,9 @@ async function fetchUpstream(url, headers) {
       })
     } catch (err) {
       lastErr = err
+      console.error(
+        `UPSTREAM_FAIL attempt=${attempt} ms=${Date.now() - t0} name=${err?.name} msg=${err?.message} url=${url}`,
+      )
     }
   }
   throw lastErr
@@ -134,11 +141,15 @@ export default {
     let upstream
     try {
       upstream = await fetchUpstream(rawUrl, { Referer: parsed.origin })
-    } catch {
+    } catch (err) {
+      console.error(`UPSTREAM_EXHAUSTED name=${err?.name} msg=${err?.message} url=${rawUrl}`)
       return new Response('Bad Gateway', {
         status: 502,
         headers: { 'Cache-Control': 'no-store' },
       })
+    }
+    if (!upstream.ok) {
+      console.error(`UPSTREAM_NON_2XX status=${upstream.status} url=${rawUrl}`)
     }
 
     const contentType = upstream.headers.get('Content-Type') ?? 'image/jpeg'
