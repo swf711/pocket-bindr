@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { gridTypeSchema, hexColorSchema, cardStatusSchema } from '@/lib/schemas/common'
 import { DEFAULT_COVER_COLOR } from '@/lib/cover-colors'
+import { MAX_BATCH_CARDS } from '@/lib/binder-limits'
 
 const nameSchema = z
   .string()
@@ -82,6 +83,13 @@ export const slotPositionSchema = z.object({
 
 /** POST /api/binders/[id]/cards */
 export const addCardsSchema = z.object({
+  quantity: z.number().int().min(1).max(99),
+  status: cardStatusSchema,
+})
+
+/** POST /api/binders/[id]/cards/batch */
+export const addCardsBatchSchema = z.object({
+  cardIds: z.array(z.string().min(1)).min(1).max(MAX_BATCH_CARDS),
   quantity: z.number().int().min(1).max(99),
   status: cardStatusSchema,
 })

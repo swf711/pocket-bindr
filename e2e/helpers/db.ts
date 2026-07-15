@@ -123,6 +123,49 @@ export async function createBinderWithSlots(
 }
 
 /**
+ * 建立一本「只差最後一格就滿」的卡冊（MAX_PAGES_PER_BINDER，硬編為 100，對齊
+ * src/lib/binder-limits.ts），供批次加入撞頁數上限的 E2E 測試使用。
+ * 佔用到倒數第二格為止，讓批次加入 1 張卡剛好可成功、加入 2 張以上則撞頂。
+ */
+export async function createBinderNearPageLimit(
+  userId: string,
+  gridType: 'grid_1x2' | 'grid_2x2' | 'grid_3x3' | 'grid_4x3' | 'grid_4x4' = 'grid_1x2',
+): Promise<{ binder: { id: string } }> {
+  const MAX_PAGES_PER_BINDER = 100
+  const slotsPerPage = { grid_1x2: 2, grid_2x2: 4, grid_3x3: 9, grid_4x3: 12, grid_4x4: 16 }[gridType]
+
+  const binder = await prisma.binder.create({
+    data: {
+      userId,
+      name: 'E2E Near-Limit Binder',
+      gridType: gridType as never,
+      settings: { totalPages: MAX_PAGES_PER_BINDER },
+    },
+  })
+
+  const card = await prisma.card.findFirstOrThrow({ where: { imageSmall: { not: '' } } })
+  await prisma.userCard.upsert({
+    where: { userId_cardId_status: { userId, cardId: card.id, status: 'owned' } },
+    create: { userId, cardId: card.id, status: 'owned', quantity: 1 },
+    update: { quantity: 1 },
+  })
+
+  // 倒數第二格（絕對 index = MAX*slotsPerPage - 2）已佔用，最後一格留空
+  const lastAbsoluteIndex = MAX_PAGES_PER_BINDER * slotsPerPage - 2
+  await prisma.binderSlot.create({
+    data: {
+      binderId: binder.id,
+      cardId: card.id,
+      status: 'owned',
+      pageNumber: Math.floor(lastAbsoluteIndex / slotsPerPage) + 1,
+      slotIndex: lastAbsoluteIndex % slotsPerPage,
+    },
+  })
+
+  return { binder: { id: binder.id } }
+}
+
+/**
  * 取得一張指定遊戲、有圖片的卡牌，供「已存在收藏狀態」相關 E2E 測試使用。
  */
 export async function getCardWithImage(

@@ -5,6 +5,8 @@ import { GRID_TYPE_SLOTS } from '@/types/binder'
 import { resolveCanonicalCardId, deriveDisplayCardId } from '@/lib/resolve-canonical-card'
 import { revalidatePublicBinder } from '@/lib/binder-cache'
 import { addCardsSchema } from '@/lib/schemas/binder'
+import { planSlotPlacement } from '@/lib/binder-slot-placement'
+import { MAX_PAGES_PER_BINDER } from '@/lib/binder-limits'
 
 type RouteContext = { params: Promise<{ id: string }> }
 
@@ -55,107 +57,110 @@ export async function POST(request: Request, context: RouteContext) {
 
   const slotsPerPage = GRID_TYPE_SLOTS[binder.gridType]
 
-  const result = await prisma.$transaction(async (tx) => {
-    const userCard = await tx.userCard.upsert({
-      where: { userId_cardId_status: { userId, cardId: typedCardId, status: typedStatus } },
-      create: { userId, cardId: typedCardId, status: typedStatus, quantity: typedQuantity, displayCardId },
-      update: { quantity: { increment: typedQuantity } },
-    })
-
-    const emptySlots = await tx.binderSlot.findMany({
-      where: { binderId, cardId: null },
-      orderBy: [{ pageNumber: 'asc' }, { slotIndex: 'asc' }],
-      take: typedQuantity,
-    })
-
-    const slotsToFill = emptySlots.length
-    const slotsToCreate = typedQuantity - slotsToFill
-
-    if (slotsToFill > 0) {
-      await Promise.all(
-        emptySlots.map((slot) =>
-          tx.binderSlot.update({
-            where: { id: slot.id },
-            data: { cardId: typedCardId, status: typedStatus, displayCardId },
-          }),
-        ),
-      )
+  class PageLimitExceededError extends Error {
+    constructor(public remainingCapacity: number) {
+      super('pageLimitReached')
     }
+  }
 
-    let updatedTotalPages: number | undefined
+  try {
+    const result = await prisma.$transaction(async (tx) => {
+      const emptySlots = await tx.binderSlot.findMany({
+        where: { binderId, cardId: null },
+        orderBy: [{ pageNumber: 'asc' }, { slotIndex: 'asc' }],
+        take: typedQuantity,
+      })
 
-    if (slotsToCreate > 0) {
       const lastSlot = await tx.binderSlot.findFirst({
         where: { binderId },
         orderBy: [{ pageNumber: 'desc' }, { slotIndex: 'desc' }],
       })
 
-      let nextPage = 1
-      let nextIndex = 0
+      const placement = planSlotPlacement({
+        emptySlotIds: emptySlots.map((s) => s.id),
+        lastSlot: lastSlot ? { pageNumber: lastSlot.pageNumber, slotIndex: lastSlot.slotIndex } : null,
+        slotsPerPage,
+        needed: typedQuantity,
+      })
 
-      if (lastSlot) {
-        nextIndex = lastSlot.slotIndex + 1
-        nextPage = lastSlot.pageNumber
-        if (nextIndex >= slotsPerPage) {
-          nextIndex = 0
-          nextPage = nextPage + 1
-        }
+      if (placement.exceedsLimit) {
+        throw new PageLimitExceededError(placement.remainingCapacity)
       }
 
-      const newSlots: {
-        binderId: string
-        cardId: string
-        displayCardId: string | null
-        status: CardStatus
-        pageNumber: number
-        slotIndex: number
-      }[] = []
+      const userCard = await tx.userCard.upsert({
+        where: { userId_cardId_status: { userId, cardId: typedCardId, status: typedStatus } },
+        create: { userId, cardId: typedCardId, status: typedStatus, quantity: typedQuantity, displayCardId },
+        update: { quantity: { increment: typedQuantity } },
+      })
 
-      for (let i = 0; i < slotsToCreate; i++) {
-        newSlots.push({
+      if (placement.fillSlotIds.length > 0) {
+        await Promise.all(
+          placement.fillSlotIds.map((slotId) =>
+            tx.binderSlot.update({
+              where: { id: slotId },
+              data: { cardId: typedCardId, status: typedStatus, displayCardId },
+            }),
+          ),
+        )
+      }
+
+      let updatedTotalPages: number | undefined
+
+      if (placement.newPositions.length > 0) {
+        const newSlots: {
+          binderId: string
+          cardId: string
+          displayCardId: string | null
+          status: CardStatus
+          pageNumber: number
+          slotIndex: number
+        }[] = placement.newPositions.map((pos) => ({
           binderId,
           cardId: typedCardId,
           displayCardId,
           status: typedStatus,
-          pageNumber: nextPage,
-          slotIndex: nextIndex,
-        })
-        nextIndex++
-        if (nextIndex >= slotsPerPage) {
-          nextIndex = 0
-          nextPage++
+          pageNumber: pos.pageNumber,
+          slotIndex: pos.slotIndex,
+        }))
+
+        await tx.binderSlot.createMany({ data: newSlots })
+
+        const maxNewPage = Math.max(...newSlots.map((s) => s.pageNumber))
+        const currentSettings = (binder.settings as Record<string, unknown> | null) ?? {}
+        const currentTotalPages =
+          typeof currentSettings.totalPages === 'number' ? currentSettings.totalPages : 0
+        if (maxNewPage > currentTotalPages) {
+          await tx.binder.update({
+            where: { id: binderId },
+            data: { settings: { ...currentSettings, totalPages: maxNewPage } },
+          })
+          updatedTotalPages = maxNewPage
         }
       }
 
-      await tx.binderSlot.createMany({ data: newSlots })
+      return { userCard, updatedTotalPages }
+    })
 
-      const maxNewPage = Math.max(...newSlots.map((s) => s.pageNumber))
-      const currentSettings = (binder.settings as Record<string, unknown> | null) ?? {}
-      const currentTotalPages =
-        typeof currentSettings.totalPages === 'number' ? currentSettings.totalPages : 0
-      if (maxNewPage > currentTotalPages) {
-        await tx.binder.update({
-          where: { id: binderId },
-          data: { settings: { ...currentSettings, totalPages: maxNewPage } },
-        })
-        updatedTotalPages = maxNewPage
-      }
+    revalidatePublicBinder(binder.shareToken)
+    return Response.json({
+      slotsAdded: typedQuantity,
+      userCard: {
+        id: result.userCard.id,
+        cardId: result.userCard.cardId,
+        status: result.userCard.status,
+        quantity: result.userCard.quantity,
+      },
+      ...(result.updatedTotalPages !== undefined
+        ? { updatedTotalPages: result.updatedTotalPages }
+        : {}),
+    })
+  } catch (err) {
+    if (err instanceof PageLimitExceededError) {
+      return Response.json(
+        { error: 'pageLimitReached', max: MAX_PAGES_PER_BINDER, remainingCapacity: err.remainingCapacity },
+        { status: 409 },
+      )
     }
-
-    return { userCard, updatedTotalPages }
-  })
-
-  revalidatePublicBinder(binder.shareToken)
-  return Response.json({
-    slotsAdded: typedQuantity,
-    userCard: {
-      id: result.userCard.id,
-      cardId: result.userCard.cardId,
-      status: result.userCard.status,
-      quantity: result.userCard.quantity,
-    },
-    ...(result.updatedTotalPages !== undefined
-      ? { updatedTotalPages: result.updatedTotalPages }
-      : {}),
-  })
+    throw err
+  }
 }

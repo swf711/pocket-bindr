@@ -5,8 +5,9 @@
  * All tests are skipped in CI environments that don't have Redis configured.
  */
 import { test, expect } from './helpers/test'
-import { clearRateLimitKey } from './helpers/db'
+import { clearRateLimitKey, clearUserBindersByEmail, clearUserCardsByEmail, getUserIdByEmail } from './helpers/db'
 import { uniqueTestIp, forwardedHeaders } from './helpers/rate-limit-ip'
+import { getTestUser, loginAs } from './helpers/auth'
 
 const hasRedis = !!process.env.UPSTASH_REDIS_REST_URL
 
@@ -81,6 +82,47 @@ test.describe('Rate limit — POST /api/auth/register', () => {
 
     // 11th request — should be rate limited at IP level
     const res = await request.post('/api/auth/register', { data: {} })
+    expect(res.status()).toBe(429)
+    const body = await res.json()
+    expect(body.error).toBe('RATE_LIMITED')
+  })
+})
+
+test.describe('Rate limit — POST /api/binders/[id]/cards/batch', () => {
+  test.skip(!hasRedis, 'Requires UPSTASH_REDIS_REST_URL (real Redis)')
+  test.use({ extraHTTPHeaders: FORWARDED_HEADERS })
+
+  const USER = getTestUser('batchratelimit')
+
+  test.beforeAll(async () => {
+    await clearUserCardsByEmail(USER.email)
+    await clearUserBindersByEmail(USER.email)
+  })
+
+  test.afterAll(async () => {
+    await clearUserCardsByEmail(USER.email)
+    await clearUserBindersByEmail(USER.email)
+  })
+
+  test('user limit: 21st request within 1 min returns 429', async ({ page, request }) => {
+    await loginAs(page, USER)
+    const userId = await getUserIdByEmail(USER.email)
+    await clearRateLimitKey('rl:binder-batch:ip', TEST_IP)
+    await clearRateLimitKey('rl:binder-batch:user', userId)
+
+    const binderRes = await page.request.post('/api/binders', {
+      data: { name: 'E2E RL Binder', gridType: 'grid_3x3' },
+    })
+    expect(binderRes.status()).toBe(201)
+    const { id: binderId } = await binderRes.json()
+
+    // RL 檢查發生在 body schema 驗證之前，空 cardIds 不影響計數（只需非 429 即可）。
+    for (let i = 0; i < 20; i++) {
+      const res = await page.request.post(`/api/binders/${binderId}/cards/batch`, { data: { cardIds: [] } })
+      expect(res.status(), `request ${i + 1} should not be rate limited`).not.toBe(429)
+    }
+
+    const res = await page.request.post(`/api/binders/${binderId}/cards/batch`, { data: { cardIds: [] } })
     expect(res.status()).toBe(429)
     const body = await res.json()
     expect(body.error).toBe('RATE_LIMITED')
