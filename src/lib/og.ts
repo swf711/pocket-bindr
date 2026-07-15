@@ -40,19 +40,31 @@ export function toAbsoluteUrl(url: string): string {
 export const OG_IMAGE_FETCH_TIMEOUT_MS = 4000
 export const OG_IMAGE_FETCH_RETRIES = 1
 
+/** `getCardImageUrl` 產出的 Cloudflare Worker 暖存 proxy origin（見 get-card-image-url.ts 頂部說明）；
+ *  未設時 `getCardImageUrl` 回退 `/api/proxy-image`，本模組的 Worker 分支自然不會命中。 */
+const IMAGE_PROXY_ORIGIN = process.env.NEXT_PUBLIC_IMAGE_PROXY_ORIGIN
+
 /**
  * OG render 專用：把卡圖 URL 正規化成「可直接 server 端 fetch 的 upstream URL + 必要 headers」。
- * 三種輸入形式：
- * - `/api/proxy-image?url=X`（首頁／單卡走 `getCardImageUrl` 產出的相對路徑）→ 還原成 X，
+ * 四種輸入形式：
+ * - `/api/proxy-image?url=X`（`getCardImageUrl` 未設 Worker origin 時的相對路徑 fallback）→ 還原成 X，
  *   不再讓 OG render 自呼自家 `/api/proxy-image` serverless（省一層跳、不佔用該路由的 IP rate limit）。
+ * - `{IMAGE_PROXY_ORIGIN}?url=X`（`getCardImageUrl` 設了 Worker origin 時產出）→ 同樣還原成 X，
+ *   OG render 一律直連官網 origin，不經 Worker（避免多一層跳、且 OG 是 server-to-server 抓取無需邊緣暖存）。
  * - 官網原始絕對 URL（分享頁的 `slot.card.imageSmall`，未經 `getCardImageUrl`，落在 `PROXY_HOSTNAMES`）
- *   → 官網會擋沒有 Referer 的請求（proxy-image route 本就補這個 header），OG 直連同樣要補，
+ *   → 官網會擋沒有 Referer 的請求（proxy route 本就補這個 header），OG 直連同樣要補，
  *   否則分享頁的官網來源卡圖在 OG 上幾乎必抓不到。
  * - 其餘絕對 URL（Supabase Storage 自存圖、pokemontcg.io）→ 原樣直連，不補 header。
  */
 export function resolveOgImageFetch(url: string): { url: string; headers: HeadersInit } | null {
   if (url.startsWith('/api/proxy-image')) {
     const raw = new URL(url, SITE_URL).searchParams.get('url')
+    if (!raw) return null
+    return resolveOgImageFetch(raw)
+  }
+
+  if (IMAGE_PROXY_ORIGIN && url.startsWith(IMAGE_PROXY_ORIGIN)) {
+    const raw = new URL(url).searchParams.get('url')
     if (!raw) return null
     return resolveOgImageFetch(raw)
   }
