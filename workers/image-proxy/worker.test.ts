@@ -135,29 +135,39 @@ describe('pocketbindr-image-proxy worker', () => {
     expect(res.headers.get('Cache-Control')).toBe('no-store')
   })
 
-  it('retries once on upstream network error, then succeeds', async () => {
+  // retry 前有短暫延遲（避免緊接著撞上 origin 端節流窗口，見 worker.js 診斷註解），
+  // 用 fake timers 跳過真實等待、避免測試變慢。
+  it('retries once on upstream network error (after brief delay), then succeeds', async () => {
+    vi.useFakeTimers()
     mockFetch
       .mockRejectedValueOnce(new Error('timeout'))
       .mockResolvedValueOnce(
         new Response(new ReadableStream(), { status: 200, headers: { 'Content-Type': 'image/png' } }),
       )
-    const res = await worker.fetch(
+    const resPromise = worker.fetch(
       makeRequest('https://asia-tc.onepiece-cardgame.com/images/card.png'),
       env,
     )
+    await vi.runAllTimersAsync()
+    const res = await resPromise
     expect(res.status).toBe(200)
     expect(mockFetch).toHaveBeenCalledTimes(2)
+    vi.useRealTimers()
   })
 
   it('returns 502 no-store when upstream keeps failing after retry', async () => {
+    vi.useFakeTimers()
     mockFetch.mockRejectedValue(new Error('timeout'))
-    const res = await worker.fetch(
+    const resPromise = worker.fetch(
       makeRequest('https://asia-tc.onepiece-cardgame.com/images/card.png'),
       env,
     )
+    await vi.runAllTimersAsync()
+    const res = await resPromise
     expect(res.status).toBe(502)
     expect(res.headers.get('Cache-Control')).toBe('no-store')
     expect(mockFetch).toHaveBeenCalledTimes(2)
+    vi.useRealTimers()
   })
 
   it('missing rate limiter binding does not crash (local dev / config drift safety)', async () => {
