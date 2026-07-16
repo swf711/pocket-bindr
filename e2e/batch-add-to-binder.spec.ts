@@ -93,6 +93,70 @@ test.describe('批次加入卡冊', () => {
     await page.getByTestId('batch-select-mode-toggle').click()
     await expect(page.getByTestId('batch-add-bar')).not.toBeVisible()
   })
+
+  test('切頁保留已選 + 跨頁累積後可一次送出', async ({ page }) => {
+    await page.goto('/cards?game=PTCG')
+    await page.getByTestId('card-grid').waitFor({ timeout: 10000 })
+
+    await page.getByTestId('batch-select-mode-toggle').click()
+    await page.getByTestId('card-item').nth(0).click()
+    await page.getByTestId('card-item').nth(1).click()
+    await expect(page.getByTestId('batch-selected-count')).toContainText('2')
+
+    const page1FirstHref = await page.getByTestId('card-item').first().getAttribute('href')
+
+    // 切到第 2 頁（頂部分頁）
+    const [pageTwoRes] = await Promise.all([
+      page.waitForResponse((r) => r.url().includes('/api/cards') && r.url().includes('page=2')),
+      page.getByTestId('card-pagination-top').getByRole('link', { name: 'Go to next page' }).click(),
+    ])
+    expect(pageTwoRes.ok()).toBeTruthy()
+    // React Query 用 keepPreviousData：網路回應 resolve 後畫面才重繪成第 2 頁格線，
+    // 需等格線內容真的換掉（首卡 href 改變）才能點卡，避免誤點到還沒替換的舊頁卡片
+    await expect(page.getByTestId('card-item').first()).not.toHaveAttribute('href', page1FirstHref ?? '')
+
+    // 已選數量應保留（跨頁累積，非切頁即清空）
+    await expect(page.getByTestId('batch-selected-count')).toContainText('2')
+
+    await page.getByTestId('card-item').nth(0).click()
+    await expect(page.getByTestId('batch-selected-count')).toContainText('3')
+
+    await page.getByTestId('batch-binder-select').click()
+    await page.getByRole('option', { name: 'E2E Batch Binder' }).click()
+
+    const ownedToggle = page.getByTestId('batch-status-owned')
+    if (await ownedToggle.isVisible()) await ownedToggle.click()
+
+    await page.getByTestId('batch-submit-btn').click()
+
+    await expect(page.getByText(/已將 3 張卡加入卡冊/)).toBeVisible({ timeout: 8000 })
+
+    const bindersRes = await page.request.get('/api/binders')
+    const binders = await bindersRes.json()
+    const list = Array.isArray(binders) ? binders : binders.binders
+    const binder = list.find((b: { name: string }) => b.name === 'E2E Batch Binder')
+    const detailRes = await page.request.get(`/api/binders/${binder.id}`)
+    const detail = await detailRes.json()
+    const filledSlots = (detail.slots ?? []).filter((s: { cardId: string | null }) => s.cardId !== null)
+    expect(filledSlots.length).toBe(3)
+  })
+
+  test('切頁後捲動回頁面頂端', async ({ page }) => {
+    await page.goto('/cards?game=PTCG')
+    await page.getByTestId('card-grid').waitFor({ timeout: 10000 })
+
+    // 捲到底部
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight))
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0)
+
+    const [pageTwoRes] = await Promise.all([
+      page.waitForResponse((r) => r.url().includes('/api/cards') && r.url().includes('page=2')),
+      page.getByRole('link', { name: 'Go to next page' }).last().click(),
+    ])
+    expect(pageTwoRes.ok()).toBeTruthy()
+
+    await expect.poll(() => page.evaluate(() => window.scrollY), { timeout: 5000 }).toBeLessThan(50)
+  })
 })
 
 test.describe('批次加入卡冊 - 撞頁數上限', () => {

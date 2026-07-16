@@ -220,6 +220,7 @@
       "submit": "加入卡冊",
       "configureTitle": "加入設定",
       "addedSuccess": "已將 {count} 張卡加入卡冊",
+      "maxReached": "最多只能選 {max} 張",
       "capacityExceeded": "卡冊頁數已滿，請減少數量或清空部分格位",
       "rateLimited": "操作過於頻繁，請稍後再試",
       "addFailed": "加入失敗，請重試"

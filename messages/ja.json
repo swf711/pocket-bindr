@@ -220,6 +220,7 @@
       "submit": "バインダーに追加",
       "configureTitle": "追加設定",
       "addedSuccess": "{count} 枚のカードをバインダーに追加しました",
+      "maxReached": "最大 {max} 枚まで選択できます",
       "capacityExceeded": "バインダーがいっぱいです。数量を減らすか、空きスロットを増やしてください",
       "rateLimited": "操作が多すぎます。しばらくしてから再度お試しください",
       "addFailed": "追加に失敗しました。もう一度お試しください"
