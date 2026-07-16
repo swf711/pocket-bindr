@@ -23,34 +23,19 @@ const WHITELIST = new Set([
 
 const UPSTREAM_TIMEOUT_MS = 5000
 const UPSTREAM_RETRIES = 1
-// 上線後診斷（2026-07-16）：13 次觀測到的 502 全數為 TimeoutError，兩次嘗試都精準跑滿
-// UPSTREAM_TIMEOUT_MS（origin 完全無回應，非快速拒絕）。加短暫延遲（比照 CardImage 前端重試
-// 已驗證有效的做法：src/components/cards/card-image.tsx 的 500ms + jitter），對單次請求的
-// timeout+retry 節奏本身是合理的獨立改善，予以保留。
-//
-// ⚠️ **當時「與官網節流行為相符」的推論後來被證據推翻，記錄於此避免重蹈覆轍**：
-// 用 curl `xargs -P 40` 打同一 Worker 可穩定重現失敗（~35 併發起開始 502），但改用 Playwright
-// 開真實瀏覽器分頁測試（5～10 分頁同時載入 /cards，實際觀測 100～200 個同時進行中的請求）
-// **零失敗**。根因並非「origin 對併發請求節流」，而是 curl 用 `-P N` 會開 N 條各自獨立的新
-// TCP/TLS 連線，這與真實瀏覽器對同一 origin 用 HTTP/2 多工、重複使用少數連線傳輸大量請求
-// 是完全不同的連線模式——curl 測試法本身放大了「同時建立大量新連線」這個情境，不代表真實
-// 使用者流量會出現的模式（production 峰值僅 ~0.55 req/s）。教訓：**併發相關的假設一律要用
-// 真實用戶端行為（瀏覽器）驗證，不能只憑合成的併發測試工具下結論**，兩者的連線建立模式可能
-// 有本質差異、导致完全不同的結果。
+// 逾時/網路錯誤時，重試前加短暫延遲（比照前端 CardImage 重試的 500ms + jitter），避免緊接著
+// 立即重打——對單次請求的 timeout + retry 節奏是合理的獨立改善。
 const RETRY_DELAY_MS = 500
 const RETRY_JITTER_MS = 300
-// CF edge 暖存 TTL（秒）：暫時性快取，非永久圖庫——與現行 Vercel s-maxage=86400 同數量級,
-// 拉長至 7 天以更有效攤提向官網的重複請求（暖存不等於自存，逾期即需重新 fetch upstream）。
+// CF edge 暖存 TTL（秒）：暫時性快取，非永久圖庫——逾期即需重新 fetch upstream（暖存不等於自存）。
 const CACHE_TTL_SECONDS = 604800
 const BROWSER_CACHE_CONTROL = 'public, max-age=604800'
 
 /**
- * ⚠️ 修復（2026-07-16 上線後回報「部分卡圖不定期 502」）：原用 `cacheEverything: true` + 單一
- * `cacheTtl`，CF 官方文件證實 `cacheEverything` 不排除非 2xx 回應——官網偶發一次暫時性錯誤
- * （502/503）就會連同 7 天 TTL 一起被 CF edge cache 釘住，該張卡圖之後持續吃到快取的錯誤回應，
- * 直到 TTL 到期才自然恢復（症狀完全對應「特定幾張卡不定期持續失敗」，非隨機性的單次抖動）。
- * 改用 `cacheTtlByStatus`：只快取 2xx，其餘一律不快取（`-1` 依官方文件語意為完全不快取，
- * 比 `0`「立即過期」更乾淨、不留 cache entry），錯誤永遠即時重打 origin，不會被錯誤自己鎖住。
+ * ⚠️ **不可用 `cacheEverything: true` + 單一 `cacheTtl`**：CF 官方文件證實 `cacheEverything` 不排除
+ * 非 2xx 回應，upstream 偶發一次暫時性錯誤（5xx）就會連同長 TTL 一起被 CF edge cache 釘住，該資源
+ * 之後持續回快取的錯誤直到 TTL 到期。改用 `cacheTtlByStatus` 只快取 2xx，其餘不快取（`-1` 依官方
+ * 文件語意為完全不快取，比 `0`「立即過期」更乾淨、不留 cache entry），錯誤永遠即時重打 upstream。
  */
 const CACHE_TTL_BY_STATUS = { '200-299': CACHE_TTL_SECONDS, '300-599': -1 }
 
@@ -160,6 +145,7 @@ export default {
 
     let upstream
     try {
+      // 部分圖床要求 Referer，防禦性補上（帶目標自身 origin）。
       upstream = await fetchUpstream(rawUrl, { Referer: parsed.origin })
     } catch (err) {
       console.error(`UPSTREAM_EXHAUSTED name=${err?.name} msg=${err?.message} url=${rawUrl}`)

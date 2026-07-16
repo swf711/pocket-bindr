@@ -1,10 +1,15 @@
 # pocketbindr-image-proxy
 
-外部官網卡圖（PROXY_HOSTNAMES）的 Cloudflare 暖存 proxy，取代 Vercel `/api/proxy-image`。
+外部卡圖 upstream 的 Cloudflare 暖存 proxy，與 Next.js 的 `/api/proxy-image` 並存分流（見下方「分流」）。
 
-**為何存在**：pokemon-card.com / onepiece-cardgame.com 官網明文禁止複製/改変/配布卡圖，故不可下載
-自存到 R2/Supabase（見 CLAUDE.md 核心設計決策、docs/DATA_SOURCES.md）。本 Worker 純 passthrough +
-CF edge 暫時快取，法律姿態與現行 Vercel proxy 零增量；差異只在 egress 免費、CF→官網走內網。
+**為何存在**：卡圖來源不可下載自存（官方來源明文禁止複製/改変/配布，見 docs/DATA_SOURCES.md），故以
+proxy 提供。本 Worker 純 passthrough + edge 暫時快取，法律姿態與 Next.js 端 proxy 零增量；差異在 egress
+成本。
+
+## 分流
+
+由 `NEXT_PUBLIC_IMAGE_PROXY_WORKER_HOSTS`（app 端 env）控制哪些 upstream host 走本 Worker，未列入者
+回退至 Next.js 的 `/api/proxy-image`。**不同 origin 對 edge proxy 的相容性不同，分流清單依實測結果調整。**
 
 ## 首次部署
 
@@ -33,8 +38,9 @@ curl -sI "https://images.pocketbindr.app/?url=https://evil.example.com/x.png"
 
 ## 對應 app 端
 
-`src/lib/get-card-image-url.ts` 的 `NEXT_PUBLIC_IMAGE_PROXY_ORIGIN` 若設為
-`https://images.pocketbindr.app`，全站卡圖會改指向本 Worker；未設則回退 `/api/proxy-image`（可逆）。
+`src/lib/get-card-image-url.ts` 依兩個 env 分流（皆可逆）：`NEXT_PUBLIC_IMAGE_PROXY_ORIGIN`（本 Worker
+base URL，未設 → 全部回退 `/api/proxy-image`）＋ `NEXT_PUBLIC_IMAGE_PROXY_WORKER_HOSTS`（走 Worker 的
+host 白名單，未列入者回退 `/api/proxy-image`）。
 
 ## 已知限制
 
