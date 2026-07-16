@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { type Game, type Language } from '@prisma/client'
 import { ListChecks, X } from 'lucide-react'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { GameSelector } from './game-selector'
 import { LanguageTabs } from './language-tabs'
@@ -16,6 +17,7 @@ import { SetGroup, CardWithCollectionStatus } from '@/types/card'
 import { useCardSearch } from '@/hooks/use-card-search'
 import { cardPath } from '@/lib/card-url'
 import { publishCardNavList } from '@/lib/card-nav-store'
+import { MAX_BATCH_CARDS } from '@/lib/binder-limits'
 
 const DEFAULT_LANGUAGE = 'ZH_TW'
 const VALID_LANGUAGES = ['EN', 'JA', 'ZH_TW']
@@ -142,8 +144,9 @@ export function CardSearchClient({ initialParams }: CardSearchClientProps) {
 
   const handlePageChange = (p: number) => {
     setPage(p)
-    setSelectedIds(new Set())
     updateParams({ page: String(p) })
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    window.scrollTo({ top: 0, behavior: prefersReduced ? 'auto' : 'smooth' })
   }
 
   const handleToggleSelectMode = () => {
@@ -153,8 +156,15 @@ export function CardSearchClient({ initialParams }: CardSearchClientProps) {
 
   const handleToggleSelect = (card: CardWithCollectionStatus) => {
     const next = new Set(selectedIds)
-    if (next.has(card.id)) next.delete(card.id)
-    else next.add(card.id)
+    if (next.has(card.id)) {
+      next.delete(card.id)
+    } else {
+      if (next.size >= MAX_BATCH_CARDS) {
+        toast.error(tBatch('maxReached', { max: MAX_BATCH_CARDS }))
+        return
+      }
+      next.add(card.id)
+    }
     setSelectedIds(next)
     // 取消勾選至歸零視同退出多選模式（回到一般點卡開卡片的狀態）
     if (next.size === 0) setSelectMode(false)

@@ -220,6 +220,7 @@
       "submit": "Add to Binder",
       "configureTitle": "Add options",
       "addedSuccess": "Added {count} cards to binder",
+      "maxReached": "You can select up to {max} cards",
       "capacityExceeded": "Binder is full, reduce the quantity or free up some slots",
       "rateLimited": "Too many attempts, please try again later",
       "addFailed": "Failed to add, please try again"
