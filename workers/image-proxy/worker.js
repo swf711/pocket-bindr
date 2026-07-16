@@ -23,12 +23,20 @@ const WHITELIST = new Set([
 
 const UPSTREAM_TIMEOUT_MS = 5000
 const UPSTREAM_RETRIES = 1
-// 上線後診斷（2026-07-16）：13 次觀測到的 502 全數為 TimeoutError，且兩次嘗試都精準跑滿
-// UPSTREAM_TIMEOUT_MS（origin 完全無回應，非快速拒絕），集中在同一小段時間窗口、同一 host——
-// 與官網短時間內大量併發請求時的節流/丟包行為特徵相符。原本重試「緊接著」第一次失敗立即發生，
-// 若 origin 端節流窗口尚未過去，重試等於原地再撞一次同一道牆。加短暫延遲（比照 CardImage
-// 前端重試已驗證有效的做法：src/components/cards/card-image.tsx 的 500ms + jitter）讓重試
-// 盡量落在節流窗口外——為根因未知的緩解性調整，非保證根治（根因在 origin 端，不受我方控制）。
+// 上線後診斷（2026-07-16）：13 次觀測到的 502 全數為 TimeoutError，兩次嘗試都精準跑滿
+// UPSTREAM_TIMEOUT_MS（origin 完全無回應，非快速拒絕）。加短暫延遲（比照 CardImage 前端重試
+// 已驗證有效的做法：src/components/cards/card-image.tsx 的 500ms + jitter），對單次請求的
+// timeout+retry 節奏本身是合理的獨立改善，予以保留。
+//
+// ⚠️ **當時「與官網節流行為相符」的推論後來被證據推翻，記錄於此避免重蹈覆轍**：
+// 用 curl `xargs -P 40` 打同一 Worker 可穩定重現失敗（~35 併發起開始 502），但改用 Playwright
+// 開真實瀏覽器分頁測試（5～10 分頁同時載入 /cards，實際觀測 100～200 個同時進行中的請求）
+// **零失敗**。根因並非「origin 對併發請求節流」，而是 curl 用 `-P N` 會開 N 條各自獨立的新
+// TCP/TLS 連線，這與真實瀏覽器對同一 origin 用 HTTP/2 多工、重複使用少數連線傳輸大量請求
+// 是完全不同的連線模式——curl 測試法本身放大了「同時建立大量新連線」這個情境，不代表真實
+// 使用者流量會出現的模式（production 峰值僅 ~0.55 req/s）。教訓：**併發相關的假設一律要用
+// 真實用戶端行為（瀏覽器）驗證，不能只憑合成的併發測試工具下結論**，兩者的連線建立模式可能
+// 有本質差異、导致完全不同的結果。
 const RETRY_DELAY_MS = 500
 const RETRY_JITTER_MS = 300
 // CF edge 暖存 TTL（秒）：暫時性快取，非永久圖庫——與現行 Vercel s-maxage=86400 同數量級,
