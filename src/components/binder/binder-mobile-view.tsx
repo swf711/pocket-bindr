@@ -121,11 +121,19 @@ export function BinderMobileView({
     flipHandleDragMove(event)
   }
 
-  function handleDragEnd(event: DragEndEvent) {
+  function resetDragState() {
     flipHandleDragEnd()
     setActiveSlot(null)
     setIsDragging(false)
     setTappedSlotId(null)
+  }
+
+  function handleDragCancel() {
+    resetDragState()
+  }
+
+  function handleDragEnd(event: DragEndEvent) {
+    resetDragState()
     const { active, over } = event
     if (!over) return
 
@@ -175,6 +183,7 @@ export function BinderMobileView({
         sensors={sensors}
         onDragStart={handleDragStart}
         onDragMove={handleDragMoveEvent}
+        onDragCancel={handleDragCancel}
         onDragEnd={handleDragEnd}
       >
         {/* Snowglobe 縮放區：card grid 縮放至可用高度內，不產生 scroll */}
