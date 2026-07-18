@@ -51,3 +51,34 @@ test.describe('公開分享頁方向鍵翻頁', () => {
     }
   })
 })
+
+test.describe('公開分享頁行動版方向鍵翻頁', () => {
+  test.use({ viewport: { width: 390, height: 844 }, hasTouch: true })
+
+  test.beforeEach(async () => {
+    await createPasswordUser(USER.email, USER.username, USER.password)
+    await clearUserBindersByEmail(USER.email)
+  })
+
+  test('未登入訪客可由封面一路翻到最後一頁', async ({ page }) => {
+    const userId = await getUserIdByEmail(USER.email)
+    const { binder } = await createMultiPageBinder(userId, { pageCount: 4 })
+    const token = 'e2epublickbdmobile000000000001'
+    await prisma.binder.update({ where: { id: binder.id }, data: { shareToken: token } })
+
+    try {
+      await page.goto(`/b/${token}`)
+      const mobileView = page.getByTestId('binder-public-mobile-view')
+      const pageLabel = mobileView.getByText(/^\d+ \/ \d+$/)
+      await expect(pageLabel).toHaveText('1 / 5')
+
+      for (let index = 0; index < 4; index += 1) await page.keyboard.press('ArrowRight')
+      await expect(pageLabel).toHaveText('5 / 5')
+
+      await page.keyboard.press('ArrowRight')
+      await expect(pageLabel).toHaveText('5 / 5')
+    } finally {
+      await cleanupBinder(binder.id)
+    }
+  })
+})
