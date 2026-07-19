@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useCallback } from 'react'
+import { useRef, useCallback, useEffect } from 'react'
 import type { DragMoveEvent } from '@dnd-kit/core'
 
 interface UseEdgeHoverPageFlipOptions {
@@ -45,6 +45,8 @@ export function useEdgeHoverPageFlip({
       timerRef.current = null
     }
   }, [])
+
+  useEffect(() => clearTimer, [clearTimer])
 
   const handleDragMove = useCallback(
     (event: DragMoveEvent) => {

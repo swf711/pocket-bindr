@@ -174,6 +174,38 @@ test.describe('Binder Spread Layout - 桌面雙頁', () => {
       await cleanupBinder(binder.id)
     }
   })
+
+  test('桌面：在翻頁邊緣取消拖曳後不應延遲翻頁', async ({ page }) => {
+    await loginAs(page, USER)
+    const userId = await getUserIdByEmail(USER.email)
+    const { binder, slots } = await createMultiPageBinder(userId, { pageCount: 3 })
+    const sourceSlot = slots.find((slot) => slot.pageNumber === 1 && slot.slotIndex === 0)
+    expect(sourceSlot).toBeDefined()
+
+    try {
+      await page.goto(`/binders/${binder.id}`)
+      const spreadView = page.getByTestId('binder-spread-view')
+      const source = spreadView.getByTestId(`slot-card-${sourceSlot!.id}`)
+      await startDrag(page, source)
+
+      const container = page.getByTestId('spread-drag-container')
+      const box = await container.boundingBox()
+      expect(box).not.toBeNull()
+      const edgeX = box!.x + box!.width - 20
+      const midY = box!.y + box!.height / 2
+      await page.mouse.move(edgeX, midY, { steps: 15 })
+      await page.mouse.move(edgeX - 2, midY)
+
+      await page.keyboard.press('Escape')
+      await page.waitForTimeout(800)
+
+      await expect(spreadView.getByText('第 1 頁')).toBeVisible()
+      await expect(spreadView.getByText('第 2 頁')).not.toBeVisible()
+      await expect(source).not.toHaveClass(/opacity-40/)
+    } finally {
+      await cleanupBinder(binder.id)
+    }
+  })
 })
 
 test.describe('Binder Spread Layout - 行動裝置', () => {

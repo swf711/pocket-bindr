@@ -201,11 +201,19 @@ export function BinderSpreadView({
     handleDragMove(event)
   }
 
-  function handleDragEnd(event: DragEndEvent) {
+  function resetDragState() {
     flipHandleDragEnd()
     setActiveSlot(null)
     setIsDragging(false)
     onDraggingChange?.(false)
+  }
+
+  function handleDragCancel() {
+    resetDragState()
+  }
+
+  function handleDragEnd(event: DragEndEvent) {
+    resetDragState()
     const { active, over } = event
     if (!over) return
 
@@ -247,6 +255,7 @@ export function BinderSpreadView({
         sensors={sensors}
         onDragStart={handleDragStart}
         onDragMove={handleDragMoveEvent}
+        onDragCancel={handleDragCancel}
         onDragEnd={handleDragEnd}
       >
         {/* Scaled area: panels fill all available height, CSS-scaled to fit */}
