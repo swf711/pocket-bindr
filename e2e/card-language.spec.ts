@@ -1,4 +1,5 @@
 import { test, expect, type Page } from './helpers/test'
+import { assertProxiedImageSrc } from './helpers/image-proxy'
 
 /**
  * 卡牌搜尋頁：選擇語言。
@@ -67,7 +68,7 @@ test.describe('Scenario 2b: 選擇語言', () => {
     await page.keyboard.press('Escape')
   })
 
-  test('切換至日本語：卡牌圖片 src 為 /api/proxy-image 代理 URL 且圖片實際載入成功', async ({ page }) => {
+  test('切換至日本語：卡牌圖片 src 經 proxy 代理 URL 且圖片實際載入成功', async ({ page }) => {
     await page.goto('/cards?game=PTCG')
     await page.getByTestId('card-grid').waitFor({ timeout: 10000 })
 
@@ -84,11 +85,10 @@ test.describe('Scenario 2b: 選擇語言', () => {
     const firstImg = page.getByTestId('card-item').locator('img').first()
     await firstImg.waitFor({ timeout: 10000 })
     // JA 圖片來自 pokemon-card.com（www 或 asia 子網域皆合法，見 PROXY_HOSTNAMES
-    // @ src/lib/get-card-image-url.ts），經 /api/proxy-image 代理
+    // @ src/lib/get-card-image-url.ts），經 proxy 代理（Worker 或 Vercel /api/proxy-image，
+    // 依 NEXT_PUBLIC_IMAGE_PROXY_* env 分流，見 e2e/helpers/image-proxy.ts）
     const src = await firstImg.getAttribute('src')
-    expect(src).toMatch(/\/api\/proxy-image/)
-    const proxiedUrl = new URL(src!, page.url()).searchParams.get('url')
-    expect(new URL(proxiedUrl!).hostname).toMatch(/^(www|asia)\.pokemon-card\.com$/)
+    assertProxiedImageSrc(src!, page.url(), /^(www|asia)\.pokemon-card\.com$/)
 
     // 圖片為 lazy loading；搜尋後 grid 可能重渲染使元素短暫 detach，
     // 故以 toPass 每次重新解析 locator、捲動後確認實際載入成功

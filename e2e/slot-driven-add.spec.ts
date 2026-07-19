@@ -110,6 +110,14 @@ test.describe('格位驅動加入卡片', () => {
     const commandList = page.locator('[data-slot="command-list"]')
     await expect(commandList).toBeVisible({ timeout: 5000 })
 
+    // 系列清單（groups）由 /api/sets 非同步載入、無 loading state：popover 剛開啟時清單可能只有
+    // 靜態的「全部系列」一項，scrollHeight === clientHeight（不可捲）。wheel 事件若在資料到位前打出，
+    // 之後的 expect.poll 只會重複讀 scrollTop（不會重打 wheel），必然逾時。故先等清單真的可捲動
+    // （代表 /api/sets 已回來、足夠多的 CommandItem 撐出高度），再發送 wheel。
+    await expect
+      .poll(() => commandList.evaluate(el => el.scrollHeight > el.clientHeight), { timeout: 5000 })
+      .toBe(true)
+
     const scrollBefore = await commandList.evaluate(el => el.scrollTop)
     const box = await commandList.boundingBox()
     if (box) {
