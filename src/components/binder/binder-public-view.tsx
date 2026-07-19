@@ -260,14 +260,14 @@ export function BinderPublicView({
 
       const delta = e.key === 'ArrowLeft' ? -1 : 1
       if (isMobile) {
-        setMobilePageIndex((prev) => Math.min(Math.max(prev + delta, 0), totalPages - 1))
+        setMobilePageIndex((prev) => Math.min(Math.max(prev + delta, 0), mobilePages.length - 1))
       } else {
         setSpreadIndex((prev) => Math.min(Math.max(prev + delta, 0), spreads.length - 1))
       }
     }
     window.addEventListener('keydown', handleKey)
     return () => window.removeEventListener('keydown', handleKey)
-  }, [isMobile, viewCard, spreads.length, totalPages])
+  }, [isMobile, viewCard, spreads.length, mobilePages.length])
 
   // Snowglobe hooks — 必須無條件呼叫
   const {

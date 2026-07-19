@@ -52,14 +52,14 @@ export function BinderView({ binder }: { binder: BinderDetailResponse }) {
 
       const delta = e.key === 'ArrowLeft' ? -1 : 1
       if (isMobile) {
-        setMobilePageIndex((prev) => Math.min(Math.max(prev + delta, 0), totalPages - 1))
+        setMobilePageIndex((prev) => Math.min(Math.max(prev + delta, 0), mobilePages.length - 1))
       } else {
         setSpreadIndex((prev) => Math.min(Math.max(prev + delta, 0), spreads.length - 1))
       }
     }
     window.addEventListener('keydown', handleKey)
     return () => window.removeEventListener('keydown', handleKey)
-  }, [isMobile, viewCard, pickerTarget, spreads.length, totalPages])
+  }, [isMobile, viewCard, pickerTarget, spreads.length, mobilePages.length])
 
   const handleDelete = async (slotId: string) => {
     const res = await fetch(`/api/binders/${binder.id}/slots/${slotId}`, { method: 'DELETE' })

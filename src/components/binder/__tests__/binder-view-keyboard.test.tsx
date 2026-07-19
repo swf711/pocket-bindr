@@ -101,13 +101,21 @@ describe('BinderView 方向鍵翻頁', () => {
     expect(screen.getByTestId('spread-index')).toHaveTextContent('1')
   })
 
-  it('mobile 模式下方向鍵操作 mobilePageIndex', () => {
+  it('mobile 模式下方向鍵可從封面一路操作到最後一頁並 clamp 邊界', () => {
     mockIsMobile = true
     render(<BinderView binder={makeBinder()} />)
     expect(screen.getByTestId('mobile-page-index')).toHaveTextContent('0')
 
+    for (let index = 1; index <= 4; index += 1) {
+      fireEvent.keyDown(window, { key: 'ArrowRight' })
+      expect(screen.getByTestId('mobile-page-index')).toHaveTextContent(String(index))
+    }
+
     fireEvent.keyDown(window, { key: 'ArrowRight' })
-    expect(screen.getByTestId('mobile-page-index')).toHaveTextContent('1')
+    expect(screen.getByTestId('mobile-page-index')).toHaveTextContent('4')
+
+    fireEvent.keyDown(window, { key: 'ArrowLeft' })
+    expect(screen.getByTestId('mobile-page-index')).toHaveTextContent('3')
   })
 
   it('viewCard 開啟時方向鍵不翻頁', async () => {
