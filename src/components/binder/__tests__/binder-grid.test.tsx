@@ -4,7 +4,7 @@
 import '@testing-library/jest-dom/vitest'
 import { describe, it, expect } from 'vitest'
 import { render } from '@testing-library/react'
-import { BinderGrid } from '../binder-grid'
+import { BinderGridSlots } from '../binder-grid'
 import type { BinderSlotItem, EmptySlot } from '@/types/binder'
 
 function makeEmptySlots(count: number): BinderSlotItem[] {
@@ -14,20 +14,21 @@ function makeEmptySlots(count: number): BinderSlotItem[] {
   )
 }
 
-function renderGrid(gridType: Parameters<typeof BinderGrid>[0]['gridType'], slotCount: number) {
+function renderGrid(
+  gridType: Parameters<typeof BinderGridSlots>[0]['gridType'],
+  slotCount: number,
+) {
   return render(
-    <BinderGrid
+    <BinderGridSlots
       slots={makeEmptySlots(slotCount)}
       gridType={gridType}
       onDelete={() => {}}
       onToggleStatus={() => {}}
-      onSwap={() => {}}
-      onMove={() => {}}
     />,
   )
 }
 
-describe('BinderGrid grid_4x3', () => {
+describe('BinderGridSlots grid_4x3', () => {
   it('渲染 4 欄（gridTemplateColumns repeat(4, ...)）', () => {
     const { container } = renderGrid('grid_4x3', 12)
     const grid = container.querySelector('.grid') as HTMLElement
