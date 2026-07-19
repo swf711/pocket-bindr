@@ -2,7 +2,21 @@
  * @vitest-environment jsdom
  */
 import '@testing-library/jest-dom/vitest'
+import { createElement } from 'react'
 import { beforeAll, beforeEach, describe, it, expect, vi } from 'vitest'
+
+// 包裝（非取代）DndContext 以攔截其 handler props，讓 jsdom 下也能觸發取消拖曳。
+vi.mock('@dnd-kit/core', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@dnd-kit/core')>()
+  const { captureDndHandlers } = await import('../../__tests__/helpers/dnd-capture')
+  return {
+    ...actual,
+    DndContext: (props: React.ComponentProps<typeof actual.DndContext>) => {
+      captureDndHandlers(props)
+      return createElement(actual.DndContext, props)
+    },
+  }
+})
 
 function setupMatchMedia(desktopMatches: boolean, reducedMotionMatches = false) {
   Object.defineProperty(window, 'matchMedia', {
@@ -23,10 +37,16 @@ beforeAll(() => {
 beforeEach(() => {
   vi.restoreAllMocks()
   setupMatchMedia(false)
+  resetCapturedDndHandlers()
 })
 
 import { render, screen, act } from '@testing-library/react'
 import { HeroBinder } from '../hero-binder'
+import {
+  fireDragCancel,
+  fireDragStart,
+  resetCapturedDndHandlers,
+} from '../../__tests__/helpers/dnd-capture'
 import type { ShowcaseCard } from '@/types/homepage'
 
 function makeCard(id: string, name: string): ShowcaseCard {
@@ -144,5 +164,47 @@ describe('HeroBinder parallax', () => {
 
     const scrollRemovals = removeSpy.mock.calls.filter(([event]) => event === 'scroll')
     expect(scrollRemovals.length).toBeGreaterThan(0)
+  })
+})
+
+describe('HeroBinder 取消拖曳（onDragCancel）', () => {
+  const IDLE_TILT = 'rotateX(5deg) rotateY(-15deg) rotateZ(10deg)'
+
+  function renderDesktop() {
+    setupMatchMedia(true, true) // 桌面且 reduced-motion，避開 parallax 的 rAF 雜訊
+    const { container } = render(<HeroBinder cards={NINE_CARDS} />)
+    // 最外層 parallax > perspective > tilt wrapper
+    const tilt = container.firstElementChild!.firstElementChild!
+      .firstElementChild as HTMLElement
+    return { tilt }
+  }
+
+  it('拖曳開始時攤平（transform: none）', async () => {
+    const { tilt } = renderDesktop()
+    expect(tilt.style.transform).toBe(IDLE_TILT)
+
+    await act(async () => { fireDragStart('hero-binder-dnd', 'card-0') })
+    expect(tilt.style.transform).toBe('none')
+  })
+
+  it('拖曳被取消（Esc）後恢復傾斜，不會卡在攤平狀態', async () => {
+    const { tilt } = renderDesktop()
+
+    await act(async () => { fireDragStart('hero-binder-dnd', 'card-0') })
+    expect(tilt.style.transform).toBe('none')
+
+    await act(async () => { fireDragCancel('hero-binder-dnd', 'card-0') })
+    expect(tilt.style.transform).toBe(IDLE_TILT)
+  })
+
+  it('取消拖曳不改變卡牌順序', async () => {
+    renderDesktop()
+
+    await act(async () => { fireDragStart('hero-binder-dnd', 'card-0') })
+    await act(async () => { fireDragCancel('hero-binder-dnd', 'card-0') })
+
+    screen.getAllByRole('img').forEach((img, i) => {
+      expect(img).toHaveAttribute('alt', `Card ${i}`)
+    })
   })
 })

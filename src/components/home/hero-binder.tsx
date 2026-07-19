@@ -136,9 +136,19 @@ export function HeroBinder({ cards }: HeroBinderProps) {
     setActiveId(active.id as string)
   }
 
-  function onDragEnd({ active, over }: DragEndEvent) {
+  // Shared by onDragEnd and onDragCancel — dnd-kit fires only one of the two,
+  // so a cancelled drag (Esc) would otherwise leave the binder stuck flat.
+  function resetDragState() {
     setActiveId(null)
     setPressed(false)
+  }
+
+  function onDragCancel() {
+    resetDragState()
+  }
+
+  function onDragEnd({ active, over }: DragEndEvent) {
+    resetDragState()
     if (!over || active.id === over.id) return
     const oldIndex = items.findIndex((c) => c.id === active.id)
     const newIndex = items.findIndex((c) => c.id === over.id)
@@ -178,6 +188,7 @@ export function HeroBinder({ cards }: HeroBinderProps) {
               id="hero-binder-dnd"
               sensors={sensors}
               onDragStart={onDragStart}
+              onDragCancel={onDragCancel}
               onDragEnd={onDragEnd}
             >
               <SortableContext items={items.map((c) => c.id)} strategy={rectSortingStrategy}>
