@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
-import { envInt, envWindow } from '@/lib/rate-limit'
+import { envInt, envWindow, rlPrefix } from '@/lib/rate-limit'
 
 const ENV_KEY = 'RL_TEST_ENV_HELPER'
 
@@ -55,5 +55,21 @@ describe('envWindow', () => {
   it('不支援的單位 → 用 fallback', () => {
     process.env[ENV_KEY] = '5 y'
     expect(envWindow(ENV_KEY, '1 m')).toBe('1 m')
+  })
+})
+
+describe('rlPrefix', () => {
+  afterEach(() => {
+    delete process.env.RL_PREFIX_NAMESPACE
+  })
+
+  it('未設定 RL_PREFIX_NAMESPACE → prefix 原樣不變（production 預設行為）', () => {
+    delete process.env.RL_PREFIX_NAMESPACE
+    expect(rlPrefix('rl:forgot:ip')).toBe('rl:forgot:ip')
+  })
+
+  it('設定 RL_PREFIX_NAMESPACE → prefix 前綴 {ns}:', () => {
+    process.env.RL_PREFIX_NAMESPACE = 'ci-123-1'
+    expect(rlPrefix('rl:forgot:ip')).toBe('ci-123-1:rl:forgot:ip')
   })
 })
