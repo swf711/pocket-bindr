@@ -16,10 +16,13 @@
 
 - ✅ 單元測試（`pnpm test`）通過
 - ✅ 編譯無誤（`pnpm build`）與 lint 乾淨（`pnpm lint`）
+- ✅ E2E 測試（`pnpm test:e2e`）通過
 - ✅ 相關文件已同步更新
 
-E2E 測試（`pnpm test:e2e`）需真實資料庫與 production build，成本較高，**不納入公開 CI**；
-請於本機自行驗證，特別是涉及卡冊 / 收藏流程的變更。
+**E2E 於同一 repo 的分支與 PR 上自動執行**（CI 起獨立 Postgres 容器 + 精選卡牌 seed 子集，
+零外部依賴即可自舉）。**Fork PR 例外**：GitHub Actions 對 fork PR 預設不提供 repo secrets，
+故 E2E job 只在 push `main` 與同 repo（非 fork）PR 上執行；fork 提交的 PR 只會跑 lint / 單元測試 /
+build，**E2E 由維護者把該分支推到 origin 觸發本 job 補驗**，合併前務必確認已補驗通過。
 
 ## 分支與 Commit
 

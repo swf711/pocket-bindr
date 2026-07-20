@@ -96,10 +96,12 @@ pnpm dev
 | 變數                                                               | 用途                                                                                                                                         | 本機開發是否必填 |
 | ------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------- | ---------------- |
 | `DATABASE_URL` / `DIRECT_URL`                                      | PostgreSQL 連線（pooled / 直連）                                                                                                             | ✅               |
+| `DATABASE_SSL`                                                     | 設為 `false` 關閉 SSL 連線（Supabase 需要 SSL，為預設行為；僅本機/CI 接不支援 SSL 的 disposable Postgres 時使用）                            | 選填             |
 | `AUTH_SECRET` / `AUTH_URL`                                         | NextAuth session 簽章與站點 URL                                                                                                              | ✅               |
 | `LINK_STATE_SECRET` / `RESET_TOKEN_SECRET` / `EMAIL_VERIFY_SECRET` | OAuth 連結、密碼重設、email 驗證（含註冊強制驗證與純 OAuth 補填 email）的 HMAC 簽章密鑰（各自獨立、lazy 載入）；`EMAIL_VERIFY_SECRET` 為 email/password 註冊必經路徑，需先設定否則註冊會失敗 | 選填（`EMAIL_VERIFY_SECRET` 若要測試 email/password 註冊則必填） |
 | `UPSTASH_REDIS_REST_URL` / `_TOKEN`                                | rate limiting                                                                                                                                | ✅               |
 | `RL_CARDS_SEARCH_LIMIT` / `_WINDOW`、`RL_CARDS_READ_LIMIT` / `_WINDOW` | 讀取端防爬限流閾值（`/api/cards`、`/api/cards/[id]`、`/api/sets`）；未設用寬鬆預設值                                                        | 選填             |
+| `RL_PREFIX_NAMESPACE`                                              | 所有 rate-limit key 的 prefix 前綴，僅供測試環境隔離用（如 CI 併發 run）；production 留空                                                    | 選填             |
 | `GOOGLE_*` / `DISCORD_*`                                           | 社群登入（不需要可留空，改用 Email/密碼）                                                                                                    | 選填             |
 | `RESEND_API_KEY`                                                   | 寄送密碼重設信、註冊驗證信、email 補填驗證信、缺卡/bug 回報信；設為 `test` 可跳過真實寄信                                                    | 選填             |
 | `REPORT_TO_EMAIL`                                                  | 缺卡/bug 回報的收件信箱                                                                                                                      | 選填             |
@@ -127,6 +129,8 @@ pnpm test:e2e:ui   # E2E 互動式 UI
 ```
 
 E2E 以 `pnpm build && pnpm start` 啟動正式 build（非 dev mode），並需要可連線的資料庫與必填環境變數。
+`pnpm test:e2e:seed-cards` 會從 committed 的 `e2e/fixtures/card-seed.json`（精選卡牌子集）冪等灌入資料庫，
+供不依賴真實 74k 卡資料集的環境（如 CI 的獨立 Postgres 容器）跑完整套件。
 
 > ⚠️ E2E 會實際寫入資料庫，請務必指向**獨立的測試資料庫**，切勿指向正式 / 生產環境。
 

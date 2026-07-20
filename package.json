@@ -1,6 +1,6 @@
 {
   "name": "pocket-bindr",
-  "version": "1.9.2",
+  "version": "1.9.3",
   "private": false,
   "license": "MIT",
   "author": "邵尉夫 Brian Shao",
@@ -22,6 +22,7 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:seed": "tsx e2e/helpers/seed-users-cli.ts",
+    "test:e2e:seed-cards": "tsx e2e/helpers/seed-cards-cli.ts",
     "postinstall": "prisma generate"
   },
   "dependencies": {

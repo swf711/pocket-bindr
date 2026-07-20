@@ -4,6 +4,7 @@ on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch:
 
 jobs:
   build-and-test:
@@ -41,3 +42,94 @@ jobs:
           RESET_TOKEN_SECRET: ci-placeholder
           UPSTASH_REDIS_REST_URL: http://localhost
           UPSTASH_REDIS_REST_TOKEN: ci-placeholder
+
+  e2e:
+    runs-on: ubuntu-latest
+    # Fork PR 無法取得 repo secrets（Upstash / Supabase / auth secrets），故只在 push main
+    # 與同 repo（非 fork）PR 上執行；fork PR 僅跑 build-and-test job，外部貢獻由維護者
+    # 把分支推到 origin 觸發本 job 補驗（見 .github/CONTRIBUTING.md）。
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: e2e
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/e2e
+      DIRECT_URL: postgresql://postgres:postgres@localhost:5432/e2e
+      DATABASE_SSL: "false"
+      AUTH_SECRET: ${{ secrets.E2E_AUTH_SECRET }}
+      AUTH_URL: http://localhost:3000
+      AUTH_TRUST_HOST: "true"
+      LINK_STATE_SECRET: ${{ secrets.E2E_LINK_STATE_SECRET }}
+      RESET_TOKEN_SECRET: ${{ secrets.E2E_RESET_TOKEN_SECRET }}
+      EMAIL_VERIFY_SECRET: ${{ secrets.E2E_EMAIL_VERIFY_SECRET }}
+      RESEND_API_KEY: test
+      REPORT_TO_EMAIL: e2e-ci@pocketbindr.com
+      UPSTASH_REDIS_REST_URL: ${{ secrets.UPSTASH_REDIS_REST_URL }}
+      UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN }}
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      # 每個 workflow run（含 rerun）獨立 namespace，隔離併發 run 與本機開發共用同一顆 Upstash
+      # 時的 sliding-window key 互踩（src/lib/rate-limit.ts rlPrefix()）。
+      RL_PREFIX_NAMESPACE: ci-${{ github.run_id }}-${{ github.run_attempt }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Apply migrations
+        run: npx prisma migrate deploy
+
+      - name: Seed E2E test data
+        run: |
+          pnpm test:e2e:seed
+          pnpm test:e2e:seed-cards
+
+      - name: Get installed Playwright version
+        id: playwright-version
+        # 綁 pnpm-lock.yaml 內實際解析出的確切版本（非 package.json 的 ^range），
+        # 否則升版後可能命中舊 browser cache，導致 playwright test 與 browser 版本不匹配。
+        run: echo "version=$(node -e "console.log(require('@playwright/test/package.json').version)")" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.playwright-version.outputs.version }}
+
+      - name: Install Playwright browsers
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps chromium
+
+      - name: Install Playwright OS dependencies
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: npx playwright install-deps chromium
+
+      - name: Run E2E tests
+        run: pnpm test:e2e
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7

@@ -1,55 +1,63 @@
 import { Ratelimit, type Duration } from '@upstash/ratelimit'
 import { redis } from './redis'
 
+// 測試隔離用選填 namespace（如 CI 的 ci-{run_id}-{run_attempt}）：未設時 prefix 維持原樣，
+// production 零影響。讓 CI 內每個 workflow run 有自己的 sliding-window key 空間，
+// 不與本機開發或其他併發 run 互踩；key 有 TTL，舊 namespace 自然過期，不需清理。
+export function rlPrefix(prefix: string): string {
+  const ns = process.env.RL_PREFIX_NAMESPACE
+  return ns ? `${ns}:${prefix}` : prefix
+}
+
 export const forgotPasswordIpLimiter = new Ratelimit({
   redis,
   limiter: Ratelimit.slidingWindow(5, '15 m'),
-  prefix: 'rl:forgot:ip',
+  prefix: rlPrefix('rl:forgot:ip'),
 })
 
 export const forgotPasswordEmailLimiter = new Ratelimit({
   redis,
   limiter: Ratelimit.slidingWindow(3, '60 m'),
-  prefix: 'rl:forgot:email',
+  prefix: rlPrefix('rl:forgot:email'),
 })
 
 // Registration: 10 attempts/hr per IP, 5/hr per email
 export const registerIpLimiter = new Ratelimit({
   redis,
   limiter: Ratelimit.slidingWindow(10, '60 m'),
-  prefix: 'rl:register:ip',
+  prefix: rlPrefix('rl:register:ip'),
 })
 
 export const registerEmailLimiter = new Ratelimit({
   redis,
   limiter: Ratelimit.slidingWindow(5, '60 m'),
-  prefix: 'rl:register:email',
+  prefix: rlPrefix('rl:register:email'),
 })
 
 // Password change (PATCH): 10/15min per IP, 5/15min per userId
 export const passwordChangeIpLimiter = new Ratelimit({
   redis,
   limiter: Ratelimit.slidingWindow(10, '15 m'),
-  prefix: 'rl:pw-change:ip',
+  prefix: rlPrefix('rl:pw-change:ip'),
 })
 
 export const passwordChangeUserLimiter = new Ratelimit({
   redis,
   limiter: Ratelimit.slidingWindow(5, '15 m'),
-  prefix: 'rl:pw-change:user',
+  prefix: rlPrefix('rl:pw-change:user'),
 })
 
 // Password set for OAuth users (POST): 10/hr per IP, 3/hr per userId
 export const passwordSetIpLimiter = new Ratelimit({
   redis,
   limiter: Ratelimit.slidingWindow(10, '60 m'),
-  prefix: 'rl:pw-set:ip',
+  prefix: rlPrefix('rl:pw-set:ip'),
 })
 
 export const passwordSetUserLimiter = new Ratelimit({
   redis,
   limiter: Ratelimit.slidingWindow(3, '60 m'),
-  prefix: 'rl:pw-set:user',
+  prefix: rlPrefix('rl:pw-set:user'),
 })
 
 // Add email for pure-OAuth users — request (POST /api/user/email/request):
@@ -57,79 +65,79 @@ export const passwordSetUserLimiter = new Ratelimit({
 export const emailRequestIpLimiter = new Ratelimit({
   redis,
   limiter: Ratelimit.slidingWindow(10, '60 m'),
-  prefix: 'rl:email-request:ip',
+  prefix: rlPrefix('rl:email-request:ip'),
 })
 
 export const emailRequestUserLimiter = new Ratelimit({
   redis,
   limiter: Ratelimit.slidingWindow(3, '60 m'),
-  prefix: 'rl:email-request:user',
+  prefix: rlPrefix('rl:email-request:user'),
 })
 
 // Add email for pure-OAuth users — verify (POST /api/user/email/verify): 10/hr per IP
 export const emailVerifyIpLimiter = new Ratelimit({
   redis,
   limiter: Ratelimit.slidingWindow(10, '60 m'),
-  prefix: 'rl:email-verify:ip',
+  prefix: rlPrefix('rl:email-verify:ip'),
 })
 
 // Signup email verification (POST /api/auth/verify-signup, unauthenticated): 10/hr per IP
 export const signupVerifyIpLimiter = new Ratelimit({
   redis,
   limiter: Ratelimit.slidingWindow(10, '60 m'),
-  prefix: 'rl:signup-verify:ip',
+  prefix: rlPrefix('rl:signup-verify:ip'),
 })
 
 // Resend signup verification email (POST /api/auth/resend-verification): 10/hr per IP, 3/hr per email
 export const resendVerificationIpLimiter = new Ratelimit({
   redis,
   limiter: Ratelimit.slidingWindow(10, '60 m'),
-  prefix: 'rl:resend-verify:ip',
+  prefix: rlPrefix('rl:resend-verify:ip'),
 })
 
 export const resendVerificationEmailLimiter = new Ratelimit({
   redis,
   limiter: Ratelimit.slidingWindow(3, '60 m'),
-  prefix: 'rl:resend-verify:email',
+  prefix: rlPrefix('rl:resend-verify:email'),
 })
 
 // OAuth account linking (initiate): 10/hr per IP, 5/hr per userId
 export const linkIpLimiter = new Ratelimit({
   redis,
   limiter: Ratelimit.slidingWindow(10, '60 m'),
-  prefix: 'rl:link:ip',
+  prefix: rlPrefix('rl:link:ip'),
 })
 
 export const linkUserLimiter = new Ratelimit({
   redis,
   limiter: Ratelimit.slidingWindow(5, '60 m'),
-  prefix: 'rl:link:user',
+  prefix: rlPrefix('rl:link:user'),
 })
 
 // Report (missing card / bug): 10/hr per IP, 5/hr per userId
 export const reportIpLimiter = new Ratelimit({
   redis,
   limiter: Ratelimit.slidingWindow(10, '60 m'),
-  prefix: 'rl:report:ip',
+  prefix: rlPrefix('rl:report:ip'),
 })
 
 export const reportUserLimiter = new Ratelimit({
   redis,
   limiter: Ratelimit.slidingWindow(5, '60 m'),
-  prefix: 'rl:report:user',
+  prefix: rlPrefix('rl:report:user'),
 })
 
 // Batch add cards to binder (POST /api/binders/[id]/cards/batch): 40/min per IP, 20/min per userId
 export const batchAddIpLimiter = new Ratelimit({
   redis,
   limiter: Ratelimit.slidingWindow(40, '1 m'),
-  prefix: 'rl:binder-batch:ip',
+  prefix: rlPrefix('rl:binder-batch:ip'),
 })
 
 export const batchAddUserLimiter = new Ratelimit({
   redis,
   limiter: Ratelimit.slidingWindow(20, '1 m'),
-  prefix: 'rl:binder-batch:user',
+  prefix: rlPrefix('rl:binder-batch:user'),
 })
 
 // Card image proxy: 300/min per IP. Generous enough for a full binder page load
@@ -138,7 +146,7 @@ export const batchAddUserLimiter = new Ratelimit({
 export const proxyImageIpLimiter = new Ratelimit({
   redis,
   limiter: Ratelimit.slidingWindow(300, '1 m'),
-  prefix: 'rl:proxy-img:ip',
+  prefix: rlPrefix('rl:proxy-img:ip'),
 })
 
 // 讀取端防爬限流（feat/anti-scrape-read-limits）：閾值刻意讀 env，不寫死於原始碼——
@@ -163,7 +171,7 @@ export const cardsSearchIpLimiter = new Ratelimit({
     envInt('RL_CARDS_SEARCH_LIMIT', 300),
     envWindow('RL_CARDS_SEARCH_WINDOW', '1 m'),
   ),
-  prefix: 'rl:cards-search:ip',
+  prefix: rlPrefix('rl:cards-search:ip'),
 })
 
 // 單卡詳情（GET /api/cards/[id]）與系列列表（GET /api/sets）共用，較輕量，理由同上。
@@ -173,7 +181,7 @@ export const cardsReadIpLimiter = new Ratelimit({
     envInt('RL_CARDS_READ_LIMIT', 300),
     envWindow('RL_CARDS_READ_WINDOW', '1 m'),
   ),
-  prefix: 'rl:cards-read:ip',
+  prefix: rlPrefix('rl:cards-read:ip'),
 })
 
 /** 共用 client IP 取值：取 XFF 首段（沿用 POST /api/report 既有慣例），無 trusted-proxy 驗證。 */

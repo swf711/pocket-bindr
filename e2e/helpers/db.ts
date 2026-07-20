@@ -23,13 +23,17 @@ async function getRedis() {
  * 注意：@upstash/ratelimit slidingWindow 的實際 key 帶 window bucket 後綴
  * （如 `rl:forgot:ip:127.0.0.1:495277`），必須以 SCAN 前綴比對刪除；
  * 精確 DEL `prefix:identifier` 永遠刪不到任何東西。
+ * 呼叫端一律傳裸 prefix（如 `rl:forgot:ip`）——namespace 套用在此處統一補上，
+ * 與 src/lib/rate-limit.ts 的 rlPrefix() 同讀 RL_PREFIX_NAMESPACE，兩側必須同步。
  */
 export async function clearRateLimitKey(prefix: string, identifier: string): Promise<void> {
   const r = await getRedis()
   if (!r) return
+  const ns = process.env.RL_PREFIX_NAMESPACE
+  const namespacedPrefix = ns ? `${ns}:${prefix}` : prefix
   let cursor = 0
   do {
-    const [next, keys] = await r.scan(cursor, { match: `${prefix}:${identifier}:*`, count: 100 })
+    const [next, keys] = await r.scan(cursor, { match: `${namespacedPrefix}:${identifier}:*`, count: 100 })
     cursor = Number(next)
     if (keys.length) await r.del(...keys)
   } while (cursor !== 0)
