@@ -1,5 +1,5 @@
 import { test, expect } from './helpers/test'
-import { getTestUser } from './helpers/auth'
+import { getTestUser, loginAs } from './helpers/auth'
 import { uniqueTestIp, forwardedHeaders } from './helpers/rate-limit-ip'
 import {
   createUnverifiedPasswordUser,
@@ -95,12 +95,24 @@ test.describe('驗證連結流程', () => {
     expect(page.url()).toContain('/cards')
   })
 
-  test('偽造/竄改 token（含過期案例的錯誤處理路徑，TOKEN_EXPIRED 的精確覆蓋見單元測試）→ 顯示錯誤 + 返回註冊入口', async ({ page }) => {
+  test('偽造/竄改 token（含過期案例的錯誤處理路徑，TOKEN_EXPIRED 的精確覆蓋見單元測試）→ 顯示錯誤 + 重寄出口（非返回註冊死路）', async ({ page }) => {
     const invalidToken = `${Buffer.from(JSON.stringify({ userId: 'x', email: user.email, purpose: 'verify-signup', exp: Date.now() - 1000 })).toString('base64url')}.invalidsignature`
 
     await page.goto(`/verify-signup?token=${encodeURIComponent(invalidToken)}`)
     await expect(page.getByTestId('verify-signup-error-alert')).toBeVisible({ timeout: 10000 })
-    await expect(page.getByRole('link', { name: '返回註冊' })).toBeVisible()
+    // 舊版只有「返回註冊」，但同 email 重新註冊必得 EMAIL_TAKEN，是死路。
+    // 改為比照 reset-password 失效卡：導向獨立的重寄申請頁。
+    await expect(page.getByRole('link', { name: '重寄驗證信' })).toBeVisible()
+    await expect(page.getByRole('link', { name: '返回註冊' })).toHaveCount(0)
+  })
+
+  test('失效卡的「重寄驗證信」導向 /resend-verification', async ({ page }) => {
+    await page.goto('/verify-signup')
+    await expect(page.getByTestId('verify-signup-error-alert')).toBeVisible({ timeout: 10000 })
+
+    await page.getByRole('link', { name: '重寄驗證信' }).click()
+    await expect(page).toHaveURL(/\/resend-verification$/)
+    await expect(page.getByRole('heading', { name: '重寄驗證信' })).toBeVisible()
   })
 
   test('無 token 參數 → 顯示無效連結錯誤', async ({ page }) => {
@@ -118,6 +130,39 @@ test.describe('驗證連結流程', () => {
     // 同一 token 再次訪問 → single-use no-op（D5），顯示「已驗證」而非錯誤
     await page.goto(`/verify-signup?token=${encodeURIComponent(token)}`)
     await expect(page.getByRole('heading', { name: '已驗證' })).toBeVisible({ timeout: 10000 })
+  })
+})
+
+test.describe('重寄驗證信申請頁 /resend-verification', () => {
+  // 比照 forgot-password：獨立頁 + RHF/zod 表單 + 防 enumeration 統一成功訊息。
+  test('未登入可正常訪問，顯示表單', async ({ page }) => {
+    await page.goto('/resend-verification')
+    await expect(page.getByRole('heading', { name: '重寄驗證信' })).toBeVisible()
+    await expect(page.getByLabel('Email')).toBeVisible()
+    await expect(page.getByRole('button', { name: '送出驗證信' })).toBeVisible()
+  })
+
+  test('提交任意 email 顯示統一成功訊息（防 enumeration）', async ({ page }) => {
+    // 一次性 email，避免佔用 user.email 的 resend 額度（3/hr per email）。
+    await page.goto('/resend-verification')
+    await page.getByLabel('Email').fill(`e2e-resendpage-${Date.now()}@pocketbindr.com`)
+    await page.getByRole('button', { name: '送出驗證信' }).click()
+    await expect(page.getByTestId('resend-verification-success-alert')).toBeVisible({ timeout: 10000 })
+  })
+
+  test('email 格式錯誤 → inline 欄位錯誤，不送出（純前端 zod 驗證）', async ({ page }) => {
+    await page.goto('/resend-verification')
+    await page.getByLabel('Email').fill('not-an-email')
+    await page.getByRole('button', { name: '送出驗證信' }).click()
+    await expect(page.getByTestId('resend-verification-success-alert')).toHaveCount(0)
+  })
+
+  test('已登入訪問 → (auth) layout redirect 至 /cards', async ({ page }) => {
+    await createUnverifiedPasswordUser(user.email, user.username, user.password)
+    await loginAs(page, user)
+    await page.goto('/resend-verification')
+    await page.waitForURL('**/cards**')
+    expect(page.url()).toContain('/cards')
   })
 })
 

@@ -168,6 +168,17 @@
       "submitting": "送出中...",
       "backToLogin": "返回登入"
     },
+    "resendVerification": {
+      "title": "重寄驗證信",
+      "subtitle": "輸入您註冊時使用的 email，若該帳號尚未完成驗證將收到新的驗證信",
+      "rateLimitedTitle": "請求過於頻繁",
+      "rateLimited": "請求過於頻繁，請稍後再試。",
+      "successTitle": "驗證信已送出",
+      "successAlert": "若此 email 有尚未驗證的帳號，您將在幾分鐘內收到驗證信。請也確認垃圾郵件資料夾。",
+      "submit": "送出驗證信",
+      "submitting": "送出中...",
+      "backToLogin": "返回登入"
+    },
     "reset": {
       "title": "設定新密碼",
       "subtitle": "請輸入您的新密碼，連結 15 分鐘內有效",
@@ -811,8 +822,12 @@
   "verifySignup": {
     "checkEmail": {
       "title": "請查收信箱",
-      "subtitle": "我們已寄送驗證信至 {email}，請在 15 分鐘內點擊信中連結完成驗證後即可登入。",
+      "subtitle": "我們已寄送驗證信至 {email}，請在 24 小時內點擊信中連結完成驗證後即可登入。若沒收到，請一併檢查垃圾郵件匣。",
       "backToLogin": "返回登入"
+    },
+    "sendFailed": {
+      "title": "帳號已建立，但驗證信寄送失敗",
+      "subtitle": "您的帳號（{email}）已建立，但驗證信寄送失敗。請點擊下方按鈕重寄，或稍後再試。"
     },
     "verifying": "驗證中…",
     "verifySuccess": {
@@ -825,9 +840,9 @@
       "subtitle": "此帳號的 Email 已完成驗證，請直接登入"
     },
     "verifyError": {
-      "expired": "此連結已過期，請重新註冊或申請重寄驗證信",
-      "invalid": "此連結無效",
-      "backToRegister": "返回註冊"
+      "expired": "此連結已過期。請點擊下方按鈕重新申請驗證信，不需重新註冊。",
+      "invalid": "此連結無效或已失效。請點擊下方按鈕重新申請驗證信。",
+      "goToResend": "重寄驗證信"
     },
     "verifyErrorTitle": {
       "expired": "驗證信已過期",
