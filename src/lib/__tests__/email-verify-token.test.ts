@@ -19,13 +19,34 @@ describe('createEmailVerifyToken / verifyEmailVerifyToken', () => {
     expect(payload.exp).toBeGreaterThan(Date.now())
   })
 
-  it('token exp 大約是 15 分鐘後', () => {
+  it('verify-email（預設）token exp 大約是 15 分鐘後', () => {
     const before = Date.now()
     const token = createEmailVerifyToken(MOCK_USER_ID, MOCK_EMAIL)
     const payload = verifyEmailVerifyToken(token)
     const expectedExp = before + 15 * 60 * 1000
     expect(payload.exp).toBeGreaterThanOrEqual(expectedExp - 100)
     expect(payload.exp).toBeLessThanOrEqual(expectedExp + 100)
+  })
+
+  it('verify-signup token exp 大約是 24 小時後（TTL 依 purpose 分流）', () => {
+    const before = Date.now()
+    const token = createEmailVerifyToken(MOCK_USER_ID, MOCK_EMAIL, 'verify-signup')
+    const payload = verifyEmailVerifyToken(token, 'verify-signup')
+    const expectedExp = before + 24 * 60 * 60 * 1000
+    expect(payload.exp).toBeGreaterThanOrEqual(expectedExp - 100)
+    expect(payload.exp).toBeLessThanOrEqual(expectedExp + 100)
+  })
+
+  it('signup 的 TTL 明顯長於 verify-email（兩者不再共用同一常數）', () => {
+    const signup = verifyEmailVerifyToken(
+      createEmailVerifyToken(MOCK_USER_ID, MOCK_EMAIL, 'verify-signup'),
+      'verify-signup',
+    )
+    const addEmail = verifyEmailVerifyToken(
+      createEmailVerifyToken(MOCK_USER_ID, MOCK_EMAIL, 'verify-email'),
+      'verify-email',
+    )
+    expect(signup.exp).toBeGreaterThan(addEmail.exp)
   })
 
   it('簽名被篡改 → throws TOKEN_INVALID', () => {

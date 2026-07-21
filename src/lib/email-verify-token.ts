@@ -2,6 +2,15 @@ import { createHmac, timingSafeEqual } from 'crypto'
 
 export type EmailVerifyPurpose = 'verify-email' | 'verify-signup'
 
+// TTL 依用途分流：
+// - verify-signup：註冊驗證信。使用者常在手機註冊、稍後才開信箱，15 分鐘過短會製造
+//   「連結已死」的死路，故放寬為 24 小時（token 只能蓋 emailVerified，風險有限）。
+// - verify-email：純 OAuth 使用者於設定頁補填 email，使用者當下就在等，維持 15 分鐘。
+const TOKEN_TTL_MS: Record<EmailVerifyPurpose, number> = {
+  'verify-signup': 24 * 60 * 60 * 1000,
+  'verify-email': 15 * 60 * 1000,
+}
+
 export interface EmailVerifyTokenPayload {
   userId: string
   email: string
@@ -18,7 +27,7 @@ export function createEmailVerifyToken(
     userId,
     email,
     purpose,
-    exp: Date.now() + 15 * 60 * 1000,
+    exp: Date.now() + TOKEN_TTL_MS[purpose],
   }
   const data = Buffer.from(JSON.stringify(payload)).toString('base64url')
   const sig = createHmac('sha256', process.env.EMAIL_VERIFY_SECRET!)

@@ -19,6 +19,7 @@ export const DISALLOWED_PATHS: readonly string[] = [
   '/verify-email',
   '/verify-signup',
   '/reset-password',
+  '/resend-verification',
 ]
 
 /**

@@ -254,7 +254,7 @@ function generateSignupVerificationHtml(token: string, username?: string): strin
           <tr>
             <td style="padding:40px 40px 24px;">
               <h1 style="margin:0 0 8px;font-size:20px;font-weight:700;color:#09090b;">完成註冊驗證</h1>
-              <p style="margin:0 0 24px;font-size:14px;color:#71717a;line-height:1.6;">${greeting}，<br />感謝註冊 PocketBindr！請在 15 分鐘內點擊下方按鈕完成 email 驗證，即可登入。</p>
+              <p style="margin:0 0 24px;font-size:14px;color:#71717a;line-height:1.6;">${greeting}，<br />感謝註冊 PocketBindr！請在 24 小時內點擊下方按鈕完成 email 驗證，即可登入。</p>
               <a href="${verifyUrl}" style="display:inline-block;padding:10px 24px;background:#09090b;color:#ffffff;text-decoration:none;border-radius:6px;font-size:14px;font-weight:500;">完成驗證</a>
             </td>
           </tr>

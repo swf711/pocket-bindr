@@ -45,8 +45,19 @@ export const resendVerificationSchema = z.object({
   email: z.string().trim().min(1).optional(),
 })
 
+/**
+ * /resend-verification 頁的表單 schema（client 端）。
+ * 與上方 route 專用的寬鬆版本是刻意的一對——client 端做格式驗證給使用者即時回饋，
+ * server 端維持寬鬆以保住「一律回 200 同句訊息」的防 enumeration 行為。
+ * 對照組：forgotPasswordSchema（client）↔ forgotPasswordLenientSchema（server）。
+ */
+export const resendVerificationFormSchema = z.object({
+  email: z.string().min(1, 'INVALID_INPUT').email('INVALID_INPUT'),
+})
+
 export type RegisterInput = z.infer<typeof registerSchema>
 export type LoginInput = z.infer<typeof loginSchema>
 export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>
 export type VerifySignupInput = z.infer<typeof verifySignupSchema>
+export type ResendVerificationFormInput = z.infer<typeof resendVerificationFormSchema>

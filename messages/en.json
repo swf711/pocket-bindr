@@ -168,6 +168,17 @@
       "submitting": "Sending...",
       "backToLogin": "Back to login"
     },
+    "resendVerification": {
+      "title": "Resend verification email",
+      "subtitle": "Enter the email you registered with, and if that account is still unverified you'll receive a new verification email",
+      "rateLimitedTitle": "Too many requests",
+      "rateLimited": "Too many requests. Please try again later.",
+      "successTitle": "Verification email sent",
+      "successAlert": "If an unverified account exists for this email, you'll receive a verification email within a few minutes. Please also check your spam folder.",
+      "submit": "Send verification email",
+      "submitting": "Sending...",
+      "backToLogin": "Back to login"
+    },
     "reset": {
       "title": "Set a new password",
       "subtitle": "Enter your new password. This link is valid for 15 minutes.",
@@ -813,8 +824,12 @@
   "verifySignup": {
     "checkEmail": {
       "title": "Check your email",
-      "subtitle": "We've sent a verification email to {email}. Click the link within 15 minutes to complete verification, then you can log in.",
+      "subtitle": "We've sent a verification email to {email}. Click the link within 24 hours to complete verification, then you can log in. If you don't see it, please check your spam folder.",
       "backToLogin": "Back to login"
+    },
+    "sendFailed": {
+      "title": "Account created, but the email failed to send",
+      "subtitle": "Your account ({email}) was created, but we couldn't send the verification email. Please use the button below to resend, or try again later."
     },
     "verifying": "Verifying…",
     "verifySuccess": {
@@ -827,9 +842,9 @@
       "subtitle": "This account's email has already been verified. Please log in directly"
     },
     "verifyError": {
-      "expired": "This link has expired, please register again or request a new verification email",
-      "invalid": "This link is invalid",
-      "backToRegister": "Back to registration"
+      "expired": "This link has expired. Use the button below to request a new verification email — no need to register again.",
+      "invalid": "This link is invalid or no longer valid. Use the button below to request a new verification email.",
+      "goToResend": "Resend verification email"
     },
     "verifyErrorTitle": {
       "expired": "Verification link expired",

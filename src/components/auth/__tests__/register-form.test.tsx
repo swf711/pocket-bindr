@@ -136,6 +136,20 @@ describe('RegisterForm', () => {
     expect(mockPush).not.toHaveBeenCalled()
   })
 
+  it('emailSendFailed 時改顯示「寄送失敗」狀態，仍提供重寄入口（帳號已建立，不可顯示成註冊失敗）', async () => {
+    vi.mocked(fetch).mockResolvedValue({
+      json: () => Promise.resolve({ success: true, emailSendFailed: true }),
+    } as Response)
+    renderForm()
+    fillForm({ email: 'new@b.com' })
+    fireEvent.click(screen.getByRole('button', { name: '註冊' }))
+    await waitFor(() => {
+      expect(screen.getByText('帳號已建立，但驗證信寄送失敗')).toBeInTheDocument()
+    })
+    expect(screen.queryByText('請查收信箱')).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '重寄驗證信' })).toBeInTheDocument()
+  })
+
   it('拋棄式信箱網域回傳 DISPOSABLE_EMAIL 時顯示於 email 欄位（D7）', async () => {
     vi.mocked(fetch).mockResolvedValue({
       json: () => Promise.resolve({ success: false, error: 'DISPOSABLE_EMAIL' }),

@@ -63,6 +63,8 @@ export function RegisterForm() {
   const [error, setError] = useState('')
   // 註冊成功後不再自動登入（強制 email 驗證，見 CLAUDE.md）；改顯示「請查收信箱」狀態。
   const [registeredEmail, setRegisteredEmail] = useState<string | null>(null)
+  // 帳號已建立但驗證信寄送失敗（API 仍回 201 + emailSendFailed，見 register route）。
+  const [emailSendFailed, setEmailSendFailed] = useState(false)
   const {
     control,
     handleSubmit,
@@ -104,6 +106,7 @@ export function RegisterForm() {
     }
 
     // 強制 email 驗證（D1）：註冊成功但需點驗證信連結才可登入，不自動登入。
+    setEmailSendFailed(data.emailSendFailed === true)
     setRegisteredEmail(email)
   })
 
@@ -112,8 +115,14 @@ export function RegisterForm() {
       <div className="flex flex-col gap-6">
         <Card className="p-6 md:p-8 gap-7 bg-surface-container ring-0">
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl" role="heading" aria-level={1}>{tVerify('checkEmail.title')}</CardTitle>
-            <CardDescription>{tVerify('checkEmail.subtitle', { email: registeredEmail })}</CardDescription>
+            <CardTitle className="text-2xl" role="heading" aria-level={1}>
+              {tVerify(emailSendFailed ? 'sendFailed.title' : 'checkEmail.title')}
+            </CardTitle>
+            <CardDescription>
+              {emailSendFailed
+                ? tVerify('sendFailed.subtitle', { email: registeredEmail })
+                : tVerify('checkEmail.subtitle', { email: registeredEmail })}
+            </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col items-center gap-4">
             <ResendVerificationButton email={registeredEmail} variant="secondary" />

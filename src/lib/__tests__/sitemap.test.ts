@@ -98,6 +98,13 @@ describe('STATIC_ROUTES / DISALLOWED_PATHS', () => {
       expect(DISALLOWED_PATHS).toContain(protectedRoute)
     }
   })
+
+  it('DISALLOWED_PATHS 覆蓋全部 token/信件導向的 auth 流程頁（無索引價值、內容隨 token 變動）', () => {
+    for (const route of ['/verify-email', '/verify-signup', '/reset-password', '/resend-verification']) {
+      expect(DISALLOWED_PATHS).toContain(route)
+      expect(STATIC_ROUTES).not.toContain(route)
+    }
+  })
 })
 
 describe('ALLOWED_PATHS', () => {

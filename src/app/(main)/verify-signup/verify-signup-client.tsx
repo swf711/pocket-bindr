@@ -84,6 +84,9 @@ export function VerifySignupClient({ token }: VerifySignupClientProps) {
     )
   }
 
+  // expired / invalid：連結已無效。比照 reset-password 無 token 的失效卡——
+  // 失效卡本身只負責「告知 + 導向重新申請」，重寄表單獨立成 /resend-verification 頁
+  // （對應 reset-password → /forgot-password 的兩頁分離架構）。
   return (
     <Card className="p-6 md:p-8 gap-7 bg-surface-container ring-0">
       <CardContent className="space-y-4">
@@ -93,7 +96,7 @@ export function VerifySignupClient({ token }: VerifySignupClientProps) {
           <AlertDescription>{t(`verifyError.${state}`)}</AlertDescription>
         </Alert>
         <Button asChild size="lg" className="w-full">
-          <Link href="/register">{t('verifyError.backToRegister')}</Link>
+          <Link href="/resend-verification">{t('verifyError.goToResend')}</Link>
         </Button>
       </CardContent>
     </Card>

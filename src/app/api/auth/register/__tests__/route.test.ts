@@ -71,10 +71,28 @@ describe('POST /api/auth/register', () => {
   it('成功回 201 且寄出 verify-signup 驗證信', async () => {
     vi.mocked(registerUser).mockResolvedValue({ success: true, userId: 'user-1' })
     const res = await POST(makeRequest(validBody))
+    const body = await res.json()
     expect(res.status).toBe(201)
-    expect((await res.json()).success).toBe(true)
+    expect(body.success).toBe(true)
+    expect(body.emailSendFailed).toBe(false)
     expect(createEmailVerifyToken).toHaveBeenCalledWith('user-1', validBody.email, 'verify-signup')
     expect(sendSignupVerificationEmail).toHaveBeenCalledWith(validBody.email, 'mock-token', validBody.username)
+  })
+
+  it('寄信失敗仍回 201 + emailSendFailed，不吞成 500（帳號已建立，回 500 會讓使用者誤以為註冊失敗）', async () => {
+    vi.mocked(registerUser).mockResolvedValue({ success: true, userId: 'user-1' })
+    vi.mocked(sendSignupVerificationEmail).mockRejectedValueOnce(new Error('Resend error: quota exceeded'))
+    const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+
+    const res = await POST(makeRequest(validBody))
+    const body = await res.json()
+
+    expect(res.status).toBe(201)
+    expect(body.success).toBe(true)
+    expect(body.emailSendFailed).toBe(true)
+    // 專屬 log，與泛用的 '[register] error:' 分開，供漏斗診斷區分兩類失敗
+    expect(errSpy).toHaveBeenCalledWith('[register] verification email send failed:', expect.any(Error))
+    errSpy.mockRestore()
   })
 
   it('拋棄式信箱網域回 400 DISPOSABLE_EMAIL 且不呼叫 registerUser（D7）', async () => {
