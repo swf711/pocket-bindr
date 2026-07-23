@@ -93,6 +93,28 @@ test.describe('卡冊詳情頁改善', () => {
     }
   })
 
+  test('刪除內頁成功後確認 dialog 自動關閉', async ({ page }) => {
+    await loginAs(page, USER)
+    const userId = await getUserIdByEmail(USER.email)
+    const { binder } = await createMultiPageBinder(userId, { pageCount: 2 })
+    try {
+      await page.goto(`/binders/${binder.id}`)
+      await page.getByTestId('binder-settings-btn').first().click()
+      await page.getByTestId('page-manager-list').waitFor()
+
+      await page.getByTestId('page-delete-btn-1').click()
+      const confirmBtn = page.getByTestId('page-delete-confirm-1')
+      await expect(confirmBtn).toBeVisible()
+      await confirmBtn.click()
+
+      // 刪除成功後 dialog 應自動關閉（曾是實際回報的 bug：刪除成功但 dialog 未關閉）
+      await expect(confirmBtn).not.toBeVisible({ timeout: 8000 })
+      await expect(page.getByText(/已刪除/)).toBeVisible()
+    } finally {
+      await cleanupBinder(binder.id)
+    }
+  })
+
   test('拖拉調整內頁順序後 DB slot 換頁', async ({ page }) => {
     await loginAs(page, USER)
     const userId = await getUserIdByEmail(USER.email)

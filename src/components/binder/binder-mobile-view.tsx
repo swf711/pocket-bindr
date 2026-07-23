@@ -57,6 +57,7 @@ interface BinderMobileViewProps {
   highlightedSlotId?: string | null
   onAddPage: () => void
   settingsSlot: React.ReactNode
+  refreshSlot?: React.ReactNode
 }
 
 export function BinderMobileView({
@@ -80,6 +81,7 @@ export function BinderMobileView({
   highlightedSlotId,
   onAddPage,
   settingsSlot,
+  refreshSlot,
 }: BinderMobileViewProps) {
   const t = useTranslations('binder')
   const content = mobilePages[pageIndex]
@@ -225,7 +227,10 @@ export function BinderMobileView({
                 </Button>
                 <h1 className="text-xl font-bold">{binderName}</h1>
               </div>
-              {settingsSlot}
+              <div className="flex items-center gap-1">
+                {refreshSlot}
+                {settingsSlot}
+              </div>
             </div>
 
             {/* 補償 counter-scale 視覺溢出，讓 panels 緊接在 header 視覺底部下方 */}

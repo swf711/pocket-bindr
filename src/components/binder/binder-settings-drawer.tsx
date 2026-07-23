@@ -86,9 +86,10 @@ function SortablePageRow({
   page: number
   totalPages: number
   deletingPage: number | null
-  onDelete: (page: number) => void
+  onDelete: (page: number) => Promise<boolean>
 }) {
   const t = useTranslations('binder.settingsDrawer')
+  const [confirmOpen, setConfirmOpen] = useState(false)
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: page,
   })
@@ -117,7 +118,7 @@ function SortablePageRow({
         </button>
         <span className="text-sm">{t('pageLabel', { page })}</span>
       </div>
-      <AlertDialog>
+      <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
         <Tooltip>
           <TooltipTrigger asChild>
             <AlertDialogTrigger asChild>
@@ -148,16 +149,20 @@ function SortablePageRow({
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel variant="outline" size="lg" className="rounded-full!">
+            <AlertDialogCancel variant="outline" size="lg" className="rounded-full!" disabled={deletingPage === page}>
               {t('cancel')}
             </AlertDialogCancel>
             <Button
               variant="destructive"
               size="lg"
-              onClick={() => onDelete(page)}
+              disabled={deletingPage === page}
+              onClick={async () => {
+                const success = await onDelete(page)
+                if (success) setConfirmOpen(false)
+              }}
               data-testid={`page-delete-confirm-${page}`}
             >
-              {t('delete')}
+              {deletingPage === page ? t('deleting') : t('delete')}
             </Button>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -310,7 +315,7 @@ export function BinderSettingsDrawer({
     }
   }
 
-  async function handleDeletePage(pageNumber: number) {
+  async function handleDeletePage(pageNumber: number): Promise<boolean> {
     setDeletingPage(pageNumber)
     try {
       const res = await fetch(`/api/binders/${binderId}/pages/${pageNumber}`, {
@@ -324,8 +329,10 @@ export function BinderSettingsDrawer({
       onPageDelete(pageNumber, data.slots)
       onTotalPagesChange(data.totalPages)
       toast.success(t('pageDeleted', { page: pageNumber }))
+      return true
     } catch {
       toast.error(t('deletePageFailed'))
+      return false
     } finally {
       setDeletingPage(null)
     }

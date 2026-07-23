@@ -58,6 +58,7 @@ interface BinderSpreadViewProps {
   highlightedSlotId?: string | null
   onAddPage: () => void
   settingsSlot: React.ReactNode
+  refreshSlot?: React.ReactNode
 }
 
 function SpreadPanelContent({
@@ -161,6 +162,7 @@ export function BinderSpreadView({
   highlightedSlotId,
   onAddPage,
   settingsSlot,
+  refreshSlot,
 }: BinderSpreadViewProps) {
   const t = useTranslations('binder')
   const spread = spreads[spreadIndex]
@@ -367,6 +369,7 @@ export function BinderSpreadView({
                     </PaginationItem>
                   </PaginationContent>
                 </Pagination>
+                {refreshSlot}
                 {settingsSlot}
               </div>
             </div>

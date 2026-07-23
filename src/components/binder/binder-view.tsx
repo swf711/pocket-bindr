@@ -4,11 +4,13 @@ import { useEffect, useRef, useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { GridType, CardStatus } from '@prisma/client'
 import { toast } from 'sonner'
+import { RefreshCw } from 'lucide-react'
 import { BinderSpreadView } from './binder-spread-view'
 import { BinderMobileView } from './binder-mobile-view'
 import { BinderSettingsDrawer } from './binder-settings-drawer'
 import { SlotCardPickerDialog } from './slot-card-picker-dialog'
 import { CardDetailDrawer } from '@/components/cards/card-detail-drawer'
+import { IconTooltipButton } from '@/components/common/icon-tooltip-button'
 import type { BinderDetailResponse, SlotWithCard, SlotCardResult } from '@/types/binder'
 import type { CardWithCollectionStatus } from '@/types/card'
 import { buildGridPages, buildSpreads, buildMobilePages, pageNumberToSpreadIndex, findNextEmptySlot } from '@/lib/binder-utils'
@@ -30,6 +32,7 @@ export function BinderView({ binder }: { binder: BinderDetailResponse }) {
   const [pickerTarget, setPickerTarget] = useState<{ pageNumber: number; slotIndex: number } | null>(null)
   const [viewCard, setViewCard] = useState<CardWithCollectionStatus | null>(null)
   const [highlightedSlotId, setHighlightedSlotId] = useState<string | null>(null)
+  const [isRefreshing, setIsRefreshing] = useState(false)
   const highlightTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const isMobile = useIsMobile()
   const swapSlots = useSwapSlots()
@@ -236,6 +239,34 @@ export function BinderView({ binder }: { binder: BinderDetailResponse }) {
     }
   }
 
+  const handleRefresh = async () => {
+    setIsRefreshing(true)
+    try {
+      const res = await fetch(`/api/binders/${binder.id}`)
+      if (!res.ok) {
+        toast.error(t('refreshFailed'))
+        return
+      }
+      const data = await res.json()
+      const newTotalPages: number = typeof data.totalPages === 'number' ? data.totalPages : totalPages
+      const newSlots: SlotWithCard[] = data.slots
+      setSlots(newSlots)
+      setTotalPages(newTotalPages)
+
+      // 頁數縮減時 clamp 翻頁 index，但保留當前頁面（不重設為 0）
+      const newPages = buildGridPages(newSlots, gridType, newTotalPages)
+      const newPagesArray = Array.from({ length: newTotalPages }, (_, i) => newPages.get(i + 1) ?? [])
+      const newSpreadsLength = buildSpreads(newPagesArray).length
+      const newMobilePagesLength = buildMobilePages(newPagesArray).length
+      setSpreadIndex((prev) => Math.min(prev, Math.max(newSpreadsLength - 1, 0)))
+      setMobilePageIndex((prev) => Math.min(prev, Math.max(newMobilePagesLength - 1, 0)))
+    } catch {
+      toast.error(t('refreshFailed'))
+    } finally {
+      setIsRefreshing(false)
+    }
+  }
+
   const handleViewCard = async (cardId: string) => {
     const res = await fetch(`/api/cards/${cardId}`)
     if (!res.ok) {
@@ -320,6 +351,19 @@ export function BinderView({ binder }: { binder: BinderDetailResponse }) {
     highlightedSlotId,
   }
 
+  const refreshButton = (
+    <IconTooltipButton
+      data-testid="binder-refresh-btn"
+      variant="outline"
+      size="icon-lg"
+      onClick={handleRefresh}
+      disabled={isRefreshing}
+      tooltip={t('refresh')}
+    >
+      <RefreshCw className={isRefreshing ? 'animate-spin' : undefined} />
+    </IconTooltipButton>
+  )
+
   const settingsDrawer = (
     <BinderSettingsDrawer
       binderId={binder.id}
@@ -352,6 +396,7 @@ export function BinderView({ binder }: { binder: BinderDetailResponse }) {
         onJumpToSlot={handleJumpToSlot}
         onAddPage={handleAddPage}
         settingsSlot={settingsDrawer}
+        refreshSlot={refreshButton}
         {...sharedHandlers}
       />
       <BinderMobileView
@@ -367,6 +412,7 @@ export function BinderView({ binder }: { binder: BinderDetailResponse }) {
         onJumpToSlot={handleJumpToSlot}
         onAddPage={handleAddPage}
         settingsSlot={settingsDrawer}
+        refreshSlot={refreshButton}
         {...sharedHandlers}
       />
       <SlotCardPickerDialog

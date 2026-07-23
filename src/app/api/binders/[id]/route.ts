@@ -41,11 +41,16 @@ export async function GET(_request: Request, context: RouteContext) {
     },
   })
 
+  const rawSettings = binderWithSlots!.settings as { totalPages?: number } | null
+  const maxPageFromSlots = binderWithSlots!.slots.reduce((max, s) => Math.max(max, s.pageNumber), 0)
+  const totalPages = Math.max(rawSettings?.totalPages ?? 0, maxPageFromSlots, 1)
+
   return Response.json({
     id: binderWithSlots!.id,
     name: binderWithSlots!.name,
     gridType: binderWithSlots!.gridType,
     coverColor: binderWithSlots!.coverColor,
+    totalPages,
     slots: binderWithSlots!.slots.map(toDisplaySlot),
   })
 }
