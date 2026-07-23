@@ -14,7 +14,6 @@ model User {
   name          String?
   image         String?
   passwordHash  String?
-  provider      String?
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
   accounts      Account[]
@@ -41,6 +40,10 @@ model Account {
   @@unique([provider, providerAccountId])
 }
 
+/// 本專案採 JWT session（src/lib/auth.config.ts 的 session.strategy = 'jwt'），
+/// session 狀態存在瀏覽器 cookie、伺服器不落地，故此表恆為空。
+/// 但**不可移除**：@auth/prisma-adapter 依 database session 介面撰寫，拿掉 model 會使
+/// Prisma Client 不生成 prisma.session、adapter 型別編譯失敗。改用 database session 時它已就位。
 model Session {
   id           String   @id @default(uuid())
   sessionToken String   @unique
