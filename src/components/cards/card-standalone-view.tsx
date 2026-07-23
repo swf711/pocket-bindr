@@ -49,7 +49,13 @@ export async function CardStandaloneView({ card, sameSetCards, breadcrumbItems }
           <div>
             <h1 className="text-2xl font-bold">{card.name}</h1>
             <p className="text-muted-foreground">
-              {card.set.name} <span className="text-xs">{card.set.externalId}</span>
+              <Link
+                href={`/cards?game=${card.game}&language=${card.language}&setId=${card.set.id}`}
+                className="text-primary underline-offset-4 hover:underline"
+                data-testid="standalone-series-filter"
+              >
+                {card.set.name} <span className="text-xs">{card.set.externalId}</span>
+              </Link>
             </p>
           </div>
 

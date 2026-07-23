@@ -19,6 +19,13 @@ beforeEach(() => {
     unobserve() {}
   }
   vi.stubGlobal('ResizeObserver', MockResizeObserver)
+
+  // jsdom 未實作 Pointer Capture API；vaul 的 Drawer.Content 對任何落在其內的 pointerdown
+  // 無條件呼叫 event.target.setPointerCapture()（見 vaul onPress），點擊 drawer content 內
+  // 真實元件（如系列篩選按鈕）會因此丟出「is not a function」。stub 空實作即可。
+  Element.prototype.setPointerCapture = vi.fn()
+  Element.prototype.releasePointerCapture = vi.fn()
+  Element.prototype.hasPointerCapture = vi.fn().mockReturnValue(false)
 })
 
 afterEach(() => {
@@ -105,6 +112,31 @@ describe('CardDetailDrawer — 資訊欄位', () => {
   it('set.releaseDate 為 null 時不顯示發售日列', () => {
     renderSingle({ set: { id: 'set1', name: 'Test Set', series: 'S&V', externalId: 'SV1', releaseDate: null } })
     expect(screen.queryByText('發售日')).not.toBeInTheDocument()
+  })
+})
+
+describe('CardDetailDrawer — 系列可點篩選（onSeriesClick）', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    ;(global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({ status: 401, ok: false })
+  })
+
+  it('未傳 onSeriesClick 時系列維持純文字（不可點）', () => {
+    const card = makeCard('x', 'Test Card')
+    render(<CardDetailDrawer card={card} open={true} onClose={vi.fn()} />)
+    expect(screen.queryByTestId('drawer-series-filter')).not.toBeInTheDocument()
+    expect(screen.getByText('Test Set')).toBeInTheDocument()
+  })
+
+  it('傳入 onSeriesClick 時系列 render 為可點按鈕，點擊觸發回呼', async () => {
+    const user = userEvent.setup()
+    const onSeriesClick = vi.fn()
+    const card = makeCard('x', 'Test Card')
+    render(<CardDetailDrawer card={card} open={true} onClose={vi.fn()} onSeriesClick={onSeriesClick} />)
+    const seriesBtn = screen.getByTestId('drawer-series-filter')
+    expect(seriesBtn.tagName).toBe('BUTTON')
+    await user.click(seriesBtn)
+    expect(onSeriesClick).toHaveBeenCalledTimes(1)
   })
 })
 

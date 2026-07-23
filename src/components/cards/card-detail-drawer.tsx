@@ -36,9 +36,10 @@ interface CardDetailDrawerProps {
   onNavigate?: (index: number) => void
   hideAddToBinder?: boolean
   currentBinderId?: string
+  onSeriesClick?: () => void
 }
 
-export function CardDetailDrawer({ card, open, onClose, onAddToBinder, onLoginSuccess, cards, currentIndex, onNavigate, hideAddToBinder = false, currentBinderId }: CardDetailDrawerProps) {
+export function CardDetailDrawer({ card, open, onClose, onAddToBinder, onLoginSuccess, cards, currentIndex, onNavigate, hideAddToBinder = false, currentBinderId, onSeriesClick }: CardDetailDrawerProps) {
   const t = useTranslations('cardDetail')
   const tReport = useTranslations('report')
   const { data: session } = useSession()
@@ -164,10 +165,24 @@ export function CardDetailDrawer({ card, open, onClose, onAddToBinder, onLoginSu
     >
       <div className="flex flex-col gap-0.5 md:contents">
         <span className="text-xs text-muted-foreground">{t('series')}</span>
-        <span>
-          {card.set.name}{' '}
-          <span className="text-xs text-muted-foreground">{card.set.externalId}</span>
-        </span>
+        {onSeriesClick ? (
+          <button
+            type="button"
+            data-testid="drawer-series-filter"
+            data-vaul-no-drag
+            onClick={onSeriesClick}
+            aria-label={t('filterBySeries')}
+            className="w-fit text-left text-primary underline-offset-4 hover:underline"
+          >
+            {card.set.name}{' '}
+            <span className="text-xs text-muted-foreground">{card.set.externalId}</span>
+          </button>
+        ) : (
+          <span>
+            {card.set.name}{' '}
+            <span className="text-xs text-muted-foreground">{card.set.externalId}</span>
+          </span>
+        )}
       </div>
 
       <div className="flex flex-col gap-0.5 md:contents">

@@ -119,6 +119,52 @@ describe('GET /api/binders/[id]', () => {
     expect(data.slots[0].cardId).toBe('zh-1')
   })
 
+  it('回傳 totalPages = max(settings.totalPages, maxPageFromSlots, 1)', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'user-1' } })
+    const slotOnPage2 = { ...mockSlot, id: 'slot-2', pageNumber: 2 }
+    vi.mocked(prisma.binder.findUnique)
+      .mockResolvedValueOnce(mockBinder as never)
+      .mockResolvedValueOnce({
+        ...mockBinder,
+        settings: { totalPages: 1 },
+        slots: [mockSlot, slotOnPage2],
+      } as never)
+    const res = await GET(new Request('http://localhost'), {
+      params: Promise.resolve({ id: 'binder-1' }),
+    })
+    const data = await res.json()
+    // settings.totalPages=1 但實際有 slot 落在第 2 頁 → 取 slot 反推的較大值
+    expect(data.totalPages).toBe(2)
+  })
+
+  it('settings.totalPages 大於 slot 最大頁時（空白頁），totalPages 反映 settings 值', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'user-1' } })
+    vi.mocked(prisma.binder.findUnique)
+      .mockResolvedValueOnce(mockBinder as never)
+      .mockResolvedValueOnce({
+        ...mockBinder,
+        settings: { totalPages: 5 },
+        slots: [mockSlot],
+      } as never)
+    const res = await GET(new Request('http://localhost'), {
+      params: Promise.resolve({ id: 'binder-1' }),
+    })
+    const data = await res.json()
+    expect(data.totalPages).toBe(5)
+  })
+
+  it('無 settings 且無 slots 時 totalPages 至少為 1', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'user-1' } })
+    vi.mocked(prisma.binder.findUnique)
+      .mockResolvedValueOnce(mockBinder as never)
+      .mockResolvedValueOnce({ ...mockBinder, settings: null, slots: [] } as never)
+    const res = await GET(new Request('http://localhost'), {
+      params: Promise.resolve({ id: 'binder-1' }),
+    })
+    const data = await res.json()
+    expect(data.totalPages).toBe(1)
+  })
+
   it('slots 的 include 使用 pageNumber ASC, slotIndex ASC 排序', async () => {
     mockAuth.mockResolvedValue({ user: { id: 'user-1' } })
     vi.mocked(prisma.binder.findUnique)

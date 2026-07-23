@@ -79,6 +79,20 @@ export function CardModalClient({ game, language, externalId }: CardModalClientP
     await addToBinder.mutateAsync({ card, binderId, status, quantity })
   }
 
+  // ⚠️ 刻意用硬導航（window.location.href），不透過 next/navigation 的 router.push/back：
+  // 實測發現 forward push 無法可靠讓 @modal 這個攔截 slot 落回 default.tsx（沿用舊渲染內容，
+  // drawer 殘留不關閉）；改用 router.back() 關閉 + 背景 CardSearchClient 端另行 push 篩選，
+  // 兩者非同步時序會互相競態覆蓋（曾實測 setId 被 back() 蓋掉、篩選憑空消失）。硬導航是
+  // 唯一能一次到位、零競態的做法：整頁重新載入必然重置 @modal，此為刻意的一次性導航，
+  // 非頻繁互動，接受失去 SPA 平滑轉場的代價換取正確性。
+  const handleSeriesClick = () => {
+    const params = new URLSearchParams()
+    params.set('game', card.game)
+    params.set('language', card.language)
+    params.set('setId', card.set.id)
+    window.location.href = `/cards?${params.toString()}`
+  }
+
   return (
     <CardDetailDrawer
       card={card}
@@ -89,6 +103,7 @@ export function CardModalClient({ game, language, externalId }: CardModalClientP
       cards={cards}
       currentIndex={index}
       onNavigate={handleNavigate}
+      onSeriesClick={handleSeriesClick}
     />
   )
 }
