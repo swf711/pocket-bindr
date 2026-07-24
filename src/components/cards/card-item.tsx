@@ -28,16 +28,20 @@ export function CardItem({ card, onClick, href, selectable, selected, onToggleSe
     : card.imageSmall
   const resolvedImageUrl = getCardImageUrl(displayImageSmall)
 
+  // 圖片/fallback 一律 `absolute inset-0` 脫離文件流：out-of-flow 的內容無法影響 aspect-ratio box 的
+  // 內在高度，故外框高度純由 `aspect-2.5/3.5` 決定——這是 iOS Safari「aspect-ratio + object-cover 卡圖
+  // 被放大裁切」整族 bug 的通解，與 <a>／<button> 元素型別無關（脫流後皆正確）。containing block 為
+  // 最近的 positioned 祖先（Link 分支＝relative wrapper、button 分支＝relative 的 cardItemBase）。
   const cardImage = (
     <CardImage
       src={resolvedImageUrl}
       alt={card.name}
-      className="h-full w-full object-cover"
+      className="absolute inset-0 h-full w-full object-cover"
       loading="lazy"
       fallback={
         <div
           data-testid="card-image-fallback"
-          className="flex h-full w-full flex-col items-center
+          className="absolute inset-0 flex h-full w-full flex-col items-center
                      justify-center bg-muted text-muted-foreground"
         >
           <span className="text-xs">{card.name}</span>
@@ -80,7 +84,7 @@ export function CardItem({ card, onClick, href, selectable, selected, onToggleSe
       >
         <div
           className={cn(
-            'h-full w-full overflow-hidden transition-transform duration-150',
+            'relative h-full w-full overflow-hidden transition-transform duration-150',
             selected && 'scale-[0.9] rounded-md',
           )}
         >
@@ -92,11 +96,13 @@ export function CardItem({ card, onClick, href, selectable, selected, onToggleSe
   }
 
   // 無 href（binder/public/collection 三處）：維持既有 button + onClick，行為零變。
+  // 卡圖已 `absolute inset-0`（見 cardImage 定義），button 內無 in-flow 內容 → aspect-ratio 生效；
+  // `appearance-none` 一併剝除 <button> 原生外觀的內在尺寸，雙保險確保 iOS Safari 不塌陷放大。
   return (
     <button
       onClick={() => onClick(card)}
       data-testid="card-item"
-      className={cn(cardItemBase, 'hover:scale-105 hover:shadow-lg')}
+      className={cn(cardItemBase, 'appearance-none hover:scale-105 hover:shadow-lg')}
     >
       {cardImage}
     </button>
