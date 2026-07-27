@@ -18,6 +18,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { ChevronLeft, ChevronRight, BookCheck, Bookmark, X, Flag, Share2 } from 'lucide-react'
 import { CardWithCollectionStatus } from '@/types/card'
 import { resolveCardDisplayImage } from '@/lib/resolve-card-image'
+import { hasCardNumber } from '@/lib/card-display'
 import { buildCardShareUrl, shareOrCopy } from '@/lib/share-card'
 import { AddToBinderSection } from '@/components/cards/add-to-binder-section'
 import { CardImage } from '@/components/cards/card-image'
@@ -185,10 +186,13 @@ export function CardDetailDrawer({ card, open, onClose, onAddToBinder, onLoginSu
         )}
       </div>
 
-      <div className="flex flex-col gap-0.5 md:contents">
-        <span className="text-xs text-muted-foreground">{t('cardNumber')}</span>
-        <span>{card.cardNumber}</span>
-      </div>
+      {/* PTCG JA DP 世代部分卡官網本就無收集號，空值時整列省略而非顯示空欄位。 */}
+      {hasCardNumber(card.cardNumber) && (
+        <div className="flex flex-col gap-0.5 md:contents">
+          <span className="text-xs text-muted-foreground">{t('cardNumber')}</span>
+          <span>{card.cardNumber}</span>
+        </div>
+      )}
 
       {card.set.releaseDate && (
         <div className="flex flex-col gap-0.5 md:contents">

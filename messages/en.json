@@ -268,6 +268,7 @@
   },
   "cardStandalone": {
     "metaDescription": "{name} — {setName} {cardNumber} — View card details on PocketBindr and add it to your binder.",
+    "metaDescriptionNoNumber": "{name} — {setName} — View card details on PocketBindr and add it to your binder.",
     "sameSetTitle": "More from this set",
     "viewAllInSet": "View full set"
   },

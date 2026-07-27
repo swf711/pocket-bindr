@@ -45,6 +45,7 @@ import {
   type ReportCardContext,
 } from '@/lib/schemas/report'
 import { resolveFieldError } from '@/lib/schemas/field-error'
+import { formatCardSetLabel } from '@/lib/card-display'
 import { resizeAndCompress } from '@/lib/image-compress'
 
 const REPORT_ATTACHMENT_MAX_DIMENSION = 1280
@@ -184,7 +185,11 @@ export function ReportDialog({
           {defaultCardContext && (
             <p className="text-sm text-muted-foreground">
               {t('cardContextLabel')}：{defaultCardContext.cardName}（
-              {defaultCardContext.setExternalId} {defaultCardContext.cardNumber}）
+              {formatCardSetLabel({
+                set: { externalId: defaultCardContext.setExternalId },
+                cardNumber: defaultCardContext.cardNumber,
+              })}
+              ）
             </p>
           )}
           <Controller

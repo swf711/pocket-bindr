@@ -8,6 +8,7 @@ import { groupAndSortSets } from '@/lib/sort-card-sets'
 import { getCollectionStatusMap, resolveCollectionLookupId } from '@/lib/card-collection-status'
 import { parseSetCardQuery, buildSetCardPrismaWhere, buildSetCardSql } from '@/lib/parse-set-card-query'
 import { buildCrossLangExpansion } from '@/lib/cross-language-search'
+import { CARD_NUMBER_ORDER_SQL } from '@/lib/public-card'
 import { gameSchema } from '@/lib/schemas/collection'
 import { cardsSearchIpLimiter, getClientIp } from '@/lib/rate-limit'
 
@@ -60,53 +61,52 @@ function fetchCardPage(
       }
       const skip = (pageNum - 1) * pageSizeNum
 
-      let cards
-      let total: number
-      if (setId) {
-        ;[cards, total] = await Promise.all([
-          prisma.card.findMany({ where, include, skip, take: pageSizeNum, orderBy: [{ cardNumber: 'asc' }] }),
-          prisma.card.count({ where }),
-        ])
-      } else {
+      // 兩分支共用 raw SQL 取該頁 id：排序需要「空卡號排最後」的表達式，Prisma orderBy 無法表達。
+      const conds: Prisma.Sql[] = [
+        // Cast the bound parameter to the enum type (not the column) so the
+        // composite index Card_game_language_externalId_key stays usable.
+        // Casting the column ("game"::text = $1) forces a full Seq Scan.
+        Prisma.sql`"game" = ${game}::"Game"`,
+        Prisma.sql`"language" = ${language}::"Language"`,
+      ]
+      if (setId) conds.push(Prisma.sql`"setId" = ${setId}`)
+      if (q) {
+        const orParts = [Prisma.sql`"name" ILIKE ${'%' + q + '%'}`, Prisma.sql`"externalId" ILIKE ${q + '%'}`]
+        if (parsed) orParts.push(buildSetCardSql(parsed, game as Game, lang))
+        for (const term of nameTerms) {
+          orParts.push(Prisma.sql`"name" ILIKE ${'%' + term + '%'}`)
+        }
+        if (cardIds.length) {
+          orParts.push(Prisma.sql`"id" = ANY(${cardIds}::text[])`)
+        }
+        conds.push(Prisma.sql`(${Prisma.join(orParts, ' OR ')})`)
+      }
+      const whereSql = Prisma.join(conds, ' AND ')
+
+      let orderSql = CARD_NUMBER_ORDER_SQL
+      if (!setId) {
         const setRows = await prisma.cardSet.findMany({
           where: { game: game as Game, language: lang },
           select: { id: true, name: true, series: true, externalId: true, releaseDate: true },
         })
         const orderedSetIds = groupAndSortSets(setRows).flatMap(g => g.sets.map(s => s.id))
-        const conds: Prisma.Sql[] = [
-          // Cast the bound parameter to the enum type (not the column) so the
-          // composite index Card_game_language_externalId_key stays usable.
-          // Casting the column ("game"::text = $1) forces a full Seq Scan.
-          Prisma.sql`"game" = ${game}::"Game"`,
-          Prisma.sql`"language" = ${language}::"Language"`,
-        ]
-        if (q) {
-          const orParts = [Prisma.sql`"name" ILIKE ${'%' + q + '%'}`, Prisma.sql`"externalId" ILIKE ${q + '%'}`]
-          if (parsed) orParts.push(buildSetCardSql(parsed, game as Game, lang))
-          for (const term of nameTerms) {
-            orParts.push(Prisma.sql`"name" ILIKE ${'%' + term + '%'}`)
-          }
-          if (cardIds.length) {
-            orParts.push(Prisma.sql`"id" = ANY(${cardIds}::text[])`)
-          }
-          conds.push(Prisma.sql`(${Prisma.join(orParts, ' OR ')})`)
-        }
-        const whereSql = Prisma.join(conds, ' AND ')
-        const [idRows, count] = await Promise.all([
-          prisma.$queryRaw<{ id: string }[]>(Prisma.sql`
-            SELECT "id" FROM "Card"
-            WHERE ${whereSql}
-            ORDER BY array_position(${orderedSetIds}::text[], "setId") NULLS LAST, "cardNumber" ASC
-            LIMIT ${pageSizeNum} OFFSET ${skip}
-          `),
-          prisma.card.count({ where }),
-        ])
-        total = count
-        const pageIds = idRows.map(r => r.id)
-        const fetched = await prisma.card.findMany({ where: { id: { in: pageIds } }, include })
-        const byId = new Map(fetched.map(c => [c.id, c]))
-        cards = pageIds.map(id => byId.get(id)).filter((c): c is NonNullable<typeof c> => Boolean(c))
+        orderSql = Prisma.sql`array_position(${orderedSetIds}::text[], "setId") NULLS LAST, ${CARD_NUMBER_ORDER_SQL}`
       }
+
+      const [idRows, total] = await Promise.all([
+        prisma.$queryRaw<{ id: string }[]>(Prisma.sql`
+          SELECT "id" FROM "Card"
+          WHERE ${whereSql}
+          ORDER BY ${orderSql}
+          LIMIT ${pageSizeNum} OFFSET ${skip}
+        `),
+        prisma.card.count({ where }),
+      ])
+      const pageIds = idRows.map(r => r.id)
+      const fetched = await prisma.card.findMany({ where: { id: { in: pageIds } }, include })
+      const byId = new Map(fetched.map(c => [c.id, c]))
+      const cards = pageIds.map(id => byId.get(id)).filter((c): c is NonNullable<typeof c> => Boolean(c))
+
       return { cards, total, includeCanonical }
     },
     ['cards-page', game, language, q, setId, String(pageNum), String(pageSizeNum)],

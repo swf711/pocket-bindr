@@ -2,6 +2,7 @@ import type { Language } from '@prisma/client'
 import type { PublicCardRow } from '@/lib/public-card'
 import { resolveCardDisplayImage } from '@/lib/resolve-card-image'
 import { cardPath } from '@/lib/card-url'
+import { hasCardNumber } from '@/lib/card-display'
 import { SITE_URL, toAbsoluteUrl } from '@/lib/og'
 
 /**
@@ -71,7 +72,9 @@ export function buildCardJsonLd(
   }
 
   const additionalProperty: Array<{ '@type': 'PropertyValue'; name: string; value: unknown }> = []
-  additionalProperty.push({ '@type': 'PropertyValue', name: 'cardNumber', value: card.cardNumber })
+  // 條件輸出：PTCG JA DP 世代部分卡官網本就無收集號，空值不輸出空 property。
+  if (hasCardNumber(card.cardNumber))
+    additionalProperty.push({ '@type': 'PropertyValue', name: 'cardNumber', value: card.cardNumber })
   if (card.rarity) additionalProperty.push({ '@type': 'PropertyValue', name: 'rarity', value: card.rarity })
   if (card.supertype) additionalProperty.push({ '@type': 'PropertyValue', name: 'supertype', value: card.supertype })
   if (card.hp != null) additionalProperty.push({ '@type': 'PropertyValue', name: 'hp', value: card.hp })

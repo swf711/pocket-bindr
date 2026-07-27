@@ -3,7 +3,7 @@ import { unstable_cache } from 'next/cache'
 import { prisma } from '@/lib/prisma'
 import { getCardImageUrl } from '@/lib/get-card-image-url'
 import { HIGH_RARITIES, compareShowcaseCards } from '@/lib/homepage-rarity'
-import type { LatestSet, ShowcaseCard } from '@/types/homepage'
+import type { ShowcaseCard } from '@/types/homepage'
 
 export type { LatestSet, ShowcaseCard, GameTabData } from '@/types/homepage'
 
@@ -79,10 +79,10 @@ function mapToShowcaseCard(card: ShowcaseCardRow): ShowcaseCard {
   }
 }
 
-export async function getShowcaseCards(
+async function _getShowcaseCards(
   game: Game,
   language: Language,
-  limit = 6
+  limit: number
 ): Promise<ShowcaseCard[]> {
   const poolSize = limit * 4
 
@@ -123,7 +123,24 @@ export async function getShowcaseCards(
     .slice(0, limit)
 }
 
-export async function getLatestSeriesCards(
+/**
+ * 首頁展示卡：資料只在爬蟲跑完才變，故與 getTotalCardCount 同樣快取 1 小時。
+ * 帶參數的查詢不能用 module 級包裝，改用 public-card.ts 的 inline `unstable_cache(fn, keys)()` 寫法，
+ * cache key 必須含全部參數。未快取前每次首頁 render 都直接打 DB（74k 卡表的大範圍 index scan）。
+ */
+export function getShowcaseCards(
+  game: Game,
+  language: Language,
+  limit = 6
+): Promise<ShowcaseCard[]> {
+  return unstable_cache(
+    () => _getShowcaseCards(game, language, limit),
+    ['homepage-showcase', game, language, String(limit)],
+    { revalidate: 3600 }
+  )()
+}
+
+async function _getLatestSeriesCards(
   game: Game,
   language: Language,
   limit: number
@@ -152,26 +169,16 @@ export async function getLatestSeriesCards(
     .slice(0, limit)
 }
 
-export async function getLatestSetsByGame(
+/** 最新系列展示卡：同 getShowcaseCards，資料只隨爬蟲變動。 */
+export function getLatestSeriesCards(
   game: Game,
   language: Language,
-  limit = 6
-): Promise<LatestSet[]> {
-  const sets = await prisma.cardSet.findMany({
-    where: { game, language, releaseDate: { not: null } },
-    orderBy: { releaseDate: 'desc' },
-    take: limit,
-    select: {
-      id: true,
-      name: true,
-      game: true,
-      language: true,
-      symbolUrl: true,
-      releaseDate: true,
-      totalCards: true,
-      externalId: true,
-    },
-  })
-  return sets.map((s) => ({ ...s, releaseDate: s.releaseDate! }))
+  limit: number
+): Promise<ShowcaseCard[]> {
+  return unstable_cache(
+    () => _getLatestSeriesCards(game, language, limit),
+    ['homepage-latest-series', game, language, String(limit)],
+    { revalidate: 3600 }
+  )()
 }
 

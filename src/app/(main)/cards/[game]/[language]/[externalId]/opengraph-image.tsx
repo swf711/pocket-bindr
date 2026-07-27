@@ -4,6 +4,7 @@ import { ogFonts } from '@/lib/og-fonts'
 import { logoDataUri, LOGO_ASPECT } from '@/lib/og-logo'
 import { resolveCardDisplayImage } from '@/lib/resolve-card-image'
 import { parseCardPathParams } from '@/lib/card-url'
+import { formatCardSetLabel } from '@/lib/card-display'
 import { getPublicCardByTriple } from '@/lib/public-card'
 
 export const runtime = 'nodejs'
@@ -47,7 +48,7 @@ export default async function CardOgImage({ params }: { params: Promise<PagePara
   const image = resolveCardDisplayImage(card)
   const cardImageDataUri = image.large ? await fetchImageDataUri(image.large) : null
 
-  const meta = `${card.set.externalId} ${card.cardNumber}`
+  const meta = formatCardSetLabel(card)
   const fonts = ogFonts()
   const hasFont = fonts.length > 0
 
