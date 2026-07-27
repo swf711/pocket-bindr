@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { getTranslations } from 'next-intl/server'
 import { parseCardPathParams, cardPath, CARD_OG_LOCALE } from '@/lib/card-url'
 import { getPublicCardByTriple, getSameSetCards } from '@/lib/public-card'
+import { formatCardSetLabel, hasCardNumber } from '@/lib/card-display'
 import { buildCardBreadcrumbItems, buildCardJsonLd } from '@/lib/card-jsonld'
 import { CardStandaloneView } from '@/components/cards/card-standalone-view'
 import { PageContainer } from '@/components/layout/page-container'
@@ -25,12 +26,15 @@ export async function generateMetadata({
   if (!card) return {}
 
   const t = await getTranslations('cardStandalone')
-  const title = `${card.name}（${card.set.externalId} ${card.cardNumber}）· PocketBindr`
-  const description = t('metaDescription', {
-    name: card.name,
-    setName: card.set.name,
-    cardNumber: card.cardNumber,
-  })
+  const title = `${card.name}（${formatCardSetLabel(card)}）· PocketBindr`
+  // PTCG JA DP 世代部分卡無收集號，改用不含 {cardNumber} 的文案，避免留下空欄位／多餘分隔。
+  const description = hasCardNumber(card.cardNumber)
+    ? t('metaDescription', {
+        name: card.name,
+        setName: card.set.name,
+        cardNumber: card.cardNumber,
+      })
+    : t('metaDescriptionNoNumber', { name: card.name, setName: card.set.name })
   const path = cardPath(card)
 
   return {

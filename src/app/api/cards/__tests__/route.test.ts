@@ -284,14 +284,15 @@ describe('GET /api/cards - externalId prefix search', () => {
     })
   })
 
-  it('keyword + language + setId 組合篩選時所有條件都被帶入 where（單一系列走 card.findMany）', async () => {
+  it('keyword + language + setId 組合篩選時所有條件都被帶入 where（單一系列走 card.count）', async () => {
     mockAuth.mockResolvedValue(null)
     vi.mocked(prisma.card.findMany).mockResolvedValue([] as never)
     vi.mocked(prisma.card.count).mockResolvedValue(0)
     const req = new NextRequest('http://localhost/api/cards?game=PTCG&q=eevee&language=EN&setId=set123')
     const res = await GET(req)
     expect(res.status).toBe(200)
-    expect(prisma.card.findMany).toHaveBeenCalledWith(
+    // 有卡號優先排序需要表達式，兩分支都改走 $queryRaw 取 id；完整 where 現由 count 收。
+    expect(prisma.card.count).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({
           game: 'PTCG',
@@ -310,14 +311,14 @@ describe('GET /api/cards - externalId prefix search', () => {
 describe('GET /api/cards - set code + 卡號格式搜尋（PTCG）', () => {
   beforeEach(() => { vi.clearAllMocks(); resetDefaults() })
 
-  it('q=sv8-001 有 setId 時，findMany where.OR 包含第三個 set externalId 條件', async () => {
+  it('q=sv8-001 有 setId 時，count where.OR 包含第三個 set externalId 條件', async () => {
     mockAuth.mockResolvedValue(null)
     vi.mocked(prisma.card.findMany).mockResolvedValue([] as never)
     vi.mocked(prisma.card.count).mockResolvedValue(0)
     const req = new NextRequest('http://localhost/api/cards?game=PTCG&q=sv8-001&setId=en-sv8')
     const res = await GET(req)
     expect(res.status).toBe(200)
-    expect(prisma.card.findMany).toHaveBeenCalledWith(
+    expect(prisma.card.count).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({
           OR: expect.arrayContaining([
@@ -331,7 +332,7 @@ describe('GET /api/cards - set code + 卡號格式搜尋（PTCG）', () => {
       })
     )
     // OR 應有三個條件（name + externalId + set card pattern）
-    const call = vi.mocked(prisma.card.findMany).mock.calls[0][0] as { where: { OR: unknown[] } }
+    const call = vi.mocked(prisma.card.count).mock.calls[0][0] as { where: { OR: unknown[] } }
     expect(call.where.OR).toHaveLength(3)
   })
 
@@ -371,18 +372,18 @@ describe('GET /api/cards - set code + 卡號格式搜尋（PTCG）', () => {
     const req = new NextRequest('http://localhost/api/cards?game=PTCG&q=pikachu&setId=set1')
     const res = await GET(req)
     expect(res.status).toBe(200)
-    const call = vi.mocked(prisma.card.findMany).mock.calls[0][0] as { where: { OR: unknown[] } }
+    const call = vi.mocked(prisma.card.count).mock.calls[0][0] as { where: { OR: unknown[] } }
     expect(call.where.OR).toHaveLength(2)
   })
 
-  it('q=sv8（set-only）有 setId 時，findMany where.OR 包含第三個純 set filter 條件（無 OR 子條件）', async () => {
+  it('q=sv8（set-only）有 setId 時，count where.OR 包含第三個純 set filter 條件（無 OR 子條件）', async () => {
     mockAuth.mockResolvedValue(null)
     vi.mocked(prisma.card.findMany).mockResolvedValue([] as never)
     vi.mocked(prisma.card.count).mockResolvedValue(0)
     const req = new NextRequest('http://localhost/api/cards?game=PTCG&q=sv8&setId=set1')
     const res = await GET(req)
     expect(res.status).toBe(200)
-    const call = vi.mocked(prisma.card.findMany).mock.calls[0][0] as { where: { OR: unknown[] } }
+    const call = vi.mocked(prisma.card.count).mock.calls[0][0] as { where: { OR: unknown[] } }
     // sv8 觸發 set-only pattern → OR 有 3 個條件（name + externalId + set filter）
     expect(call.where.OR).toHaveLength(3)
     // 第三個條件只有 set filter，無 OR 子條件
@@ -407,6 +408,19 @@ describe('GET /api/cards - set code + 卡號格式搜尋（PTCG）', () => {
     })
   })
 
+  it.each([
+    ['有 setId（單一系列）', 'http://localhost/api/cards?game=PTCG&setId=ja-DP5'],
+    ['無 setId（全系列）', 'http://localhost/api/cards?game=PTCG'],
+  ])('%s：ORDER BY 以 NULLIF 把無卡號卡推到最後（有卡號優先）', async (_label, url) => {
+    // Postgres 的 '' 小於所有非空字串，直接 ORDER BY "cardNumber" ASC 會讓無卡號卡佔滿第一頁
+    // （ja-DP5 有 55 張無卡號卡，實測前 12 張全是）。
+    mockAuth.mockResolvedValue(null)
+    await GET(new NextRequest(url))
+    const sql = (vi.mocked(prisma.$queryRaw).mock.calls[0][0] as { strings: string[] }).strings.join('?')
+    expect(sql).toContain(`NULLIF("cardNumber", '') ASC NULLS LAST`)
+    expect(sql).not.toContain('"cardNumber" ASC,')
+  })
+
   it('q 為空時 where 不包含 OR（回歸）', async () => {
     mockAuth.mockResolvedValue(null)
     const req = new NextRequest('http://localhost/api/cards?game=PTCG')
@@ -421,7 +435,7 @@ describe('GET /api/cards - set code + 卡號格式搜尋（PTCG）', () => {
 describe('GET /api/cards - 跨語言展開', () => {
   beforeEach(() => { vi.clearAllMocks(); resetDefaults() })
 
-  it('PTCG JA + q=皮卡丘 → findMany where.OR 含展開的 ピカチュウ 比對詞（有 setId 路徑）', async () => {
+  it('PTCG JA + q=皮卡丘 → count where.OR 含展開的 ピカチュウ 比對詞（有 setId 路徑）', async () => {
     mockAuth.mockResolvedValue(null)
     mockBuildCrossLangExpansion.mockResolvedValue({ nameTerms: ['ピカチュウ'], cardIds: [] })
     vi.mocked(prisma.card.findMany).mockResolvedValue([] as never)
@@ -429,7 +443,7 @@ describe('GET /api/cards - 跨語言展開', () => {
     const req = new NextRequest('http://localhost/api/cards?game=PTCG&language=JA&q=皮卡丘&setId=set1')
     const res = await GET(req)
     expect(res.status).toBe(200)
-    expect(prisma.card.findMany).toHaveBeenCalledWith(
+    expect(prisma.card.count).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({
           OR: expect.arrayContaining([{ name: { contains: 'ピカチュウ', mode: 'insensitive' } }]),
@@ -449,7 +463,7 @@ describe('GET /api/cards - 跨語言展開', () => {
     expect(sqlArg.values).toEqual(expect.arrayContaining(['%ピカチュウ%']))
   })
 
-  it('OPCG JA + q=魯夫 → findMany where.OR 含 id IN (canonicalIds)（有 setId 路徑）', async () => {
+  it('OPCG JA + q=魯夫 → count where.OR 含 id IN (canonicalIds)（有 setId 路徑）', async () => {
     mockAuth.mockResolvedValue(null)
     mockBuildCrossLangExpansion.mockResolvedValue({ nameTerms: [], cardIds: ['ja-op01-001'] })
     vi.mocked(prisma.card.findMany).mockResolvedValue([] as never)
@@ -457,7 +471,7 @@ describe('GET /api/cards - 跨語言展開', () => {
     const req = new NextRequest('http://localhost/api/cards?game=OPCG&language=JA&q=魯夫&setId=set1')
     const res = await GET(req)
     expect(res.status).toBe(200)
-    expect(prisma.card.findMany).toHaveBeenCalledWith(
+    expect(prisma.card.count).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({
           OR: expect.arrayContaining([{ id: { in: ['ja-op01-001'] } }]),

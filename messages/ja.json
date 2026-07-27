@@ -268,6 +268,7 @@
   },
   "cardStandalone": {
     "metaDescription": "{name}｜{setName} {cardNumber}｜PocketBindrでカード詳細を見る。バインダーに追加できます。",
+    "metaDescriptionNoNumber": "{name}｜{setName}｜PocketBindrでカード詳細を見る。バインダーに追加できます。",
     "sameSetTitle": "同じシリーズの他のカード",
     "viewAllInSet": "シリーズ全体を見る"
   },

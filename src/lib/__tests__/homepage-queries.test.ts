@@ -17,7 +17,6 @@ vi.mock('next/cache', () => ({
 
 import {
   getShowcaseCards,
-  getLatestSetsByGame,
   getLatestSeriesCards,
   getTotalCardCount,
 } from '@/lib/homepage-queries'
@@ -48,17 +47,6 @@ const mockOpcgCard = {
   game: 'OPCG',
   language: 'JA',
   aliases: [{ name: '蒙其·D·魯夫', set: { name: '起始甲板！草帽海賊團' } }],
-}
-
-const mockSet = {
-  id: 'set-1',
-  name: 'Paradox Rift',
-  game: 'PTCG' as const,
-  language: 'ZH_TW' as const,
-  symbolUrl: 'https://example.com/symbol.png',
-  releaseDate: new Date('2023-11-03'),
-  totalCards: 182,
-  externalId: 'sv4',
 }
 
 describe('getShowcaseCards', () => {
@@ -194,62 +182,6 @@ describe('getShowcaseCards', () => {
 
     expect(getCardImageUrl).toHaveBeenCalledWith(mockPrismaCard.imageSmall)
     expect(result[0].imageSmall).toBe('/api/proxy-image?url=...')
-  })
-})
-
-describe('getLatestSetsByGame', () => {
-  beforeEach(() => vi.clearAllMocks())
-
-  it('依 game + language 篩選', async () => {
-    vi.mocked(prisma.cardSet.findMany).mockResolvedValue([mockSet] as never)
-
-    await getLatestSetsByGame('PTCG', 'ZH_TW')
-
-    expect(prisma.cardSet.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: expect.objectContaining({ game: 'PTCG', language: 'ZH_TW' }),
-      })
-    )
-  })
-
-  it('releaseDate null 不回傳（where 條件排除）', async () => {
-    vi.mocked(prisma.cardSet.findMany).mockResolvedValue([mockSet] as never)
-
-    await getLatestSetsByGame('PTCG', 'ZH_TW')
-
-    expect(prisma.cardSet.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: expect.objectContaining({ releaseDate: { not: null } }),
-      })
-    )
-  })
-
-  it('排序由新至舊（releaseDate desc）', async () => {
-    vi.mocked(prisma.cardSet.findMany).mockResolvedValue([mockSet] as never)
-
-    await getLatestSetsByGame('PTCG', 'ZH_TW')
-
-    expect(prisma.cardSet.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({ orderBy: { releaseDate: 'desc' } })
-    )
-  })
-
-  it('預設 limit=6', async () => {
-    vi.mocked(prisma.cardSet.findMany).mockResolvedValue([])
-
-    await getLatestSetsByGame('OPCG', 'JA')
-
-    expect(prisma.cardSet.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({ take: 6 })
-    )
-  })
-
-  it('DB 無結果時回傳空陣列', async () => {
-    vi.mocked(prisma.cardSet.findMany).mockResolvedValue([])
-
-    const result = await getLatestSetsByGame('PTCG', 'ZH_TW')
-
-    expect(result).toEqual([])
   })
 })
 

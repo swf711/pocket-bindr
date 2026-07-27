@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { resolveCardDisplayImage } from '@/lib/resolve-card-image'
 import { cardPath } from '@/lib/card-url'
+import { hasCardNumber } from '@/lib/card-display'
 import { CardStandaloneInteractive } from '@/components/cards/card-standalone-interactive'
 import { CardTiltImage } from '@/components/cards/card-tilt-image'
 import { CardImage } from '@/components/cards/card-image'
@@ -60,10 +61,13 @@ export async function CardStandaloneView({ card, sameSetCards, breadcrumbItems }
           </div>
 
           <div className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
-            <div className="flex flex-col gap-0.5">
-              <span className="text-xs text-muted-foreground">{t('cardNumber')}</span>
-              <span>{card.cardNumber}</span>
-            </div>
+            {/* PTCG JA DP 世代部分卡官網本就無收集號，空值時整列省略而非顯示空欄位。 */}
+            {hasCardNumber(card.cardNumber) && (
+              <div className="flex flex-col gap-0.5">
+                <span className="text-xs text-muted-foreground">{t('cardNumber')}</span>
+                <span>{card.cardNumber}</span>
+              </div>
+            )}
 
             {card.set.releaseDate && (
               <div className="flex flex-col gap-0.5">

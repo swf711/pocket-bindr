@@ -96,6 +96,9 @@ model Card {
   @@unique([game, language, externalId])
   @@index([setId, cardNumber])
   @@index([canonicalCardId])
+  // 首頁 count(*) WHERE isCollectible 專用：選擇度低（true 佔 93%）不影響 index-only scan，
+  // 讓 55 MB 的 heap Seq Scan 換成 ~1 MB 的索引掃描（Supabase 免費方案冷讀 IO 是真瓶頸）。
+  @@index([isCollectible])
 }
 
 model UserCard {
