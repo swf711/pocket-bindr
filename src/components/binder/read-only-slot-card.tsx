@@ -1,5 +1,6 @@
 'use client'
 
+import { isMultiNumberCard } from '@/lib/card-number'
 import { getCardImageUrl } from '@/lib/get-card-image-url'
 import { CardImage } from '../cards/card-image'
 import type { SlotWithCard } from '@/types/binder'
@@ -11,6 +12,9 @@ interface ReadOnlySlotCardProps {
 
 export function ReadOnlySlotCard({ slot, onView }: ReadOnlySlotCardProps) {
   const imageUrl = getCardImageUrl(slot.card.imageSmall)
+  // 複數卡（LEGEND／V-UNION／M6 スタジアム）的官方卡圖是合成圖，比例與標準卡不同，
+  // object-cover 會裁成中央一條而認不出是哪張卡，故改 object-contain（見 card-number.ts）。
+  const objectFit = isMultiNumberCard(slot.card.cardNumber) ? 'object-contain' : 'object-cover'
 
   return (
     <div
@@ -22,7 +26,7 @@ export function ReadOnlySlotCard({ slot, onView }: ReadOnlySlotCardProps) {
       <CardImage
         src={imageUrl}
         alt={slot.card.name}
-        className={`h-full w-full object-cover${slot.status === 'wanted' ? ' grayscale' : ''}`}
+        className={`h-full w-full ${objectFit}${slot.status === 'wanted' ? ' grayscale' : ''}`}
         loading="lazy"
         draggable={false}
         fallback={

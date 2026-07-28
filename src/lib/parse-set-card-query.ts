@@ -1,4 +1,5 @@
 import { Prisma, type Game, type Language } from '@prisma/client'
+import { CARD_NUMBER_SEPARATOR } from './card-number'
 import { resolvePtcgSetCodeCandidates } from './ptcg-set-code-aliases'
 
 // 卡號成分：斜線形（JA/ZH_TW 卡面印刷，numerator ≤3 位）優先，否則裸號（≤4 位，EN 常見）
@@ -74,6 +75,35 @@ export function parseSetCardQuery(q: string): ParsedSetCardQuery | null {
   return null
 }
 
+/**
+ * 完整斜線卡號（`072/076`）→ 成分邊界精確比對。
+ *
+ * 複數卡（LEGEND／V-UNION／M6 スタジアム）的 `cardNumber` 是多個成分以 `・` 連接
+ * （`071/076・072/076`，見 card-number.ts），單純 `equals` 只認單成分卡、第 2 個以後的號碼永遠搜不到。
+ * ⚠️ **不可改用 `contains`** —— `contains '36/190'` 會誤中 `136/190`；必須以分隔符或字串端點為界，
+ * 故拆成「整串相等／開頭／結尾／夾在中間」四式。
+ */
+function slashComponentMatches(value: string): Prisma.CardWhereInput[] {
+  const sep = CARD_NUMBER_SEPARATOR
+  return [
+    { cardNumber: { equals: value, mode: 'insensitive' as const } },
+    { cardNumber: { startsWith: `${value}${sep}`, mode: 'insensitive' as const } },
+    { cardNumber: { endsWith: `${sep}${value}`, mode: 'insensitive' as const } },
+    { cardNumber: { contains: `${sep}${value}${sep}`, mode: 'insensitive' as const } },
+  ]
+}
+
+/** slashComponentMatches 的 raw SQL 版（`buildSetCardSql` 用，語意必須與上方逐條對應）。 */
+function slashComponentSql(value: string): Prisma.Sql[] {
+  const sep = CARD_NUMBER_SEPARATOR
+  return [
+    Prisma.sql`"cardNumber" ILIKE ${value}`,
+    Prisma.sql`"cardNumber" ILIKE ${value + sep + '%'}`,
+    Prisma.sql`"cardNumber" ILIKE ${'%' + sep + value}`,
+    Prisma.sql`"cardNumber" ILIKE ${'%' + sep + value + sep + '%'}`,
+  ]
+}
+
 export function buildSetCardPrismaWhere(
   parsed: ParsedSetCardQuery,
   game?: Game | null,
@@ -106,13 +136,17 @@ export function buildSetCardPrismaWhere(
     // 廣撈會把 036/190 誤撈成 036/081 等（實測 200+ 筆），改由下方 fullSlash 精確比對即可。
     if (parsed.fullSlash === null) {
       orParts.push({ cardNumber: { startsWith: parsed.num, mode: 'insensitive' as const } })
+      // 複數卡的第 2 個以後成分：startsWith 只看整串開頭，`・072` 才撈得到 071/076・072/076
+      orParts.push({
+        cardNumber: { contains: `${CARD_NUMBER_SEPARATOR}${parsed.num}`, mode: 'insensitive' as const },
+      })
       if (parsed.setCode !== null) {
         orParts.push({ cardNumber: { startsWith: `${parsed.setCode}-${parsed.num}`, mode: 'insensitive' as const } })
       }
     }
   }
   if (parsed.fullSlash !== null) {
-    orParts.push({ cardNumber: { equals: parsed.fullSlash, mode: 'insensitive' as const } })
+    orParts.push(...slashComponentMatches(parsed.fullSlash))
   }
 
   return { ...setFilter, OR: orParts }
@@ -150,13 +184,15 @@ export function buildSetCardSql(
     // 避免 036/190 廣撈成 036/081 等（實測 200+ 筆）。
     if (parsed.fullSlash === null) {
       numParts.push(Prisma.sql`"cardNumber" ILIKE ${parsed.num + '%'}`)
+      // 複數卡的第 2 個以後成分（與 buildSetCardPrismaWhere 對應）
+      numParts.push(Prisma.sql`"cardNumber" ILIKE ${'%' + CARD_NUMBER_SEPARATOR + parsed.num + '%'}`)
       if (parsed.setCode !== null) {
         numParts.push(Prisma.sql`"cardNumber" ILIKE ${parsed.setCode + '-' + parsed.num + '%'}`)
       }
     }
   }
   if (parsed.fullSlash !== null) {
-    numParts.push(Prisma.sql`"cardNumber" ILIKE ${parsed.fullSlash}`)
+    numParts.push(...slashComponentSql(parsed.fullSlash))
   }
 
   const numClause = Prisma.sql`(${Prisma.join(numParts, ' OR ')})`
