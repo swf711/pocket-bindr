@@ -292,6 +292,7 @@ export function BinderMobileView({
                     counterScale={counterScale}
                     tappedSlotId={tappedSlotId}
                     onTapSlot={handleTapSlot}
+                    compact
                   />
                 </div>
               )}

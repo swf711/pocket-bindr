@@ -334,6 +334,7 @@
       "switchToOwned": "切換為擁有",
       "copyToEmptySlot": "複製到空格",
       "viewCard": "查看卡牌",
+      "moreActions": "更多操作",
       "removeCard": "移除卡牌",
       "removeCardConfirm": "確定要從卡冊移除 {cardName} 嗎？",
       "cancel": "取消",

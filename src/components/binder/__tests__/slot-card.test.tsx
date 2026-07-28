@@ -2,11 +2,20 @@
  * @vitest-environment jsdom
  */
 import '@testing-library/jest-dom/vitest'
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeAll } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { SlotCard } from '../slot-card'
 import type { SlotWithCard } from '@/types/binder'
+
+// Radix DropdownMenu 在 jsdom 需要這些 pointer/scroll API 存根，否則開啟選單會 throw
+beforeAll(() => {
+  Element.prototype.hasPointerCapture = vi.fn()
+  Element.prototype.setPointerCapture = vi.fn()
+  Element.prototype.releasePointerCapture = vi.fn()
+  Element.prototype.scrollIntoView = vi.fn()
+})
 
 function makeSlot(overrides: Partial<SlotWithCard> = {}): SlotWithCard {
   return {
@@ -92,5 +101,67 @@ describe('SlotCard', () => {
     fireEvent.click(getByTestId('slot-card-slot1'))
     expect(onTap).toHaveBeenCalledTimes(1)
     expect(outerClick).not.toHaveBeenCalled()
+  })
+
+  it('桌面刪除鈕開啟確認框、確認後呼叫 onDelete（共用受控 AlertDialog）', () => {
+    const onDelete = vi.fn()
+    renderWithProviders(
+      <SlotCard slot={makeSlot()} onDelete={onDelete} onToggleStatus={() => {}} onView={() => {}} />,
+    )
+    fireEvent.click(screen.getByTestId('slot-remove-btn-slot1'))
+    expect(screen.getByText('確認移除')).toBeInTheDocument()
+    fireEvent.click(screen.getByText('確認移除'))
+    expect(onDelete).toHaveBeenCalledWith('slot1')
+  })
+})
+
+describe('SlotCard compact（小螢幕）', () => {
+  const multiSlot = () =>
+    makeSlot({ card: { id: 'card1', name: 'LEGEND', imageSmall: '', language: 'EN', cardNumber: '015/100・016/100', rarity: null, supertype: 'Pokémon' } })
+
+  it('compact 時只 inline 切換狀態＋查看＋⋯，桌面橫排按鈕（複製/跨格）不出現', () => {
+    renderWithProviders(
+      <SlotCard slot={multiSlot()} compact onDelete={() => {}} onToggleStatus={() => {}} onView={() => {}} onCopy={() => {}} onToggleSpan={() => {}} />,
+    )
+    expect(screen.getByTestId('slot-more-btn-slot1')).toBeInTheDocument()
+    expect(screen.getByTestId('slot-view-btn-slot1')).toBeInTheDocument()
+    expect(screen.getByLabelText('切換為想要')).toBeInTheDocument()
+    // 桌面版 inline 的複製/跨格按鈕不應存在（收進選單）
+    expect(screen.queryByTestId('slot-copy-btn-slot1')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('slot-span-btn-slot1')).not.toBeInTheDocument()
+  })
+
+  it('compact ⋯ 選單開啟後含 跨格／複製／刪除（固定序）', async () => {
+    const user = userEvent.setup()
+    renderWithProviders(
+      <SlotCard slot={multiSlot()} compact onDelete={() => {}} onToggleStatus={() => {}} onView={() => {}} onCopy={() => {}} onToggleSpan={() => {}} />,
+    )
+    await user.click(screen.getByTestId('slot-more-btn-slot1'))
+    expect(await screen.findByTestId('slot-span-menu-slot1')).toBeInTheDocument()
+    expect(screen.getByTestId('slot-copy-menu-slot1')).toBeInTheDocument()
+    expect(screen.getByTestId('slot-remove-menu-slot1')).toBeInTheDocument()
+  })
+
+  it('compact 選單刪除項開啟確認框、確認後呼叫 onDelete', async () => {
+    const user = userEvent.setup()
+    const onDelete = vi.fn()
+    renderWithProviders(
+      <SlotCard slot={multiSlot()} compact onDelete={onDelete} onToggleStatus={() => {}} onView={() => {}} onCopy={() => {}} onToggleSpan={() => {}} />,
+    )
+    await user.click(screen.getByTestId('slot-more-btn-slot1'))
+    await user.click(await screen.findByTestId('slot-remove-menu-slot1'))
+    expect(await screen.findByText('確認移除')).toBeInTheDocument()
+    fireEvent.click(screen.getByText('確認移除'))
+    expect(onDelete).toHaveBeenCalledWith('slot1')
+  })
+
+  it('非複數卡的 compact 選單不含跨格項', async () => {
+    const user = userEvent.setup()
+    renderWithProviders(
+      <SlotCard slot={makeSlot()} compact onDelete={() => {}} onToggleStatus={() => {}} onView={() => {}} onCopy={() => {}} onToggleSpan={() => {}} />,
+    )
+    await user.click(screen.getByTestId('slot-more-btn-slot1'))
+    expect(await screen.findByTestId('slot-copy-menu-slot1')).toBeInTheDocument()
+    expect(screen.queryByTestId('slot-span-menu-slot1')).not.toBeInTheDocument()
   })
 })

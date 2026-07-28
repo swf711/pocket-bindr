@@ -334,6 +334,7 @@
       "switchToOwned": "Mark as owned",
       "copyToEmptySlot": "Copy to empty slot",
       "viewCard": "View card",
+      "moreActions": "More actions",
       "removeCard": "Remove card",
       "removeCardConfirm": "Are you sure you want to remove {cardName} from this binder?",
       "cancel": "Cancel",
