@@ -26,6 +26,8 @@ import { BinderCoverPanel } from './binder-cover-panel'
 import { SlotDragOverlay } from './slot-drag-overlay'
 import { useEdgeHoverPageFlip } from '@/hooks/use-edge-hover-page-flip'
 import { useScaleFit } from '@/hooks/use-scale-fit'
+import { useHasNoHover } from '@/hooks/use-has-hover'
+import { shouldCompactSlotActions } from '@/lib/slot-action-fit'
 import type { Spread, SpreadPageContent } from '@/lib/binder-utils'
 import type { SlotWithCard } from '@/types/binder'
 import { ButtonGroup } from '../ui/button-group'
@@ -82,6 +84,9 @@ function SpreadPanelContent({
   highlightedSlotId,
   expandingGroupId,
   counterScale,
+  tappedSlotId,
+  onTapSlot,
+  compact,
 }: {
   content: SpreadPageContent
   coverColor: string
@@ -101,6 +106,9 @@ function SpreadPanelContent({
   highlightedSlotId?: string | null
   expandingGroupId?: string | null
   counterScale: number
+  tappedSlotId?: string | null
+  onTapSlot?: (key: string) => void
+  compact?: boolean
 }) {
   const t = useTranslations('binder')
   if (content.type === 'cover') {
@@ -143,6 +151,9 @@ function SpreadPanelContent({
         highlightedSlotId={highlightedSlotId}
                     expandingGroupId={expandingGroupId}
         counterScale={counterScale}
+        tappedSlotId={tappedSlotId}
+        onTapSlot={onTapSlot}
+        compact={compact}
       />
     </div>
   )
@@ -179,6 +190,9 @@ export function BinderSpreadView({
   const containerRef = useRef<HTMLDivElement>(null)
   const [activeSlot, setActiveSlot] = useState<SlotWithCard | null>(null)
   const [isDragging, setIsDragging] = useState(false)
+  const [tappedSlotId, setTappedSlotId] = useState<string | null>(null)
+  // iPad 等無 hover 觸控裝置寬度 ≥768px 會走此桌面雙頁 view，需以 tap 顯示操作按鈕；桌面滑鼠維持純 hover
+  const noHover = useHasNoHover()
 
   const isLastSpread = spreadIndex === spreads.length - 1
 
@@ -217,7 +231,14 @@ export function BinderSpreadView({
     flipHandleDragEnd()
     setActiveSlot(null)
     setIsDragging(false)
+    setTappedSlotId(null)
     onDraggingChange?.(false)
+  }
+
+  function handleTapSlot(key: string) {
+    if (!isDragging) {
+      setTappedSlotId(prev => prev === key ? null : key)
+    }
   }
 
   function handleDragCancel() {
@@ -256,9 +277,16 @@ export function BinderSpreadView({
   const headerNaturalWidth = scale > 0 ? SPREAD_NATURAL_WIDTH * scale : SPREAD_NATURAL_WIDTH
   // 補償 counter-scale 視覺溢出，確保 panels 緊接在 header 視覺底部下方
   const dynamicSpacerHeight = scale > 0 && scale < 1 ? HEADER_HEIGHT * (1 / scale - 1) : 0
+  // Snowglobe 依「可用高度」縮放，故格位視覺寬度同時受寬與高影響（直向 iPad 即為高度壓縮的例子）；
+  // 塞不下橫排按鈕時收合成 ⋯ 選單
+  const compactActions = shouldCompactSlotActions(gridType, scale)
 
   return (
-    <div data-testid="binder-spread-view" className="hidden md:flex flex-col flex-1 min-h-0">
+    <div
+      data-testid="binder-spread-view"
+      className="hidden md:flex flex-col flex-1 min-h-0"
+      onClick={() => { if (!isDragging) setTappedSlotId(null) }}
+    >
       {/* DndContext wraps both the scaled area and DragOverlay so the overlay
           renders as a sibling — outside the CSS scale transform — letting
           position:fixed resolve against the viewport instead of the scaled ancestor */}
@@ -412,6 +440,9 @@ export function BinderSpreadView({
                     highlightedSlotId={highlightedSlotId}
                     expandingGroupId={expandingGroupId}
                     counterScale={counterScale}
+                    tappedSlotId={noHover ? tappedSlotId : undefined}
+                    onTapSlot={noHover ? handleTapSlot : undefined}
+                    compact={compactActions}
                   />
                 </div>
                 <div
@@ -437,6 +468,9 @@ export function BinderSpreadView({
                     highlightedSlotId={highlightedSlotId}
                     expandingGroupId={expandingGroupId}
                     counterScale={counterScale}
+                    tappedSlotId={noHover ? tappedSlotId : undefined}
+                    onTapSlot={noHover ? handleTapSlot : undefined}
+                    compact={compactActions}
                   />
                 </div>
               </div>

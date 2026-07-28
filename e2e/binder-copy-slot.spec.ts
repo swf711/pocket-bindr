@@ -36,9 +36,10 @@ test.describe('卡冊格位複製卡牌', () => {
     // 初始僅 1 張卡
     await expect(view.locator('[data-testid^="slot-card-"]')).toHaveCount(1)
 
-    // hover 來源格位顯示操作列 → 點複製
+    // hover 來源格位顯示操作列 → 此 viewport 下格位塞不下橫排按鈕，複製收進 ⋯ 選單（選單 portal 至 body）
     await view.getByTestId(`slot-card-${srcId}`).hover()
-    await view.getByTestId(`slot-copy-btn-${srcId}`).click()
+    await view.getByTestId(`slot-more-btn-${srcId}`).click()
+    await page.getByTestId(`slot-copy-menu-${srcId}`).click()
 
     await expect(page.getByText(/已複製卡片/)).toBeVisible({ timeout: 5000 })
     // 同頁多出一張相同卡（共 2 張）
@@ -61,7 +62,8 @@ test.describe('卡冊格位複製卡牌', () => {
     await view.waitFor()
 
     await view.getByTestId(`slot-card-${srcId}`).hover()
-    await view.getByTestId(`slot-copy-btn-${srcId}`).click()
+    await view.getByTestId(`slot-more-btn-${srcId}`).click()
+    await page.getByTestId(`slot-copy-menu-${srcId}`).click()
 
     await expect(page.getByText(/已複製卡片/)).toBeVisible({ timeout: 5000 })
     // 兩張皆為黑白（wanted）
@@ -110,9 +112,10 @@ test.describe('卡冊格位複製卡牌', () => {
     await view.getByTestId('mobile-next-btn').click()
     await expect(view.locator('[data-testid^="slot-card-"]')).toHaveCount(1)
 
-    // tap 格位顯示操作列 → tap 複製
+    // tap 格位顯示操作列 → 小螢幕複製收進 ⋯ 選單 → 開選單 tap 複製（選單 portal 至 body，故於 page 取）
     await view.getByTestId(`slot-card-${srcId}`).click()
-    await view.getByTestId(`slot-copy-btn-${srcId}`).click()
+    await view.getByTestId(`slot-more-btn-${srcId}`).click()
+    await page.getByTestId(`slot-copy-menu-${srcId}`).click()
 
     await expect(page.getByText(/已複製卡片/)).toBeVisible({ timeout: 5000 })
   })

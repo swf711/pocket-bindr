@@ -21,6 +21,8 @@ interface BinderGridSlotsProps {
   counterScale?: number
   tappedSlotId?: string | null
   onTapSlot?: (key: string) => void
+  /** 小螢幕：格位操作按鈕收合為 ⋯ 選單（僅行動裝置單頁 view 傳入） */
+  compact?: boolean
 }
 
 /** Pure slot grid rendering — no DndContext. Use inside a parent DndContext. */
@@ -39,6 +41,7 @@ export function BinderGridSlots({
   counterScale = 1,
   tappedSlotId,
   onTapSlot,
+  compact = false,
 }: BinderGridSlotsProps) {
   const cols = GRID_TYPE_COLS[gridType]
   return (
@@ -74,6 +77,7 @@ export function BinderGridSlots({
                 counterScale={counterScale}
                 isTapped={tappedSlotId === slot.id}
                 onTap={onTapSlot ? () => onTapSlot(slot.id!) : undefined}
+                compact={compact}
               />
             )}
           </div>

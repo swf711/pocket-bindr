@@ -334,6 +334,7 @@
       "switchToOwned": "所有に切り替え",
       "copyToEmptySlot": "空きスロットに複製",
       "viewCard": "カードを見る",
+      "moreActions": "その他の操作",
       "removeCard": "カードを削除",
       "removeCardConfirm": "{cardName} をバインダーから削除してもよろしいですか？",
       "cancel": "キャンセル",

@@ -21,7 +21,13 @@ vi.mock('@dnd-kit/core', async (importOriginal) => {
   }
 })
 
-import { render, screen, act } from '@testing-library/react'
+// 可控制 useHasNoHover 回傳值以模擬 iPad（無 hover）／桌面（有 hover）
+const mockNoHover = vi.fn(() => false)
+vi.mock('@/hooks/use-has-hover', () => ({
+  useHasNoHover: () => mockNoHover(),
+}))
+
+import { render, screen, act, fireEvent } from '@testing-library/react'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { BinderSpreadView } from '../binder-spread-view'
 import {
@@ -79,6 +85,43 @@ function renderSpreadView(onDraggingChange: (dragging: boolean) => void) {
 
 beforeEach(() => {
   resetCapturedDndHandlers()
+  mockNoHover.mockReturnValue(false)
+})
+
+/** 取操作按鈕 overlay 外層容器（slot-card 內含 `inset-0` 的浮層），用 class 判斷是否顯示 */
+function getOverlay(): HTMLElement {
+  const card = screen.getByTestId('slot-card-slot-1')
+  const overlay = card.querySelector('.inset-0') as HTMLElement
+  expect(overlay).toBeTruthy()
+  return overlay
+}
+
+describe('BinderSpreadView tap-to-reveal（無 hover 裝置，如 iPad）', () => {
+  it('無 hover 時點擊格位顯示操作按鈕、再點收起', () => {
+    mockNoHover.mockReturnValue(true)
+    renderSpreadView(() => {})
+
+    // 初始隱藏（僅 hover 才顯示）
+    expect(getOverlay().className).toContain('opacity-0')
+
+    // 點擊格位 → 顯示
+    fireEvent.click(screen.getByTestId('slot-card-slot-1'))
+    expect(getOverlay().className).toContain('opacity-100')
+    expect(getOverlay().className).not.toContain('opacity-0')
+
+    // 再點擊同格 → 收起
+    fireEvent.click(screen.getByTestId('slot-card-slot-1'))
+    expect(getOverlay().className).toContain('opacity-0')
+  })
+
+  it('有 hover（桌面）時點擊格位不觸發 tap 顯示，維持純 hover', () => {
+    mockNoHover.mockReturnValue(false)
+    renderSpreadView(() => {})
+
+    fireEvent.click(screen.getByTestId('slot-card-slot-1'))
+    // 桌面未接線 onTap，overlay 仍靠 group-hover，維持 opacity-0
+    expect(getOverlay().className).toContain('opacity-0')
+  })
 })
 
 describe('BinderSpreadView 取消拖曳（onDragCancel）', () => {
