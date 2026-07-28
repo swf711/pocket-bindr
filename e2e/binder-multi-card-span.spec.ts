@@ -186,7 +186,9 @@ test.describe('複數卡跨格位呈現', () => {
     // 收合為單格
     const firstSlot = view.locator('[data-testid^="slot-card-"]').first()
     await firstSlot.hover()
-    await view.locator('[data-testid^="slot-span-btn-"]').first().click()
+    // 此 viewport 下格位視覺寬度塞不下橫排按鈕，跨格切換收進 ⋯ 選單（選單 portal 至 body，故於 page 取）
+    await view.locator('[data-testid^="slot-more-btn-"]').first().click()
+    await page.locator('[data-testid^="slot-span-menu-"]').click()
     await expect(view.locator('[data-testid^="slot-card-"]')).toHaveCount(1)
     // UI 走樂觀更新（先變再送出），DB 斷言一律輪詢，不可直接讀一次
     await expect.poll(async () => countBinderSlotGroups(binder.id)).toBe(0)
@@ -194,7 +196,8 @@ test.describe('複數卡跨格位呈現', () => {
 
     // 再展開回跨格
     await view.locator('[data-testid^="slot-card-"]').first().hover()
-    await view.locator('[data-testid^="slot-span-btn-"]').first().click()
+    await view.locator('[data-testid^="slot-more-btn-"]').first().click()
+    await page.locator('[data-testid^="slot-span-menu-"]').click()
     await expect(view.locator('[data-testid^="slot-card-"]')).toHaveCount(4)
     await expect.poll(async () => countBinderSlotGroups(binder.id)).toBe(1)
     await expect
@@ -246,7 +249,9 @@ test.describe('複數卡跨格位呈現', () => {
     await expect(view.locator('[data-testid^="slot-card-"]')).toHaveCount(4)
 
     await view.locator('[data-testid^="slot-card-"]').first().hover()
-    await view.getByRole('button', { name: '移除卡牌' }).first().click()
+    // 此 viewport 下格位視覺寬度塞不下橫排按鈕，刪除收進 ⋯ 選單（選單 portal 至 body，故於 page 取）
+    await view.locator('[data-testid^="slot-more-btn-"]').first().click()
+    await page.locator('[data-testid^="slot-remove-menu-"]').click()
     await page.getByRole('button', { name: '確認移除' }).click()
 
     await expect(view.locator('[data-testid^="slot-card-"]')).toHaveCount(0)

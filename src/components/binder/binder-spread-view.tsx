@@ -27,6 +27,7 @@ import { SlotDragOverlay } from './slot-drag-overlay'
 import { useEdgeHoverPageFlip } from '@/hooks/use-edge-hover-page-flip'
 import { useScaleFit } from '@/hooks/use-scale-fit'
 import { useHasNoHover } from '@/hooks/use-has-hover'
+import { shouldCompactSlotActions } from '@/lib/slot-action-fit'
 import type { Spread, SpreadPageContent } from '@/lib/binder-utils'
 import type { SlotWithCard } from '@/types/binder'
 import { ButtonGroup } from '../ui/button-group'
@@ -85,6 +86,7 @@ function SpreadPanelContent({
   counterScale,
   tappedSlotId,
   onTapSlot,
+  compact,
 }: {
   content: SpreadPageContent
   coverColor: string
@@ -106,6 +108,7 @@ function SpreadPanelContent({
   counterScale: number
   tappedSlotId?: string | null
   onTapSlot?: (key: string) => void
+  compact?: boolean
 }) {
   const t = useTranslations('binder')
   if (content.type === 'cover') {
@@ -150,6 +153,7 @@ function SpreadPanelContent({
         counterScale={counterScale}
         tappedSlotId={tappedSlotId}
         onTapSlot={onTapSlot}
+        compact={compact}
       />
     </div>
   )
@@ -273,6 +277,9 @@ export function BinderSpreadView({
   const headerNaturalWidth = scale > 0 ? SPREAD_NATURAL_WIDTH * scale : SPREAD_NATURAL_WIDTH
   // 補償 counter-scale 視覺溢出，確保 panels 緊接在 header 視覺底部下方
   const dynamicSpacerHeight = scale > 0 && scale < 1 ? HEADER_HEIGHT * (1 / scale - 1) : 0
+  // Snowglobe 依「可用高度」縮放，故格位視覺寬度同時受寬與高影響（直向 iPad 即為高度壓縮的例子）；
+  // 塞不下橫排按鈕時收合成 ⋯ 選單
+  const compactActions = shouldCompactSlotActions(gridType, scale)
 
   return (
     <div
@@ -435,6 +442,7 @@ export function BinderSpreadView({
                     counterScale={counterScale}
                     tappedSlotId={noHover ? tappedSlotId : undefined}
                     onTapSlot={noHover ? handleTapSlot : undefined}
+                    compact={compactActions}
                   />
                 </div>
                 <div
@@ -462,6 +470,7 @@ export function BinderSpreadView({
                     counterScale={counterScale}
                     tappedSlotId={noHover ? tappedSlotId : undefined}
                     onTapSlot={noHover ? handleTapSlot : undefined}
+                    compact={compactActions}
                   />
                 </div>
               </div>

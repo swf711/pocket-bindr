@@ -99,8 +99,9 @@ test.describe('卡冊格位檢視頁', () => {
       // Hover to reveal delete button
       const slotContainer = page.locator('.group').first()
       await slotContainer.hover()
-      const deleteBtn = slotContainer.locator('button[data-variant="destructive"]')
-      await deleteBtn.click()
+      // 此 viewport 下格位視覺寬度塞不下橫排按鈕，刪除收進 ⋯ 選單（選單 portal 至 body，故於 page 取）
+      await slotContainer.locator('[data-testid^="slot-more-btn-"]').click()
+      await page.locator('[data-testid^="slot-remove-menu-"]').click()
       // AlertDialog should appear
       await expect(page.getByRole('alertdialog')).toBeVisible()
       // Click cancel
@@ -124,8 +125,9 @@ test.describe('卡冊格位檢視頁', () => {
       await page.goto(`/binders/${binder.id}`)
       const slotContainer = page.locator('.group').first()
       await slotContainer.hover()
-      const deleteBtn = slotContainer.locator('button[data-variant="destructive"]')
-      await deleteBtn.click()
+      // 此 viewport 下格位視覺寬度塞不下橫排按鈕，刪除收進 ⋯ 選單（選單 portal 至 body，故於 page 取）
+      await slotContainer.locator('[data-testid^="slot-more-btn-"]').click()
+      await page.locator('[data-testid^="slot-remove-menu-"]').click()
       await page.getByRole('button', { name: '確認移除' }).click()
       // After delete, the slot becomes empty (no img)
       await expect(page.locator('[data-testid="binder-spread-view"] img')).toHaveCount(0)
