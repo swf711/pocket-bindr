@@ -14,9 +14,15 @@ import { IconTooltipButton } from '@/components/common/icon-tooltip-button'
 import type { BinderDetailResponse, SlotWithCard, SlotCardResult } from '@/types/binder'
 import type { CardWithCollectionStatus } from '@/types/card'
 import { buildGridPages, buildSpreads, buildMobilePages, pageNumberToSpreadIndex, findNextEmptySlot } from '@/lib/binder-utils'
+import { GRID_TYPE_COLS, GRID_TYPE_SLOTS } from '@/types/binder'
+import { groupSlotIndices } from '@/lib/binder-slot-placement'
+import { resolveSpanLayout } from '@/lib/multi-card-layout'
+import { isMultiNumberCard } from '@/lib/card-number'
 import { useIsMobile } from '@/hooks/use-is-mobile'
 import { useSwapSlots } from '@/hooks/use-swap-slots'
 import { useAddToBinder } from '@/hooks/use-add-to-binder'
+
+const OPTIMISTIC_SLOT_PREFIX = 'optimistic-span-'
 
 export function BinderView({ binder }: { binder: BinderDetailResponse }) {
   const t = useTranslations('binder')
@@ -32,6 +38,9 @@ export function BinderView({ binder }: { binder: BinderDetailResponse }) {
   const [pickerTarget, setPickerTarget] = useState<{ pageNumber: number; slotIndex: number } | null>(null)
   const [viewCard, setViewCard] = useState<CardWithCollectionStatus | null>(null)
   const [highlightedSlotId, setHighlightedSlotId] = useState<string | null>(null)
+  // 剛展開的跨格群組：讓新出現的格位播放一次進場動畫，而不是每次載入頁面都動
+  const [expandingGroupId, setExpandingGroupId] = useState<string | null>(null)
+  const expandTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const highlightTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const isMobile = useIsMobile()
@@ -70,13 +79,27 @@ export function BinderView({ binder }: { binder: BinderDetailResponse }) {
       toast.error(t('deleteSlotFailed'))
       return
     }
-    setSlots((prev) => prev.filter((s) => s.id !== slotId))
+    // 跨格群組刪任一格＝刪整組，後端回傳實際被移除的格位 id
+    const data = (await res.json()) as { removedSlotIds?: string[] }
+    const removed = new Set(data.removedSlotIds ?? [slotId])
+    setSlots((prev) => prev.filter((s) => !removed.has(s.id)))
   }
 
   const handleSwap = (slotAId: string, slotBId: string) => {
     const slotA = slots.find((s) => s.id === slotAId)
     const slotB = slots.find((s) => s.id === slotBId)
     if (!slotA || !slotB) return
+
+    // 拖曳跨格群組時掠過自己的成員格位＝小幅位移，當成移動處理（後端排除自身成員判定佔用）
+    if (slotA.span && slotB.span && slotA.span.groupId === slotB.span.groupId) {
+      void handleMove(slotAId, slotB.pageNumber, slotB.slotIndex)
+      return
+    }
+    // 其餘情況：跨格群組只能整組落在全空矩形，不支援與單格互換（見核心設計決策）
+    if (slotA.span || slotB.span) {
+      toast.error(t('spanTargetOccupied'))
+      return
+    }
 
     // optimistic local update
     setSlots((prev) =>
@@ -111,17 +134,96 @@ export function BinderView({ binder }: { binder: BinderDetailResponse }) {
     const slot = slots.find((s) => s.id === slotId)
     if (!slot) return
     const newStatus = slot.status === 'owned' ? 'wanted' : 'owned'
-    setSlots((prev) => prev.map((s) => (s.id === slotId ? { ...s, status: newStatus } : s)))
+    // 跨格群組是同一張實體卡的多個區塊，狀態整組連動
+    const groupId = slot.span?.groupId
+    const affects = (s: SlotWithCard) => (groupId ? s.span?.groupId === groupId : s.id === slotId)
+
+    setSlots((prev) => prev.map((s) => (affects(s) ? { ...s, status: newStatus } : s)))
     const res = await fetch(`/api/binders/${binder.id}/slots/${slotId}/status`, { method: 'PATCH' })
     if (!res.ok) {
-      setSlots((prev) => prev.map((s) => (s.id === slotId ? { ...s, status: slot.status } : s)))
+      setSlots((prev) => prev.map((s) => (affects(s) ? { ...s, status: slot.status } : s)))
       toast.error(t('toggleStatusFailed'))
+    }
+  }
+
+  /**
+   * 整組搬移跨格群組。`slotIndex` 是群組的**左上角**位置，目標矩形必須全空，否則後端回 409。
+   *
+   * 與單格移動一樣採**樂觀更新**：格位先就位、失敗才回滾。少了這一步，放開滑鼠後拖曳幽靈消失、
+   * 格位卻要等 API round-trip 才移動，視覺上會先彈回原位再跳到目標，與單格拖曳手感不一致。
+   */
+  const handleMoveGroup = async (groupId: string, pageNumber: number, slotIndex: number) => {
+    const members = slots
+      .filter((s) => s.span?.groupId === groupId)
+      .sort((a, b) => (a.span!.groupIndex ?? 0) - (b.span!.groupIndex ?? 0))
+    if (members.length === 0) return
+
+    const span = members[0].span!
+    const targetIndices = groupSlotIndices(
+      slotIndex,
+      span.cols,
+      span.rows,
+      GRID_TYPE_COLS[gridType],
+    )
+    // 目標矩形若已有別的卡片，**在樂觀更新之前**就擋下——否則會先蓋過去、等 409 回來才退回，
+    // 使用者會看到卡片閃到目標位置又跳回原位。
+    const memberIds = new Set(members.map((m) => m.id))
+    const blocked = slots.some(
+      (s) =>
+        !memberIds.has(s.id) &&
+        s.pageNumber === pageNumber &&
+        targetIndices.includes(s.slotIndex),
+    )
+    if (blocked) {
+      toast.error(t('spanTargetOccupied'))
+      return
+    }
+
+    const nextById = new Map(
+      members.map((m, i) => [m.id, { pageNumber, slotIndex: targetIndices[i] }]),
+    )
+    const prevById = new Map(
+      members.map((m) => [m.id, { pageNumber: m.pageNumber, slotIndex: m.slotIndex }]),
+    )
+    const applyPositions = (positions: Map<string, { pageNumber: number; slotIndex: number }>) =>
+      setSlots((prev) => prev.map((s) => ({ ...s, ...(positions.get(s.id) ?? {}) })))
+
+    applyPositions(nextById)
+
+    const res = await fetch(`/api/binders/${binder.id}/slots/group/${groupId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pageNumber, slotIndex }),
+    })
+    if (!res.ok) {
+      applyPositions(prevById)
+      toast.error(res.status === 409 ? t('spanTargetOccupied') : t('spanMoveFailed'))
     }
   }
 
   const handleMove = async (slotId: string, pageNumber: number, slotIndex: number) => {
     const slot = slots.find((s) => s.id === slotId)
     if (!slot) return
+    if (slot.span) {
+      // 落點依「抓住的是群組哪一格」反推左上角，與拖曳幽靈顯示的佔用範圍一致；
+      // 抓右下角拖曳時整組往左上延伸，而不是從游標往右下長出去。
+      const span = slot.span
+      const gridCols = GRID_TYPE_COLS[gridType]
+      const gridRows = Math.floor(GRID_TYPE_SLOTS[gridType] / gridCols)
+      const topRow = Math.floor(slotIndex / gridCols) - Math.floor(span.groupIndex / span.cols)
+      const topCol = (slotIndex % gridCols) - (span.groupIndex % span.cols)
+      if (
+        topRow < 0 ||
+        topCol < 0 ||
+        topCol + span.cols > gridCols ||
+        topRow + span.rows > gridRows
+      ) {
+        toast.error(t('spanTargetOutOfBounds'))
+        return
+      }
+      await handleMoveGroup(span.groupId, pageNumber, topRow * gridCols + topCol)
+      return
+    }
     const prevPage = slot.pageNumber
     const prevIndex = slot.slotIndex
     setSlots((prev) =>
@@ -205,18 +307,23 @@ export function BinderView({ binder }: { binder: BinderDetailResponse }) {
       return
     }
     const result: SlotCardResult = await res.json()
-    setSlots((prev) => [
-      ...prev,
-      {
-        id: result.slot.id,
-        binderId: binder.id,
-        cardId: result.userCard.cardId,
-        pageNumber: result.slot.pageNumber,
-        slotIndex: result.slot.slotIndex,
-        status: result.slot.status,
-        card: result.slot.card,
-      },
-    ])
+    // 複數卡可能被建成跨格群組（後端只回 anchor），無法用單一格位拼出本地狀態 → 重抓
+    if (isMultiNumberCard(result.slot.card.cardNumber)) {
+      await reloadSlots()
+    } else {
+      setSlots((prev) => [
+        ...prev,
+        {
+          id: result.slot.id,
+          binderId: binder.id,
+          cardId: result.userCard.cardId,
+          pageNumber: result.slot.pageNumber,
+          slotIndex: result.slot.slotIndex,
+          status: result.slot.status,
+          card: result.slot.card,
+        },
+      ])
+    }
     setPickerTarget(null)
     toast.success(t('addedCard'))
   }
@@ -239,14 +346,10 @@ export function BinderView({ binder }: { binder: BinderDetailResponse }) {
     }
   }
 
-  const handleRefresh = async () => {
-    setIsRefreshing(true)
-    try {
+  /** 重抓格位與頁數（手動重整、跨格切換等會一次動到多個 row 的操作共用）。 */
+  const reloadSlots = async (): Promise<boolean> => {
       const res = await fetch(`/api/binders/${binder.id}`)
-      if (!res.ok) {
-        toast.error(t('refreshFailed'))
-        return
-      }
+      if (!res.ok) return false
       const data = await res.json()
       const newTotalPages: number = typeof data.totalPages === 'number' ? data.totalPages : totalPages
       const newSlots: SlotWithCard[] = data.slots
@@ -260,11 +363,122 @@ export function BinderView({ binder }: { binder: BinderDetailResponse }) {
       const newMobilePagesLength = buildMobilePages(newPagesArray).length
       setSpreadIndex((prev) => Math.min(prev, Math.max(newSpreadsLength - 1, 0)))
       setMobilePageIndex((prev) => Math.min(prev, Math.max(newMobilePagesLength - 1, 0)))
+      return true
+  }
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true)
+    try {
+      if (!(await reloadSlots())) toast.error(t('refreshFailed'))
     } catch {
       toast.error(t('refreshFailed'))
     } finally {
       setIsRefreshing(false)
     }
+  }
+
+  /**
+   * 複數卡切換「跨格 ↔ 單格」。
+   *
+   * 兩種方向都做**樂觀更新**——收合是純刪除、展開的落點以與後端相同的純函式
+   * （`resolveSpanLayout` + `groupSlotIndices`）在前端先算一次，故都能立即反映。
+   * 失敗一律 `reloadSlots()` 把真相抓回來，不留下前端自行拼湊的殘影。
+   */
+  const handleToggleSpan = async (slotId: string, mode: 'span' | 'single') => {
+    const slot = slots.find((s) => s.id === slotId)
+    if (!slot) return
+    const snapshot = slots
+
+    // 是否已為這次切換播過進場動畫（不可用 expandingGroupId 是否為 null 判斷——
+    // 動畫 400ms 後就會解除，而 API round-trip 通常更久，那樣必定重播一次）
+    let animated = false
+
+    if (mode === 'single' && slot.span) {
+      const groupId = slot.span.groupId
+      setSlots((prev) =>
+        prev
+          .filter((s) => s.span?.groupId !== groupId || s.span.groupIndex === 0)
+          .map((s) => (s.span?.groupId === groupId ? { ...s, span: null } : s)),
+      )
+    } else if (mode === 'span' && !slot.span) {
+      const predicted = predictSpanExpansion(slot)
+      if (predicted) {
+        setSlots((prev) => [...prev.filter((s) => s.id !== slotId), ...predicted])
+        markExpanding(predicted[0].span!.groupId)
+        animated = true
+      }
+    }
+
+    const res = await fetch(`/api/binders/${binder.id}/slots/${slotId}/layout`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mode }),
+    })
+    if (!res.ok) {
+      setSlots(snapshot)
+      const data = await res.json().catch(() => ({}))
+      toast.error(data?.error === 'noRoomForSpan' ? t('spanNoRoom') : t('spanToggleFailed'))
+      return
+    }
+    const data = (await res.json()) as { slots?: SlotWithCard[] }
+    // 展開：以伺服器回傳的真實成員取代樂觀版本（anchor 沿用原 row，故不會 remount）
+    if (data.slots) {
+      const realIds = new Set(data.slots.map((m) => m.id))
+      setSlots((prev) => [
+        ...prev.filter((s) => !realIds.has(s.id) && !s.id.startsWith(OPTIMISTIC_SLOT_PREFIX)),
+        ...data.slots!,
+      ])
+      // 樂觀預測不到落點時（需換頁等）此時才首次出現，補放動畫
+      const realGroupId = data.slots[0]?.span?.groupId
+      if (realGroupId && !animated) markExpanding(realGroupId)
+    }
+  }
+
+  /** 標記某群組正在展開，短暫套用進場動畫後自動解除。 */
+  const markExpanding = (groupId: string) => {
+    if (expandTimeoutRef.current) clearTimeout(expandTimeoutRef.current)
+    setExpandingGroupId(groupId)
+    expandTimeoutRef.current = setTimeout(() => setExpandingGroupId(null), 400)
+  }
+
+  /**
+   * 前端預測「單格 → 跨格」的落點，讓切換立即反映而不必等 round-trip。
+   * 與後端 `expandSlotToSpan` 同一套規則：以原格為左上角優先，否則同頁找矩形空區。
+   * 預測不到（需要換頁或放不下）就不做樂觀更新，交給伺服器回應。
+   */
+  const predictSpanExpansion = (slot: SlotWithCard): SlotWithCard[] | null => {
+    const layout = resolveSpanLayout(slot.card)
+    if (!layout) return null
+    const gridCols = GRID_TYPE_COLS[gridType]
+    const gridRows = Math.floor(GRID_TYPE_SLOTS[gridType] / gridCols)
+    if (layout.cols > gridCols || layout.rows > gridRows) return null
+
+    const baseRow = Math.floor(slot.slotIndex / gridCols)
+    const baseCol = slot.slotIndex % gridCols
+    if (baseCol + layout.cols > gridCols || baseRow + layout.rows > gridRows) return null
+
+    const indices = groupSlotIndices(slot.slotIndex, layout.cols, layout.rows, gridCols)
+    const occupied = new Set(
+      slots
+        .filter((s) => s.pageNumber === slot.pageNumber && s.id !== slot.id)
+        .map((s) => s.slotIndex),
+    )
+    if (indices.some((i) => occupied.has(i))) return null
+
+    const groupId = `${OPTIMISTIC_SLOT_PREFIX}${slot.id}`
+    return indices.map((slotIndex, groupIndex) => ({
+      ...slot,
+      id: groupIndex === 0 ? slot.id : `${OPTIMISTIC_SLOT_PREFIX}${slot.id}-${groupIndex}`,
+      slotIndex,
+      span: {
+        groupId,
+        groupIndex,
+        cols: layout.cols,
+        rows: layout.rows,
+        rotation: layout.rotation,
+        imageUrl: null,
+      },
+    }))
   }
 
   const handleViewCard = async (cardId: string) => {
@@ -335,7 +549,12 @@ export function BinderView({ binder }: { binder: BinderDetailResponse }) {
       status: result.slot.status,
       card: result.slot.card,
     }
-    setSlots((prev) => [...prev, newSlot])
+    // 複製複數卡時後端可能建成跨格群組（只回 anchor）→ 重抓才拿得到完整成員
+    if (isMultiNumberCard(result.slot.card.cardNumber)) {
+      await reloadSlots()
+    } else {
+      setSlots((prev) => [...prev, newSlot])
+    }
     handleJumpToSlot(newSlot)
     toast.success(t('copiedCard'))
   }
@@ -348,7 +567,9 @@ export function BinderView({ binder }: { binder: BinderDetailResponse }) {
     onAddCard: handleAddCard,
     onView: handleViewCard,
     onCopy: handleCopyCard,
+    onToggleSpan: handleToggleSpan,
     highlightedSlotId,
+    expandingGroupId,
   }
 
   const refreshButton = (

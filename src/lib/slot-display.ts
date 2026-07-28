@@ -8,6 +8,9 @@ const cardDisplaySelect = {
   language: true,
   cardNumber: true,
   rarity: true,
+  // 前端推導跨格幾何（`resolveSpanLayout`）需要：成分數 2 時靠 supertype 分辨
+  // M6 スタジアム（左右直卡）與 LEGEND（上下橫卡、需旋轉）
+  supertype: true,
 } as const
 
 /**
@@ -22,6 +25,8 @@ export const slotDisplaySelect = {
   pageNumber: true,
   slotIndex: true,
   status: true,
+  groupIndex: true,
+  group: { select: { id: true, cols: true, rows: true, rotation: true, imageUrl: true } },
   card: { select: cardDisplaySelect },
   displayCard: { select: cardDisplaySelect },
 } as const
@@ -34,6 +39,14 @@ type RawSlotForDisplay = {
   pageNumber: number
   slotIndex: number
   status: 'owned' | 'wanted' | null
+  groupIndex?: number | null
+  group?: {
+    id: string
+    cols: number
+    rows: number
+    rotation: number
+    imageUrl: string | null
+  } | null
   card: {
     id: string
     name: string
@@ -41,6 +54,7 @@ type RawSlotForDisplay = {
     language: 'EN' | 'JA' | 'ZH_TW'
     cardNumber: string
     rarity: string | null
+    supertype: string
   } | null
   displayCard: {
     id: string
@@ -49,6 +63,7 @@ type RawSlotForDisplay = {
     language: 'EN' | 'JA' | 'ZH_TW'
     cardNumber: string
     rarity: string | null
+    supertype: string
   } | null
 }
 
@@ -68,6 +83,17 @@ export function toDisplaySlot(slot: RawSlotForDisplay): SlotWithCard {
     pageNumber: slot.pageNumber,
     slotIndex: slot.slotIndex,
     status: slot.status as 'owned' | 'wanted',
+    span:
+      slot.group && slot.groupIndex != null
+        ? {
+            groupId: slot.group.id,
+            groupIndex: slot.groupIndex,
+            cols: slot.group.cols,
+            rows: slot.group.rows,
+            rotation: slot.group.rotation,
+            imageUrl: slot.group.imageUrl,
+          }
+        : null,
     card: { ...identity, imageSmall: canonical.imageSmall },
   }
 }

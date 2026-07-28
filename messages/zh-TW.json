@@ -337,7 +337,9 @@
       "removeCard": "移除卡牌",
       "removeCardConfirm": "確定要從卡冊移除 {cardName} 嗎？",
       "cancel": "取消",
-      "confirmRemove": "確認移除"
+      "confirmRemove": "確認移除",
+      "expandAcrossSlots": "跨格位呈現",
+      "collapseToSingleSlot": "收合為單格"
     },
     "pickerDialog": {
       "selectStatus": "選擇收藏狀態",
@@ -423,7 +425,12 @@
       "description": "此分享連結無效或已被撤銷。",
       "backHome": "回首頁"
     },
-    "defaultOwnerName": "TCG 玩家"
+    "defaultOwnerName": "TCG 玩家",
+    "spanToggleFailed": "切換呈現方式失敗",
+    "spanNoRoom": "卡冊內沒有足夠的連續空格",
+    "spanMoveFailed": "移動失敗",
+    "spanTargetOccupied": "目標位置已有卡片",
+    "spanTargetOutOfBounds": "這個位置放不下整組卡片"
   },
   "binderList": {
     "title": "我的卡冊",

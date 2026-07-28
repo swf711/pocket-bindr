@@ -1,12 +1,19 @@
 import { CardStatus } from '@prisma/client'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { GRID_TYPE_SLOTS } from '@/types/binder'
+import { GRID_TYPE_COLS, GRID_TYPE_SLOTS } from '@/types/binder'
 import { resolveCanonicalCardId, deriveDisplayCardId } from '@/lib/resolve-canonical-card'
 import { revalidatePublicBinder } from '@/lib/binder-cache'
 import { addCardsSchema } from '@/lib/schemas/binder'
 import { planSlotPlacement } from '@/lib/binder-slot-placement'
 import { MAX_PAGES_PER_BINDER } from '@/lib/binder-limits'
+import { resolveSpanLayout } from '@/lib/multi-card-layout'
+import {
+  loadBinderCells,
+  loadSpanLayoutForCard,
+  placeSpanGroup,
+  resolveTotalPages,
+} from '@/lib/binder-span'
 
 type RouteContext = { params: Promise<{ id: string }> }
 
@@ -56,10 +63,80 @@ export async function POST(request: Request, context: RouteContext) {
   const typedQuantity = quantity as number
 
   const slotsPerPage = GRID_TYPE_SLOTS[binder.gridType]
+  const gridCols = GRID_TYPE_COLS[binder.gridType]
+
+  // 複數卡佔 N 格：先在此判定，格線放不下就回 null 直接走既有單格路徑
+  const spanLayout = await loadSpanLayoutForCard(prisma, typedCardId, gridCols, slotsPerPage)
 
   class PageLimitExceededError extends Error {
     constructor(public remainingCapacity: number) {
       super('pageLimitReached')
+    }
+  }
+
+  if (spanLayout) {
+    try {
+      const result = await prisma.$transaction(async (tx) => {
+        const cells = await loadBinderCells(tx, binderId)
+        let totalPages = await resolveTotalPages(tx, binderId, binder.settings)
+        const initialTotalPages = totalPages
+
+        for (let i = 0; i < typedQuantity; i++) {
+          const placed = await placeSpanGroup(tx, {
+            binderId,
+            cardId: typedCardId,
+            displayCardId,
+            status: typedStatus,
+            layout: spanLayout,
+            cells,
+            gridCols,
+            slotsPerPage,
+            totalPages,
+          })
+          if (placed.status !== 'placed') throw new PageLimitExceededError(0)
+          totalPages = placed.totalPages
+        }
+
+        const userCard = await tx.userCard.upsert({
+          where: { userId_cardId_status: { userId, cardId: typedCardId, status: typedStatus } },
+          create: { userId, cardId: typedCardId, status: typedStatus, quantity: typedQuantity, displayCardId },
+          update: { quantity: { increment: typedQuantity } },
+        })
+
+        let updatedTotalPages: number | undefined
+        if (totalPages > initialTotalPages) {
+          const currentSettings = (binder.settings as Record<string, unknown> | null) ?? {}
+          await tx.binder.update({
+            where: { id: binderId },
+            data: { settings: { ...currentSettings, totalPages } },
+          })
+          updatedTotalPages = totalPages
+        }
+
+        return { userCard, updatedTotalPages }
+      })
+
+      revalidatePublicBinder(binder.shareToken)
+      return Response.json({
+        slotsAdded: typedQuantity,
+        userCard: {
+          id: result.userCard.id,
+          cardId: result.userCard.cardId,
+          status: result.userCard.status,
+          quantity: result.userCard.quantity,
+        },
+        ...(result.updatedTotalPages !== undefined
+          ? { updatedTotalPages: result.updatedTotalPages }
+          : {}),
+      })
+    } catch (err) {
+      if (err instanceof PageLimitExceededError) {
+        return Response.json(
+          { error: 'pageLimitReached', max: MAX_PAGES_PER_BINDER, remainingCapacity: 0 },
+          { status: 409 },
+        )
+      }
+      throw err
     }
   }
 

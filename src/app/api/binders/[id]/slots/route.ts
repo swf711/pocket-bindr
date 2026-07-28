@@ -2,10 +2,11 @@ import { CardStatus } from '@prisma/client'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { resolveCanonicalCardId, deriveDisplayCardId } from '@/lib/resolve-canonical-card'
-import { GRID_TYPE_SLOTS } from '@/types/binder'
+import { GRID_TYPE_COLS, GRID_TYPE_SLOTS } from '@/types/binder'
 import { revalidatePublicBinder } from '@/lib/binder-cache'
 import { slotDisplaySelect, toDisplaySlot } from '@/lib/slot-display'
 import { slotCreateSchema } from '@/lib/schemas/binder'
+import { loadSpanLayoutForCard, placeSpanGroupAt } from '@/lib/binder-span'
 
 type RouteContext = { params: Promise<{ id: string }> }
 
@@ -79,12 +80,31 @@ export async function POST(request: Request, context: RouteContext) {
     // 保留原始顯示語言（OPCG ZH_TW alias）；純 canonical 則 null
     const displayCardId = deriveDisplayCardId(typedCardId, resolvedCardId)
 
+    // 複數卡以指定格位為左上角試建跨格群組；格線放不下或該矩形已被佔用時退回單格
+    const gridCols = GRID_TYPE_COLS[binder.gridType]
+    const spanLayout = await loadSpanLayoutForCard(prisma, resolvedCardId, gridCols, slotsPerPage)
+
     const result = await prisma.$transaction(async (tx) => {
       const userCard = await tx.userCard.upsert({
         where: { userId_cardId_status: { userId, cardId: resolvedCardId, status: typedStatus } },
         create: { userId, cardId: resolvedCardId, status: typedStatus, quantity: 1, displayCardId },
         update: { quantity: { increment: 1 } },
       })
+
+      if (spanLayout) {
+        const spanned = await placeSpanGroupAt(tx, {
+          binderId,
+          cardId: resolvedCardId,
+          displayCardId,
+          status: typedStatus,
+          layout: spanLayout,
+          gridCols,
+          slotsPerPage,
+          pageNumber: typedPageNumber,
+          slotIndex: typedSlotIndex,
+        })
+        if (spanned) return { userCard, createdSlot: spanned }
+      }
 
       const createdSlot = await tx.binderSlot.create({
         data: { binderId, pageNumber: typedPageNumber, slotIndex: typedSlotIndex, cardId: resolvedCardId, status: typedStatus, displayCardId },

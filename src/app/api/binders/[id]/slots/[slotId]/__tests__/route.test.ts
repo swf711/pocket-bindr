@@ -56,7 +56,8 @@ describe('DELETE /api/binders/[id]/slots/[slotId]', () => {
     const deleteManyMock = vi.fn()
     vi.mocked(prisma.$transaction).mockImplementation(async (fn) => {
       await fn({
-        binderSlot: { delete: vi.fn() },
+        binderSlot: { delete: vi.fn(), deleteMany: vi.fn(), findMany: vi.fn() },
+        binderSlotGroup: { delete: vi.fn() },
         userCard: { updateMany: updateManyMock, deleteMany: deleteManyMock },
       } as never)
     })

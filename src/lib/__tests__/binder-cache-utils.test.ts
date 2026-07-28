@@ -17,6 +17,7 @@ function makeSlot(id: string, pageNumber: number, slotIndex: number): SlotWithCa
       language: 'EN',
       cardNumber: '001',
       rarity: null,
+      supertype: 'Pokémon',
     },
   }
 }
