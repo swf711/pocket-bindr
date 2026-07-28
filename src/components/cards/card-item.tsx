@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 import { Check } from 'lucide-react'
 import { CardWithCollectionStatus } from '@/types/card'
+import { isMultiNumberCard } from '@/lib/card-number'
 import { getCardImageUrl } from '@/lib/get-card-image-url'
 import { CardImage } from './card-image'
 import { cn } from '@/lib/utils'
@@ -36,7 +37,12 @@ export function CardItem({ card, onClick, href, selectable, selected, onToggleSe
     <CardImage
       src={resolvedImageUrl}
       alt={card.name}
-      className="absolute inset-0 h-full w-full object-cover"
+      className={cn(
+        'absolute inset-0 h-full w-full',
+        // 複數卡（LEGEND／V-UNION／M6 スタジアム）的官方卡圖是合成圖，比例與標準卡不同；
+        // object-cover 會裁成中央一條而認不出是哪張卡（見 card-number.ts）。
+        isMultiNumberCard(card.cardNumber) ? 'object-contain' : 'object-cover',
+      )}
       loading="lazy"
       fallback={
         <div

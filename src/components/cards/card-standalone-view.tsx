@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { resolveCardDisplayImage } from '@/lib/resolve-card-image'
 import { cardPath } from '@/lib/card-url'
 import { hasCardNumber } from '@/lib/card-display'
+import { isMultiNumberCard } from '@/lib/card-number'
 import { CardStandaloneInteractive } from '@/components/cards/card-standalone-interactive'
 import { CardTiltImage } from '@/components/cards/card-tilt-image'
 import { CardImage } from '@/components/cards/card-image'
@@ -135,7 +136,10 @@ export async function CardStandaloneView({ card, sameSetCards, breadcrumbItems }
                   <CardImage
                     src={scImage.small}
                     alt={sc.name}
-                    className="h-full w-full object-cover"
+                    className={`h-full w-full ${
+                      // 複數卡是合成圖（比例非標準卡），object-cover 會裁成中央一條
+                      isMultiNumberCard(sc.cardNumber) ? 'object-contain' : 'object-cover'
+                    }`}
                     loading="lazy"
                     fallback={
                       <div className="flex h-full w-full items-center justify-center bg-muted p-1 text-center text-xs text-muted-foreground">

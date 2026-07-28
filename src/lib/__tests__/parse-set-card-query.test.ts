@@ -258,13 +258,41 @@ describe('buildSetCardPrismaWhere', () => {
     )
   })
 
-  it('斜線單獨 fullSlash → OR 不含任何 startsWith（純精確比對，避免跨 set 廣撈）', () => {
+  it('斜線單獨 fullSlash → 不做分子廣撈（startsWith 的值一律含 / 或分隔符，非裸分子）', () => {
     const result = buildSetCardPrismaWhere({ setCode: null, num: '036', fullSlash: '036/190' })
-    const hasStartsWith = (result.OR ?? []).some(
-      c => typeof c === 'object' && c !== null && 'cardNumber' in c &&
-        typeof c.cardNumber === 'object' && c.cardNumber !== null && 'startsWith' in c.cardNumber,
+    const startsWithValues = (result.OR ?? []).flatMap(c =>
+      typeof c === 'object' && c !== null && 'cardNumber' in c &&
+      typeof c.cardNumber === 'object' && c.cardNumber !== null && 'startsWith' in c.cardNumber
+        ? [String(c.cardNumber.startsWith)]
+        : [],
     )
-    expect(hasStartsWith).toBe(false)
+    // 允許 `036/190・`（複數卡成分邊界），禁止 `036`（分子廣撈，會誤撈 036/081 等 200+ 筆）
+    expect(startsWithValues).not.toContain('036')
+    for (const v of startsWithValues) expect(v).toContain('/')
+  })
+
+  it('fullSlash → 複數卡的四式成分邊界比對（整串／開頭／結尾／夾在中間）', () => {
+    // 複數卡 cardNumber 形如 `071/076・072/076`（LEGEND／V-UNION／M6 スタジアム），
+    // 只用 equals 會讓第 2 個以後的號碼永遠搜不到。
+    const result = buildSetCardPrismaWhere({ setCode: null, num: '072', fullSlash: '072/076' })
+    expect(result.OR).toEqual(
+      expect.arrayContaining([
+        { cardNumber: { equals: '072/076', mode: 'insensitive' } },
+        { cardNumber: { startsWith: '072/076・', mode: 'insensitive' } },
+        { cardNumber: { endsWith: '・072/076', mode: 'insensitive' } },
+        { cardNumber: { contains: '・072/076・', mode: 'insensitive' } },
+      ]),
+    )
+  })
+
+  it('裸號 → 補 `・NNN` contains，讓複數卡的第 2 個以後成分也搜得到', () => {
+    const result = buildSetCardPrismaWhere({ setCode: 'm6', num: '072', fullSlash: null })
+    expect(result.OR).toEqual(
+      expect.arrayContaining([
+        { cardNumber: { startsWith: '072', mode: 'insensitive' } },
+        { cardNumber: { contains: '・072', mode: 'insensitive' } },
+      ]),
+    )
   })
 
   it('無 game/language（既有行為回歸）→ set filter 為單一 externalId equals', () => {
@@ -300,5 +328,17 @@ describe('buildSetCardSql（語言相依候選展開）', () => {
   it('PTCG EN OBF → SQL 比對 sv3', () => {
     const sql = buildSetCardSql({ setCode: 'obf', num: '1', fullSlash: null }, 'PTCG', 'EN')
     expect(JSON.stringify(sql)).toContain('sv3')
+  })
+
+  it('fullSlash → SQL 帶四式成分邊界比對（與 Prisma where 版逐條對應）', () => {
+    const sql = buildSetCardSql({ setCode: null, num: '072', fullSlash: '072/076' }, 'PTCG', 'JA')
+    expect(sql.values).toEqual(
+      expect.arrayContaining(['072/076', '072/076・%', '%・072/076', '%・072/076・%']),
+    )
+  })
+
+  it('裸號 → SQL 補 `%・NNN%`，涵蓋複數卡的第 2 個以後成分', () => {
+    const sql = buildSetCardSql({ setCode: null, num: '072', fullSlash: null }, 'PTCG', 'JA')
+    expect(sql.values).toEqual(expect.arrayContaining(['072%', '%・072%']))
   })
 })

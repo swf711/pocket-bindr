@@ -17,6 +17,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
+import { isMultiNumberCard } from '@/lib/card-number'
 import { getCardImageUrl } from '@/lib/get-card-image-url'
 import { CardImage } from '../cards/card-image'
 import type { SlotWithCard } from '@/types/binder'
@@ -63,6 +64,8 @@ export function SlotCard({
   })
 
   const imageUrl = getCardImageUrl(slot.card.imageSmall)
+  // 複數卡的官方卡圖是合成圖（比例非標準卡），object-cover 會裁成中央一條，改 object-contain
+  const objectFit = isMultiNumberCard(slot.card.cardNumber) ? 'object-contain' : 'object-cover'
 
   return (
     <div
@@ -82,7 +85,7 @@ export function SlotCard({
       <CardImage
         src={imageUrl}
         alt={slot.card.name}
-        className={`h-full w-full object-cover${slot.status === 'wanted' ? ' grayscale' : ''}`}
+        className={`h-full w-full ${objectFit}${slot.status === 'wanted' ? ' grayscale' : ''}`}
         loading="lazy"
         draggable={false}
         fallback={
