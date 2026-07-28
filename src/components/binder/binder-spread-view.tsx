@@ -23,7 +23,7 @@ import {
 } from '@/components/ui/pagination'
 import { BinderGridSlots } from './binder-grid'
 import { BinderCoverPanel } from './binder-cover-panel'
-import { SlotCard } from './slot-card'
+import { SlotDragOverlay } from './slot-drag-overlay'
 import { useEdgeHoverPageFlip } from '@/hooks/use-edge-hover-page-flip'
 import { useScaleFit } from '@/hooks/use-scale-fit'
 import type { Spread, SpreadPageContent } from '@/lib/binder-utils'
@@ -53,9 +53,11 @@ interface BinderSpreadViewProps {
   onMove: (slotId: string, pageNumber: number, slotIndex: number) => void
   onView?: (cardId: string) => void
   onCopy?: (slotId: string) => void
+  onToggleSpan?: (slotId: string, mode: 'span' | 'single') => void
   onAddCard?: (pageNumber: number, slotIndex: number) => void
   onJumpToSlot: (slot: SlotWithCard) => void
   highlightedSlotId?: string | null
+  expandingGroupId?: string | null
   onAddPage: () => void
   settingsSlot: React.ReactNode
   refreshSlot?: React.ReactNode
@@ -73,10 +75,12 @@ function SpreadPanelContent({
   onToggleStatus,
   onView,
   onCopy,
+  onToggleSpan,
   isDragging,
   onAddCard,
   onJumpToSlot,
   highlightedSlotId,
+  expandingGroupId,
   counterScale,
 }: {
   content: SpreadPageContent
@@ -90,10 +94,12 @@ function SpreadPanelContent({
   onToggleStatus: (slotId: string) => void
   onView?: (cardId: string) => void
   onCopy?: (slotId: string) => void
+  onToggleSpan?: (slotId: string, mode: 'span' | 'single') => void
   isDragging: boolean
   onAddCard?: (pageNumber: number, slotIndex: number) => void
   onJumpToSlot: (slot: SlotWithCard) => void
   highlightedSlotId?: string | null
+  expandingGroupId?: string | null
   counterScale: number
 }) {
   const t = useTranslations('binder')
@@ -131,9 +137,11 @@ function SpreadPanelContent({
         onToggleStatus={onToggleStatus}
         onView={onView}
         onCopy={onCopy}
+        onToggleSpan={onToggleSpan}
         isDragging={isDragging}
         onAddCard={onAddCard}
         highlightedSlotId={highlightedSlotId}
+                    expandingGroupId={expandingGroupId}
         counterScale={counterScale}
       />
     </div>
@@ -157,9 +165,11 @@ export function BinderSpreadView({
   onMove,
   onView,
   onCopy,
+  onToggleSpan,
   onAddCard,
   onJumpToSlot,
   highlightedSlotId,
+  expandingGroupId,
   onAddPage,
   settingsSlot,
   refreshSlot,
@@ -395,10 +405,12 @@ export function BinderSpreadView({
                     onToggleStatus={onToggleStatus}
                     onView={onView}
                     onCopy={onCopy}
+                    onToggleSpan={onToggleSpan}
                     isDragging={isDragging}
                     onAddCard={onAddCard}
                     onJumpToSlot={onJumpToSlot}
                     highlightedSlotId={highlightedSlotId}
+                    expandingGroupId={expandingGroupId}
                     counterScale={counterScale}
                   />
                 </div>
@@ -418,10 +430,12 @@ export function BinderSpreadView({
                     onToggleStatus={onToggleStatus}
                     onView={onView}
                     onCopy={onCopy}
+                    onToggleSpan={onToggleSpan}
                     isDragging={isDragging}
                     onAddCard={onAddCard}
                     onJumpToSlot={onJumpToSlot}
                     highlightedSlotId={highlightedSlotId}
+                    expandingGroupId={expandingGroupId}
                     counterScale={counterScale}
                   />
                 </div>
@@ -491,7 +505,7 @@ export function BinderSpreadView({
 
         <DragOverlay>
           {activeSlot ? (
-            <SlotCard slot={activeSlot} onDelete={() => { }} onToggleStatus={() => { }} isDragOverlay />
+            <SlotDragOverlay activeSlot={activeSlot} allSlots={slots} />
           ) : null}
         </DragOverlay>
       </DndContext>

@@ -3,15 +3,8 @@
 import { GridType } from '@prisma/client'
 import { SlotCard } from './slot-card'
 import { EmptySlotCard } from './empty-slot-card'
+import { GRID_TYPE_COLS } from '@/types/binder'
 import type { BinderSlotItem, SlotWithCard } from '@/types/binder'
-
-const GRID_COLS: Record<GridType, number> = {
-  grid_1x2: 1,
-  grid_2x2: 2,
-  grid_3x3: 3,
-  grid_4x3: 4,
-  grid_4x4: 4,
-}
 
 interface BinderGridSlotsProps {
   slots: BinderSlotItem[]
@@ -20,9 +13,11 @@ interface BinderGridSlotsProps {
   onToggleStatus: (slotId: string) => void
   onView?: (cardId: string) => void
   onCopy?: (slotId: string) => void
+  onToggleSpan?: (slotId: string, mode: 'span' | 'single') => void
   isDragging?: boolean
   onAddCard?: (pageNumber: number, slotIndex: number) => void
   highlightedSlotId?: string | null
+  expandingGroupId?: string | null
   counterScale?: number
   tappedSlotId?: string | null
   onTapSlot?: (key: string) => void
@@ -36,14 +31,16 @@ export function BinderGridSlots({
   onToggleStatus,
   onView,
   onCopy,
+  onToggleSpan,
   isDragging = false,
   onAddCard,
   highlightedSlotId,
+  expandingGroupId,
   counterScale = 1,
   tappedSlotId,
   onTapSlot,
 }: BinderGridSlotsProps) {
-  const cols = GRID_COLS[gridType]
+  const cols = GRID_TYPE_COLS[gridType]
   return (
     <div
       style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
@@ -68,7 +65,12 @@ export function BinderGridSlots({
                 onToggleStatus={onToggleStatus}
                 onView={onView}
                 onCopy={onCopy}
+                onToggleSpan={onToggleSpan}
                 isHighlighted={highlightedSlotId === slot.id}
+                isExpanding={
+                  expandingGroupId != null &&
+                  (slot as SlotWithCard).span?.groupId === expandingGroupId
+                }
                 counterScale={counterScale}
                 isTapped={tappedSlotId === slot.id}
                 onTap={onTapSlot ? () => onTapSlot(slot.id!) : undefined}

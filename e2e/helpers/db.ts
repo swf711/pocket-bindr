@@ -546,3 +546,72 @@ export async function findCardMissingField(
   // releaseDate：set 層欄位，經 relation 篩選
   return prisma.card.findFirstOrThrow({ where: { set: { releaseDate: null } }, select })
 }
+
+/**
+ * 取得一張指定形態的複數卡（卡號多成分，卡冊內會跨格呈現）。
+ * - `vunion`：4 成分 → 2×2 四格
+ * - `stadium`：2 成分 + Trainer → 左右兩格，不旋轉
+ * - `legend`：2 成分 + 非 Trainer → 左右兩格，合成圖逆時針轉正
+ */
+export async function getMultiNumberCard(
+  shape: 'vunion' | 'stadium' | 'legend',
+): Promise<{ id: string; name: string; cardNumber: string; externalId: string }> {
+  const cards = await prisma.card.findMany({
+    where: { cardNumber: { contains: '・' } },
+    select: { id: true, name: true, cardNumber: true, externalId: true, supertype: true },
+    orderBy: { externalId: 'asc' },
+  })
+  const match = cards.find((c) => {
+    const parts = c.cardNumber.split('・')
+    if (shape === 'vunion') return parts.length === 4
+    if (shape === 'stadium') return parts.length === 2 && c.supertype === 'Trainer'
+    return parts.length === 2 && c.supertype !== 'Trainer'
+  })
+  if (!match) throw new Error(`fixture 內找不到 ${shape} 形態的複數卡`)
+  const { supertype: _supertype, ...rest } = match
+  return rest
+}
+
+/** 讀取卡冊內某張卡實際佔用的格位座標（依 groupIndex 排序），用於驗證跨格放置。 */
+export async function getBinderSlotPositions(
+  binderId: string,
+  cardId: string,
+): Promise<Array<{ pageNumber: number; slotIndex: number; groupIndex: number | null }>> {
+  const slots = await prisma.binderSlot.findMany({
+    where: { binderId, cardId },
+    select: { pageNumber: true, slotIndex: true, groupIndex: true },
+    orderBy: [{ pageNumber: 'asc' }, { slotIndex: 'asc' }],
+  })
+  return slots
+}
+
+/** 卡冊內的跨格群組數量（驗證解散／建立）。 */
+export async function countBinderSlotGroups(binderId: string): Promise<number> {
+  return prisma.binderSlotGroup.count({ where: { binderId } })
+}
+
+/** 讀取某張卡的 UserCard 數量（驗證跨格不會把 quantity 算成格位數）。 */
+export async function getUserCardQuantity(
+  userId: string,
+  cardId: string,
+  status: 'owned' | 'wanted',
+): Promise<number | null> {
+  const uc = await prisma.userCard.findUnique({
+    where: { userId_cardId_status: { userId, cardId, status } },
+    select: { quantity: true },
+  })
+  return uc?.quantity ?? null
+}
+
+/** 取得卡冊指定座標上的格位 id（跨格群組測試需要精準抓某一格）。 */
+export async function getSlotIdAt(
+  binderId: string,
+  pageNumber: number,
+  slotIndex: number,
+): Promise<string> {
+  const slot = await prisma.binderSlot.findFirstOrThrow({
+    where: { binderId, pageNumber, slotIndex },
+    select: { id: true },
+  })
+  return slot.id
+}

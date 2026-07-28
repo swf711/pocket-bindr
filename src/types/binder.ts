@@ -2,6 +2,22 @@ import { GridType } from '@prisma/client'
 
 // ── Binder view types ──────────────────────────────────────────────────────
 
+/**
+ * 跨格群組資訊（複數卡佔 N 格時每格都帶一份）。群組內每格各顯示來源圖的一塊區域，
+ * 幾何解讀交給 src/lib/multi-card-layout.ts 的 `spanLayoutFromStored`。
+ */
+export type SlotSpan = {
+  groupId: string
+  /** 0-based，row-major（0 = 左上） */
+  groupIndex: number
+  cols: number
+  rows: number
+  /** 順時針角度 0|90|180|270 */
+  rotation: number
+  /** null = 使用格位自己的卡圖（複數卡合成圖）；預留給未來的自訂跨格圖 */
+  imageUrl: string | null
+}
+
 export type SlotWithCard = {
   id: string
   binderId: string
@@ -9,6 +25,7 @@ export type SlotWithCard = {
   pageNumber: number
   slotIndex: number
   status: 'owned' | 'wanted'
+  span?: SlotSpan | null
   card: {
     id: string
     name: string
@@ -16,6 +33,8 @@ export type SlotWithCard = {
     language: 'EN' | 'JA' | 'ZH_TW'
     cardNumber: string
     rarity: string | null
+    /** 跨格幾何判定需要（見 src/lib/multi-card-layout.ts） */
+    supertype: string
   }
 }
 
@@ -122,6 +141,18 @@ export const GRID_TYPE_SLOTS: Record<GridType, number> = {
   grid_3x3: 9,
   grid_4x3: 12,
   grid_4x4: 16,
+}
+
+/**
+ * 每頁欄數。跨格群組的矩形判定與 grid 渲染共用同一份（過去在 binder-grid.tsx 與
+ * binder-public-view.tsx 各自重複定義一份，跨格邏輯不容許兩份真相）。
+ */
+export const GRID_TYPE_COLS: Record<GridType, number> = {
+  grid_1x2: 1,
+  grid_2x2: 2,
+  grid_3x3: 3,
+  grid_4x3: 4,
+  grid_4x4: 4,
 }
 
 export interface AddToBinderPayload {

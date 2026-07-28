@@ -92,7 +92,7 @@ describe('BinderView 重整鍵', () => {
       pageNumber: 1,
       slotIndex: 0,
       status: 'owned',
-      card: { id: 'card-1', name: 'Pikachu', imageSmall: '', language: 'EN', cardNumber: '58', rarity: null },
+      card: { id: 'card-1', name: 'Pikachu', imageSmall: '', language: 'EN', cardNumber: '58', rarity: null, supertype: 'Pokémon' },
     }
     vi.mocked(fetch).mockResolvedValueOnce({
       ok: true,

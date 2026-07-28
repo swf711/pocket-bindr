@@ -18,7 +18,7 @@ function makeSlot(overrides: Partial<SlotWithCard> & { pageNumber: number; slotI
     binderId: 'b1',
     cardId: 'c1',
     status: 'owned',
-    card: { id: 'c1', name: 'Pikachu', imageSmall: '', language: 'EN', cardNumber: '001', rarity: null },
+    card: { id: 'c1', name: 'Pikachu', imageSmall: '', language: 'EN', cardNumber: '001', rarity: null, supertype: 'Pokémon' },
     ...overrides,
   }
 }

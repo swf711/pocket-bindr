@@ -61,8 +61,12 @@ export function splitCardNumber(cardNumber: string | null | undefined): string[]
  * 是否為複數卡（一列 DB 資料代表多張實體卡）。
  *
  * 唯一判定來源＝卡號成分數 > 1，零 schema、零旗標欄位。消費端用途：複數卡的官方卡圖是
- * **合成圖**（LEGEND 上下疊、V-UNION 2×2、M6 スタジアム 左右並排），比例與標準卡不同，
- * 套 `object-cover` 會被裁成中央一條，需改 `object-contain`。
+ * **合成圖**（LEGEND 上下疊、V-UNION 2×2、M6 スタジアム 左右並排），佔 1 格顯示時塞不進
+ * 標準卡比例，套 `object-cover` 會被裁成中央一條，需改 `object-contain`；卡冊內另可跨 N 格
+ * 呈現（見 `multi-card-layout.ts`）。
+ *
+ * ⚠️ 只有 M6 的合成圖真的是橫幅（1.43）；LEGEND（0.699）與 V-UNION（0.719）整體比例其實
+ * ≈ 標準直卡 0.716——LEGEND 是兩張**橫式**卡上下疊，疊起來剛好變直幅。
  */
 export function isMultiNumberCard(cardNumber: string | null | undefined): boolean {
   return splitCardNumber(cardNumber).length > 1

@@ -337,7 +337,9 @@
       "removeCard": "カードを削除",
       "removeCardConfirm": "{cardName} をバインダーから削除してもよろしいですか？",
       "cancel": "キャンセル",
-      "confirmRemove": "削除を確定"
+      "confirmRemove": "削除を確定",
+      "expandAcrossSlots": "複数マスで表示",
+      "collapseToSingleSlot": "1マスにまとめる"
     },
     "pickerDialog": {
       "selectStatus": "コレクション状態を選択",
@@ -423,7 +425,12 @@
       "description": "この共有リンクは無効か、既に取り消されています。",
       "backHome": "ホームに戻る"
     },
-    "defaultOwnerName": "TCGプレイヤー"
+    "defaultOwnerName": "TCGプレイヤー",
+    "spanToggleFailed": "表示方法の切り替えに失敗しました",
+    "spanNoRoom": "連続した空きマスが足りません",
+    "spanMoveFailed": "移動に失敗しました",
+    "spanTargetOccupied": "移動先にすでにカードがあります",
+    "spanTargetOutOfBounds": "ここには全体が収まりません"
   },
   "binderList": {
     "title": "マイバインダー",

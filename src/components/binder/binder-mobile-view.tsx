@@ -23,7 +23,7 @@ import {
   PaginationItem,
 } from '@/components/ui/pagination'
 import { BinderGridSlots } from './binder-grid'
-import { SlotCard } from './slot-card'
+import { SlotDragOverlay } from './slot-drag-overlay'
 import { BinderCoverPanel } from './binder-cover-panel'
 import { useScaleFit } from '@/hooks/use-scale-fit'
 import { useEdgeHoverPageFlip } from '@/hooks/use-edge-hover-page-flip'
@@ -52,9 +52,11 @@ interface BinderMobileViewProps {
   onMove: (slotId: string, pageNumber: number, slotIndex: number) => void
   onView?: (cardId: string) => void
   onCopy?: (slotId: string) => void
+  onToggleSpan?: (slotId: string, mode: 'span' | 'single') => void
   onAddCard?: (pageNumber: number, slotIndex: number) => void
   onJumpToSlot: (slot: SlotWithCard) => void
   highlightedSlotId?: string | null
+  expandingGroupId?: string | null
   onAddPage: () => void
   settingsSlot: React.ReactNode
   refreshSlot?: React.ReactNode
@@ -76,9 +78,11 @@ export function BinderMobileView({
   onMove,
   onView,
   onCopy,
+  onToggleSpan,
   onAddCard,
   onJumpToSlot,
   highlightedSlotId,
+  expandingGroupId,
   onAddPage,
   settingsSlot,
   refreshSlot,
@@ -280,9 +284,11 @@ export function BinderMobileView({
                     onToggleStatus={onToggleStatus}
                     onView={onView}
                     onCopy={onCopy}
+                    onToggleSpan={onToggleSpan}
                     isDragging={isDragging}
                     onAddCard={onAddCard}
                     highlightedSlotId={highlightedSlotId}
+                    expandingGroupId={expandingGroupId}
                     counterScale={counterScale}
                     tappedSlotId={tappedSlotId}
                     onTapSlot={handleTapSlot}
@@ -357,7 +363,7 @@ export function BinderMobileView({
         {/* DragOverlay 在 innerRef 外，不受 CSS scale 影響，overlay 位置與手指對齊 */}
         <DragOverlay>
           {activeSlot ? (
-            <SlotCard slot={activeSlot} onDelete={() => { }} onToggleStatus={() => { }} isDragOverlay />
+            <SlotDragOverlay activeSlot={activeSlot} allSlots={slots} />
           ) : null}
         </DragOverlay>
       </DndContext>

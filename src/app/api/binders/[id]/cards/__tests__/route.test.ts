@@ -154,8 +154,8 @@ describe('POST /api/binders/[id]/cards', () => {
     vi.mocked(prisma.binder.findUnique).mockResolvedValue(mockBinder)
     vi.mocked(prisma.card.findUnique).mockResolvedValue(mockCard)
 
-    const emptySlot1 = { id: 'slot1', binderId: 'b1', cardId: null, displayCardId: null, status: null, pageNumber: 1, slotIndex: 0, createdAt: new Date() }
-    const emptySlot2 = { id: 'slot2', binderId: 'b1', cardId: null, displayCardId: null, status: null, pageNumber: 1, slotIndex: 1, createdAt: new Date() }
+    const emptySlot1 = { id: 'slot1', binderId: 'b1', cardId: null, displayCardId: null, status: null, pageNumber: 1, slotIndex: 0, createdAt: new Date(), groupId: null, groupIndex: null }
+    const emptySlot2 = { id: 'slot2', binderId: 'b1', cardId: null, displayCardId: null, status: null, pageNumber: 1, slotIndex: 1, createdAt: new Date(), groupId: null, groupIndex: null }
     vi.mocked(prisma.binderSlot.findMany).mockResolvedValue([emptySlot1, emptySlot2])
     vi.mocked(prisma.binderSlot.update).mockResolvedValue(emptySlot1 as never)
     vi.mocked(prisma.userCard.upsert).mockResolvedValue(mockUserCard)
@@ -173,7 +173,7 @@ describe('POST /api/binders/[id]/cards', () => {
     vi.mocked(prisma.card.findUnique).mockResolvedValue(mockCard)
 
     // Only 1 empty slot exists, but we're adding 3
-    const emptySlot = { id: 'slot1', binderId: 'b1', cardId: null, displayCardId: null, status: null, pageNumber: 1, slotIndex: 0, createdAt: new Date() }
+    const emptySlot = { id: 'slot1', binderId: 'b1', cardId: null, displayCardId: null, status: null, pageNumber: 1, slotIndex: 0, createdAt: new Date(), groupId: null, groupIndex: null }
     vi.mocked(prisma.binderSlot.findMany).mockResolvedValue([emptySlot])
     vi.mocked(prisma.binderSlot.update).mockResolvedValue(emptySlot as never)
 

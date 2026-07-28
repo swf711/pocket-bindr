@@ -133,24 +133,51 @@ model Binder {
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
   slots       BinderSlot[]
+  slotGroups  BinderSlotGroup[]
 
   @@index([userId])
 }
 
+/// 跨格群組：一組相鄰格位共同呈現同一張來源圖（複數卡的官方合成圖各切一塊）。
+/// 目前只由複數卡自動建立；`imageUrl` 為未來「使用者自訂跨格圖」預留（null = 用格位自己的卡圖）。
+/// cols/rows 為**旋轉後**的實際佔格；原圖切法與旋轉映射由 src/lib/multi-card-layout.ts 決定。
+model BinderSlotGroup {
+  id        String       @id @default(uuid())
+  binderId  String
+  binder    Binder       @relation(fields: [binderId], references: [id], onDelete: Cascade)
+  cols      Int
+  rows      Int
+  /// 順時針角度 0|90|180|270。LEGEND 為 270（＝逆時針 90°，上半張落左格）。
+  rotation  Int          @default(0)
+  imageUrl  String?
+  createdAt DateTime     @default(now())
+  slots     BinderSlot[]
+
+  @@index([binderId])
+}
+
 model BinderSlot {
-  id            String      @id @default(uuid())
+  id            String           @id @default(uuid())
   binderId      String
-  binder        Binder      @relation(fields: [binderId], references: [id], onDelete: Cascade)
+  binder        Binder           @relation(fields: [binderId], references: [id], onDelete: Cascade)
   cardId        String?
-  card          Card?       @relation("BinderSlotCanonical", fields: [cardId], references: [id])
+  card          Card?            @relation("BinderSlotCanonical", fields: [cardId], references: [id])
   displayCardId String?
-  displayCard   Card?       @relation("BinderSlotDisplay", fields: [displayCardId], references: [id], onDelete: SetNull)
+  displayCard   Card?            @relation("BinderSlotDisplay", fields: [displayCardId], references: [id], onDelete: SetNull)
   status        CardStatus?
   pageNumber    Int
   slotIndex     Int
-  createdAt     DateTime    @default(now())
+  createdAt     DateTime         @default(now())
+  /// 跨格群組成員：群組內**每格都是自足的完整 row**（各自帶 cardId/displayCardId/status），
+  /// 使既有「找空格」查詢（cardId: null）與 unique constraint 天然防重疊、無需感知群組。
+  /// 代價是 quantity/統計須排除 groupIndex > 0（見 src/lib/binder-utils.ts）。
+  groupId       String?
+  group         BinderSlotGroup? @relation(fields: [groupId], references: [id], onDelete: SetNull)
+  /// 0-based，row-major（0 = 左上 = anchor）
+  groupIndex    Int?
 
   @@unique([binderId, pageNumber, slotIndex])
+  @@index([groupId])
 }
 
 enum Game {

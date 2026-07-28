@@ -46,6 +46,7 @@ const SLOT: SlotWithCard = {
     language: 'ZH_TW',
     cardNumber: '001',
     rarity: 'RR',
+    supertype: 'Pokémon',
   },
 }
 

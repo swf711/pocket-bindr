@@ -1,6 +1,7 @@
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { decrementUserCardsForSlots } from '@/lib/binder-utils'
+import { slotDisplaySelect, toDisplaySlot } from '@/lib/slot-display'
 import { revalidatePublicBinder } from '@/lib/binder-cache'
 
 type RouteContext = { params: Promise<{ id: string; pageNumber: string }> }
@@ -63,6 +64,9 @@ export async function DELETE(_request: Request, context: RouteContext) {
     // Delete all slots on the target page (both filled and empty)
     await tx.binderSlot.deleteMany({ where: { binderId: id, pageNumber } })
 
+    // 跨格群組整組同頁，故整頁刪除後其 group row 必然無成員；一併清掉避免留下孤兒
+    await tx.binderSlotGroup.deleteMany({ where: { binderId: id, slots: { none: {} } } })
+
     // Shift subsequent pages down by 1 using two-step to avoid unique constraint issues:
     // Step 1: move to temp negatives
     await tx.$executeRaw`
@@ -83,28 +87,12 @@ export async function DELETE(_request: Request, context: RouteContext) {
       data: { settings: { ...settings, totalPages: newTotalPages } },
     })
 
-    return tx.binderSlot.findMany({
+    const remaining = await tx.binderSlot.findMany({
       where: { binderId: id, cardId: { not: null } },
       orderBy: [{ pageNumber: 'asc' }, { slotIndex: 'asc' }],
-      select: {
-        id: true,
-        binderId: true,
-        cardId: true,
-        pageNumber: true,
-        slotIndex: true,
-        status: true,
-        card: {
-          select: {
-            id: true,
-            name: true,
-            imageSmall: true,
-            language: true,
-            cardNumber: true,
-            rarity: true,
-          },
-        },
-      },
+      select: slotDisplaySelect,
     })
+    return remaining.map(toDisplaySlot)
   })
 
   revalidatePublicBinder(binder!.shareToken)

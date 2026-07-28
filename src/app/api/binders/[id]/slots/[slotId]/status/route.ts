@@ -29,7 +29,15 @@ export async function PATCH(_request: Request, context: RouteContext) {
   const newStatus: CardStatus = oldStatus === 'owned' ? 'wanted' : 'owned'
 
   await prisma.$transaction(async (tx) => {
-    await tx.binderSlot.update({ where: { id: slotId }, data: { status: newStatus } })
+    // 跨格群組是同一張實體卡的多個區塊，狀態必須整組一致（quantity 仍只動 1）
+    if (slot.groupId) {
+      await tx.binderSlot.updateMany({
+        where: { binderId, groupId: slot.groupId },
+        data: { status: newStatus },
+      })
+    } else {
+      await tx.binderSlot.update({ where: { id: slotId }, data: { status: newStatus } })
+    }
 
     const oldUserCard = await tx.userCard.findUnique({
       where: { userId_cardId_status: { userId, cardId: slot.cardId!, status: oldStatus } },
@@ -51,5 +59,5 @@ export async function PATCH(_request: Request, context: RouteContext) {
   })
 
   revalidatePublicBinder(binder.shareToken)
-  return Response.json({ id: slotId, status: newStatus })
+  return Response.json({ id: slotId, status: newStatus, groupId: slot.groupId })
 }

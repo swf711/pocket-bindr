@@ -337,7 +337,9 @@
       "removeCard": "Remove card",
       "removeCardConfirm": "Are you sure you want to remove {cardName} from this binder?",
       "cancel": "Cancel",
-      "confirmRemove": "Confirm removal"
+      "confirmRemove": "Confirm removal",
+      "expandAcrossSlots": "Span across slots",
+      "collapseToSingleSlot": "Collapse to one slot"
     },
     "pickerDialog": {
       "selectStatus": "Select collection status",
@@ -423,7 +425,12 @@
       "description": "This share link is invalid or has been revoked.",
       "backHome": "Back to Home"
     },
-    "defaultOwnerName": "TCG Player"
+    "defaultOwnerName": "TCG Player",
+    "spanToggleFailed": "Failed to change layout",
+    "spanNoRoom": "Not enough adjacent empty slots",
+    "spanMoveFailed": "Move failed",
+    "spanTargetOccupied": "Target slots are already taken",
+    "spanTargetOutOfBounds": "The whole card doesn't fit here"
   },
   "binderList": {
     "title": "My Binders",

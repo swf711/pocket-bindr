@@ -1,13 +1,20 @@
 import { CardStatus } from '@prisma/client'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { GRID_TYPE_SLOTS } from '@/types/binder'
+import { GRID_TYPE_COLS, GRID_TYPE_SLOTS } from '@/types/binder'
 import { resolveCanonicalCardIds, deriveDisplayCardId } from '@/lib/resolve-canonical-card'
 import { revalidatePublicBinder } from '@/lib/binder-cache'
 import { addCardsBatchSchema } from '@/lib/schemas/binder'
 import { planSlotPlacement } from '@/lib/binder-slot-placement'
 import { MAX_PAGES_PER_BINDER } from '@/lib/binder-limits'
 import { batchAddIpLimiter, batchAddUserLimiter } from '@/lib/rate-limit'
+import { resolveSpanLayout, type SpanLayout } from '@/lib/multi-card-layout'
+import {
+  filterLayoutByGrid,
+  loadBinderCells,
+  placeSpanGroup,
+  resolveTotalPages,
+} from '@/lib/binder-span'
 
 type RouteContext = { params: Promise<{ id: string }> }
 
@@ -83,23 +90,72 @@ export async function POST(request: Request, context: RouteContext) {
     }
   }
 
-  // 展平「待填清單」：每張原始卡 × quantity，逐格帶自己的 displayCardId（勿全批共用）
+  const slotsPerPage = GRID_TYPE_SLOTS[binder.gridType]
+  const gridCols = GRID_TYPE_COLS[binder.gridType]
+
+  // 複數卡佔 N 格，與一般卡分流：本頁一次查完所有卡的卡號/卡種，不逐張查
+  const layoutSources = await prisma.card.findMany({
+    where: { id: { in: Array.from(new Set(perCard.map((c) => c.resolvedCardId))) } },
+    select: { id: true, cardNumber: true, supertype: true },
+  })
+  const spanLayoutById = new Map(
+    layoutSources
+      .map((c) => [c.id, filterLayoutByGrid(resolveSpanLayout(c), gridCols, slotsPerPage)] as const)
+      .filter((entry): entry is [string, SpanLayout] => entry[1] !== null),
+  )
+
+  // 展平「待填清單」：每張原始卡 × quantity，逐格帶自己的 displayCardId（勿全批共用）。
+  // 跨格卡不進此清單，改由 placeSpanGroup 依矩形放置。
   const fillList: { cardId: string; displayCardId: string | null; status: CardStatus }[] = []
   for (const card of perCard) {
+    if (spanLayoutById.has(card.resolvedCardId)) continue
     for (let i = 0; i < typedQuantity; i++) {
       fillList.push({ cardId: card.resolvedCardId, displayCardId: card.displayCardId, status: typedStatus })
     }
   }
 
-  const slotsPerPage = GRID_TYPE_SLOTS[binder.gridType]
-  const totalNeeded = fillList.length
+  const totalNeeded = perCard.length * typedQuantity
 
   try {
     const result = await prisma.$transaction(async (tx) => {
+      // 跨格群組先放（需連續矩形空區，比線性填格挑剔），一般卡再遞補剩餘空格
+      let spanTotalPages = await resolveTotalPages(tx, binderId, binder.settings)
+      const initialTotalPages = spanTotalPages
+
+      if (spanLayoutById.size > 0) {
+        const cells = await loadBinderCells(tx, binderId)
+        for (const card of perCard) {
+          const layout = spanLayoutById.get(card.resolvedCardId)
+          if (!layout) continue
+          for (let i = 0; i < typedQuantity; i++) {
+            const placed = await placeSpanGroup(tx, {
+              binderId,
+              cardId: card.resolvedCardId,
+              displayCardId: card.displayCardId,
+              status: typedStatus,
+              layout,
+              cells,
+              gridCols,
+              slotsPerPage,
+              totalPages: spanTotalPages,
+            })
+            if (placed.status !== 'placed') throw new PageLimitExceededError(0)
+            spanTotalPages = placed.totalPages
+          }
+        }
+        if (spanTotalPages > initialTotalPages) {
+          const currentSettings = (binder.settings as Record<string, unknown> | null) ?? {}
+          await tx.binder.update({
+            where: { id: binderId },
+            data: { settings: { ...currentSettings, totalPages: spanTotalPages } },
+          })
+        }
+      }
+
       const emptySlots = await tx.binderSlot.findMany({
         where: { binderId, cardId: null },
         orderBy: [{ pageNumber: 'asc' }, { slotIndex: 'asc' }],
-        take: totalNeeded,
+        take: fillList.length,
       })
 
       const lastSlot = await tx.binderSlot.findFirst({
@@ -111,7 +167,7 @@ export async function POST(request: Request, context: RouteContext) {
         emptySlotIds: emptySlots.map((s) => s.id),
         lastSlot: lastSlot ? { pageNumber: lastSlot.pageNumber, slotIndex: lastSlot.slotIndex } : null,
         slotsPerPage,
-        needed: totalNeeded,
+        needed: fillList.length,
       })
 
       if (placement.exceedsLimit) {
@@ -146,7 +202,8 @@ export async function POST(request: Request, context: RouteContext) {
         )
       }
 
-      let updatedTotalPages: number | undefined
+      let updatedTotalPages: number | undefined =
+        spanTotalPages > initialTotalPages ? spanTotalPages : undefined
 
       if (placement.newPositions.length > 0) {
         const offset = placement.fillSlotIds.length
@@ -166,8 +223,10 @@ export async function POST(request: Request, context: RouteContext) {
 
         const maxNewPage = Math.max(...newSlots.map((s) => s.pageNumber))
         const currentSettings = (binder.settings as Record<string, unknown> | null) ?? {}
-        const currentTotalPages =
-          typeof currentSettings.totalPages === 'number' ? currentSettings.totalPages : 0
+        const currentTotalPages = Math.max(
+          typeof currentSettings.totalPages === 'number' ? currentSettings.totalPages : 0,
+          spanTotalPages,
+        )
         if (maxNewPage > currentTotalPages) {
           await tx.binder.update({
             where: { id: binderId },

@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useTranslations } from 'next-intl'
-import { BookCheck, Bookmark, Copy, Eye, Trash2 } from 'lucide-react'
+import { BookCheck, Bookmark, Copy, Eye, Minimize2, Maximize2, Trash2 } from 'lucide-react'
 import { useDraggable, useDroppable } from '@dnd-kit/core'
 import { Button } from '@/components/ui/button'
 import { ButtonGroup } from '@/components/ui/button-group'
@@ -20,6 +20,7 @@ import {
 import { isMultiNumberCard } from '@/lib/card-number'
 import { getCardImageUrl } from '@/lib/get-card-image-url'
 import { CardImage } from '../cards/card-image'
+import { SpanCardImage } from './span-card-image'
 import type { SlotWithCard } from '@/types/binder'
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
 
@@ -29,8 +30,12 @@ interface SlotCardProps {
   onToggleStatus: (slotId: string) => void
   onView?: (cardId: string) => void
   onCopy?: (slotId: string) => void
+  /** 複數卡切換「跨格 ↔ 單格」呈現；未傳則不顯示該按鈕 */
+  onToggleSpan?: (slotId: string, mode: 'span' | 'single') => void
   isDragOverlay?: boolean
   isHighlighted?: boolean
+  /** 剛從單格展開成跨格時播放一次進場動畫（避免每次載入頁面都動） */
+  isExpanding?: boolean
   counterScale?: number
   isTapped?: boolean
   onTap?: () => void
@@ -42,8 +47,10 @@ export function SlotCard({
   onToggleStatus,
   onView,
   onCopy,
+  onToggleSpan,
   isDragOverlay = false,
   isHighlighted = false,
+  isExpanding = false,
   counterScale = 1,
   isTapped = false,
   onTap,
@@ -64,8 +71,14 @@ export function SlotCard({
   })
 
   const imageUrl = getCardImageUrl(slot.card.imageSmall)
-  // 複數卡的官方卡圖是合成圖（比例非標準卡），object-cover 會裁成中央一條，改 object-contain
+  // 複數卡佔 1 格（未跨格）時顯示整張合成圖，比例非標準卡，object-cover 會裁成中央一條
   const objectFit = isMultiNumberCard(slot.card.cardNumber) ? 'object-contain' : 'object-cover'
+  const canToggleSpan = onToggleSpan && isMultiNumberCard(slot.card.cardNumber)
+  const nameFallback = (
+    <div className="flex h-full w-full flex-col items-center justify-center bg-muted text-muted-foreground">
+      <span className="text-xs text-center px-1">{slot.card.name}</span>
+    </div>
+  )
 
   return (
     <div
@@ -80,20 +93,26 @@ export function SlotCard({
       style={{ touchAction: 'none' }}
       className={`relative group w-full aspect-5/7 overflow-hidden rounded-md border border-border bg-card cursor-grab active:cursor-grabbing transition-opacity ${isDragging ? 'opacity-40' : 'opacity-100'
         } ${isOver && !isDragOverlay ? 'ring-2 ring-primary' : ''} ${isHighlighted ? 'ring-2 ring-primary animate-pulse' : ''
-        }`}
+        } ${isExpanding ? 'animate-in fade-in zoom-in-90 duration-300 motion-reduce:animate-none' : ''}`}
     >
-      <CardImage
-        src={imageUrl}
-        alt={slot.card.name}
-        className={`h-full w-full ${objectFit}${slot.status === 'wanted' ? ' grayscale' : ''}`}
-        loading="lazy"
-        draggable={false}
-        fallback={
-          <div className="flex h-full w-full flex-col items-center justify-center bg-muted text-muted-foreground">
-            <span className="text-xs text-center px-1">{slot.card.name}</span>
-          </div>
-        }
-      />
+      {slot.span ? (
+        <SpanCardImage
+          src={slot.span.imageUrl ? getCardImageUrl(slot.span.imageUrl) : imageUrl}
+          alt={slot.card.name}
+          span={slot.span}
+          grayscale={slot.status === 'wanted'}
+          fallback={nameFallback}
+        />
+      ) : (
+        <CardImage
+          src={imageUrl}
+          alt={slot.card.name}
+          className={`h-full w-full ${objectFit}${slot.status === 'wanted' ? ' grayscale' : ''}`}
+          loading="lazy"
+          draggable={false}
+          fallback={nameFallback}
+        />
+      )}
 
       {/* 操作按鈕 overlay — ButtonGroup 底部中央，counter-scale 保持自然視覺尺寸；桌面 hover 顯示，行動裝置 tap 顯示 */}
       {!isDragOverlay && (
@@ -135,6 +154,24 @@ export function SlotCard({
                   </TooltipTrigger>
                   <TooltipContent>
                     <p>{t('copyToEmptySlot')}</p>
+                  </TooltipContent>
+                </Tooltip>
+              )}
+              {canToggleSpan && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="default"
+                      size="icon-sm"
+                      onClick={() => onToggleSpan!(slot.id, slot.span ? 'single' : 'span')}
+                      data-testid={`slot-span-btn-${slot.id}`}
+                      aria-label={slot.span ? t('collapseToSingleSlot') : t('expandAcrossSlots')}
+                    >
+                      {slot.span ? <Minimize2 /> : <Maximize2 />}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{slot.span ? t('collapseToSingleSlot') : t('expandAcrossSlots')}</p>
                   </TooltipContent>
                 </Tooltip>
               )}

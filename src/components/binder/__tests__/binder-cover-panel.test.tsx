@@ -26,6 +26,7 @@ function makeSlot(overrides: Partial<SlotWithCard> = {}): SlotWithCard {
       language: 'EN',
       cardNumber: '025',
       rarity: 'Common',
+      supertype: 'Pokémon',
     },
     ...overrides,
   }
@@ -117,7 +118,7 @@ describe('BinderCoverPanel', () => {
   })
 
   it('搜尋框輸入後顯示過濾結果', () => {
-    const slots = [makeSlot({ card: { id: 'c1', name: 'Pikachu', imageSmall: '', language: 'EN', cardNumber: '025', rarity: null } })]
+    const slots = [makeSlot({ card: { id: 'c1', name: 'Pikachu', imageSmall: '', language: 'EN', cardNumber: '025', rarity: null, supertype: 'Pokémon' } })]
     renderPanel({ slots })
     const input = screen.getByTestId('cover-slot-search')
     fireEvent.change(input, { target: { value: 'Pika' } })

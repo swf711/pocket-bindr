@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import { toDisplaySlot } from '../slot-display'
 
-const jaCard = { id: 'ja-1', name: 'ルフィ', imageSmall: 'ja.png', language: 'JA' as const, cardNumber: 'OP01-001', rarity: null }
-const zhCard = { id: 'zh-1', name: '魯夫', imageSmall: 'zh.png', language: 'ZH_TW' as const, cardNumber: 'OP01-001', rarity: null }
+const jaCard = { id: 'ja-1', name: 'ルフィ', imageSmall: 'ja.png', language: 'JA' as const, cardNumber: 'OP01-001', rarity: null, supertype: 'Pokémon' }
+const zhCard = { id: 'zh-1', name: '魯夫', imageSmall: 'zh.png', language: 'ZH_TW' as const, cardNumber: 'OP01-001', rarity: null, supertype: 'Pokémon' }
 
 function makeRawSlot(over: Partial<Parameters<typeof toDisplaySlot>[0]> = {}) {
   return {
