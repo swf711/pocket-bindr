@@ -24,12 +24,12 @@ interface DonSeedCard {
   rarity:          string
   isParallel:      boolean
   parallelSuffix:  string | null
-  imageUrl:        string
+  imagePath:       string
   tierOneImageUrl: string
 }
 
 function storagePath(externalId: string): string {
-  return `opcg/don/${externalId}.webp`
+  return `opcg/don/${externalId}.jpg`
 }
 
 // ── 測試資料（模擬 PRB01 一批） ───────────────────────────────────────────────
@@ -43,7 +43,7 @@ const mockPrb01Card: DonSeedCard = {
   rarity:          'C',
   isParallel:      false,
   parallelSuffix:  null,
-  imageUrl:        'https://project.supabase.co/storage/v1/object/public/card-images/opcg/don/PRB01-DON-001.webp',
+  imagePath:       'opcg/don/PRB01-DON-001.jpg',
   tierOneImageUrl: 'https://tierone-media-op.com/wp-content/uploads/don_card_prb01-001.webp',
 }
 
@@ -56,7 +56,7 @@ const mockPrb01ParallelCard: DonSeedCard = {
   rarity:          'R',
   isParallel:      true,
   parallelSuffix:  '-P',
-  imageUrl:        'https://project.supabase.co/storage/v1/object/public/card-images/opcg/don/PRB01-DON-001-P.webp',
+  imagePath:       'opcg/don/PRB01-DON-001-P.jpg',
   tierOneImageUrl: 'https://tierone-media-op.com/wp-content/uploads/don_card_prb01-001p.webp',
 }
 
@@ -69,7 +69,7 @@ const mockPrb01SuperParallelCard: DonSeedCard = {
   rarity:          'SP',
   isParallel:      true,
   parallelSuffix:  '-SP',
-  imageUrl:        'https://project.supabase.co/storage/v1/object/public/card-images/opcg/don/PRB01-DON-001-SP.webp',
+  imagePath:       'opcg/don/PRB01-DON-001-SP.jpg',
   tierOneImageUrl: 'https://tierone-media-op.com/wp-content/uploads/don_card_prb01-001sp.webp',
 }
 
@@ -77,23 +77,23 @@ const mockPrb01SuperParallelCard: DonSeedCard = {
 
 describe('storagePath', () => {
   it('formats PRB01 card path correctly', () => {
-    expect(storagePath('PRB01-DON-001')).toBe('opcg/don/PRB01-DON-001.webp')
+    expect(storagePath('PRB01-DON-001')).toBe('opcg/don/PRB01-DON-001.jpg')
   })
 
   it('formats PRB01 parallel card path correctly', () => {
-    expect(storagePath('PRB01-DON-001-P')).toBe('opcg/don/PRB01-DON-001-P.webp')
+    expect(storagePath('PRB01-DON-001-P')).toBe('opcg/don/PRB01-DON-001-P.jpg')
   })
 
   it('formats booster DON!! path correctly', () => {
-    expect(storagePath('DON-OP01')).toBe('opcg/don/DON-OP01.webp')
+    expect(storagePath('DON-OP01')).toBe('opcg/don/DON-OP01.jpg')
   })
 
   it('formats starter DON!! path correctly', () => {
-    expect(storagePath('DON-STARTER')).toBe('opcg/don/DON-STARTER.webp')
+    expect(storagePath('DON-STARTER')).toBe('opcg/don/DON-STARTER.jpg')
   })
 
   it('formats promo DON!! path correctly', () => {
-    expect(storagePath('DON-PROMO-VER1')).toBe('opcg/don/DON-PROMO-VER1.webp')
+    expect(storagePath('DON-PROMO-VER1')).toBe('opcg/don/DON-PROMO-VER1.jpg')
   })
 })
 
