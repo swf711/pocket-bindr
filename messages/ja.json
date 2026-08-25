@@ -354,15 +354,6 @@
       "addCard": "カードを追加"
     },
     "settingsDrawer": {
-      "dragPage": "{page} ページ目をドラッグ",
-      "pageLabel": "{page} ページ目",
-      "deletePage": "{page} ページ目を削除",
-      "deleteThisPage": "このページを削除",
-      "deletePageConfirmTitle": "{page} ページ目を削除しますか？",
-      "deletePageConfirmDescription": "このページ上のすべてのカードがバインダーから削除され、以降のページ番号は自動的に振り直されます。",
-      "cancel": "キャンセル",
-      "delete": "削除",
-      "deleting": "削除中…",
       "updateFailed": "更新に失敗しました",
       "formatUpdated": "フォーマットを更新しました。{count} 枚のカードが {from}〜{to} ページ目に移動しました",
       "settingsSaved": "設定を保存しました",
@@ -372,9 +363,6 @@
       "revokeShareSuccess": "公開共有を無効にしました",
       "revokeShareFailed": "無効化に失敗しました。もう一度お試しください",
       "linkCopied": "リンクをコピーしました",
-      "reorderFailed": "並べ替えに失敗しました",
-      "deletePageFailed": "削除に失敗しました",
-      "pageDeleted": "{page} ページ目を削除しました",
       "binderSettings": "バインダー設定",
       "name": "名前",
       "description": "説明（任意）",
@@ -388,8 +376,23 @@
       "copyLink": "リンクをコピー",
       "revokeShare": "共有を無効化",
       "shareDisabledHint": "有効にすると公開リンクが生成され、誰でもこのバインダーを閲覧できます",
-      "enableShare": "公開共有を有効化",
-      "pageManagement": "ページ管理"
+      "enableShare": "公開共有を有効化"
+    },
+    "pageManager": {
+      "title": "ページ管理",
+      "jumpToPage": "{page} ページ目へ移動",
+      "dragPage": "{page} ページ目をドラッグ",
+      "pageLabel": "{page} ページ目",
+      "deletePage": "{page} ページ目を削除",
+      "deleteThisPage": "このページを削除",
+      "deletePageConfirmTitle": "{page} ページ目を削除しますか？",
+      "deletePageConfirmDescription": "このページ上のすべてのカードがバインダーから削除され、以降のページ番号は自動的に振り直されます。",
+      "cancel": "キャンセル",
+      "delete": "削除",
+      "deleting": "削除中…",
+      "reorderFailed": "並べ替えに失敗しました",
+      "deletePageFailed": "削除に失敗しました",
+      "pageDeleted": "{page} ページ目を削除しました"
     },
     "shareDialog": {
       "title": "バインダーを公開共有",

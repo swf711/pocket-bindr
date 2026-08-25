@@ -354,15 +354,6 @@
       "addCard": "Add Card"
     },
     "settingsDrawer": {
-      "dragPage": "Drag page {page}",
-      "pageLabel": "Page {page}",
-      "deletePage": "Delete page {page}",
-      "deleteThisPage": "Delete this page",
-      "deletePageConfirmTitle": "Delete page {page}?",
-      "deletePageConfirmDescription": "All cards on this page will be removed from the binder, and subsequent page numbers will be automatically renumbered.",
-      "cancel": "Cancel",
-      "delete": "Delete",
-      "deleting": "Deleting…",
       "updateFailed": "Update failed",
       "formatUpdated": "Format updated — {count} card(s) moved to pages {from}–{to}",
       "settingsSaved": "Settings saved",
@@ -372,9 +363,6 @@
       "revokeShareSuccess": "Public sharing revoked",
       "revokeShareFailed": "Failed to revoke, please try again",
       "linkCopied": "Link copied",
-      "reorderFailed": "Reorder failed",
-      "deletePageFailed": "Delete failed",
-      "pageDeleted": "Page {page} deleted",
       "binderSettings": "Binder Settings",
       "name": "Name",
       "description": "Description (optional)",
@@ -388,8 +376,23 @@
       "copyLink": "Copy link",
       "revokeShare": "Revoke Sharing",
       "shareDisabledHint": "Enable to generate a public link anyone can use to view this binder",
-      "enableShare": "Enable Public Sharing",
-      "pageManagement": "Page Management"
+      "enableShare": "Enable Public Sharing"
+    },
+    "pageManager": {
+      "title": "Manage Pages",
+      "jumpToPage": "Go to page {page}",
+      "dragPage": "Drag page {page}",
+      "pageLabel": "Page {page}",
+      "deletePage": "Delete page {page}",
+      "deleteThisPage": "Delete this page",
+      "deletePageConfirmTitle": "Delete page {page}?",
+      "deletePageConfirmDescription": "All cards on this page will be removed from the binder, and subsequent page numbers will be automatically renumbered.",
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "deleting": "Deleting…",
+      "reorderFailed": "Reorder failed",
+      "deletePageFailed": "Delete failed",
+      "pageDeleted": "Page {page} deleted"
     },
     "shareDialog": {
       "title": "Share Binder Publicly",

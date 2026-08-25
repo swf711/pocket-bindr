@@ -1,10 +1,17 @@
 import { Skeleton } from '@/components/ui/skeleton'
 
+/**
+ * header 右側的動作按鈕：重整 / 管理內頁 / 設定（見 BinderSpreadView、BinderMobileView 的
+ * refreshSlot / pageManagerSlot / settingsSlot）。新增或移除該排按鈕時要同步這裡，
+ * 否則載入骨架與實際版面的按鈕數量會對不上。
+ */
+const HEADER_ACTION_KEYS = ['refresh', 'page-manager', 'settings'] as const
+
 interface BinderSpreadSkeletonProps {
   /** 是否顯示返回按鈕（詳情頁有、公開分享頁無） */
   showBackButton?: boolean
-  /** 是否顯示右側設定按鈕（詳情頁有、公開分享頁無） */
-  showSettingsButton?: boolean
+  /** 是否顯示右側 header 動作按鈕群（重整／管理內頁／設定；詳情頁有、公開分享頁無） */
+  showHeaderActions?: boolean
   /** 是否在名稱上方顯示 owner banner 佔位（僅公開分享頁） */
   showOwnerBanner?: boolean
   /** 桌面 header 是否顯示 pagination cluster（詳情頁、公開頁桌面皆有） */
@@ -18,7 +25,7 @@ interface BinderSpreadSkeletonProps {
  */
 export function BinderSpreadSkeleton({
   showBackButton = true,
-  showSettingsButton = true,
+  showHeaderActions = true,
   showOwnerBanner = false,
   showDesktopPagination = true,
 }: BinderSpreadSkeletonProps) {
@@ -30,7 +37,8 @@ export function BinderSpreadSkeleton({
       <div className="hidden md:flex flex-col flex-1 min-h-0 max-w-300 w-full mx-auto">
         <div className="flex items-center justify-between" style={{ height: 56 }}>
           <div className="flex items-center gap-3">
-            {showBackButton && <Skeleton className="h-9 w-9 rounded-md" />}
+            {/* 實際是含「返回」文字的 size="lg" pill 按鈕，非正方形 icon 鈕 */}
+            {showBackButton && <Skeleton className="h-10 w-24 rounded-full" />}
             <div>
               {showOwnerBanner && <Skeleton className="h-3 w-24 mb-1" />}
               <Skeleton className="h-6 w-40" />
@@ -39,14 +47,18 @@ export function BinderSpreadSkeleton({
           <div className="flex items-center gap-2">
             {showDesktopPagination && (
               <>
-                <Skeleton className="h-8 w-8 rounded-md" />
-                <Skeleton className="h-8 w-8 rounded-md" />
+                <Skeleton className="h-10 w-10 rounded-full" />
+                <Skeleton className="h-10 w-10 rounded-full" />
                 <Skeleton className="h-5 w-10" />
-                <Skeleton className="h-8 w-8 rounded-md" />
-                <Skeleton className="h-8 w-8 rounded-md" />
+                <Skeleton className="h-10 w-10 rounded-full" />
+                <Skeleton className="h-10 w-10 rounded-full" />
               </>
             )}
-            {showSettingsButton && <Skeleton className="h-9 w-9 rounded-md" />}
+            {/* 重整 / 管理內頁 / 設定，皆為 size-10 的 pill icon 鈕 */}
+            {showHeaderActions &&
+              HEADER_ACTION_KEYS.map((key) => (
+                <Skeleton key={key} className="h-10 w-10 rounded-full" />
+              ))}
           </div>
         </div>
 
@@ -66,14 +78,19 @@ export function BinderSpreadSkeleton({
       {/* ── 行動裝置單頁 ── */}
       <div className="md:hidden flex flex-col flex-1 min-h-0">
         <div className="flex items-center justify-between" style={{ height: 56 }}>
-          <div className="flex items-center gap-3">
-            {showBackButton && <Skeleton className="h-6 w-6 rounded-md" />}
-            <div>
+          <div className="flex min-w-0 items-center gap-3">
+            {showBackButton && <Skeleton className="h-10 w-20 shrink-0 rounded-full" />}
+            <div className="min-w-0">
               {showOwnerBanner && <Skeleton className="h-3 w-20 mb-1" />}
               <Skeleton className="h-6 w-32" />
             </div>
           </div>
-          {showSettingsButton && <Skeleton className="h-9 w-9 rounded-md" />}
+          <div className="flex shrink-0 items-center gap-1">
+            {showHeaderActions &&
+              HEADER_ACTION_KEYS.map((key) => (
+                <Skeleton key={key} className="h-10 w-10 rounded-full" />
+              ))}
+          </div>
         </div>
 
         <div className="flex-1 min-h-0 flex items-center justify-center">
@@ -87,11 +104,11 @@ export function BinderSpreadSkeleton({
         </div>
 
         <div className="shrink-0 flex items-center justify-center gap-2 py-2">
-          <Skeleton className="h-9 w-9 rounded-md" />
-          <Skeleton className="h-9 w-9 rounded-md" />
+          <Skeleton className="h-10 w-10 rounded-full" />
+          <Skeleton className="h-10 w-10 rounded-full" />
           <Skeleton className="h-5 w-10" />
-          <Skeleton className="h-9 w-9 rounded-md" />
-          <Skeleton className="h-9 w-9 rounded-md" />
+          <Skeleton className="h-10 w-10 rounded-full" />
+          <Skeleton className="h-10 w-10 rounded-full" />
         </div>
       </div>
     </div>
@@ -99,12 +116,12 @@ export function BinderSpreadSkeleton({
 }
 
 /**
- * 卡冊詳情頁載入骨架（/binders/[id]）：返回鈕 + 設定鈕 + 桌面 pagination，無 owner banner。
+ * 卡冊詳情頁載入骨架（/binders/[id]）：返回鈕 + header 動作按鈕群 + 桌面 pagination，無 owner banner。
  */
 export function BinderDetailSkeleton() {
   return (
     <div data-testid="binder-detail-skeleton">
-      <BinderSpreadSkeleton showBackButton showSettingsButton showDesktopPagination />
+      <BinderSpreadSkeleton showBackButton showHeaderActions showDesktopPagination />
     </div>
   )
 }

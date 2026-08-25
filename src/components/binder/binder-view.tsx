@@ -8,6 +8,7 @@ import { RefreshCw } from 'lucide-react'
 import { BinderSpreadView } from './binder-spread-view'
 import { BinderMobileView } from './binder-mobile-view'
 import { BinderSettingsDrawer } from './binder-settings-drawer'
+import { PageManagerDialog } from './page-manager-dialog'
 import { SlotCardPickerDialog } from './slot-card-picker-dialog'
 import { CardDetailDrawer } from '@/components/cards/card-detail-drawer'
 import { IconTooltipButton } from '@/components/common/icon-tooltip-button'
@@ -490,6 +491,15 @@ export function BinderView({ binder }: { binder: BinderDetailResponse }) {
     setViewCard(await res.json())
   }
 
+  /** 從「管理內頁」Dialog 跳到指定頁；mobilePages[0] 是封面，故 page N 即 index N。 */
+  const handleJumpToPage = (pageNumber: number) => {
+    if (isMobile) {
+      setMobilePageIndex(pageNumber)
+    } else {
+      setSpreadIndex(pageNumberToSpreadIndex(pageNumber))
+    }
+  }
+
   const handleJumpToSlot = (slot: SlotWithCard) => {
     if (isMobile) {
       setMobilePageIndex(slot.pageNumber)
@@ -581,7 +591,8 @@ export function BinderView({ binder }: { binder: BinderDetailResponse }) {
       disabled={isRefreshing}
       tooltip={t('refresh')}
     >
-      <RefreshCw className={isRefreshing ? 'animate-spin' : undefined} />
+      {/* size-5 = M3 --m3-icon(20px)，與同排的管理內頁／設定齒輪一致 */}
+      <RefreshCw className={`size-5${isRefreshing ? ' animate-spin' : ''}`} />
     </IconTooltipButton>
   )
 
@@ -595,10 +606,20 @@ export function BinderView({ binder }: { binder: BinderDetailResponse }) {
       totalPages={totalPages}
       shareToken={shareToken}
       onSettingsUpdate={handleSettingsUpdate}
+      onShareTokenChange={setShareToken}
+    />
+  )
+
+  const pageManagerDialog = (
+    <PageManagerDialog
+      binderId={binder.id}
+      gridType={gridType}
+      totalPages={totalPages}
+      slots={slots}
       onPageDelete={handlePageDelete}
       onPageReorder={handlePageReorder}
       onTotalPagesChange={setTotalPages}
-      onShareTokenChange={setShareToken}
+      onJumpToPage={handleJumpToPage}
     />
   )
 
@@ -617,6 +638,7 @@ export function BinderView({ binder }: { binder: BinderDetailResponse }) {
         onJumpToSlot={handleJumpToSlot}
         onAddPage={handleAddPage}
         settingsSlot={settingsDrawer}
+        pageManagerSlot={pageManagerDialog}
         refreshSlot={refreshButton}
         {...sharedHandlers}
       />
@@ -633,6 +655,7 @@ export function BinderView({ binder }: { binder: BinderDetailResponse }) {
         onJumpToSlot={handleJumpToSlot}
         onAddPage={handleAddPage}
         settingsSlot={settingsDrawer}
+        pageManagerSlot={pageManagerDialog}
         refreshSlot={refreshButton}
         {...sharedHandlers}
       />
