@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useTranslations } from 'next-intl'
-import { BookCheck, Bookmark, Copy, Eye, EllipsisVertical, Minimize2, Maximize2, Trash2 } from 'lucide-react'
+import { BetweenHorizontalStart, BookCheck, Bookmark, Copy, Eye, EllipsisVertical, Minimize2, Maximize2, Trash2 } from 'lucide-react'
 import { useDraggable, useDroppable } from '@dnd-kit/core'
 import { Button } from '@/components/ui/button'
 import { ButtonGroup } from '@/components/ui/button-group'
@@ -38,6 +38,8 @@ interface SlotCardProps {
   onCopy?: (slotId: string) => void
   /** 複數卡切換「跨格 ↔ 單格」呈現；未傳則不顯示該按鈕 */
   onToggleSpan?: (slotId: string, mode: 'span' | 'single') => void
+  /** 在此格之前插入一個空格，其後格位順延；未傳則不顯示該選單項 */
+  onInsertSlot?: (slotId: string) => void
   isDragOverlay?: boolean
   isHighlighted?: boolean
   /** 剛從單格展開成跨格時播放一次進場動畫（避免每次載入頁面都動） */
@@ -56,6 +58,7 @@ export function SlotCard({
   onView,
   onCopy,
   onToggleSpan,
+  onInsertSlot,
   isDragOverlay = false,
   isHighlighted = false,
   isExpanding = false,
@@ -129,6 +132,63 @@ export function SlotCard({
     </Tooltip>
   ) : null
 
+  // ⋯ 選單兩種模式共用：compact 額外收進跨格／複製（inline 只留切換狀態＋查看），
+  // 非 compact 則只收「在此插入空格」與「移除卡牌」——控制項數兩邊都 ≤ MAX_INLINE_ACTIONS(5)，
+  // 故 src/lib/slot-action-fit.ts 的寬度判定完全不必改。
+  const moreMenu = (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="default"
+          size="icon-sm"
+          data-testid={`slot-more-btn-${slot.id}`}
+          aria-label={t('moreActions')}
+        >
+          <EllipsisVertical />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="center" className="min-w-[140px]">
+        {compact && canToggleSpan && (
+          <DropdownMenuItem
+            onSelect={() => onToggleSpan!(slot.id, slot.span ? 'single' : 'span')}
+            data-testid={`slot-span-menu-${slot.id}`}
+          >
+            {slot.span ? <Minimize2 className="mr-2 size-4" /> : <Maximize2 className="mr-2 size-4" />}
+            {spanLabel}
+          </DropdownMenuItem>
+        )}
+        {compact && onCopy && (
+          <DropdownMenuItem
+            onSelect={() => onCopy(slot.id)}
+            data-testid={`slot-copy-menu-${slot.id}`}
+          >
+            <Copy className="mr-2 size-4" />
+            {t('copyToEmptySlot')}
+          </DropdownMenuItem>
+        )}
+        {onInsertSlot && (
+          <DropdownMenuItem
+            onSelect={() => onInsertSlot(slot.id)}
+            data-testid={`slot-insert-menu-${slot.id}`}
+          >
+            <BetweenHorizontalStart className="mr-2 size-4" />
+            {t('insertEmptySlot')}
+          </DropdownMenuItem>
+        )}
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          className="text-destructive focus:text-destructive"
+          // dialog 不可 nested 於選單項（選單關閉會連帶 unmount）；preventDefault 讓選單先關再開受控 dialog
+          onSelect={(e) => { e.preventDefault(); setOpen(true) }}
+          data-testid={`slot-remove-menu-${slot.id}`}
+        >
+          <Trash2 className="mr-2 size-4" />
+          {t('removeCard')}
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+
   return (
     <div
       ref={(node) => {
@@ -177,51 +237,10 @@ export function SlotCard({
               <ButtonGroup>
                 {toggleStatusButton}
                 {viewButton}
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="default"
-                      size="icon-sm"
-                      data-testid={`slot-more-btn-${slot.id}`}
-                      aria-label={t('moreActions')}
-                    >
-                      <EllipsisVertical />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="center" className="min-w-[140px]">
-                    {canToggleSpan && (
-                      <DropdownMenuItem
-                        onSelect={() => onToggleSpan!(slot.id, slot.span ? 'single' : 'span')}
-                        data-testid={`slot-span-menu-${slot.id}`}
-                      >
-                        {slot.span ? <Minimize2 className="mr-2 size-4" /> : <Maximize2 className="mr-2 size-4" />}
-                        {spanLabel}
-                      </DropdownMenuItem>
-                    )}
-                    {onCopy && (
-                      <DropdownMenuItem
-                        onSelect={() => onCopy(slot.id)}
-                        data-testid={`slot-copy-menu-${slot.id}`}
-                      >
-                        <Copy className="mr-2 size-4" />
-                        {t('copyToEmptySlot')}
-                      </DropdownMenuItem>
-                    )}
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      className="text-destructive focus:text-destructive"
-                      // dialog 不可 nested 於選單項（選單關閉會連帶 unmount）；preventDefault 讓選單先關再開受控 dialog
-                      onSelect={(e) => { e.preventDefault(); setOpen(true) }}
-                      data-testid={`slot-remove-menu-${slot.id}`}
-                    >
-                      <Trash2 className="mr-2 size-4" />
-                      {t('removeCard')}
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                {moreMenu}
               </ButtonGroup>
             ) : (
-              // 桌面/大螢幕：全部操作橫排，固定序 切換狀態→查看→跨格→複製→刪除
+              // 桌面/大螢幕：固定序 切換狀態→查看→跨格→複製→⋯（插入／移除）
               <ButtonGroup>
                 {toggleStatusButton}
                 {viewButton}
@@ -261,24 +280,7 @@ export function SlotCard({
                     </TooltipContent>
                   </Tooltip>
                 )}
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="default"
-                      size="icon-sm"
-                      data-variant="destructive"
-                      onClick={() => setOpen(true)}
-                      data-testid={`slot-remove-btn-${slot.id}`}
-                      aria-label={t('removeCard')}
-                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90 focus-visible:ring-destructive/50"
-                    >
-                      <Trash2 />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>{t('removeCard')}</p>
-                  </TooltipContent>
-                </Tooltip>
+                {moreMenu}
               </ButtonGroup>
             )}
           </div>

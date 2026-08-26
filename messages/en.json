@@ -340,7 +340,8 @@
       "cancel": "Cancel",
       "confirmRemove": "Confirm removal",
       "expandAcrossSlots": "Span across slots",
-      "collapseToSingleSlot": "Collapse to one slot"
+      "collapseToSingleSlot": "Collapse to one slot",
+      "insertEmptySlot": "Insert empty slot here"
     },
     "pickerDialog": {
       "selectStatus": "Select collection status",
@@ -434,7 +435,20 @@
     "spanNoRoom": "Not enough adjacent empty slots",
     "spanMoveFailed": "Move failed",
     "spanTargetOccupied": "Target slots are already taken",
-    "spanTargetOutOfBounds": "The whole card doesn't fit here"
+    "spanTargetOutOfBounds": "The whole card doesn't fit here",
+    "insertSlotSuccess": "Empty slot inserted; following cards shifted",
+    "insertSlotFailed": "Could not insert an empty slot",
+    "insertSlotAlreadyEmpty": "This slot is already empty",
+    "insertSlotGroupTitle": "Cards spanning multiple slots are in the way",
+    "insertSlotGroupDescription": "This move affects {count} card(s) that span multiple slots. How should they be handled?",
+    "insertSlotGroupShift": "Move the whole group",
+    "insertSlotGroupCollapse": "Collapse them to a single slot first",
+    "emptySlot": {
+      "removeSlot": "Remove slot"
+    },
+    "removeSlotSuccess": "Empty slot removed; following cards pulled back",
+    "removeSlotFailed": "Could not remove the empty slot",
+    "removeSlotNothingToPull": "There are no cards after this slot to pull back"
   },
   "binderList": {
     "title": "My Binders",

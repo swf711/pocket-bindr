@@ -103,15 +103,52 @@ describe('SlotCard', () => {
     expect(outerClick).not.toHaveBeenCalled()
   })
 
-  it('桌面刪除鈕開啟確認框、確認後呼叫 onDelete（共用受控 AlertDialog）', () => {
+  it('非 compact 也有 ⋯ 選單，刪除已不再 inline', async () => {
+    const user = userEvent.setup()
+    renderWithProviders(
+      <SlotCard slot={makeSlot()} onDelete={() => {}} onToggleStatus={() => {}} onView={() => {}} onCopy={() => {}} />,
+    )
+    expect(screen.getByTestId('slot-more-btn-slot1')).toBeInTheDocument()
+    expect(screen.queryByTestId('slot-remove-btn-slot1')).not.toBeInTheDocument()
+    // 複製維持 inline（非 compact 只把刪除與插入收進選單）
+    expect(screen.getByTestId('slot-copy-btn-slot1')).toBeInTheDocument()
+    await user.click(screen.getByTestId('slot-more-btn-slot1'))
+    expect(await screen.findByTestId('slot-remove-menu-slot1')).toBeInTheDocument()
+    expect(screen.queryByTestId('slot-copy-menu-slot1')).not.toBeInTheDocument()
+  })
+
+  it('⋯ 選單刪除項開啟確認框、確認後呼叫 onDelete（共用受控 AlertDialog）', async () => {
+    const user = userEvent.setup()
     const onDelete = vi.fn()
     renderWithProviders(
       <SlotCard slot={makeSlot()} onDelete={onDelete} onToggleStatus={() => {}} onView={() => {}} />,
     )
-    fireEvent.click(screen.getByTestId('slot-remove-btn-slot1'))
-    expect(screen.getByText('確認移除')).toBeInTheDocument()
+    await user.click(screen.getByTestId('slot-more-btn-slot1'))
+    await user.click(await screen.findByTestId('slot-remove-menu-slot1'))
+    expect(await screen.findByText('確認移除')).toBeInTheDocument()
     fireEvent.click(screen.getByText('確認移除'))
     expect(onDelete).toHaveBeenCalledWith('slot1')
+  })
+
+  it('未傳 onInsertSlot 時選單不含插入項', async () => {
+    const user = userEvent.setup()
+    renderWithProviders(
+      <SlotCard slot={makeSlot()} onDelete={() => {}} onToggleStatus={() => {}} />,
+    )
+    await user.click(screen.getByTestId('slot-more-btn-slot1'))
+    expect(await screen.findByTestId('slot-remove-menu-slot1')).toBeInTheDocument()
+    expect(screen.queryByTestId('slot-insert-menu-slot1')).not.toBeInTheDocument()
+  })
+
+  it('點擊插入選單項呼叫 onInsertSlot', async () => {
+    const user = userEvent.setup()
+    const onInsertSlot = vi.fn()
+    renderWithProviders(
+      <SlotCard slot={makeSlot()} onDelete={() => {}} onToggleStatus={() => {}} onInsertSlot={onInsertSlot} />,
+    )
+    await user.click(screen.getByTestId('slot-more-btn-slot1'))
+    await user.click(await screen.findByTestId('slot-insert-menu-slot1'))
+    expect(onInsertSlot).toHaveBeenCalledWith('slot1')
   })
 })
 

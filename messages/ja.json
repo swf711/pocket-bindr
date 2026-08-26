@@ -340,7 +340,8 @@
       "cancel": "キャンセル",
       "confirmRemove": "削除を確定",
       "expandAcrossSlots": "複数マスで表示",
-      "collapseToSingleSlot": "1マスにまとめる"
+      "collapseToSingleSlot": "1マスにまとめる",
+      "insertEmptySlot": "ここに空きスロットを挿入"
     },
     "pickerDialog": {
       "selectStatus": "コレクション状態を選択",
@@ -434,7 +435,20 @@
     "spanNoRoom": "連続した空きマスが足りません",
     "spanMoveFailed": "移動に失敗しました",
     "spanTargetOccupied": "移動先にすでにカードがあります",
-    "spanTargetOutOfBounds": "ここには全体が収まりません"
+    "spanTargetOutOfBounds": "ここには全体が収まりません",
+    "insertSlotSuccess": "空きスロットを挿入しました（以降のカードは 1 つずつ後ろへ）",
+    "insertSlotFailed": "空きスロットの挿入に失敗しました",
+    "insertSlotAlreadyEmpty": "このスロットはすでに空です",
+    "insertSlotGroupTitle": "複数スロットにまたがるカードがあります",
+    "insertSlotGroupDescription": "この移動は、複数スロットを占めるカード（{count} 組）に影響します。どうしますか？",
+    "insertSlotGroupShift": "グループごと移動する",
+    "insertSlotGroupCollapse": "先に 1 スロットに収める",
+    "emptySlot": {
+      "removeSlot": "スロット削除"
+    },
+    "removeSlotSuccess": "空きスロットを削除しました（以降のカードが前へ詰まります）",
+    "removeSlotFailed": "空きスロットの削除に失敗しました",
+    "removeSlotNothingToPull": "このスロットより後ろに詰めるカードがありません"
   },
   "binderList": {
     "title": "マイバインダー",
