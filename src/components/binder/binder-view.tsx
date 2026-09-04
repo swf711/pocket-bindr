@@ -10,13 +10,15 @@ import { BinderMobileView } from './binder-mobile-view'
 import { BinderSettingsDrawer } from './binder-settings-drawer'
 import { PageManagerDialog } from './page-manager-dialog'
 import { SlotCardPickerDialog } from './slot-card-picker-dialog'
+import { InsertSlotGroupDialog } from './insert-slot-group-dialog'
 import { CardDetailDrawer } from '@/components/cards/card-detail-drawer'
 import { IconTooltipButton } from '@/components/common/icon-tooltip-button'
 import type { BinderDetailResponse, SlotWithCard, SlotCardResult } from '@/types/binder'
 import type { CardWithCollectionStatus } from '@/types/card'
 import { buildGridPages, buildSpreads, buildMobilePages, pageNumberToSpreadIndex, findNextEmptySlot } from '@/lib/binder-utils'
 import { GRID_TYPE_COLS, GRID_TYPE_SLOTS } from '@/types/binder'
-import { groupSlotIndices } from '@/lib/binder-slot-placement'
+import { groupSlotIndices, planSlotInsertion, planSlotRemoval } from '@/lib/binder-slot-placement'
+import type { InsertionGroup, InsertionSlot } from '@/lib/binder-slot-placement'
 import { resolveSpanLayout } from '@/lib/multi-card-layout'
 import { isMultiNumberCard } from '@/lib/card-number'
 import { useIsMobile } from '@/hooks/use-is-mobile'
@@ -43,6 +45,15 @@ export function BinderView({ binder }: { binder: BinderDetailResponse }) {
   const [expandingGroupId, setExpandingGroupId] = useState<string | null>(null)
   const expandTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [isRefreshing, setIsRefreshing] = useState(false)
+  // 插入／移除空格撞到跨格群組時，先問使用者要整組一起移動還是先收合
+  const [insertPrompt, setInsertPrompt] = useState<{
+    mode: 'insert' | 'remove'
+    at: { pageNumber: number; slotIndex: number }
+    groupCount: number
+  } | null>(null)
+  // 位移飛行中：擋住重入（樂觀更新後畫面已變、DB 尚未寫完）
+  const [isShifting, setIsShifting] = useState(false)
+  const isShiftingRef = useRef(false)
   const highlightTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const isMobile = useIsMobile()
   const swapSlots = useSwapSlots()
@@ -482,6 +493,145 @@ export function BinderView({ binder }: { binder: BinderDetailResponse }) {
     }))
   }
 
+
+  /**
+   * 在某格「之前」插入一個空格，其後格位順延到全卡冊第一個空位為止。
+   *
+   * 先在 client 以與後端相同的純函式 `planSlotInsertion` 算一次——不是為了樂觀更新
+   * （成功後仍走 reloadSlots()），而是為了在**打 API 之前**就知道要不要先問使用者
+   * 「位移範圍撞到跨格群組怎麼辦」。後端仍以自己讀到的資料重算並驗證。
+   */
+  /**
+   * 插入／移除空格共用的位移執行流程。
+   *
+   * client 端先用與後端**完全相同**的純函式算出 `moves`，一是為了在打 API 之前就知道
+   * 要不要先問使用者「位移範圍撞到跨格群組怎麼辦」，二是直接拿來做**樂觀更新**——
+   * 位移範圍可達整本卡冊，等 API 來回再重抓會有明顯延遲（實測「點下去像沒反應」的另一半成因，
+   * 另一半是後端逐格 UPDATE，已改為批次 SQL）。
+   *
+   * 🔴 飛行中必須擋重入：樂觀更新後畫面已是新狀態，但 DB 還沒寫完；此時再點一次，
+   * server 會從尚未更新的 DB 重算 → 兩次寫入互相打架。
+   */
+  const runSlotShift = async (
+    mode: 'insert' | 'remove',
+    at: { pageNumber: number; slotIndex: number },
+    groupMode?: 'shift' | 'collapse',
+  ) => {
+    if (isShiftingRef.current) return
+    const isInsert = mode === 'insert'
+
+    const insertionSlots: InsertionSlot[] = slots.map((s) => ({
+      id: s.id,
+      pageNumber: s.pageNumber,
+      slotIndex: s.slotIndex,
+      groupId: s.span?.groupId ?? null,
+      groupIndex: s.span?.groupIndex ?? null,
+    }))
+    const groupMap = new Map<string, InsertionGroup>()
+    for (const s of slots) {
+      if (s.span) groupMap.set(s.span.groupId, { id: s.span.groupId, cols: s.span.cols, rows: s.span.rows })
+    }
+
+    const planner = isInsert ? planSlotInsertion : planSlotRemoval
+    const plan = planner({
+      slots: insertionSlots,
+      groups: [...groupMap.values()],
+      gridCols: GRID_TYPE_COLS[gridType],
+      slotsPerPage: GRID_TYPE_SLOTS[gridType],
+      totalPages,
+      insertAt: at,
+      groupMode,
+    })
+
+    if (plan.status === 'noop') {
+      toast.info(isInsert ? t('insertSlotAlreadyEmpty') : t('removeSlotNothingToPull'))
+      return
+    }
+    if (plan.status === 'pageLimit') {
+      toast.error(t('pageMax'))
+      return
+    }
+    if (plan.status === 'blockedByGroup') {
+      setInsertPrompt({ mode, at, groupCount: new Set(plan.groupIds).size })
+      return
+    }
+
+    // ── 樂觀更新 ──────────────────────────────────────────────────────────
+    const snapshotSlots = slots
+    const snapshotTotalPages = totalPages
+    const nextById = new Map(plan.moves.map((m) => [m.id, m]))
+    const removed = new Set(plan.removedSlotIds)
+    const collapsed = new Set(plan.collapsedGroupIds)
+
+    setSlots((prev) =>
+      prev
+        .filter((s) => !removed.has(s.id))
+        .map((s) => ({
+          ...s,
+          ...(nextById.get(s.id) ?? {}),
+          // 收合的群組：留下的 anchor 退回單格呈現
+          ...(s.span && collapsed.has(s.span.groupId) ? { span: null } : {}),
+        })),
+    )
+    setTotalPages(plan.newTotalPages)
+
+    /**
+     * 位移失敗的統一善後：把樂觀更新的畫面還原，再重抓一次真相。
+     * 🔴 樂觀更新後**任何**失敗路徑都必須經過這裡——包含 fetch 自己拋例外（斷網／請求被中止）。
+     * 少了那條路徑，畫面會停在「看起來成功」的狀態，但 DB 根本沒寫。
+     */
+    const rollback = async (message: string) => {
+      setSlots(snapshotSlots)
+      setTotalPages(snapshotTotalPages)
+      toast.error(message)
+      await reloadSlots().catch(() => {})
+    }
+    const failedMessage = isInsert ? t('insertSlotFailed') : t('removeSlotFailed')
+
+    isShiftingRef.current = true
+    setIsShifting(true)
+    try {
+      const endpoint = isInsert ? 'insert' : 'remove-empty'
+      let res: Response
+      try {
+        res = await fetch(`/api/binders/${binder.id}/slots/${endpoint}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...at, ...(groupMode ? { groupMode } : {}) }),
+        })
+      } catch {
+        // 連線層面就失敗（斷網等）：沒有 response 可判讀，一律回滾
+        await rollback(failedMessage)
+        return
+      }
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        await rollback(data?.error === 'pageLimitReached' ? t('pageMax') : failedMessage)
+        return
+      }
+      const data = (await res.json()) as { movedSlotIds?: string[] }
+      // 前後端同一純函式、同一輸入 → 結果應完全一致；不一致代表 client 的 slots 已過期
+      // （例：另一分頁改過同一本卡冊），此時靜默重抓真相，不再多打一次全量 GET。
+      if ((data.movedSlotIds?.length ?? 0) !== plan.moves.length) {
+        await reloadSlots().catch(() => {})
+      }
+      toast.success(isInsert ? t('insertSlotSuccess') : t('removeSlotSuccess'))
+    } finally {
+      isShiftingRef.current = false
+      setIsShifting(false)
+    }
+  }
+
+  const handleInsertSlot = (slotId: string) => {
+    const slot = slots.find((s) => s.id === slotId)
+    if (!slot) return
+    void runSlotShift('insert', { pageNumber: slot.pageNumber, slotIndex: slot.slotIndex })
+  }
+
+  const handleRemoveEmptySlot = (pageNumber: number, slotIndex: number) => {
+    void runSlotShift('remove', { pageNumber, slotIndex })
+  }
+
   const handleViewCard = async (cardId: string) => {
     const res = await fetch(`/api/cards/${cardId}`)
     if (!res.ok) {
@@ -578,6 +728,8 @@ export function BinderView({ binder }: { binder: BinderDetailResponse }) {
     onView: handleViewCard,
     onCopy: handleCopyCard,
     onToggleSpan: handleToggleSpan,
+    onInsertSlot: isShifting ? undefined : handleInsertSlot,
+    onRemoveSlot: isShifting ? undefined : handleRemoveEmptySlot,
     highlightedSlotId,
     expandingGroupId,
   }
@@ -663,6 +815,16 @@ export function BinderView({ binder }: { binder: BinderDetailResponse }) {
         open={pickerTarget !== null}
         onClose={() => setPickerTarget(null)}
         onConfirm={handleConfirmAddCard}
+      />
+      <InsertSlotGroupDialog
+        open={insertPrompt !== null}
+        groupCount={insertPrompt?.groupCount ?? 0}
+        onOpenChange={(open) => { if (!open) setInsertPrompt(null) }}
+        onChoose={(groupMode) => {
+          const target = insertPrompt
+          setInsertPrompt(null)
+          if (target) void runSlotShift(target.mode, target.at, groupMode)
+        }}
       />
       <CardDetailDrawer
         card={viewCard}

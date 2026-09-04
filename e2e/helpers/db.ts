@@ -615,3 +615,23 @@ export async function getSlotIdAt(
   })
   return slot.id
 }
+
+/** 讀取指定格位目前的座標（驗證插入空格後的順延結果）。 */
+export async function getSlotPositionById(
+  slotId: string,
+): Promise<{ pageNumber: number; slotIndex: number }> {
+  return prisma.binderSlot.findUniqueOrThrow({
+    where: { id: slotId },
+    select: { pageNumber: true, slotIndex: true },
+  })
+}
+
+/** 讀取卡冊 settings.totalPages（驗證插入空格時的自動增頁）。 */
+export async function getBinderTotalPages(binderId: string): Promise<number | null> {
+  const binder = await prisma.binder.findUniqueOrThrow({
+    where: { id: binderId },
+    select: { settings: true },
+  })
+  const settings = binder.settings as Record<string, unknown> | null
+  return typeof settings?.totalPages === 'number' ? settings.totalPages : null
+}

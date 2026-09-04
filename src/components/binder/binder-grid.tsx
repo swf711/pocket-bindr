@@ -14,6 +14,8 @@ interface BinderGridSlotsProps {
   onView?: (cardId: string) => void
   onCopy?: (slotId: string) => void
   onToggleSpan?: (slotId: string, mode: 'span' | 'single') => void
+  onInsertSlot?: (slotId: string) => void
+  onRemoveSlot?: (pageNumber: number, slotIndex: number) => void
   isDragging?: boolean
   onAddCard?: (pageNumber: number, slotIndex: number) => void
   highlightedSlotId?: string | null
@@ -34,6 +36,8 @@ export function BinderGridSlots({
   onView,
   onCopy,
   onToggleSpan,
+  onInsertSlot,
+  onRemoveSlot,
   isDragging = false,
   onAddCard,
   highlightedSlotId,
@@ -59,6 +63,7 @@ export function BinderGridSlots({
                 slotIndex={slot.slotIndex}
                 isDragging={isDragging}
                 onAddCard={onAddCard}
+                onRemoveSlot={onRemoveSlot}
                 counterScale={counterScale}
               />
             ) : (
@@ -69,6 +74,7 @@ export function BinderGridSlots({
                 onView={onView}
                 onCopy={onCopy}
                 onToggleSpan={onToggleSpan}
+                onInsertSlot={onInsertSlot}
                 isHighlighted={highlightedSlotId === slot.id}
                 isExpanding={
                   expandingGroupId != null &&

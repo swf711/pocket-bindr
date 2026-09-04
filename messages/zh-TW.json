@@ -340,7 +340,8 @@
       "cancel": "取消",
       "confirmRemove": "確認移除",
       "expandAcrossSlots": "跨格位呈現",
-      "collapseToSingleSlot": "收合為單格"
+      "collapseToSingleSlot": "收合為單格",
+      "insertEmptySlot": "在此插入空格"
     },
     "pickerDialog": {
       "selectStatus": "選擇收藏狀態",
@@ -434,7 +435,20 @@
     "spanNoRoom": "卡冊內沒有足夠的連續空格",
     "spanMoveFailed": "移動失敗",
     "spanTargetOccupied": "目標位置已有卡片",
-    "spanTargetOutOfBounds": "這個位置放不下整組卡片"
+    "spanTargetOutOfBounds": "這個位置放不下整組卡片",
+    "insertSlotSuccess": "已插入空格，後面的卡往後順延",
+    "insertSlotFailed": "插入空格失敗",
+    "insertSlotAlreadyEmpty": "這一格已經是空的",
+    "insertSlotGroupTitle": "這一段有跨格呈現的卡片",
+    "insertSlotGroupDescription": "這次移動會影響到佔多格的卡片（{count} 組）。要怎麼處理？",
+    "insertSlotGroupShift": "整組一起移動",
+    "insertSlotGroupCollapse": "先收合成單格",
+    "emptySlot": {
+      "removeSlot": "移除空格"
+    },
+    "removeSlotSuccess": "已移除空格，後面的卡往前遞補",
+    "removeSlotFailed": "移除空格失敗",
+    "removeSlotNothingToPull": "這個空格後面沒有卡可以往前遞補"
   },
   "binderList": {
     "title": "我的卡冊",
