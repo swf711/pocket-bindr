@@ -11,6 +11,7 @@ import { BinderSettingsDrawer } from './binder-settings-drawer'
 import { PageManagerDialog } from './page-manager-dialog'
 import { SlotCardPickerDialog } from './slot-card-picker-dialog'
 import { InsertSlotGroupDialog } from './insert-slot-group-dialog'
+import { SlotLabelDialog } from './slot-label-dialog'
 import { CardDetailDrawer } from '@/components/cards/card-detail-drawer'
 import { IconTooltipButton } from '@/components/common/icon-tooltip-button'
 import type { BinderDetailResponse, SlotWithCard, SlotCardResult } from '@/types/binder'
@@ -45,6 +46,8 @@ export function BinderView({ binder }: { binder: BinderDetailResponse }) {
   const [expandingGroupId, setExpandingGroupId] = useState<string | null>(null)
   const expandTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [isRefreshing, setIsRefreshing] = useState(false)
+  // 正在編輯標籤的格位（跨格群組一律是 anchor）
+  const [labelTargetId, setLabelTargetId] = useState<string | null>(null)
   // 插入／移除空格撞到跨格群組時，先問使用者要整組一起移動還是先收合
   const [insertPrompt, setInsertPrompt] = useState<{
     mode: 'insert' | 'remove'
@@ -622,6 +625,46 @@ export function BinderView({ binder }: { binder: BinderDetailResponse }) {
     }
   }
 
+  const handleEditLabel = (slotId: string) => setLabelTargetId(slotId)
+
+  /**
+   * 寫入／清除格位標籤。樂觀更新 + 失敗回滾，形狀比照 handleToggleStatus。
+   * 後端對群組成員會改寫 anchor 並回傳 anchor 的 slotId，故成功後以回傳值為準再對齊一次。
+   */
+  const handleSaveLabel = async (labels: string[]) => {
+    const slotId = labelTargetId
+    if (!slotId) return
+    const slot = slots.find((s) => s.id === slotId)
+    if (!slot) return
+    const previous = slot.labels ?? []
+
+    setSlots((prev) => prev.map((s) => (s.id === slotId ? { ...s, labels } : s)))
+    try {
+      const res = await fetch(`/api/binders/${binder.id}/slots/${slotId}/labels`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ labels }),
+      })
+      if (!res.ok) throw new Error('failed')
+      const data: { slotId: string; labels: string[] } = await res.json()
+      if (data.slotId !== slotId) {
+        setSlots((prev) =>
+          prev.map((s) =>
+            s.id === slotId
+              ? { ...s, labels: previous }
+              : s.id === data.slotId
+                ? { ...s, labels: data.labels }
+                : s,
+          ),
+        )
+      }
+      toast.success(t('labelUpdated'))
+    } catch {
+      setSlots((prev) => prev.map((s) => (s.id === slotId ? { ...s, labels: previous } : s)))
+      toast.error(t('labelUpdateFailed'))
+    }
+  }
+
   const handleInsertSlot = (slotId: string) => {
     const slot = slots.find((s) => s.id === slotId)
     if (!slot) return
@@ -729,6 +772,7 @@ export function BinderView({ binder }: { binder: BinderDetailResponse }) {
     onCopy: handleCopyCard,
     onToggleSpan: handleToggleSpan,
     onInsertSlot: isShifting ? undefined : handleInsertSlot,
+    onEditLabel: handleEditLabel,
     onRemoveSlot: isShifting ? undefined : handleRemoveEmptySlot,
     highlightedSlotId,
     expandingGroupId,
@@ -825,6 +869,12 @@ export function BinderView({ binder }: { binder: BinderDetailResponse }) {
           setInsertPrompt(null)
           if (target) void runSlotShift(target.mode, target.at, groupMode)
         }}
+      />
+      <SlotLabelDialog
+        open={labelTargetId !== null}
+        onOpenChange={(open) => { if (!open) setLabelTargetId(null) }}
+        slot={slots.find((s) => s.id === labelTargetId) ?? null}
+        onSubmit={handleSaveLabel}
       />
       <CardDetailDrawer
         card={viewCard}

@@ -57,6 +57,7 @@ interface BinderSpreadViewProps {
   onCopy?: (slotId: string) => void
   onToggleSpan?: (slotId: string, mode: 'span' | 'single') => void
   onInsertSlot?: (slotId: string) => void
+  onEditLabel?: (slotId: string) => void
   onRemoveSlot?: (pageNumber: number, slotIndex: number) => void
   onAddCard?: (pageNumber: number, slotIndex: number) => void
   onJumpToSlot: (slot: SlotWithCard) => void
@@ -82,6 +83,7 @@ function SpreadPanelContent({
   onCopy,
   onToggleSpan,
   onInsertSlot,
+  onEditLabel,
   onRemoveSlot,
   isDragging,
   onAddCard,
@@ -106,6 +108,7 @@ function SpreadPanelContent({
   onCopy?: (slotId: string) => void
   onToggleSpan?: (slotId: string, mode: 'span' | 'single') => void
   onInsertSlot?: (slotId: string) => void
+  onEditLabel?: (slotId: string) => void
   onRemoveSlot?: (pageNumber: number, slotIndex: number) => void
   isDragging: boolean
   onAddCard?: (pageNumber: number, slotIndex: number) => void
@@ -154,6 +157,7 @@ function SpreadPanelContent({
         onCopy={onCopy}
         onToggleSpan={onToggleSpan}
         onInsertSlot={onInsertSlot}
+        onEditLabel={onEditLabel}
         onRemoveSlot={onRemoveSlot}
         isDragging={isDragging}
         onAddCard={onAddCard}
@@ -187,6 +191,7 @@ export function BinderSpreadView({
   onCopy,
   onToggleSpan,
   onInsertSlot,
+  onEditLabel,
   onRemoveSlot,
   onAddCard,
   onJumpToSlot,
@@ -448,6 +453,7 @@ export function BinderSpreadView({
                     onCopy={onCopy}
                     onToggleSpan={onToggleSpan}
                     onInsertSlot={onInsertSlot}
+                    onEditLabel={onEditLabel}
                     onRemoveSlot={onRemoveSlot}
                     isDragging={isDragging}
                     onAddCard={onAddCard}
@@ -478,6 +484,7 @@ export function BinderSpreadView({
                     onCopy={onCopy}
                     onToggleSpan={onToggleSpan}
                     onInsertSlot={onInsertSlot}
+                    onEditLabel={onEditLabel}
                     onRemoveSlot={onRemoveSlot}
                     isDragging={isDragging}
                     onAddCard={onAddCard}

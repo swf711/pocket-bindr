@@ -46,10 +46,13 @@ function ReadOnlyGridSlots({
   slots,
   gridType,
   onView,
+  counterScale = 1,
 }: {
   slots: BinderSlotItem[]
   gridType: GridType
   onView?: (cardId: string) => void
+  /** 抵銷 Snowglobe 縮放，讓格位標籤文字維持可讀大小 */
+  counterScale?: number
 }) {
   const cols = GRID_TYPE_COLS[gridType]
   return (
@@ -60,7 +63,12 @@ function ReadOnlyGridSlots({
       {slots.map((slot, i) => {
         const emptyKey = `empty-${slot.pageNumber}-${slot.slotIndex}-${i}`
         return slot.id !== null ? (
-          <ReadOnlySlotCard key={slot.id} slot={slot as SlotWithCard} onView={onView} />
+          <ReadOnlySlotCard
+            key={slot.id}
+            slot={slot as SlotWithCard}
+            onView={onView}
+            counterScale={counterScale}
+          />
         ) : (
           <div
             key={emptyKey}
@@ -197,7 +205,12 @@ function PublicPanelContent({
           {t('pageLabel', { page: content.pageNumber })}
         </p>
       </div>
-      <ReadOnlyGridSlots slots={content.page} gridType={gridType} onView={onView} />
+      <ReadOnlyGridSlots
+        slots={content.page}
+        gridType={gridType}
+        onView={onView}
+        counterScale={counterScale}
+      />
     </div>
   )
 }

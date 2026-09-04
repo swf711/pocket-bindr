@@ -26,6 +26,8 @@ export type SlotWithCard = {
   slotIndex: number
   status: 'owned' | 'wanted'
   span?: SlotSpan | null
+  /** 使用者自訂短註記（可多個）；跨格群組只有 anchor（groupIndex 0）會有值 */
+  labels?: string[]
   card: {
     id: string
     name: string

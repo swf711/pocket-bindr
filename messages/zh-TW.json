@@ -341,7 +341,16 @@
       "confirmRemove": "確認移除",
       "expandAcrossSlots": "跨格位呈現",
       "collapseToSingleSlot": "收合為單格",
-      "insertEmptySlot": "在此插入空格"
+      "insertEmptySlot": "在此插入空格",
+      "editLabel": "編輯標籤",
+      "labelDialogTitle": "格位標籤",
+      "labelFieldLabel": "標籤",
+      "labelPlaceholder": "例如：No.025，按 Enter 新增",
+      "labelHint": "還可新增 {remaining} 個，每個最多 {max} 個字",
+      "labelDuplicate": "「{label}」已經在清單裡了",
+      "clearAllLabels": "清除全部",
+      "removeLabel": "移除標籤「{label}」",
+      "save": "儲存"
     },
     "pickerDialog": {
       "selectStatus": "選擇收藏狀態",
@@ -448,7 +457,9 @@
     },
     "removeSlotSuccess": "已移除空格，後面的卡往前遞補",
     "removeSlotFailed": "移除空格失敗",
-    "removeSlotNothingToPull": "這個空格後面沒有卡可以往前遞補"
+    "removeSlotNothingToPull": "這個空格後面沒有卡可以往前遞補",
+    "labelUpdated": "標籤已更新",
+    "labelUpdateFailed": "標籤更新失敗"
   },
   "binderList": {
     "title": "我的卡冊",
@@ -825,7 +836,9 @@
     "generic": "請確認此欄位",
     "INVALID_EMAIL": "請輸入有效的 Email",
     "EMAIL_ALREADY_USED": "此 Email 已被其他帳號使用",
-    "EMAIL_ALREADY_SET": "您的帳號已設定 Email"
+    "EMAIL_ALREADY_SET": "您的帳號已設定 Email",
+    "SLOT_LABEL_TOO_LONG": "每個標籤最多 8 個字",
+    "SLOT_LABELS_TOO_MANY": "每格最多 3 個標籤"
   },
   "verifyEmail": {
     "verifying": "驗證中…",

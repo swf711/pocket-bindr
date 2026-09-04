@@ -341,7 +341,16 @@
       "confirmRemove": "削除を確定",
       "expandAcrossSlots": "複数マスで表示",
       "collapseToSingleSlot": "1マスにまとめる",
-      "insertEmptySlot": "ここに空きスロットを挿入"
+      "insertEmptySlot": "ここに空きスロットを挿入",
+      "editLabel": "ラベルを編集",
+      "labelDialogTitle": "スロットラベル",
+      "labelFieldLabel": "ラベル",
+      "labelPlaceholder": "例：No.025（Enter で追加）",
+      "labelHint": "あと {remaining} 個追加できます。各 {max} 文字以内",
+      "labelDuplicate": "「{label}」はすでに追加されています",
+      "clearAllLabels": "すべて削除",
+      "removeLabel": "ラベル「{label}」を削除",
+      "save": "保存"
     },
     "pickerDialog": {
       "selectStatus": "コレクション状態を選択",
@@ -448,7 +457,9 @@
     },
     "removeSlotSuccess": "空きスロットを削除しました（以降のカードが前へ詰まります）",
     "removeSlotFailed": "空きスロットの削除に失敗しました",
-    "removeSlotNothingToPull": "このスロットより後ろに詰めるカードがありません"
+    "removeSlotNothingToPull": "このスロットより後ろに詰めるカードがありません",
+    "labelUpdated": "ラベルを更新しました",
+    "labelUpdateFailed": "ラベルの更新に失敗しました"
   },
   "binderList": {
     "title": "マイバインダー",
@@ -827,7 +838,9 @@
     "generic": "この項目をご確認ください",
     "INVALID_EMAIL": "有効な Email を入力してください",
     "EMAIL_ALREADY_USED": "この Email は既に他のアカウントで使用されています",
-    "EMAIL_ALREADY_SET": "このアカウントには既に Email が設定されています"
+    "EMAIL_ALREADY_SET": "このアカウントには既に Email が設定されています",
+    "SLOT_LABEL_TOO_LONG": "ラベルは各 8 文字以内で入力してください",
+    "SLOT_LABELS_TOO_MANY": "ラベルは 1 枠につき 3 個までです"
   },
   "verifyEmail": {
     "verifying": "確認中…",

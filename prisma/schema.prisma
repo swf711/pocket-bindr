@@ -175,6 +175,9 @@ model BinderSlot {
   group         BinderSlotGroup? @relation(fields: [groupId], references: [id], onDelete: SetNull)
   /// 0-based，row-major（0 = 左上 = anchor）
   groupIndex    Int?
+  /// 使用者自訂的格位短註記（如圖鑑編號、稀有度、待換標記），可掛多個。
+  /// 數量與字數上限見 src/lib/binder-limits.ts。跨格群組只掛 anchor（groupIndex 0）。
+  labels        String[]
 
   @@unique([binderId, pageNumber, slotIndex])
   @@index([groupId])

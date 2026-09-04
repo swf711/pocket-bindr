@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useTranslations } from 'next-intl'
-import { BetweenHorizontalStart, BookCheck, Bookmark, Copy, Eye, EllipsisVertical, Minimize2, Maximize2, Trash2 } from 'lucide-react'
+import { BetweenHorizontalStart, BookCheck, Bookmark, Copy, Eye, EllipsisVertical, Minimize2, Maximize2, Tag, Trash2 } from 'lucide-react'
 import { useDraggable, useDroppable } from '@dnd-kit/core'
 import { Button } from '@/components/ui/button'
 import { ButtonGroup } from '@/components/ui/button-group'
@@ -27,6 +27,7 @@ import { isMultiNumberCard } from '@/lib/card-number'
 import { getCardImageUrl } from '@/lib/get-card-image-url'
 import { CardImage } from '../cards/card-image'
 import { SpanCardImage } from './span-card-image'
+import { SlotLabelBadges } from './slot-label-badges'
 import type { SlotWithCard } from '@/types/binder'
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
 
@@ -40,6 +41,8 @@ interface SlotCardProps {
   onToggleSpan?: (slotId: string, mode: 'span' | 'single') => void
   /** 在此格之前插入一個空格，其後格位順延；未傳則不顯示該選單項 */
   onInsertSlot?: (slotId: string) => void
+  /** 編輯格位自訂標籤；未傳則不顯示該選單項 */
+  onEditLabel?: (slotId: string) => void
   isDragOverlay?: boolean
   isHighlighted?: boolean
   /** 剛從單格展開成跨格時播放一次進場動畫（避免每次載入頁面都動） */
@@ -59,6 +62,7 @@ export function SlotCard({
   onCopy,
   onToggleSpan,
   onInsertSlot,
+  onEditLabel,
   isDragOverlay = false,
   isHighlighted = false,
   isExpanding = false,
@@ -88,6 +92,8 @@ export function SlotCard({
   const canToggleSpan = onToggleSpan && isMultiNumberCard(slot.card.cardNumber)
   const toggleStatusLabel = slot.status === 'owned' ? t('switchToWanted') : t('switchToOwned')
   const spanLabel = slot.span ? t('collapseToSingleSlot') : t('expandAcrossSlots')
+  // 標籤只掛群組 anchor，成員格不提供編輯入口（避免「編輯了卻顯示在別格」）
+  const isAnchor = !slot.span || slot.span.groupIndex === 0
   const nameFallback = (
     <div className="flex h-full w-full flex-col items-center justify-center bg-muted text-muted-foreground">
       <span className="text-xs text-center px-1">{slot.card.name}</span>
@@ -133,7 +139,8 @@ export function SlotCard({
   ) : null
 
   // ⋯ 選單兩種模式共用：compact 額外收進跨格／複製（inline 只留切換狀態＋查看），
-  // 非 compact 則只收「在此插入空格」與「移除卡牌」——控制項數兩邊都 ≤ MAX_INLINE_ACTIONS(5)，
+  // 非 compact 則只收「編輯標籤」「在此插入空格」與「移除卡牌」——inline 控制項數兩邊都
+  // ≤ MAX_INLINE_ACTIONS(5)（選單項數不計入），
   // 故 src/lib/slot-action-fit.ts 的寬度判定完全不必改。
   const moreMenu = (
     <DropdownMenu>
@@ -164,6 +171,15 @@ export function SlotCard({
           >
             <Copy className="mr-2 size-4" />
             {t('copyToEmptySlot')}
+          </DropdownMenuItem>
+        )}
+        {onEditLabel && isAnchor && (
+          <DropdownMenuItem
+            onSelect={() => onEditLabel(slot.id)}
+            data-testid={`slot-label-menu-${slot.id}`}
+          >
+            <Tag className="mr-2 size-4" />
+            {t('editLabel')}
           </DropdownMenuItem>
         )}
         {onInsertSlot && (
@@ -220,6 +236,15 @@ export function SlotCard({
           loading="lazy"
           draggable={false}
           fallback={nameFallback}
+        />
+      )}
+
+      {/* 標籤與操作按鈕都貼在格位底部，故按鈕出現時標籤淡出讓位（條件與下方 overlay 完全反相） */}
+      {!isDragOverlay && (
+        <SlotLabelBadges
+          slot={slot}
+          counterScale={counterScale}
+          className={`transition-opacity ${isTapped ? 'opacity-0' : 'group-hover:opacity-0'}`}
         />
       )}
 

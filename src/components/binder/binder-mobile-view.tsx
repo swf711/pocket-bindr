@@ -54,6 +54,7 @@ interface BinderMobileViewProps {
   onCopy?: (slotId: string) => void
   onToggleSpan?: (slotId: string, mode: 'span' | 'single') => void
   onInsertSlot?: (slotId: string) => void
+  onEditLabel?: (slotId: string) => void
   onRemoveSlot?: (pageNumber: number, slotIndex: number) => void
   onAddCard?: (pageNumber: number, slotIndex: number) => void
   onJumpToSlot: (slot: SlotWithCard) => void
@@ -83,6 +84,7 @@ export function BinderMobileView({
   onCopy,
   onToggleSpan,
   onInsertSlot,
+  onEditLabel,
   onRemoveSlot,
   onAddCard,
   onJumpToSlot,
@@ -294,6 +296,7 @@ export function BinderMobileView({
                     onCopy={onCopy}
                     onToggleSpan={onToggleSpan}
                     onInsertSlot={onInsertSlot}
+                    onEditLabel={onEditLabel}
                     onRemoveSlot={onRemoveSlot}
                     isDragging={isDragging}
                     onAddCard={onAddCard}

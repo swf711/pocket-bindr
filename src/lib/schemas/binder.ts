@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { gridTypeSchema, hexColorSchema, cardStatusSchema } from '@/lib/schemas/common'
 import { DEFAULT_COVER_COLOR } from '@/lib/cover-colors'
-import { MAX_BATCH_CARDS } from '@/lib/binder-limits'
+import { MAX_BATCH_CARDS, MAX_SLOT_LABELS, MAX_SLOT_LABEL_LENGTH } from '@/lib/binder-limits'
 
 const nameSchema = z
   .string()
@@ -92,6 +92,20 @@ export const addCardsBatchSchema = z.object({
   cardIds: z.array(z.string().min(1)).min(1).max(MAX_BATCH_CARDS),
   quantity: z.number().int().min(1).max(99),
   status: cardStatusSchema,
+})
+
+/**
+ * PATCH /api/binders/[id]/slots/[slotId]/labels
+ * 格位標籤陣列。空陣列＝清除全部。
+ * 🔴 transform 必須在 refine 之前：長度限制看的是 trim 後的字數。
+ */
+export const slotLabelsSchema = z.object({
+  labels: z
+    .array(z.string())
+    // 正規化：trim → 去空 → 去重（保留首見順序）
+    .transform((v) => Array.from(new Set(v.map((s) => s.trim()).filter(Boolean))))
+    .refine((v) => v.length <= MAX_SLOT_LABELS, 'SLOT_LABELS_TOO_MANY')
+    .refine((v) => v.every((s) => s.length <= MAX_SLOT_LABEL_LENGTH), 'SLOT_LABEL_TOO_LONG'),
 })
 
 export type BinderCreateInput = z.infer<typeof binderCreateSchema>

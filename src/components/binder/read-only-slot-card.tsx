@@ -4,14 +4,17 @@ import { isMultiNumberCard } from '@/lib/card-number'
 import { getCardImageUrl } from '@/lib/get-card-image-url'
 import { CardImage } from '../cards/card-image'
 import { SpanCardImage } from './span-card-image'
+import { SlotLabelBadges } from './slot-label-badges'
 import type { SlotWithCard } from '@/types/binder'
 
 interface ReadOnlySlotCardProps {
   slot: SlotWithCard
   onView?: (cardId: string) => void
+  /** 抵銷 Snowglobe 縮放，讓標籤文字維持可讀大小（見 SlotLabelBadges） */
+  counterScale?: number
 }
 
-export function ReadOnlySlotCard({ slot, onView }: ReadOnlySlotCardProps) {
+export function ReadOnlySlotCard({ slot, onView, counterScale = 1 }: ReadOnlySlotCardProps) {
   const imageUrl = getCardImageUrl(slot.card.imageSmall)
   // 複數卡佔 1 格（未跨格）時顯示的是整張合成圖，比例與標準卡不同，
   // object-cover 會裁成中央一條而認不出是哪張卡，故改 object-contain（見 card-number.ts）。
@@ -47,6 +50,8 @@ export function ReadOnlySlotCard({ slot, onView }: ReadOnlySlotCardProps) {
           fallback={nameFallback}
         />
       )}
+
+      <SlotLabelBadges slot={slot} counterScale={counterScale} />
     </div>
   )
 }

@@ -635,3 +635,17 @@ export async function getBinderTotalPages(binderId: string): Promise<number | nu
   const settings = binder.settings as Record<string, unknown> | null
   return typeof settings?.totalPages === 'number' ? settings.totalPages : null
 }
+
+/** 讀取格位的自訂標籤（驗證標籤寫入／清除）。 */
+export async function getSlotLabels(slotId: string): Promise<string[]> {
+  const slot = await prisma.binderSlot.findUniqueOrThrow({
+    where: { id: slotId },
+    select: { labels: true },
+  })
+  return slot.labels
+}
+
+/** 直接指定卡冊的 shareToken（公開頁測試免走一輪分享 UI）。 */
+export async function setBinderShareToken(binderId: string, shareToken: string): Promise<void> {
+  await prisma.binder.update({ where: { id: binderId }, data: { shareToken } })
+}
