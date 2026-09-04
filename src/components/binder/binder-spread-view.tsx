@@ -62,6 +62,7 @@ interface BinderSpreadViewProps {
   expandingGroupId?: string | null
   onAddPage: () => void
   settingsSlot: React.ReactNode
+  pageManagerSlot?: React.ReactNode
   refreshSlot?: React.ReactNode
 }
 
@@ -183,6 +184,7 @@ export function BinderSpreadView({
   expandingGroupId,
   onAddPage,
   settingsSlot,
+  pageManagerSlot,
   refreshSlot,
 }: BinderSpreadViewProps) {
   const t = useTranslations('binder')
@@ -408,6 +410,7 @@ export function BinderSpreadView({
                   </PaginationContent>
                 </Pagination>
                 {refreshSlot}
+                {pageManagerSlot}
                 {settingsSlot}
               </div>
             </div>

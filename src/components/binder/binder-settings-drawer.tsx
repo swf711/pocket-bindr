@@ -1,27 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { GridType } from '@prisma/client'
 import { toast } from 'sonner'
-import { Settings, Trash2, GripVertical, Copy, Share2, X } from 'lucide-react'
-import {
-  DndContext,
-  DragEndEvent,
-  closestCenter,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-} from '@dnd-kit/core'
-import {
-  SortableContext,
-  sortableKeyboardCoordinates,
-  useSortable,
-  verticalListSortingStrategy,
-  arrayMove,
-} from '@dnd-kit/sortable'
-import { CSS } from '@dnd-kit/utilities'
+import { Settings, Copy, Share2, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -34,22 +17,10 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from '@/components/ui/drawer'
-import {
-  AlertDialog,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogMedia,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { PILL_TABS_LIST, PILL_TABS_TRIGGER } from '@/lib/tabs-styles'
 import { cn } from '@/lib/utils'
 import { Separator } from '@/components/ui/separator'
-import { ScrollArea } from '@/components/ui/scroll-area'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { IconTooltipButton } from '@/components/common/icon-tooltip-button'
 import { CoverColorPicker } from '@/components/binders/cover-color-picker'
@@ -71,104 +42,7 @@ interface BinderSettingsDrawerProps {
     newSlots?: SlotWithCard[]
     newTotalPages?: number
   }) => void
-  onPageDelete: (pageNumber: number, newSlots: SlotWithCard[]) => void
-  onPageReorder: (newSlots: SlotWithCard[]) => void
-  onTotalPagesChange: (n: number) => void
   onShareTokenChange: (token: string | null) => void
-}
-
-function SortablePageRow({
-  page,
-  totalPages,
-  deletingPage,
-  onDelete,
-}: {
-  page: number
-  totalPages: number
-  deletingPage: number | null
-  onDelete: (page: number) => Promise<boolean>
-}) {
-  const t = useTranslations('binder.settingsDrawer')
-  const [confirmOpen, setConfirmOpen] = useState(false)
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
-    id: page,
-  })
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.4 : 1,
-  }
-
-  return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className="flex items-center justify-between rounded-md border px-3 py-2 bg-background"
-      data-testid={`page-manager-row-${page}`}
-    >
-      <div className="flex items-center gap-2">
-        <button
-          className="cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground touch-none"
-          {...attributes}
-          {...listeners}
-          aria-label={t('dragPage', { page })}
-          data-testid={`page-drag-handle-${page}`}
-        >
-          <GripVertical className="size-4" />
-        </button>
-        <span className="text-sm">{t('pageLabel', { page })}</span>
-      </div>
-      <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <AlertDialogTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-7 w-7 text-destructive hover:text-destructive"
-                disabled={totalPages <= 1 || deletingPage === page}
-                aria-label={t('deletePage', { page })}
-                data-testid={`page-delete-btn-${page}`}
-              >
-                <Trash2 className="size-4" />
-              </Button>
-            </AlertDialogTrigger>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>{t('deleteThisPage')}</p>
-          </TooltipContent>
-        </Tooltip>
-        <AlertDialogContent size="sm">
-          <AlertDialogHeader>
-            <AlertDialogMedia className="bg-error-container text-on-error-container">
-              <Trash2 />
-            </AlertDialogMedia>
-            <AlertDialogTitle>{t('deletePageConfirmTitle', { page })}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {t('deletePageConfirmDescription')}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel variant="outline" size="lg" className="rounded-full!" disabled={deletingPage === page}>
-              {t('cancel')}
-            </AlertDialogCancel>
-            <Button
-              variant="destructive"
-              size="lg"
-              disabled={deletingPage === page}
-              onClick={async () => {
-                const success = await onDelete(page)
-                if (success) setConfirmOpen(false)
-              }}
-              data-testid={`page-delete-confirm-${page}`}
-            >
-              {deletingPage === page ? t('deleting') : t('delete')}
-            </Button>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </div>
-  )
 }
 
 export function BinderSettingsDrawer({
@@ -180,9 +54,6 @@ export function BinderSettingsDrawer({
   totalPages,
   shareToken: initialShareToken,
   onSettingsUpdate,
-  onPageDelete,
-  onPageReorder,
-  onTotalPagesChange,
   onShareTokenChange,
 }: BinderSettingsDrawerProps) {
   const t = useTranslations('binder.settingsDrawer')
@@ -192,21 +63,8 @@ export function BinderSettingsDrawer({
   const [localGridType, setLocalGridType] = useState<GridType>(gridType)
   const [localCoverColor, setLocalCoverColor] = useState(coverColor)
   const [savingSettings, setSavingSettings] = useState(false)
-  const [deletingPage, setDeletingPage] = useState<number | null>(null)
   const [localShareToken, setLocalShareToken] = useState<string | null>(initialShareToken)
   const [sharingLoading, setSharingLoading] = useState(false)
-  const [pageOrder, setPageOrder] = useState<number[]>(() =>
-    Array.from({ length: totalPages }, (_, i) => i + 1),
-  )
-
-  useEffect(() => {
-    setPageOrder(Array.from({ length: totalPages }, (_, i) => i + 1))
-  }, [totalPages])
-
-  const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
-  )
 
   async function handleSaveSettings() {
     setSavingSettings(true)
@@ -288,54 +146,6 @@ export function BinderSettingsDrawer({
     const shareUrl = `${window.location.origin}/b/${localShareToken}`
     await navigator.clipboard.writeText(shareUrl)
     toast.success(t('linkCopied'))
-  }
-
-  async function handleDragEnd(event: DragEndEvent) {
-    const { active, over } = event
-    if (!over || active.id === over.id) return
-
-    const oldIndex = pageOrder.indexOf(active.id as number)
-    const newIndex = pageOrder.indexOf(over.id as number)
-    const newOrder = arrayMove(pageOrder, oldIndex, newIndex)
-    setPageOrder(newOrder)
-
-    try {
-      const res = await fetch(`/api/binders/${binderId}/pages/reorder-bulk`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ newOrder }),
-      })
-      if (!res.ok) throw new Error(t('reorderFailed'))
-      const data = await res.json()
-      onPageReorder(data.slots)
-      setPageOrder(Array.from({ length: totalPages }, (_, i) => i + 1))
-    } catch {
-      toast.error(t('reorderFailed'))
-      setPageOrder(Array.from({ length: totalPages }, (_, i) => i + 1))
-    }
-  }
-
-  async function handleDeletePage(pageNumber: number): Promise<boolean> {
-    setDeletingPage(pageNumber)
-    try {
-      const res = await fetch(`/api/binders/${binderId}/pages/${pageNumber}`, {
-        method: 'DELETE',
-      })
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}))
-        throw new Error(err?.error ?? t('deletePageFailed'))
-      }
-      const data = await res.json()
-      onPageDelete(pageNumber, data.slots)
-      onTotalPagesChange(data.totalPages)
-      toast.success(t('pageDeleted', { page: pageNumber }))
-      return true
-    } catch {
-      toast.error(t('deletePageFailed'))
-      return false
-    } finally {
-      setDeletingPage(null)
-    }
   }
 
   return (
@@ -480,33 +290,6 @@ export function BinderSettingsDrawer({
             )}
           </div>
 
-          <Separator />
-
-          {/* 內頁管理 */}
-          <div className="flex flex-col gap-2">
-            <p className="text-sm font-medium">{t('pageManagement')}</p>
-            <DndContext
-              sensors={sensors}
-              collisionDetection={closestCenter}
-              onDragEnd={handleDragEnd}
-            >
-              <SortableContext items={pageOrder} strategy={verticalListSortingStrategy}>
-                <ScrollArea className="max-h-64 rounded-md px-2 border">
-                  <div className="flex flex-col py-2 gap-1" data-testid="page-manager-list">
-                    {pageOrder.map((page) => (
-                      <SortablePageRow
-                        key={page}
-                        page={page}
-                        totalPages={totalPages}
-                        deletingPage={deletingPage}
-                        onDelete={handleDeletePage}
-                      />
-                    ))}
-                  </div>
-                </ScrollArea>
-              </SortableContext>
-            </DndContext>
-          </div>
         </div>
       </DrawerContent>
     </Drawer>

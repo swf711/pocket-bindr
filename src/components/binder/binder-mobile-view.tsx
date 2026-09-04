@@ -59,6 +59,7 @@ interface BinderMobileViewProps {
   expandingGroupId?: string | null
   onAddPage: () => void
   settingsSlot: React.ReactNode
+  pageManagerSlot?: React.ReactNode
   refreshSlot?: React.ReactNode
 }
 
@@ -85,6 +86,7 @@ export function BinderMobileView({
   expandingGroupId,
   onAddPage,
   settingsSlot,
+  pageManagerSlot,
   refreshSlot,
 }: BinderMobileViewProps) {
   const t = useTranslations('binder')
@@ -222,17 +224,19 @@ export function BinderMobileView({
                 height: HEADER_HEIGHT,
               }}
             >
-              <div className="flex items-center gap-1">
-                <Button variant="outline" size="lg" className="mr-2" asChild>
+              {/* min-w-0 + truncate：header 右側有三顆按鈕，長卡冊名稱必須讓步而非撐破版面 */}
+              <div className="flex min-w-0 items-center gap-1">
+                <Button variant="outline" size="lg" className="mr-2 shrink-0" asChild>
                   <Link href="/binders" aria-label={t('backToList')} data-testid="back-to-binders-mobile">
                     <ChevronLeft className="size-4" />
                     <span>{t('back')}</span>
                   </Link>
                 </Button>
-                <h1 className="text-xl font-bold">{binderName}</h1>
+                <h1 className="truncate text-xl font-bold">{binderName}</h1>
               </div>
-              <div className="flex items-center gap-1">
+              <div className="flex shrink-0 items-center gap-1">
                 {refreshSlot}
+                {pageManagerSlot}
                 {settingsSlot}
               </div>
             </div>

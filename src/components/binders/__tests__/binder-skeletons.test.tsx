@@ -22,15 +22,25 @@ describe('BinderDetailSkeleton', () => {
 })
 
 describe('BinderSpreadSkeleton', () => {
-  it('預設顯示返回鈕與設定鈕（詳情頁情境）', () => {
+  it('預設顯示返回鈕與 header 動作按鈕群（詳情頁情境）', () => {
     const { container } = render(<BinderSpreadSkeleton />)
     // 桌面與行動裝置各一組 header，皆有 spread 面板骨架
     expect(container.querySelectorAll('[data-slot="skeleton"]').length).toBeGreaterThan(0)
   })
 
-  it('公開分享頁情境不顯示返回鈕與設定鈕，改顯示 owner banner', () => {
+  it('關閉 header 動作按鈕群時，骨架數量少 6 個（桌面 3 + 行動 3）', () => {
+    const withActions = render(<BinderSpreadSkeleton />).container.querySelectorAll(
+      '[data-slot="skeleton"]',
+    ).length
+    const withoutActions = render(
+      <BinderSpreadSkeleton showHeaderActions={false} />,
+    ).container.querySelectorAll('[data-slot="skeleton"]').length
+    expect(withActions - withoutActions).toBe(6)
+  })
+
+  it('公開分享頁情境不顯示返回鈕與動作按鈕，改顯示 owner banner', () => {
     const { container } = render(
-      <BinderSpreadSkeleton showBackButton={false} showSettingsButton={false} showOwnerBanner />
+      <BinderSpreadSkeleton showBackButton={false} showHeaderActions={false} showOwnerBanner />
     )
     expect(container.querySelectorAll('[data-slot="skeleton"]').length).toBeGreaterThan(0)
   })

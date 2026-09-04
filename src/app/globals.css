@@ -306,18 +306,23 @@
  * 對映表詳見 docs/PATTERNS.md「M3 shape override 模式」。
  */
 /*
- * Button 被 TooltipTrigger/DropdownMenuTrigger/AlertDialogTrigger 以 asChild 包裹時
+ * Button 被 Tooltip/DropdownMenu/AlertDialog/Dialog Trigger 以 asChild 包裹時
  * （如 <TooltipTrigger asChild><Button>），Radix 巢狀 asChild 合併 props 時外層 trigger
  * 自己的 data-slot 會蓋掉內層 Button 的 data-slot="button"，實際渲染出的 DOM 是
  * data-slot="tooltip-trigger"（非 "button"）。這幾個 trigger 唯一會與 Button 共用的
  * 屬性是 data-variant + data-size（Button 自己一定會設，trigger 元件都不會設這兩個），
  * 用來當作「這其實是包了 Button」的判斷錨點，避免誤傷 Badge/Tabs/ToggleGroup 等其他也用
  * data-variant 的原生元件。
+ *
+ * 🔴 這份清單必須涵蓋**所有會以 asChild 包住 Button 的 Radix trigger**，漏一個就是一顆
+ * 形狀不一致的按鈕。`dialog-trigger` 就是漏列後才補上的（在「管理內頁」之前沒有 Button
+ * 當 DialogTrigger 的用例，該按鈕因此渲染成圓角方形而非 pill）。新增 trigger 用例時記得回來加。
  */
 [data-slot="button"],
 [data-slot="tooltip-trigger"][data-variant][data-size],
 [data-slot="dropdown-menu-trigger"][data-variant][data-size],
-[data-slot="alert-dialog-trigger"][data-variant][data-size] {
+[data-slot="alert-dialog-trigger"][data-variant][data-size],
+[data-slot="dialog-trigger"][data-variant][data-size] {
   border-radius: 9999px;
 }
 /*
@@ -329,7 +334,8 @@
   [data-slot="button"],
   [data-slot="tooltip-trigger"][data-variant][data-size],
   [data-slot="dropdown-menu-trigger"][data-variant][data-size],
-  [data-slot="alert-dialog-trigger"][data-variant][data-size]
+  [data-slot="alert-dialog-trigger"][data-variant][data-size],
+  [data-slot="dialog-trigger"][data-variant][data-size]
 ):not(:first-child) {
   border-top-left-radius: 0;
   border-bottom-left-radius: 0;
@@ -338,7 +344,8 @@
   [data-slot="button"],
   [data-slot="tooltip-trigger"][data-variant][data-size],
   [data-slot="dropdown-menu-trigger"][data-variant][data-size],
-  [data-slot="alert-dialog-trigger"][data-variant][data-size]
+  [data-slot="alert-dialog-trigger"][data-variant][data-size],
+  [data-slot="dialog-trigger"][data-variant][data-size]
 ):not(:last-child) {
   border-top-right-radius: 0;
   border-bottom-right-radius: 0;
