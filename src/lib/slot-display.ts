@@ -25,6 +25,7 @@ export const slotDisplaySelect = {
   pageNumber: true,
   slotIndex: true,
   status: true,
+  labels: true,
   groupIndex: true,
   group: { select: { id: true, cols: true, rows: true, rotation: true, imageUrl: true } },
   card: { select: cardDisplaySelect },
@@ -39,6 +40,7 @@ type RawSlotForDisplay = {
   pageNumber: number
   slotIndex: number
   status: 'owned' | 'wanted' | null
+  labels?: string[]
   groupIndex?: number | null
   group?: {
     id: string
@@ -83,6 +85,7 @@ export function toDisplaySlot(slot: RawSlotForDisplay): SlotWithCard {
     pageNumber: slot.pageNumber,
     slotIndex: slot.slotIndex,
     status: slot.status as 'owned' | 'wanted',
+    labels: slot.labels ?? [],
     span:
       slot.group && slot.groupIndex != null
         ? {

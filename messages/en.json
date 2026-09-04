@@ -341,7 +341,16 @@
       "confirmRemove": "Confirm removal",
       "expandAcrossSlots": "Span across slots",
       "collapseToSingleSlot": "Collapse to one slot",
-      "insertEmptySlot": "Insert empty slot here"
+      "insertEmptySlot": "Insert empty slot here",
+      "editLabel": "Edit label",
+      "labelDialogTitle": "Slot labels",
+      "labelFieldLabel": "Label",
+      "labelPlaceholder": "e.g. No.025, press Enter to add",
+      "labelHint": "{remaining} more can be added, up to {max} characters each",
+      "labelDuplicate": "“{label}” is already in the list",
+      "clearAllLabels": "Clear all",
+      "removeLabel": "Remove label “{label}”",
+      "save": "Save"
     },
     "pickerDialog": {
       "selectStatus": "Select collection status",
@@ -448,7 +457,9 @@
     },
     "removeSlotSuccess": "Empty slot removed; following cards pulled back",
     "removeSlotFailed": "Could not remove the empty slot",
-    "removeSlotNothingToPull": "There are no cards after this slot to pull back"
+    "removeSlotNothingToPull": "There are no cards after this slot to pull back",
+    "labelUpdated": "Label updated",
+    "labelUpdateFailed": "Failed to update label"
   },
   "binderList": {
     "title": "My Binders",
@@ -827,7 +838,9 @@
     "generic": "Please check this field",
     "INVALID_EMAIL": "Please enter a valid email",
     "EMAIL_ALREADY_USED": "This email is already used by another account",
-    "EMAIL_ALREADY_SET": "Your account already has an email set"
+    "EMAIL_ALREADY_SET": "Your account already has an email set",
+    "SLOT_LABEL_TOO_LONG": "Each label must be 8 characters or fewer",
+    "SLOT_LABELS_TOO_MANY": "Up to 3 labels per slot"
   },
   "verifyEmail": {
     "verifying": "Verifying…",

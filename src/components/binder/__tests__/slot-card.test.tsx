@@ -192,6 +192,86 @@ describe('SlotCard compact（小螢幕）', () => {
     expect(onDelete).toHaveBeenCalledWith('slot1')
   })
 
+  it('有 labels 時顯示底部標籤 badge', () => {
+    renderWithProviders(
+      <SlotCard
+        slot={makeSlot({ labels: ['No.025'] })}
+        onDelete={() => {}}
+        onToggleStatus={() => {}}
+      />,
+    )
+    expect(screen.getByTestId('slot-label-slot1')).toHaveTextContent('No.025')
+  })
+
+  it('操作按鈕出現時標籤淡出讓位（兩者都在格位底部）', () => {
+    const props = { onDelete: () => {}, onToggleStatus: () => {} }
+
+    const hover = renderWithProviders(
+      <SlotCard slot={makeSlot({ labels: ['No.025'] })} {...props} isTapped={false} />,
+    )
+    // 未 tap：桌面靠 hover 淡出
+    expect(hover.getByTestId('slot-label-slot1').className).toContain('group-hover:opacity-0')
+
+    hover.unmount()
+
+    const tapped = renderWithProviders(
+      <SlotCard slot={makeSlot({ labels: ['No.025'] })} {...props} isTapped />,
+    )
+    // 無 hover 裝置：tap 顯示按鈕時直接淡出
+    expect(tapped.getByTestId('slot-label-slot1').className).toContain('opacity-0')
+  })
+
+  it('多個 labels 各自渲染成一顆 badge', () => {
+    renderWithProviders(
+      <SlotCard
+        slot={makeSlot({ labels: ['No.025', 'SR', '待換'] })}
+        onDelete={() => {}}
+        onToggleStatus={() => {}}
+      />,
+    )
+    expect(screen.getByTestId('slot-label-item-slot1-0')).toHaveTextContent('No.025')
+    expect(screen.getByTestId('slot-label-item-slot1-1')).toHaveTextContent('SR')
+    expect(screen.getByTestId('slot-label-item-slot1-2')).toHaveTextContent('待換')
+  })
+
+  it('labels 為空時不渲染標籤區塊', () => {
+    renderWithProviders(<SlotCard slot={makeSlot()} onDelete={() => {}} onToggleStatus={() => {}} />)
+    expect(screen.queryByTestId('slot-label-slot1')).not.toBeInTheDocument()
+  })
+
+  it('跨格群組成員（groupIndex > 0）不顯示標籤、也沒有編輯入口', async () => {
+    const user = userEvent.setup()
+    const member = makeSlot({
+      labels: ['No.025'],
+      span: { groupId: 'g1', groupIndex: 1, cols: 2, rows: 1, rotation: 0, imageUrl: null },
+    })
+    renderWithProviders(
+      <SlotCard slot={member} onDelete={() => {}} onToggleStatus={() => {}} onEditLabel={() => {}} />,
+    )
+    expect(screen.queryByTestId('slot-label-slot1')).not.toBeInTheDocument()
+    await user.click(screen.getByTestId('slot-more-btn-slot1'))
+    expect(screen.queryByTestId('slot-label-menu-slot1')).not.toBeInTheDocument()
+  })
+
+  it('⋯ 選單的編輯標籤項呼叫 onEditLabel(slotId)', async () => {
+    const user = userEvent.setup()
+    const onEditLabel = vi.fn()
+    renderWithProviders(
+      <SlotCard slot={makeSlot()} onDelete={() => {}} onToggleStatus={() => {}} onEditLabel={onEditLabel} />,
+    )
+    await user.click(screen.getByTestId('slot-more-btn-slot1'))
+    await user.click(await screen.findByTestId('slot-label-menu-slot1'))
+    expect(onEditLabel).toHaveBeenCalledWith('slot1')
+  })
+
+  it('未傳 onEditLabel 時選單不含編輯標籤項', async () => {
+    const user = userEvent.setup()
+    renderWithProviders(<SlotCard slot={makeSlot()} onDelete={() => {}} onToggleStatus={() => {}} />)
+    await user.click(screen.getByTestId('slot-more-btn-slot1'))
+    expect(await screen.findByTestId('slot-remove-menu-slot1')).toBeInTheDocument()
+    expect(screen.queryByTestId('slot-label-menu-slot1')).not.toBeInTheDocument()
+  })
+
   it('非複數卡的 compact 選單不含跨格項', async () => {
     const user = userEvent.setup()
     renderWithProviders(

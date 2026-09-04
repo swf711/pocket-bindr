@@ -40,4 +40,16 @@ describe('toDisplaySlot', () => {
     const slot = toDisplaySlot(makeRawSlot({ displayCardId: 'zh-1', displayCard: zhCard }))
     expect(slot.card.imageSmall).toBe('ja.png')
   })
+
+  it('labels 原樣帶出（讓 9 個讀取點自動取得格位標籤）', () => {
+    expect(toDisplaySlot(makeRawSlot({ labels: ['No.025', 'SR'] })).labels).toEqual([
+      'No.025',
+      'SR',
+    ])
+  })
+
+  it('未帶 labels 時輸出空陣列', () => {
+    expect(toDisplaySlot(makeRawSlot()).labels).toEqual([])
+    expect(toDisplaySlot(makeRawSlot({ labels: [] })).labels).toEqual([])
+  })
 })
