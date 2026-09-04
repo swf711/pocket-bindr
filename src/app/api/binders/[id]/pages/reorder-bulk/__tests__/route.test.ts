@@ -26,10 +26,50 @@ const mockBinder = {
   updatedAt: new Date(),
 }
 
+function makeCard(id: string, name: string, overrides: Record<string, unknown> = {}) {
+  return {
+    id,
+    name,
+    imageSmall: `https://example.test/${id}.png`,
+    language: 'EN',
+    cardNumber: '001',
+    rarity: 'Common',
+    supertype: 'Pokémon',
+    ...overrides,
+  }
+}
+
+/** 原始（未經 toDisplaySlot 投影）的格位 row，形狀對齊 slotDisplaySelect。 */
+function makeRawSlot(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 's1',
+    binderId: 'b1',
+    cardId: 'c1',
+    displayCardId: null,
+    pageNumber: 1,
+    slotIndex: 0,
+    status: 'owned',
+    groupIndex: null,
+    group: null,
+    card: makeCard('c1', 'Card A'),
+    displayCard: null,
+    ...overrides,
+  }
+}
+
 const mockSlots = [
-  { id: 's1', binderId: 'b1', pageNumber: 1, slotIndex: 0, cardId: 'c1', status: 'owned', card: { id: 'c1', name: 'Card A', imageSmall: null, language: 'EN', cardNumber: '001', rarity: 'Common' } },
-  { id: 's2', binderId: 'b1', pageNumber: 2, slotIndex: 0, cardId: 'c2', status: 'owned', card: { id: 'c2', name: 'Card B', imageSmall: null, language: 'EN', cardNumber: '002', rarity: 'Common' } },
+  makeRawSlot(),
+  makeRawSlot({ id: 's2', cardId: 'c2', pageNumber: 2, card: makeCard('c2', 'Card B') }),
 ]
+
+function mockTransactionReturning(slots: unknown[]) {
+  vi.mocked(prisma.$transaction).mockImplementation(async (fn) => {
+    return (fn as (tx: unknown) => unknown)({
+      $executeRaw: vi.fn().mockResolvedValue(0),
+      binderSlot: { findMany: vi.fn().mockResolvedValue(slots) },
+    })
+  })
+}
 
 function makeRequest(body: unknown) {
   return new Request('http://localhost', {
@@ -89,12 +129,7 @@ describe('PATCH /api/binders/[id]/pages/reorder-bulk', () => {
   it('成功：呼叫 $transaction 並回傳 slots', async () => {
     mockAuth.mockResolvedValue({ user: { id: 'u1' } })
     vi.mocked(prisma.binder.findUnique).mockResolvedValue(mockBinder as never)
-    vi.mocked(prisma.$transaction).mockImplementation(async (fn) => {
-      return fn({
-        $executeRaw: vi.fn().mockResolvedValue(0),
-        binderSlot: { findMany: vi.fn().mockResolvedValue(mockSlots) },
-      } as never)
-    })
+    mockTransactionReturning(mockSlots)
     const res = await PATCH(makeRequest({ newOrder: [2, 1] }), {
       params: Promise.resolve({ id: 'b1' }),
     })
@@ -107,15 +142,70 @@ describe('PATCH /api/binders/[id]/pages/reorder-bulk', () => {
   it('成功：單頁 newOrder=[1] 正常回傳', async () => {
     mockAuth.mockResolvedValue({ user: { id: 'u1' } })
     vi.mocked(prisma.binder.findUnique).mockResolvedValue(mockBinder as never)
-    vi.mocked(prisma.$transaction).mockImplementation(async (fn) => {
-      return fn({
-        $executeRaw: vi.fn().mockResolvedValue(0),
-        binderSlot: { findMany: vi.fn().mockResolvedValue([mockSlots[0]]) },
-      } as never)
-    })
+    mockTransactionReturning([mockSlots[0]])
     const res = await PATCH(makeRequest({ newOrder: [1] }), {
       params: Promise.resolve({ id: 'b1' }),
     })
     expect(res.status).toBe(200)
+  })
+  // ── 顯示身份迴歸（此 route 曾是全站唯一自己寫 select 的格位讀取點） ──────────────
+
+  it('alias 格位以 displayCard 為顯示身份，imageSmall 仍取 canonical', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'u1' } })
+    vi.mocked(prisma.binder.findUnique).mockResolvedValue(mockBinder as never)
+    mockTransactionReturning([
+      makeRawSlot({
+        cardId: 'ja-1',
+        displayCardId: 'zhtw-1',
+        card: makeCard('ja-1', '日文卡名', { language: 'JA' }),
+        displayCard: makeCard('zhtw-1', '繁中卡名', { language: 'ZH_TW', imageSmall: '' }),
+      }),
+    ])
+
+    const res = await PATCH(makeRequest({ newOrder: [1] }), {
+      params: Promise.resolve({ id: 'b1' }),
+    })
+    const { slots } = await res.json()
+    expect(slots[0].card.name).toBe('繁中卡名')
+    expect(slots[0].card.language).toBe('ZH_TW')
+    expect(slots[0].cardId).toBe('zhtw-1')
+    // OPCG ZH_TW alias 無實體印刷圖，圖片一律指向 canonical
+    expect(slots[0].card.imageSmall).toBe('https://example.test/ja-1.png')
+  })
+
+  it('跨格群組格位回傳 span，不再掉失跨格資訊', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'u1' } })
+    vi.mocked(prisma.binder.findUnique).mockResolvedValue(mockBinder as never)
+    mockTransactionReturning([
+      makeRawSlot({
+        groupIndex: 1,
+        group: { id: 'g1', cols: 2, rows: 1, rotation: 270, imageUrl: null },
+      }),
+    ])
+
+    const res = await PATCH(makeRequest({ newOrder: [1] }), {
+      params: Promise.resolve({ id: 'b1' }),
+    })
+    const { slots } = await res.json()
+    expect(slots[0].span).toEqual({
+      groupId: 'g1',
+      groupIndex: 1,
+      cols: 2,
+      rows: 1,
+      rotation: 270,
+      imageUrl: null,
+    })
+  })
+
+  it('非群組格位的 span 為 null', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'u1' } })
+    vi.mocked(prisma.binder.findUnique).mockResolvedValue(mockBinder as never)
+    mockTransactionReturning([makeRawSlot()])
+
+    const res = await PATCH(makeRequest({ newOrder: [1] }), {
+      params: Promise.resolve({ id: 'b1' }),
+    })
+    const { slots } = await res.json()
+    expect(slots[0].span).toBeNull()
   })
 })

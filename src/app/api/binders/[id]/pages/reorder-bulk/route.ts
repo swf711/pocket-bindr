@@ -1,6 +1,7 @@
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { revalidatePublicBinder } from '@/lib/binder-cache'
+import { slotDisplaySelect, toDisplaySlot } from '@/lib/slot-display'
 import { pagesReorderBulkSchema } from '@/lib/schemas/binder'
 
 type RouteContext = { params: Promise<{ id: string }> }
@@ -62,28 +63,16 @@ export async function PATCH(request: Request, context: RouteContext) {
       `
     }
 
-    return tx.binderSlot.findMany({
+    // ⚠️ 必須走 slotDisplaySelect + toDisplaySlot（與其他所有格位讀取路徑一致）。
+    // 這裡曾經是全站唯一自己寫 select 的地方，少了 displayCard 與 group，導致重排後
+    // ①OPCG ZH_TW alias 卡退回 canonical 日文名 ②跨格群組的 span 掉失、N 格各自
+    // 變成一張完整合成圖——都要重整頁面才恢復。
+    const reordered = await tx.binderSlot.findMany({
       where: { binderId: id, cardId: { not: null } },
       orderBy: [{ pageNumber: 'asc' }, { slotIndex: 'asc' }],
-      select: {
-        id: true,
-        binderId: true,
-        cardId: true,
-        pageNumber: true,
-        slotIndex: true,
-        status: true,
-        card: {
-          select: {
-            id: true,
-            name: true,
-            imageSmall: true,
-            language: true,
-            cardNumber: true,
-            rarity: true,
-          },
-        },
-      },
+      select: slotDisplaySelect,
     })
+    return reordered.map(toDisplaySlot)
   })
 
   revalidatePublicBinder(binder!.shareToken)
