@@ -34,3 +34,16 @@ export function resolvePtcgSetCodeCandidates(
 
   return [code]
 }
+
+/**
+ * Whether `code` is a known PTCG EN face code (ptcgoCode alias).
+ * Used to accept face codes the generic parser rejects (e.g. digit-leading `30C`), scoped to the alias table only.
+ */
+export function hasPtcgFaceCodeAlias(
+  code: string,
+  game?: Game | null,
+  language?: Language | null,
+): boolean {
+  if (game !== 'PTCG' || language !== 'EN') return false
+  return Object.hasOwn(PTCG_EN_PTCGO_CODE_ALIASES, code.toLowerCase())
+}
