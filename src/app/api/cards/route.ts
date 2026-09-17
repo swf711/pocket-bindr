@@ -6,7 +6,7 @@ import { parseLanguage } from '@/lib/language'
 import { Game, Language, Prisma } from '@prisma/client'
 import { groupAndSortSets } from '@/lib/sort-card-sets'
 import { getCollectionStatusMap, resolveCollectionLookupId } from '@/lib/card-collection-status'
-import { parseSetCardQuery, buildSetCardPrismaWhere, buildSetCardSql } from '@/lib/parse-set-card-query'
+import { parseSetCardQueryFor, buildSetCardPrismaWhere, buildSetCardSql } from '@/lib/parse-set-card-query'
 import { buildCrossLangExpansion } from '@/lib/cross-language-search'
 import { CARD_NUMBER_ORDER_SQL } from '@/lib/public-card'
 import { gameSchema } from '@/lib/schemas/collection'
@@ -34,7 +34,7 @@ function fetchCardPage(
   return unstable_cache(
     async () => {
       const lang = language as Language
-      const parsed = q ? parseSetCardQuery(q) : null
+      const parsed = q ? parseSetCardQueryFor(q, game as Game, lang) : null
       const { nameTerms, cardIds } = await buildCrossLangExpansion(prisma, game as Game, lang, q)
       const where = {
         game: game as Game,

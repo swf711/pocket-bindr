@@ -1,6 +1,6 @@
 import { Prisma, type Game, type Language } from '@prisma/client'
 import { CARD_NUMBER_SEPARATOR } from './card-number'
-import { resolvePtcgSetCodeCandidates } from './ptcg-set-code-aliases'
+import { hasPtcgFaceCodeAlias, resolvePtcgSetCodeCandidates } from './ptcg-set-code-aliases'
 
 // 卡號成分：斜線形（JA/ZH_TW 卡面印刷，numerator ≤3 位）優先，否則裸號（≤4 位，EN 常見）
 const NUM_COMPONENT_SRC = '(?:\\d{1,3}\\/[A-Za-z0-9-]{1,8}|\\d{1,4})'
@@ -11,6 +11,8 @@ const SET_ONLY_PATTERN = /^([A-Za-z][A-Za-z0-9]*\d[A-Za-z0-9]*)$/
 const SLASH_ONLY_PATTERN = /^(\d{1,3}\/[A-Za-z0-9-]{1,8})$/
 const SLASH_COMPONENT = /^(\d{1,3})\/([A-Za-z0-9-]{1,8})$/
 const PLAIN_NUM = /^\d{1,4}$/
+// Alias-only fallback: any alphanumeric code (incl. digit-leading, e.g. 30C) + number; accepted only when the code is a known alias
+const ALIAS_SET_CARD = new RegExp(`^([A-Za-z0-9]+)[\\s-](${NUM_COMPONENT_SRC})$`)
 
 export interface ParsedSetCardQuery {
   setCode: string | null    // null = 無 set code 成分（斜線單獨形）
@@ -73,6 +75,26 @@ export function parseSetCardQuery(q: string): ParsedSetCardQuery | null {
   // 放在 buildSetCard* 收 language 後展開候選碼，保持 parseSetCardQuery 語言無關。
 
   return null
+}
+
+/**
+ * 語言相依版 parseSetCardQuery（API 搜尋入口用）。
+ * 通用規則解析不到時，才接受「別名表內已知的卡面碼 + 卡號」（如 PTCG EN `30C 001`，數字開頭碼通用規則不收）。
+ * 刻意不做 set-only fallback：純字母碼（`PBL`、`MEW`）單獨輸入常與卡名搜尋字相撞，必須帶卡號。
+ */
+export function parseSetCardQueryFor(
+  q: string,
+  game?: Game | null,
+  language?: Language | null,
+): ParsedSetCardQuery | null {
+  const parsed = parseSetCardQuery(q)
+  if (parsed) return parsed
+
+  const match = q.trim().replace(/\s+/g, ' ').match(ALIAS_SET_CARD)
+  if (!match || !hasPtcgFaceCodeAlias(match[1], game, language)) return null
+
+  const comp = normalizeNumComponent(match[2])
+  return comp ? { setCode: match[1].toLowerCase(), num: comp.num, fullSlash: comp.fullSlash } : null
 }
 
 /**

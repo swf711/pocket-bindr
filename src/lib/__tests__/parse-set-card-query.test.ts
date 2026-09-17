@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import {
   parseSetCardQuery,
+  parseSetCardQueryFor,
   buildSetCardPrismaWhere,
   buildSetCardSql,
   normalizeNumComponent,
@@ -340,5 +341,39 @@ describe('buildSetCardSql（語言相依候選展開）', () => {
   it('裸號 → SQL 補 `%・NNN%`，涵蓋複數卡的第 2 個以後成分', () => {
     const sql = buildSetCardSql({ setCode: null, num: '072', fullSlash: null }, 'PTCG', 'JA')
     expect(sql.values).toEqual(expect.arrayContaining(['072%', '%・072%']))
+  })
+})
+
+describe('parseSetCardQueryFor（語言相依：別名表內的卡面碼）', () => {
+  it('30C 001（PTCG EN，數字開頭卡面碼）→ { setCode: "30c", num: "001", fullSlash: null }', () => {
+    expect(parseSetCardQueryFor('30C 001', 'PTCG', 'EN')).toEqual({ setCode: '30c', num: '001', fullSlash: null })
+  })
+
+  it('30c-001（連字號）與 30C 1/30（斜線）同樣解析', () => {
+    expect(parseSetCardQueryFor('30c-001', 'PTCG', 'EN')).toEqual({ setCode: '30c', num: '001', fullSlash: null })
+    expect(parseSetCardQueryFor('30C 1/30', 'PTCG', 'EN')).toEqual({ setCode: '30c', num: '1', fullSlash: '1/30' })
+  })
+
+  it('非 PTCG EN（PTCG JA、OPCG）→ 30C 001 不觸發', () => {
+    expect(parseSetCardQueryFor('30C 001', 'PTCG', 'JA')).toBeNull()
+    expect(parseSetCardQueryFor('30C 001', 'OPCG', 'EN')).toBeNull()
+  })
+
+  it('不在別名表的數字開頭碼（99Z 001）→ null', () => {
+    expect(parseSetCardQueryFor('99Z 001', 'PTCG', 'EN')).toBeNull()
+  })
+
+  it('只輸入碼、不帶卡號（30C、PBL）→ null（刻意不做 set-only）', () => {
+    expect(parseSetCardQueryFor('30C', 'PTCG', 'EN')).toBeNull()
+    expect(parseSetCardQueryFor('PBL', 'PTCG', 'EN')).toBeNull()
+  })
+
+  it('通用規則可解析者結果與 parseSetCardQuery 相同（PBL 001、sv8）', () => {
+    expect(parseSetCardQueryFor('PBL 001', 'PTCG', 'EN')).toEqual(parseSetCardQuery('PBL 001'))
+    expect(parseSetCardQueryFor('sv8', 'PTCG', 'EN')).toEqual(parseSetCardQuery('sv8'))
+  })
+
+  it('純文字卡名（pikachu）→ null', () => {
+    expect(parseSetCardQueryFor('pikachu', 'PTCG', 'EN')).toBeNull()
   })
 })

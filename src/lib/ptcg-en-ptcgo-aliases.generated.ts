@@ -2,6 +2,7 @@
 // EN 卡面 set 縮寫（pokemontcg.io ptcgoCode, lowercased）→ 我方 externalId（pokemontcg.io id, lowercased）候選。
 // 重新產生：npx tsx scripts/gen-ptcg-en-ptcgo-aliases.ts
 export const PTCG_EN_PTCGO_CODE_ALIASES: Record<string, string[]> = {
+  "30c": ["me55","me55c"],
   "aor": ["xy7"],
   "aq": ["ecard2"],
   "ar": ["pl4"],
@@ -83,6 +84,7 @@ export const PTCG_EN_PTCGO_CODE_ALIASES: Record<string, string[]> = {
   "paf": ["sv4pt5"],
   "pal": ["sv2"],
   "par": ["sv4"],
+  "pbl": ["me5"],
   "pfl": ["me2"],
   "phf": ["xy4"],
   "pk": ["ex16"],

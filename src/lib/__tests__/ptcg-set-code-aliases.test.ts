@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { resolvePtcgSetCodeCandidates } from '../ptcg-set-code-aliases'
+import { hasPtcgFaceCodeAlias, resolvePtcgSetCodeCandidates } from '../ptcg-set-code-aliases'
 import { PTCG_EN_PTCGO_CODE_ALIASES } from '../ptcg-en-ptcgo-aliases.generated'
 
 describe('resolvePtcgSetCodeCandidates — PTCG ZH_TW（剝尾 F 區域後綴）', () => {
@@ -73,5 +73,24 @@ describe('PTCG_EN_PTCGO_CODE_ALIASES 不變式', () => {
         expect(id).not.toBe(key)
       }
     }
+  })
+})
+
+describe('hasPtcgFaceCodeAlias', () => {
+  it('PTCG EN 已知卡面碼（不分大小寫）→ true；30c 對應兩個候選 set', () => {
+    expect(hasPtcgFaceCodeAlias('30C', 'PTCG', 'EN')).toBe(true)
+    expect(hasPtcgFaceCodeAlias('pbl', 'PTCG', 'EN')).toBe(true)
+    expect(resolvePtcgSetCodeCandidates('30C', 'PTCG', 'EN')).toEqual(['me55', 'me55c'])
+  })
+
+  it('未知碼、Object 原型屬性名 → false', () => {
+    expect(hasPtcgFaceCodeAlias('99z', 'PTCG', 'EN')).toBe(false)
+    expect(hasPtcgFaceCodeAlias('constructor', 'PTCG', 'EN')).toBe(false)
+  })
+
+  it('非 PTCG EN → false', () => {
+    expect(hasPtcgFaceCodeAlias('30c', 'PTCG', 'JA')).toBe(false)
+    expect(hasPtcgFaceCodeAlias('30c', 'OPCG', 'EN')).toBe(false)
+    expect(hasPtcgFaceCodeAlias('30c')).toBe(false)
   })
 })
