@@ -9,6 +9,13 @@
 - **認證**：NextAuth.js v5（JWT session）。Email/密碼 ＋ Google / Discord OAuth。
 - **UI**：Tailwind CSS + shadcn/ui。UI 互動元素一律基於 shadcn primitives；需要客製時另建延伸元件組合 primitives，
   不修改 `src/components/ui/` 下的原生 shadcn 檔。
+- **多語言與路由結構**：UI 語言（繁中／英／日，next-intl）以 `NEXT_LOCALE` cookie 與瀏覽器 Accept-Language 決定，
+  **對外 URL 不帶語言前綴**。內部所有頁面位於 `src/app/[locale]/`，由 `src/proxy.ts` 依語言把請求 rewrite 到
+  `/{locale}/…`；`src/app/` 根層只放 API、`robots.txt`、sitemap 與 OG 圖等 route handler（這些不經語言 rewrite）。
+  UI 語言與卡牌資料語言（EN/JA/ZH_TW，屬卡牌身份的一部分）是兩套獨立系統。
+- **渲染與快取**：公開的卡片獨立頁採 on-demand ISR——不預先產生，首次請求時渲染並由 CDN 快取一天，
+  每種 UI 語言各一份；使用者相關狀態（登入態、收藏狀態）一律在瀏覽器端補上（Header 以 `useSession()` 取得
+  登入態），讓頁面本體可被快取。首頁、搜尋頁與登入後頁面維持每請求渲染。
 
 ## 核心資料模型
 
@@ -69,7 +76,7 @@
 - `/cards`（搜尋）未登入可瀏覽；收藏動作觸發登入 modal，登入後自動續行原動作。
 - `/cards/[game]/[language]/[externalId]`：單張卡片的公開、可 SEO 索引獨立頁面。與 `/cards` 列表以
   Next.js Parallel + Intercepting Routes 組成——從列表點卡呈現為 Modal（URL 同步更新，可分享），
-  直接訪問或重整則為完整伺服器渲染頁面。頁面含 schema.org JSON-LD 結構化資料與可見麵包屑。
+  直接訪問或重整則為完整頁面（on-demand ISR，見上方「渲染與快取」）。頁面含 schema.org JSON-LD 結構化資料與可見麵包屑。
 - `/b/[token]`（公開分享）為唯讀，不需登入。
 
 ## 命名規範
