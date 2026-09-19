@@ -1,4 +1,5 @@
 import {
+  SITEMAP_CACHE_CONTROL,
   SITEMAP_CHUNK_SIZE,
   buildSitemapIndex,
   getCardCount,
@@ -13,5 +14,10 @@ export async function GET() {
   const cardCount = await getCardCount()
   const chunkCount = Math.max(1, Math.ceil(cardCount / SITEMAP_CHUNK_SIZE))
   const body = buildSitemapIndex(sitemapChildPaths(chunkCount))
-  return new Response(body, { headers: { 'Content-Type': 'application/xml' } })
+  return new Response(body, {
+    headers: {
+      'Content-Type': 'application/xml',
+      'Cache-Control': SITEMAP_CACHE_CONTROL,
+    },
+  })
 }
