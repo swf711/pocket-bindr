@@ -3,14 +3,15 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { NextIntlClientProvider } from "next-intl";
-import { getLocale, getMessages, getTranslations } from "next-intl/server";
-import { LOCALES, type Locale } from "@/i18n/locale";
-import { SITE_URL, OG_LOCALE } from "@/lib/og";
+import { getMessages, getTranslations, setRequestLocale } from "next-intl/server";
+import { notFound } from "next/navigation";
+import { LOCALES, isLocale, type Locale } from "@/i18n/locale";
+import { SITE_URL, OG_LOCALE, HOME_OG_IMAGE_PATH, ogImageMetadata } from "@/lib/og";
 import { SessionProvider } from "@/components/providers/session-provider";
 import { TanstackQueryProvider } from "@/components/providers/tanstack-query-provider";
 import { Header } from "@/components/layout/header";
 import { Toaster } from "@/components/ui/sonner";
-import "./globals.css";
+import "../globals.css";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip"
 const geistSans = Geist({
@@ -23,9 +24,16 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations("metadata");
-  const locale = (await getLocale()) as Locale;
+export function generateStaticParams() {
+  return LOCALES.map((locale) => ({ locale }));
+}
+
+type LayoutParams = { params: Promise<{ locale: string }> };
+
+export async function generateMetadata({ params }: LayoutParams): Promise<Metadata> {
+  const { locale: raw } = await params;
+  const locale: Locale = isLocale(raw) ? raw : "zh-TW";
+  const t = await getTranslations({ locale, namespace: "metadata" });
   const title = t("title");
   const description = t("description");
   const ogLocale = OG_LOCALE[locale] ?? OG_LOCALE["zh-TW"];
@@ -41,21 +49,26 @@ export async function generateMetadata(): Promise<Metadata> {
       url: "/",
       locale: ogLocale,
       alternateLocale: LOCALES.map((l) => OG_LOCALE[l]).filter((l) => l !== ogLocale),
+      images: ogImageMetadata(HOME_OG_IMAGE_PATH),
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
+      images: ogImageMetadata(HOME_OG_IMAGE_PATH),
     },
   };
 }
 
 export default async function RootLayout({
   children,
+  params,
 }: Readonly<{
   children: React.ReactNode;
-}>) {
-  const locale = await getLocale();
+}> & LayoutParams) {
+  const { locale } = await params;
+  if (!isLocale(locale)) notFound();
+  setRequestLocale(locale);
   const messages = await getMessages();
   return (
     <html

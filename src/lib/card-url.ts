@@ -45,6 +45,11 @@ export function cardPath(card: { game: Game; language: Language; externalId: str
   return `/cards/${gameToPath(card.game)}/${langToPath(card.language)}/${encodeURIComponent(card.externalId)}`
 }
 
+/** Card OG image route (root-level handler, see HOME_OG_IMAGE_PATH in og.ts). */
+export function cardOgImagePath(card: { game: Game; language: Language; externalId: string }): string {
+  return `${cardPath(card)}/opengraph-image`
+}
+
 export function parseCardPathParams(
   gameParam: string,
   languageParam: string,

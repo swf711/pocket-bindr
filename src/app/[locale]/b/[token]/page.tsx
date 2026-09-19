@@ -6,6 +6,7 @@ import { BinderPublicView } from '@/components/binder/binder-public-view'
 import { toDisplaySlot } from '@/lib/slot-display'
 import { fetchPublicBinder } from '@/lib/public-binder'
 import type { BinderPublicData } from '@/types/binder'
+import { binderOgImagePath, ogImageMetadata } from '@/lib/og'
 
 export async function generateMetadata({
   params,
@@ -31,11 +32,13 @@ export async function generateMetadata({
       title,
       description,
       url: `/b/${token}`,
+      images: ogImageMetadata(binderOgImagePath(token)),
     },
     twitter: {
       card: 'summary_large_image',
       title,
       description,
+      images: ogImageMetadata(binderOgImagePath(token)),
     },
   }
 }

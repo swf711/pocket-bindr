@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import {
   cardPath,
+  cardOgImagePath,
   parseCardPathParams,
   pathToLang,
   pathToGame,
@@ -65,5 +66,14 @@ describe('card-url', () => {
     expect(CARD_OG_LOCALE.EN).toBe('en_US')
     expect(CARD_OG_LOCALE.JA).toBe('ja_JP')
     expect(CARD_OG_LOCALE.ZH_TW).toBe('zh_TW')
+  })
+
+  it('cardOgImagePath：卡片路徑 + /opengraph-image，無 locale 前綴、無 hash 後綴', () => {
+    expect(cardOgImagePath({ game: 'OPCG', language: 'JA', externalId: 'OP01-001_p1' })).toBe(
+      '/cards/opcg/ja/OP01-001_p1/opengraph-image',
+    )
+    expect(cardOgImagePath({ game: 'PTCG', language: 'EN', externalId: 'a b' })).toBe(
+      '/cards/ptcg/en/a%20b/opengraph-image',
+    )
   })
 })

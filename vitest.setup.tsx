@@ -39,9 +39,15 @@ vi.mock('@testing-library/react', async () => {
 // the client provider above, so async Server Components (RSC tests calling
 // `await Component()` directly) resolve zh-TW text without a Next runtime.
 vi.mock('next-intl/server', () => ({
-  getTranslations: async (namespace?: string) =>
+  // Accepts both call shapes: getTranslations('ns') and getTranslations({ locale, namespace })
+  // (the latter is used by generateMetadata under the [locale] segment). Always zh-TW text.
+  getTranslations: async (arg?: string | { namespace?: string }) =>
     createTranslator(
-      { locale: 'zh-TW', messages: zhTW, namespace } as Parameters<typeof createTranslator>[0],
+      {
+        locale: 'zh-TW',
+        messages: zhTW,
+        namespace: typeof arg === 'string' ? arg : arg?.namespace,
+      } as Parameters<typeof createTranslator>[0],
     ),
   getMessages: async () => zhTW,
   getLocale: async () => 'zh-TW',

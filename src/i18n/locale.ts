@@ -23,6 +23,12 @@ export function isLocale(value: string | undefined | null): value is Locale {
   return !!value && (LOCALES as readonly string[]).includes(value)
 }
 
+// Locale from the internal [locale] route segment. src/proxy.ts only ever rewrites to a
+// valid locale, so the fallback only matters for direct hits on prefixed paths.
+export function toParamLocale(value: string | undefined | null): Locale {
+  return isLocale(value) ? value : DEFAULT_LOCALE
+}
+
 // Map an Accept-Language header to one of our supported locales.
 // Honours quality weights (q=) and matches by primary subtag so that
 // e.g. "en-US" → "en" and "ja-JP" → "ja"; anything else falls back to zh-TW.

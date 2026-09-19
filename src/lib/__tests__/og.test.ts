@@ -1,5 +1,13 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { resolveOgImageFetch, fetchImageDataUri, SITE_URL } from '../og'
+import {
+  resolveOgImageFetch,
+  fetchImageDataUri,
+  SITE_URL,
+  HOME_OG_IMAGE_PATH,
+  binderOgImagePath,
+  ogImageMetadata,
+  OG_SIZE,
+} from '../og'
 
 describe('resolveOgImageFetch', () => {
   it('proxy 相對路徑 /api/proxy-image?url=X 還原成 upstream X，不再指向 SITE_URL', () => {
@@ -131,5 +139,18 @@ describe('fetchImageDataUri', () => {
   it('URL 無法解析（resolveOgImageFetch 回 null）→ 直接回 null，不呼叫 fetch', async () => {
     await expect(fetchImageDataUri('not a url')).resolves.toBeNull()
     expect(global.fetch).not.toHaveBeenCalled()
+  })
+})
+
+describe('OG image 路徑（root 層 route handler，不在 [locale] 底下）', () => {
+  it('首頁與分享頁路徑不帶 locale 前綴', () => {
+    expect(HOME_OG_IMAGE_PATH).toBe('/opengraph-image')
+    expect(binderOgImagePath('abc123')).toBe('/b/abc123/opengraph-image')
+  })
+
+  it('ogImageMetadata 帶齊尺寸、型別與 alt（取代檔案慣例自動產生的 og:image:* 標籤）', () => {
+    expect(ogImageMetadata('/opengraph-image')).toEqual([
+      { url: '/opengraph-image', ...OG_SIZE, type: 'image/png', alt: 'PocketBindr' },
+    ])
   })
 })

@@ -1,7 +1,10 @@
+'use client'
+
 import Link from 'next/link'
-import { getTranslations } from 'next-intl/server'
-import { auth } from '@/lib/auth'
+import { useSession } from 'next-auth/react'
+import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
 import { UserMenu } from '@/components/layout/user-menu'
 import { MobileNav } from '@/components/layout/mobile-nav'
 import { MainNav } from '@/components/layout/main-nav'
@@ -9,9 +12,13 @@ import { ModeToggle } from './mode-toggle'
 import { LanguageToggle } from './language-toggle'
 import Image from 'next/image'
 
-export async function Header() {
-  const t = await getTranslations('common')
-  const session = await auth()
+// Client component on purpose: calling auth() on the server would make every route
+// dynamic (it reads cookies), defeating static rendering / ISR of public pages.
+// Cost: logged-in users trigger one /api/auth/session fetch per full page load.
+export function Header() {
+  const t = useTranslations('common')
+  const { data: session, status } = useSession()
+  const isLoading = status === 'loading'
   const isLoggedIn = !!session?.user
   const username =
     session?.user?.name ?? session?.user?.email?.split('@')[0] ?? t('defaultUsername')
@@ -46,7 +53,11 @@ export async function Header() {
           <LanguageToggle />
           <ModeToggle />
           <div className="hidden md:flex md:items-center md:gap-2">
-            {isLoggedIn ? (
+            {isLoading ? (
+              // Placeholder while the session resolves, so the header does not flash
+              // "logged out" before switching to the user menu.
+              <Skeleton data-testid="nav-session-loading" className="size-9 rounded-full" />
+            ) : isLoggedIn ? (
               <UserMenu username={username} image={session?.user?.image ?? null} />
             ) : (
               <Button variant="default" size="lg" asChild>
