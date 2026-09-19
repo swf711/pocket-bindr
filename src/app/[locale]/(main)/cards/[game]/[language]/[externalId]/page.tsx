@@ -1,7 +1,8 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { getTranslations } from 'next-intl/server'
-import { parseCardPathParams, cardPath, CARD_OG_LOCALE } from '@/lib/card-url'
+import { parseCardPathParams, cardPath, cardOgImagePath, CARD_OG_LOCALE } from '@/lib/card-url'
+import { ogImageMetadata } from '@/lib/og'
 import { getPublicCardByTriple, getSameSetCards } from '@/lib/public-card'
 import { formatCardSetLabel, hasCardNumber } from '@/lib/card-display'
 import { buildCardBreadcrumbItems, buildCardJsonLd } from '@/lib/card-jsonld'
@@ -49,11 +50,13 @@ export async function generateMetadata({
       description,
       url: path,
       locale: CARD_OG_LOCALE[card.language],
+      images: ogImageMetadata(cardOgImagePath(card)),
     },
     twitter: {
       card: 'summary_large_image',
       title,
       description,
+      images: ogImageMetadata(cardOgImagePath(card)),
     },
   }
 }

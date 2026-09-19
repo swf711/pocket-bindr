@@ -50,10 +50,12 @@ export function proxy(req: NextRequest, ev: NextFetchEvent) {
   return rewriteToLocale(req)
 }
 
-// Everything except routes that stay at the app root (api, SEO routes, root OG image)
-// and static files. 🔴 Must be a literal (Next analyses it at build time).
+// Everything except routes that stay at the app root and static files:
+// api, SEO routes, and every OG image route (/opengraph-image, /b/{token}/opengraph-image,
+// /cards/.../opengraph-image are root-level handlers, not under [locale]).
+// 🔴 Must be a literal (Next analyses it at build time).
 export const config = {
   matcher: [
-    '/((?!api/|_next/|sitemap\\.xml|sitemaps/|robots\\.txt|opengraph-image|.*\\.(?:ico|png|jpe?g|gif|svg|webp|otf|woff2?|txt|xml|json|webmanifest)$).*)',
+    '/((?!api/|_next/|sitemap\\.xml|sitemaps/|robots\\.txt|opengraph-image|.*/opengraph-image$|.*\\.(?:ico|png|jpe?g|gif|svg|webp|otf|woff2?|txt|xml|json|webmanifest)$).*)',
   ],
 }

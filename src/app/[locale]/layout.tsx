@@ -6,7 +6,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { getMessages, getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { LOCALES, isLocale, type Locale } from "@/i18n/locale";
-import { SITE_URL, OG_LOCALE } from "@/lib/og";
+import { SITE_URL, OG_LOCALE, HOME_OG_IMAGE_PATH, ogImageMetadata } from "@/lib/og";
 import { SessionProvider } from "@/components/providers/session-provider";
 import { TanstackQueryProvider } from "@/components/providers/tanstack-query-provider";
 import { Header } from "@/components/layout/header";
@@ -49,11 +49,13 @@ export async function generateMetadata({ params }: LayoutParams): Promise<Metada
       url: "/",
       locale: ogLocale,
       alternateLocale: LOCALES.map((l) => OG_LOCALE[l]).filter((l) => l !== ogLocale),
+      images: ogImageMetadata(HOME_OG_IMAGE_PATH),
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
+      images: ogImageMetadata(HOME_OG_IMAGE_PATH),
     },
   };
 }

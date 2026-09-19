@@ -1,5 +1,5 @@
 import { ImageResponse } from 'next/og'
-import { OG_SIZE, OG_CONTENT_TYPE, OG_DARK_BG, OG_CACHE_LONG, OG_CACHE_SHORT, fetchImageDataUri } from '@/lib/og'
+import { OG_SIZE, OG_DARK_BG, OG_CACHE_LONG, OG_CACHE_SHORT, fetchImageDataUri } from '@/lib/og'
 import { ogFonts } from '@/lib/og-fonts'
 import { logoDataUri, LOGO_ASPECT } from '@/lib/og-logo'
 import { resolveCardDisplayImage } from '@/lib/resolve-card-image'
@@ -8,9 +8,10 @@ import { formatCardSetLabel } from '@/lib/card-display'
 import { getPublicCardByTriple } from '@/lib/public-card'
 
 export const runtime = 'nodejs'
-export const size = OG_SIZE
-export const contentType = OG_CONTENT_TYPE
-export const alt = 'PocketBindr'
+// Route handler (not the opengraph-image file convention): lives outside src/app/[locale]/ so
+// the public URL carries no locale prefix and each image has a single CDN cache entry.
+// Pages reference it explicitly via metadata openGraph.images.
+const size = OG_SIZE
 
 const BRAND_LOGO_HEIGHT = 48
 
@@ -37,7 +38,7 @@ function brandFallback() {
 
 type PageParams = { game: string; language: string; externalId: string }
 
-export default async function CardOgImage({ params }: { params: Promise<PageParams> }) {
+export async function GET(_req: Request, { params }: { params: Promise<PageParams> }) {
   const { game, language, externalId } = await params
   const parsed = parseCardPathParams(game, language)
   if (!parsed) return brandFallback()

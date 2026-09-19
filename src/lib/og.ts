@@ -9,6 +9,16 @@ export const SITE_URL = process.env.AUTH_URL ?? 'http://localhost:3000'
 export const OG_SIZE = { width: 1200, height: 630 } as const
 export const OG_CONTENT_TYPE = 'image/png'
 
+/** OG image route paths. Kept outside src/app/[locale]/ (root-level route handlers) so the
+ *  public URL has no locale prefix → one CDN cache entry per image regardless of UI locale. */
+export const HOME_OG_IMAGE_PATH = '/opengraph-image'
+export const binderOgImagePath = (token: string) => `/b/${token}/opengraph-image`
+
+/** Metadata image descriptor for openGraph.images / twitter.images (same image for both). */
+export function ogImageMetadata(path: string) {
+  return [{ url: path, ...OG_SIZE, type: OG_CONTENT_TYPE, alt: 'PocketBindr' }]
+}
+
 /** OG image 統一 dark 背景（首頁 hero 圖與分享頁 fallback 共用）。 */
 export const OG_DARK_BG = 'linear-gradient(135deg, #12151b 0%, #0b0d12 100%)'
 
