@@ -127,6 +127,18 @@ export async function loginAsOAuthUser(
  * 供補填 email E2E 使用：帳號本身無 email，無法走 loginAsOAuthUser 的
  * email-keyed upsert，改由呼叫端先用 createOAuthUserNoEmail 建好帳號拿到
  * userId 後傳入。
+ *
+ * Safe to call repeatedly within one test to switch identity. Several responses
+ * re-issue the session cookie for whoever sent the request: GET /api/auth/session
+ * (JWT strategy re-signs on every call) and any route matched by src/proxy.ts
+ * (NextAuth middleware refreshes the cookie). The header nav prefetches the
+ * protected routes in production, so the previous page usually has such requests
+ * in flight. If one lands after addCookies, it silently restores the previous
+ * user's identity.
+ *
+ * Hence the order: unload the previous document first (navigating away cancels
+ * its pending requests), then write the cookie, then load a page that carries the
+ * new cookie.
  */
 export async function loginAsOAuthUserById(page: Page, userId: string, username: string): Promise<void> {
   const secret = process.env.AUTH_SECRET
@@ -136,7 +148,7 @@ export async function loginAsOAuthUserById(page: Page, userId: string, username:
     secret,
     salt: SESSION_COOKIE,
   })
-  await page.goto('/')
+  await page.goto('about:blank')
   await page.context().addCookies([
     {
       name: SESSION_COOKIE,
@@ -147,6 +159,7 @@ export async function loginAsOAuthUserById(page: Page, userId: string, username:
       sameSite: 'Lax',
     },
   ])
+  await page.goto('/')
 }
 
 // ---- 舊 API（保留為 wrapper，未遷移的呼叫點繼續可用）----
