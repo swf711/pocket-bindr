@@ -12,6 +12,7 @@ vi.mock('@/lib/prisma', () => ({
 
 import {
   ALLOWED_PATHS,
+  SITEMAP_CACHE_CONTROL,
   DISALLOWED_PATHS,
   STATIC_ROUTES,
   buildSitemapIndex,
@@ -148,5 +149,20 @@ describe('cardChunkToPaths', () => {
       { game: 'OPCG', language: 'ZH_TW', externalId: 'OP01-001' },
     ])
     expect(paths).toEqual(['/cards/ptcg/en/sv3-25', '/cards/opcg/zh-tw/OP01-001'])
+  })
+})
+
+describe('SITEMAP_CACHE_CONTROL', () => {
+  it('s-maxage 與 getCardCount / getCardChunk 的 unstable_cache revalidate 對齊（86400）', () => {
+    expect(SITEMAP_CACHE_CONTROL).toContain('s-maxage=86400')
+  })
+
+  it('max-age=0：瀏覽器不留快取，只讓共享快取（CDN）保存，比照 OG_CACHE_* 慣例', () => {
+    expect(SITEMAP_CACHE_CONTROL).toContain('max-age=0')
+    expect(SITEMAP_CACHE_CONTROL).toContain('public')
+  })
+
+  it('帶 stale-while-revalidate，避免過期瞬間的請求全數回源', () => {
+    expect(SITEMAP_CACHE_CONTROL).toContain('stale-while-revalidate')
   })
 })

@@ -41,6 +41,20 @@ test.describe('sitemap.xml + robots.txt', () => {
     expect(body).not.toContain('/b/')
   })
 
+  test('sitemap index 與子檔皆帶 CDN 長 TTL（讓爬蟲抓取命中 CDN、不進 function）', async ({ page }) => {
+    for (const path of ['/sitemap.xml', '/sitemaps/static.xml', '/sitemaps/cards-0.xml']) {
+      const res = await page.request.get(path)
+      expect(res.status(), path).toBe(200)
+      expect(res.headers()['cache-control'], path).toContain('s-maxage=86400')
+    }
+  })
+
+  test('不存在的子 sitemap 回 404 且為 no-store（錯誤回應不進共享快取）', async ({ page }) => {
+    const res = await page.request.get('/sitemaps/not-a-real-file.xml')
+    expect(res.status()).toBe(404)
+    expect(res.headers()['cache-control']).toBe('no-store')
+  })
+
   test('static 子 sitemap 含公開靜態頁，卡片子 sitemap 含 <url> 且逐字元對應真實 canonical', async ({ page }) => {
     const staticRes = await page.request.get('/sitemaps/static.xml')
     expect(staticRes.status()).toBe(200)

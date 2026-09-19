@@ -7,6 +7,20 @@ import { SITE_URL } from '@/lib/og'
 /** 每個卡片 sitemap 子檔的 URL 上限，遠低於官方 50,000 硬上限，預留成長空間。 */
 export const SITEMAP_CHUNK_SIZE = 20_000
 
+/**
+ * sitemap 路由的 CDN 快取指示。
+ *
+ * 沒有這個 header 時，每一次爬蟲抓取都必進 function：`unstable_cache` 只擋掉 DB 查詢，
+ * 但「把 20,000 列組成 XML 字串」是純 CPU、每次請求照跑。設了之後 CDN 直接回應，
+ * 連 invocation 都省下（Vercel Fluid 的 Active CPU 只計程式碼實際執行時間）。
+ *
+ * `s-maxage` 對齊 `getCardCount` / `getCardChunk` 的 `unstable_cache` revalidate（86400），
+ * 兩層快取同壽命；`max-age=0` 沿用 src/lib/og.ts 的 OG_CACHE_* 慣例（瀏覽器不留快取，
+ * 共享快取才留）。
+ */
+export const SITEMAP_CACHE_CONTROL =
+  'public, max-age=0, s-maxage=86400, stale-while-revalidate=3600'
+
 /** 進 sitemap 的公開靜態路徑（不含 auth / verify / 受保護頁）。 */
 export const STATIC_ROUTES: readonly string[] = ['/', '/cards', '/terms', '/privacy']
 
