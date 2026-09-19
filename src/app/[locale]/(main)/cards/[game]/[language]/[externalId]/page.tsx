@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { getTranslations } from 'next-intl/server'
+import { getTranslations, setRequestLocale } from 'next-intl/server'
+import { toParamLocale } from '@/i18n/locale'
 import { parseCardPathParams, cardPath, cardOgImagePath, CARD_OG_LOCALE } from '@/lib/card-url'
 import { ogImageMetadata } from '@/lib/og'
 import { getPublicCardByTriple, getSameSetCards } from '@/lib/public-card'
@@ -9,7 +10,17 @@ import { buildCardBreadcrumbItems, buildCardJsonLd } from '@/lib/card-jsonld'
 import { CardStandaloneView } from '@/components/cards/card-standalone-view'
 import { PageContainer } from '@/components/layout/page-container'
 
-type PageParams = { game: string; language: string; externalId: string }
+type PageParams = { locale: string; game: string; language: string; externalId: string }
+
+// On-demand ISR: nothing is prebuilt (74k cards × 3 locales), but each (locale, card) page
+// is rendered on first request and then served from the CDN. The empty generateStaticParams
+// is what opts the dynamic segments into this — without it Next renders them per request.
+// 🔴 Must be a literal (build-time analysis); kept equal to CARD_PAGE_REVALIDATE_SECONDS (unit-tested).
+export const revalidate = 86400
+
+export function generateStaticParams() {
+  return []
+}
 
 async function loadCard(params: Promise<PageParams>) {
   const { game, language, externalId } = await params
@@ -26,7 +37,8 @@ export async function generateMetadata({
   const card = await loadCard(params)
   if (!card) return {}
 
-  const t = await getTranslations('cardStandalone')
+  const locale = toParamLocale((await params).locale)
+  const t = await getTranslations({ locale, namespace: 'cardStandalone' })
   const title = `${card.name}（${formatCardSetLabel(card)}）· PocketBindr`
   // PTCG JA DP 世代部分卡無收集號，改用不含 {cardNumber} 的文案，避免留下空欄位／多餘分隔。
   const description = hasCardNumber(card.cardNumber)
@@ -62,6 +74,7 @@ export async function generateMetadata({
 }
 
 export default async function CardStandalonePage({ params }: { params: Promise<PageParams> }) {
+  setRequestLocale(toParamLocale((await params).locale))
   const card = await loadCard(params)
   if (!card) notFound()
 
