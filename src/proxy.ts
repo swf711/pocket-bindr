@@ -1,19 +1,59 @@
 import NextAuth from 'next-auth'
-import { authConfig } from '@/lib/auth.config'
+import { NextResponse, type NextFetchEvent, type NextRequest } from 'next/server'
+import { authConfig, protectedRoutes } from '@/lib/auth.config'
+import { LOCALE_COOKIE, resolveLocale } from '@/i18n/locale'
 
 const { auth } = NextAuth(authConfig)
-export { auth as proxy }
 
-// matcher 刻意只涵蓋受保護路由。先前為 catch-all，等於讓 NextAuth 在每一個公開頁面請求上
-// 初始化並執行一次（74k 張卡片頁、/sitemap.xml、/robots.txt、opengraph-image 全包含在內），
-// 但 authConfig.callbacks.authorized 對非保護路由一律 return true——純粹是白付的
-// invocation 與 Active CPU。收斂後公開路由完全不進 proxy。
-//
-// 🔴 必須是字面陣列：Next 需在 build 期靜態分析 matcher，不能從 auth.config.ts 的
-// protectedRoutes 動態組出。兩者的一致性由 src/__tests__/proxy-matcher.test.ts 交叉驗證。
-//
-// ⚠️ 後續若導入 next-intl 的 locale rewrite，matcher 需重新放寬以涵蓋公開頁面，
-// 屆時 NextAuth 仍須限於 protectedRoutes，不可退回 catch-all 的執行範圍。
+// next-intl reads this request header when a page did not call setRequestLocale.
+const INTL_LOCALE_HEADER = 'X-NEXT-INTL-LOCALE'
+
+// Internally every page lives under src/app/[locale]/, but public URLs carry no
+// locale prefix (same effect as next-intl's localePrefix: 'never'). Resolution
+// reuses our own resolveLocale so the zh-Hant / zh → zh-TW mapping is unchanged.
+function rewriteToLocale(req: NextRequest): NextResponse {
+  const locale = resolveLocale(
+    req.cookies.get(LOCALE_COOKIE)?.value,
+    req.headers.get('accept-language'),
+  )
+  const url = req.nextUrl.clone()
+  url.pathname = `/${locale}${req.nextUrl.pathname === '/' ? '' : req.nextUrl.pathname}`
+  const headers = new Headers(req.headers)
+  headers.set(INTL_LOCALE_HEADER, locale)
+  return NextResponse.rewrite(url, { request: { headers } })
+}
+
+function isProtectedPath(pathname: string): boolean {
+  return protectedRoutes.some((route) => pathname.startsWith(route))
+}
+
+// ⚠️ When NextAuth wraps a handler, a false `authorized` result does NOT redirect by
+// itself — the handler always runs — so the sign-in redirect is done here explicitly.
+const protectedProxy = auth((req) => {
+  if (!req.auth?.user) {
+    const signInUrl = req.nextUrl.clone()
+    signInUrl.pathname = authConfig.pages?.signIn ?? '/login'
+    signInUrl.search = ''
+    signInUrl.searchParams.set('callbackUrl', req.nextUrl.href)
+    return NextResponse.redirect(signInUrl)
+  }
+  return rewriteToLocale(req)
+})
+
+// NextAuth only runs on protected routes: it re-issues the session cookie on every
+// response it handles, and it costs a JWT decrypt per request. Public routes get the
+// locale rewrite only.
+export function proxy(req: NextRequest, ev: NextFetchEvent) {
+  if (isProtectedPath(req.nextUrl.pathname)) {
+    return (protectedProxy as unknown as (r: NextRequest, e: NextFetchEvent) => Promise<Response>)(req, ev)
+  }
+  return rewriteToLocale(req)
+}
+
+// Everything except routes that stay at the app root (api, SEO routes, root OG image)
+// and static files. 🔴 Must be a literal (Next analyses it at build time).
 export const config = {
-  matcher: ['/binders/:path*', '/settings/:path*', '/collection/:path*'],
+  matcher: [
+    '/((?!api/|_next/|sitemap\\.xml|sitemaps/|robots\\.txt|opengraph-image|.*\\.(?:ico|png|jpe?g|gif|svg|webp|otf|woff2?|txt|xml|json|webmanifest)$).*)',
+  ],
 }
