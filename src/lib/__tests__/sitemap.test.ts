@@ -14,6 +14,7 @@ import {
   ALLOWED_PATHS,
   SITEMAP_CACHE_CONTROL,
   DISALLOWED_PATHS,
+  EMERGENCY_DISALLOWED_PATHS,
   STATIC_ROUTES,
   buildSitemapIndex,
   buildUrlSet,
@@ -105,6 +106,11 @@ describe('STATIC_ROUTES / DISALLOWED_PATHS', () => {
       expect(DISALLOWED_PATHS).toContain(route)
       expect(STATIC_ROUTES).not.toContain(route)
     }
+  })
+
+  it('暫時性止血：DISALLOWED_PATHS 含 /cards（前綴涵蓋列表、卡片頁與卡片 OG 圖）', () => {
+    expect(EMERGENCY_DISALLOWED_PATHS).toEqual(['/cards'])
+    expect(DISALLOWED_PATHS).toContain('/cards')
   })
 })
 

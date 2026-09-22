@@ -22,6 +22,7 @@ test.describe('sitemap.xml + robots.txt', () => {
     expect(body).toContain('Disallow: /settings')
     expect(body).toContain('Disallow: /collection')
     expect(body).toContain('Disallow: /api/')
+    expect(body).toContain('Disallow: /cards')
     expect(body).toMatch(/Sitemap: .*\/sitemap\.xml/)
   })
 

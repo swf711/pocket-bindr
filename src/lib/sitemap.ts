@@ -24,8 +24,16 @@ export const SITEMAP_CACHE_CONTROL =
 /** 進 sitemap 的公開靜態路徑（不含 auth / verify / 受保護頁）。 */
 export const STATIC_ROUTES: readonly string[] = ['/', '/cards', '/terms', '/privacy']
 
+/**
+ * 🔴 暫時性止血（2026-09-22）：Fluid Active CPU 逼近 Hobby 上限，爬蟲長尾抓取卡片頁幾乎全是
+ * ISR cold render。前綴比對一次涵蓋 `/cards` 列表、卡片獨立頁與卡片 OG 圖。
+ * 用量回落後刪除此常數即恢復索引（見 docs/OPS.md）。
+ */
+export const EMERGENCY_DISALLOWED_PATHS: readonly string[] = ['/cards']
+
 /** robots Disallow 清單：受保護路由（見 src/lib/auth.config.ts）+ API + token 流程頁。 */
 export const DISALLOWED_PATHS: readonly string[] = [
+  ...EMERGENCY_DISALLOWED_PATHS,
   '/api/',
   '/binders',
   '/settings',
