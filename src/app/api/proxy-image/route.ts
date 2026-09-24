@@ -11,7 +11,9 @@ const SITE_ORIGIN = new URL(SITE_URL).origin
 // fetchImageDataUri 對 OG render path 的處理，runtime 圖片路徑同型補上）。
 const UPSTREAM_TIMEOUT_MS = 5000
 const UPSTREAM_RETRIES = 1
-const LONG_CACHE = 'public, max-age=604800, s-maxage=86400'
+// Card art at a fixed upstream URL is effectively immutable, so the CDN copy is kept for
+// 30 days: every expiry costs a function invocation to re-stream identical bytes.
+const LONG_CACHE = 'public, max-age=604800, s-maxage=2592000, stale-while-revalidate=86400'
 
 /** 逾時/網路錯誤重試 UPSTREAM_RETRIES 次；非 2xx 不在此重試（交由呼叫端依 status 決定，見下方 N1 快取分流）。 */
 async function fetchUpstream(url: string, headers: HeadersInit): Promise<Response> {
