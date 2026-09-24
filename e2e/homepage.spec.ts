@@ -123,6 +123,11 @@ test.describe('首頁', () => {
     // 首頁第四區塊的 inline footer 出現
     await expect(page.getByTestId('inline-footer')).toBeVisible()
     await expect(page.getByTestId('inline-footer')).toContainText('PocketBindr')
+
+    // Threads social link in footer button group
+    const threadsLink = page.getByTestId('inline-footer').getByTestId('footer-threads-link')
+    await expect(threadsLink).toBeVisible()
+    await expect(threadsLink).toHaveAttribute('href', 'https://www.threads.com/@pocketbindr')
   })
 
   test('Scenario 9: 平台功能區塊包含「分享」相關文字', async ({ page }) => {

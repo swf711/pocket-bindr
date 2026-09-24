@@ -63,8 +63,9 @@ test.describe('查看卡牌時加入卡冊（自己的卡冊詳情頁）', () =>
       'grid_3x3',
       [{ cardId: card.id, status: 'owned', pageNumber: 1, slotIndex: 0 }],
     )
-    // 第二本卡冊（加入目標）
-    await createBinderWithSlots(userId, 'grid_3x3', [])
+    // 第二本卡冊（加入目標）。取不同名稱以便依名稱選取：兩本 sortOrder 皆為 0，
+    // 下拉順序不固定，不可用 nth(1) 假設它排第二（曾因此選到當前卡冊而 flaky）
+    await createBinderWithSlots(userId, 'grid_3x3', [], { name: 'E2E Other Binder' })
 
     await page.goto(`/binders/${binder.id}`)
 
@@ -75,8 +76,7 @@ test.describe('查看卡牌時加入卡冊（自己的卡冊詳情頁）', () =>
 
     // 下拉改選另一本卡冊（非當前）
     await page.getByTestId('modal-binder-select').click()
-    const options = page.getByRole('option')
-    await options.nth(1).click()
+    await page.getByRole('option', { name: 'E2E Other Binder' }).click()
     await page.getByTestId('modal-add-btn').click()
 
     await expect(page.getByText(/已加入/)).toBeVisible({ timeout: 5000 })

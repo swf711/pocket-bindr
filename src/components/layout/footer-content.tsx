@@ -7,9 +7,10 @@ import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { ReportDialog } from '@/components/report/report-dialog'
-import { GitHubIcon } from '@/components/icons/provider-icons'
+import { GitHubIcon, ThreadsIcon } from '@/components/icons/provider-icons'
 
 const KOFI_URL = 'https://ko-fi.com/pocketbindr'
+const THREADS_URL = 'https://www.threads.com/@pocketbindr'
 
 /**
  * 全站 footer 內容（logo/rights/disclaimer/terms/privacy/report），
@@ -70,6 +71,12 @@ export function FooterContent() {
             <a href="https://github.com/swf711/pocket-bindr" target="_blank" rel="noopener noreferrer">
               <GitHubIcon />
               GitHub
+            </a>
+          </Button>
+          <Button asChild variant="default" size="xs">
+            <a href={THREADS_URL} target="_blank" rel="noopener noreferrer" data-testid="footer-threads-link">
+              <ThreadsIcon />
+              Threads
             </a>
           </Button>
           <Button asChild variant="default" size="xs">
