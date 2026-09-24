@@ -82,7 +82,7 @@ describe('GET /api/proxy-image', () => {
 
     const res = await GET(makeRequest('https://asia-tc.onepiece-cardgame.com/images/card.png'))
     expect(res.status).toBe(200)
-    expect(res.headers.get('Cache-Control')).toBe('public, max-age=604800, s-maxage=86400')
+    expect(res.headers.get('Cache-Control')).toBe('public, max-age=604800, s-maxage=2592000, stale-while-revalidate=86400')
     expect(mockFetch).toHaveBeenCalledWith(
       'https://asia-tc.onepiece-cardgame.com/images/card.png',
       expect.objectContaining({ headers: { Referer: 'https://asia-tc.onepiece-cardgame.com' } })
@@ -120,7 +120,7 @@ describe('GET /api/proxy-image', () => {
     const res = await GET(makeRequest('https://asia-tc.onepiece-cardgame.com/images/card.png'))
     expect(res.status).toBe(200)
     expect(mockFetch).toHaveBeenCalledTimes(2)
-    expect(res.headers.get('Cache-Control')).toBe('public, max-age=604800, s-maxage=86400')
+    expect(res.headers.get('Cache-Control')).toBe('public, max-age=604800, s-maxage=2592000, stale-while-revalidate=86400')
   })
 
   it('returns 502 no-store when upstream keeps failing after retry (N2)', async () => {
