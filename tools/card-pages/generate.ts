@@ -11,7 +11,8 @@ import { getTranslations } from './messages'
 import { renderCardPage } from './render'
 import { extractThemeTokens } from './css'
 import { objectKeyFor, planSync, assertSafeRemoval } from './sync'
-import { createR2Client, listRemoteObjects, md5Hex, putObject, deleteObjects } from './r2'
+import { createR2Client, listRemoteObjects, md5Hex, deleteObjects } from './r2'
+import { uploadAll } from './upload'
 
 const SAME_SET_FETCH_LIMIT = 7
 const SAME_SET_DISPLAY_LIMIT = 6
@@ -186,15 +187,7 @@ async function main() {
     return
   }
 
-  const CONTENT_TYPE: Record<string, string> = {
-    'robots.txt': 'text/plain; charset=utf-8',
-    'sitemap.xml': 'application/xml',
-  }
-  for (const key of plan.upload) {
-    const contentType = CONTENT_TYPE[key]
-      ?? (key.endsWith('.xml') ? 'application/xml' : key.endsWith('.svg') ? 'image/svg+xml' : 'text/html; charset=utf-8')
-    await putObject(client, bucket!, key, local.get(key)!, contentType)
-  }
+  await uploadAll(client, bucket!, plan.upload, local)
   await deleteObjects(client, bucket!, plan.remove)
 
   console.log('[card-pages] 上傳完成')
