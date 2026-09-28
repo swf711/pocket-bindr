@@ -235,7 +235,8 @@
       "capacityExceeded": "バインダーがいっぱいです。数量を減らすか、空きスロットを増やしてください",
       "rateLimited": "操作が多すぎます。しばらくしてから再度お試しください",
       "addFailed": "追加に失敗しました。もう一度お試しください"
-    }
+    },
+    "openNotFound": "このカードが見つかりませんでした。削除された可能性があります。"
   },
   "cardDetail": {
     "prev": "前へ",
@@ -270,7 +271,8 @@
     "metaDescription": "{name}｜{setName} {cardNumber}｜PocketBindrでカード詳細を見る。バインダーに追加できます。",
     "metaDescriptionNoNumber": "{name}｜{setName}｜PocketBindrでカード詳細を見る。バインダーに追加できます。",
     "sameSetTitle": "同じシリーズの他のカード",
-    "viewAllInSet": "シリーズ全体を見る"
+    "viewAllInSet": "シリーズ全体を見る",
+    "openInApp": "PocketBindrで開く"
   },
   "theme": {
     "toggle": "テーマを切り替え"

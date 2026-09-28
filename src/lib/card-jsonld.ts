@@ -1,7 +1,7 @@
 import type { Language } from '@prisma/client'
 import type { PublicCardRow } from '@/lib/public-card'
 import { resolveCardDisplayImage } from '@/lib/resolve-card-image'
-import { cardPath } from '@/lib/card-url'
+import { cardPublicUrl } from '@/lib/card-url'
 import { hasCardNumber } from '@/lib/card-display'
 import { SITE_URL, toAbsoluteUrl } from '@/lib/og'
 
@@ -56,7 +56,9 @@ export function buildCardJsonLd(
   card: PublicCardRow,
   breadcrumbItems: CardBreadcrumbItem[],
 ): Record<string, unknown> {
-  const selfUrl = toAbsoluteUrl(cardPath(card))
+  // cardPublicUrl 未設子網域開關時回相對 cardPath，toAbsoluteUrl 補 SITE_URL；
+  // 已設時回子網域絕對網址，toAbsoluteUrl 原樣返回（startsWith('http')）。
+  const selfUrl = toAbsoluteUrl(cardPublicUrl(card))
   const inLanguage = CARD_JSONLD_LANG[card.language]
   const image = resolveCardDisplayImage(card)
   const absoluteImage = image.large ? toAbsoluteUrl(image.large) : null

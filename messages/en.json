@@ -235,7 +235,8 @@
       "capacityExceeded": "Binder is full, reduce the quantity or free up some slots",
       "rateLimited": "Too many attempts, please try again later",
       "addFailed": "Failed to add, please try again"
-    }
+    },
+    "openNotFound": "Couldn't find that card. It may have been removed."
   },
   "cardDetail": {
     "prev": "Previous",
@@ -270,7 +271,8 @@
     "metaDescription": "{name} — {setName} {cardNumber} — View card details on PocketBindr and add it to your binder.",
     "metaDescriptionNoNumber": "{name} — {setName} — View card details on PocketBindr and add it to your binder.",
     "sameSetTitle": "More from this set",
-    "viewAllInSet": "View full set"
+    "viewAllInSet": "View full set",
+    "openInApp": "Open in PocketBindr"
   },
   "theme": {
     "toggle": "Toggle theme"

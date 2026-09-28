@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { toParamLocale } from '@/i18n/locale'
-import { parseCardPathParams, cardPath, cardOgImagePath, CARD_OG_LOCALE } from '@/lib/card-url'
+import { parseCardPathParams, cardPublicUrl, cardOgImagePath, CARD_OG_LOCALE } from '@/lib/card-url'
 import { ogImageMetadata } from '@/lib/og'
 import { getPublicCardByTriple, getSameSetCards } from '@/lib/public-card'
 import { formatCardSetLabel, hasCardNumber } from '@/lib/card-display'
@@ -48,19 +48,20 @@ export async function generateMetadata({
         cardNumber: card.cardNumber,
       })
     : t('metaDescriptionNoNumber', { name: card.name, setName: card.set.name })
-  const path = cardPath(card)
+  // cardPublicUrl：總開關未設回主站相對路徑（metadataBase 補 SITE_URL）；已設回子網域絕對網址。
+  const url = cardPublicUrl(card)
 
   return {
     title,
     description,
     // self-canonical：DB canonicalCardId 為資料層（收藏/圖片來源），不驅動 SEO canonical。
-    alternates: { canonical: path },
+    alternates: { canonical: url },
     openGraph: {
       type: 'website',
       siteName: 'PocketBindr',
       title,
       description,
-      url: path,
+      url,
       locale: CARD_OG_LOCALE[card.language],
       images: ogImageMetadata(cardOgImagePath(card)),
     },

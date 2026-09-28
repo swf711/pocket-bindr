@@ -106,6 +106,8 @@ pnpm dev
 | `RESEND_API_KEY`                                                   | 寄送密碼重設信、註冊驗證信、email 補填驗證信、缺卡/bug 回報信；設為 `test` 可跳過真實寄信                                                    | 選填             |
 | `REPORT_TO_EMAIL`                                                  | 缺卡/bug 回報的收件信箱                                                                                                                      | 選填             |
 | `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY`                       | Storage 金鑰：本機維護腳本 + runtime 頭像上傳皆用                                                                                            | 選填             |
+| `NEXT_PUBLIC_IMAGE_PROXY_ORIGIN` / `_WORKER_HOSTS`                 | 官網卡圖走 Cloudflare Worker 暖存 proxy 的分流設定；未設時全部回退 `/api/proxy-image`                                                        | 選填             |
+| `NEXT_PUBLIC_CARD_PAGES_ORIGIN`                                    | 靜態卡片頁子網域總開關（build-time）；未設時卡片頁維持 Vercel 動態渲染，行為零變                                                              | 選填             |
 
 > ⚠️ `.env` / `.env.local` 已被 `.gitignore` 排除，請勿提交任何真實金鑰。
 
@@ -138,6 +140,11 @@ E2E 以 `pnpm build && pnpm start` 啟動正式 build（非 dev mode），並需
 
 部署於 Vercel（function region 釘東京 `hnd1` 對齊 Supabase `ap-northeast-1`，見 [`vercel.json`](./vercel.json)）。
 正式環境需設定上表所有必填變數，並將 `AUTH_TRUST_HOST` 設為 `true`。
+
+卡片獨立頁可選擇性搬到 Cloudflare R2 靜態直出（見 [`tools/card-pages/README.md`](./tools/card-pages/README.md)）：
+`.github/workflows/card-pages.yml` 每日以 GitHub Actions 產生純 HTML 並同步到 R2 bucket，經自訂網域
+`cards.pocketbindr.app` 服務；設定 `NEXT_PUBLIC_CARD_PAGES_ORIGIN` 後 Vercel 端會把舊網址 301 轉去該
+子網域。此功能為選填，未設定時卡片頁維持一般 Vercel 動態渲染。
 
 ## 貢獻
 
