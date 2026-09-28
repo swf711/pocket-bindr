@@ -190,7 +190,7 @@ test.describe('OPCG ZH_TW alias card canonicalization', () => {
     expect(inJa).toBeFalsy()
   })
 
-  test('ZH_TW alias 搜尋結果顯示與 JA Card 相同的收藏數量', async ({ page }) => {
+  test('ZH_TW alias 卡的收藏數量取自其 canonical JA Card', async ({ page }) => {
     const aliasData = await getOpcgZhTwAliasCard()
     if (!aliasData) {
       test.skip()
@@ -207,15 +207,11 @@ test.describe('OPCG ZH_TW alias card canonicalization', () => {
       update: { quantity: 2 },
     })
 
-    // 搜尋 ZH_TW alias 卡，collectionStatus 應反映 JA Card 的收藏數
-    const res = await page.request.get(
-      `/api/cards?game=OPCG&language=ZH_TW&q=${aliasData.externalId.split('_')[0]}`
-    )
+    // 收藏狀態改由單卡端點提供（列表端點為公開 CDN 快取、刻意不含 user-specific 欄位），
+    // 但語意不變：以 ZH_TW alias 的 id 查詢，應反映其 canonical JA Card 的收藏數。
+    const res = await page.request.get(`/api/cards/${aliasData.zhTwCardId}`)
     expect(res.ok()).toBeTruthy()
     const data = await res.json()
-    const aliasInResult = data.cards.find((c: { id: string }) => c.id === aliasData.zhTwCardId)
-    if (aliasInResult) {
-      expect(aliasInResult.collectionStatus.owned).toBe(2)
-    }
+    expect(data.collectionStatus.owned).toBe(2)
   })
 })

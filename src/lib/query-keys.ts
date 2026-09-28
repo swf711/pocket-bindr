@@ -21,6 +21,8 @@ export const queryKeys = {
   cards: {
     all: ['cards'] as const,
     search: (filters: CardSearchFilters) => ['cards', 'search', filters] as const,
+    /** 單卡的 user-specific 收藏狀態（GET /api/cards/[id]）——列表回應為公開快取、刻意不含此資訊。 */
+    status: (cardId: string) => ['cards', 'status', cardId] as const,
   },
   binders: {
     all: ['binders'] as const,

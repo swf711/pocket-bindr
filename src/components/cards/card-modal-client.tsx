@@ -1,13 +1,17 @@
 'use client'
 import { useEffect, useState, useSyncExternalStore } from 'react'
 import { useRouter } from 'next/navigation'
-import { useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { CardStatus } from '@prisma/client'
 import { CardDetailDrawer } from '@/components/cards/card-detail-drawer'
 import { subscribeCardNavList, getCardNavListSnapshot } from '@/lib/card-nav-store'
 import { cardPath, parseCardPathParams } from '@/lib/card-url'
 import { useAddToBinder } from '@/hooks/use-add-to-binder'
 import { queryKeys } from '@/lib/query-keys'
+import type { CardWithCollectionStatus } from '@/types/card'
+
+/** 單卡狀態尚未載入（或訪客）時的預設值，與 GET /api/cards/[id] 對未登入者的回傳一致。 */
+const EMPTY_COLLECTION_STATUS = { owned: null, wanted: null } as const
 
 interface CardModalClientProps {
   game: string
@@ -53,7 +57,24 @@ export function CardModalClient({ game, language, externalId }: CardModalClientP
         (c) => c.game === current.game && c.language === current.language && c.externalId === current.externalId,
       )
     : -1
-  const card = index >= 0 ? cards[index] : null
+  const listCard = index >= 0 ? cards[index] : null
+
+  // GET /api/cards（列表）為公開 CDN 快取、刻意不含 user-specific 的 collectionStatus，
+  // 故 Drawer 開啟時才以單卡端點補上（與 card-standalone-interactive.tsx 同一模式）。
+  // 加入卡冊後由 handleAddToBinder 失效此 key 重抓，維持「數字即時更新」的既有行為。
+  const { data: liveStatus } = useQuery({
+    queryKey: queryKeys.cards.status(listCard?.id ?? ''),
+    queryFn: async () => {
+      const res = await fetch(`/api/cards/${listCard!.id}`)
+      if (!res.ok) return null
+      const data = await res.json()
+      return (data?.collectionStatus ?? null) as CardWithCollectionStatus['collectionStatus'] | null
+    },
+    enabled: Boolean(listCard),
+    staleTime: 0,
+  })
+
+  const card = listCard && { ...listCard, collectionStatus: liveStatus ?? EMPTY_COLLECTION_STATUS }
 
   useEffect(() => {
     // store-miss 落真實頁的兜底，**只在 store 確實有列表卻找不到此卡**時觸發（path 非法、或此卡被篩掉/
@@ -77,6 +98,7 @@ export function CardModalClient({ game, language, externalId }: CardModalClientP
 
   const handleAddToBinder = async (binderId: string, status: CardStatus, quantity: number) => {
     await addToBinder.mutateAsync({ card, binderId, status, quantity })
+    await qc.invalidateQueries({ queryKey: queryKeys.cards.status(card.id) })
   }
 
   // ⚠️ 刻意用硬導航（window.location.href），不透過 next/navigation 的 router.push/back：
