@@ -26,7 +26,9 @@ jobs:
   generate:
     name: Generate + sync to R2
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # 併發上傳（tools/card-pages/generate.ts 的 uploadAll，50 併發）後預期幾分鐘內完成；
+    # 60 分鐘留給首次全量上傳（78k+ 物件）與未來卡量成長的安全邊界。
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v5
 
