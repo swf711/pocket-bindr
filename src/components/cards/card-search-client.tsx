@@ -18,6 +18,7 @@ import { useCardSearch } from '@/hooks/use-card-search'
 import { cardPath } from '@/lib/card-url'
 import { publishCardNavList } from '@/lib/card-nav-store'
 import { MAX_BATCH_CARDS } from '@/lib/binder-limits'
+import { resolveOpenTarget } from '@/lib/resolve-open-target'
 
 const DEFAULT_LANGUAGE = 'ZH_TW'
 const VALID_LANGUAGES = ['EN', 'JA', 'ZH_TW']
@@ -30,9 +31,11 @@ interface CardSearchClientProps {
     page?: string
     language?: string
   }
+  /** 靜態卡片頁「在 PocketBindr 開啟」入口帶入的 externalId；用完即從網址移除。 */
+  initialOpen?: string
 }
 
-export function CardSearchClient({ initialParams }: CardSearchClientProps) {
+export function CardSearchClient({ initialParams, initialOpen }: CardSearchClientProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const t = useTranslations('cards')
@@ -57,11 +60,43 @@ export function CardSearchClient({ initialParams }: CardSearchClientProps) {
     ? { game, language, q: query || undefined, setId: setId ?? undefined, page }
     : { game: '', language, page }
 
-  const { data, isPending, isError } = useCardSearch(filters)
+  const { data, isPending, isError, isPlaceholderData } = useCardSearch(filters)
 
   const cards = useMemo(() => data?.cards ?? [], [data])
   const total = data?.total ?? 0
   const totalPages = data?.totalPages ?? 0
+
+  // `open` 入口：網址一律只在第一次使用，用完立刻從網址移除（否則 router.back() 會回到仍帶
+  // open 的網址、modal 就永遠關不掉）。用 ref 保證即使 initialOpen 沒變也只處理一次。
+  //
+  // 🔴 必須用 router.replace（而非 window.history.replaceState 直接改網址列）：後者只改瀏覽器
+  // 網址列字串，不會更新 Next App Router 內部的 soft-navigation 快取——該快取仍以「原始（含
+  // open）URL」為 key 記錄這個 history entry。之後從自動 push 出的卡片頁按 Escape/上一頁關閉時，
+  // router.back() 依內部快取回到的仍是帶 open 的那份，會重新觸發一次 push，modal 因此關不掉
+  // （實測到的真實 bug，不是假設風險）。多付出的一次 RSC round-trip只發生在「帶 open 連結進站」
+  // 這個一次性入口，可接受。
+  const openRef = useRef(initialOpen)
+  useEffect(() => {
+    if (!initialOpen) return
+    const params = new URLSearchParams(window.location.search)
+    params.delete('open')
+    const query = params.toString()
+    router.replace(query ? `/cards?${query}` : '/cards', { scroll: false })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  useEffect(() => {
+    if (!openRef.current || isPending || isError) return
+    const target = resolveOpenTarget(cards, openRef.current, isPlaceholderData)
+    if (target) {
+      openRef.current = undefined
+      router.push(target)
+    } else if (!isPlaceholderData) {
+      // 真正的搜尋結果（非 placeholder）已回來仍找不到該卡：留在列表、提示一次即可。
+      openRef.current = undefined
+      toast.error(t('openNotFound'))
+    }
+  }, [cards, isPending, isError, isPlaceholderData, router, t])
 
   // 攔截路由的 modal（card-modal-client.tsx）從此 in-memory store 取當前卡 + prev/next，
   // 免在 URL 夾帶 filter context；零 server round-trip 才能維持「點卡立刻出現」的手感。

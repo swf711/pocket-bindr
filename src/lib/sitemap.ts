@@ -24,12 +24,19 @@ export const SITEMAP_CACHE_CONTROL =
 /** 進 sitemap 的公開靜態路徑（不含 auth / verify / 受保護頁）。 */
 export const STATIC_ROUTES: readonly string[] = ['/', '/cards', '/terms', '/privacy']
 
+/** 靜態卡片頁子網域總開關（見 src/lib/card-url.ts 的 cardPublicUrl）。 */
+const CARD_PAGES_ORIGIN = process.env.NEXT_PUBLIC_CARD_PAGES_ORIGIN
+
 /**
  * 🔴 暫時性止血（2026-09-22）：Fluid Active CPU 逼近 Hobby 上限，爬蟲長尾抓取卡片頁幾乎全是
  * ISR cold render。前綴比對一次涵蓋 `/cards` 列表、卡片獨立頁與卡片 OG 圖。
- * 用量回落後刪除此常數即恢復索引（見 docs/OPS.md）。
+ * **開關已設時解除**：卡片頁已 301 轉去子網域，Vercel 不再渲染，此止血失去意義；
+ * 改擋列表頁本身（`/cards$`、`/cards?`），讓爬蟲可以跟隨舊卡片網址的 301，
+ * 但仍不索引本站的 `/cards` 搜尋列表（無獨立內容價值）。
  */
-export const EMERGENCY_DISALLOWED_PATHS: readonly string[] = ['/cards']
+export const EMERGENCY_DISALLOWED_PATHS: readonly string[] = CARD_PAGES_ORIGIN
+  ? ['/cards$', '/cards?*']
+  : ['/cards']
 
 /** robots Disallow 清單：受保護路由（見 src/lib/auth.config.ts）+ API + token 流程頁。 */
 export const DISALLOWED_PATHS: readonly string[] = [
@@ -76,8 +83,12 @@ export function buildSitemapIndex(paths: readonly string[]): string {
   return `<?xml version="1.0" encoding="UTF-8"?>\n<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${entries}\n</sitemapindex>`
 }
 
-/** 子 sitemap 的相對路徑清單（index 用）：['/sitemaps/static.xml', '/sitemaps/cards-0.xml', …]。 */
+/**
+ * 子 sitemap 的相對路徑清單（index 用）：['/sitemaps/static.xml', '/sitemaps/cards-0.xml', …]。
+ * 開關已設時卡片頁已搬到子網域自己的 sitemap，主站 index 只列 static.xml。
+ */
 export function sitemapChildPaths(chunkCount: number): string[] {
+  if (CARD_PAGES_ORIGIN) return ['/sitemaps/static.xml']
   const cardPaths = Array.from({ length: chunkCount }, (_, i) => `/sitemaps/cards-${i}.xml`)
   return ['/sitemaps/static.xml', ...cardPaths]
 }

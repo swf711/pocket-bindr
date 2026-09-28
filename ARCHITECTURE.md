@@ -16,6 +16,10 @@
 - **渲染與快取**：公開的卡片獨立頁採 on-demand ISR——不預先產生，首次請求時渲染並由 CDN 快取一天，
   每種 UI 語言各一份；使用者相關狀態（登入態、收藏狀態）一律在瀏覽器端補上（Header 以 `useSession()` 取得
   登入態），讓頁面本體可被快取。首頁、搜尋頁與登入後頁面維持每請求渲染。
+  卡片頁另有一條可選的靜態化路徑：env `NEXT_PUBLIC_CARD_PAGES_ORIGIN` 已設時，`/cards/{game}/
+  {language}/{externalId}` 會 301 轉址到 Cloudflare R2 自訂網域（純 HTML、GitHub Actions 每日產生，
+  見下方「靜態卡片頁子網域」），Vercel 完全不再渲染這批頁面；未設此 env 則維持上述 ISR 行為，
+  兩者互斥、由同一個 env 切換。
 
 ## 核心資料模型
 
@@ -77,7 +81,18 @@
 - `/cards/[game]/[language]/[externalId]`：單張卡片的公開、可 SEO 索引獨立頁面。與 `/cards` 列表以
   Next.js Parallel + Intercepting Routes 組成——從列表點卡呈現為 Modal（URL 同步更新，可分享），
   直接訪問或重整則為完整頁面（on-demand ISR，見上方「渲染與快取」）。頁面含 schema.org JSON-LD 結構化資料與可見麵包屑。
+  `NEXT_PUBLIC_CARD_PAGES_ORIGIN` 已設時此路徑對一般瀏覽請求改回 301（App Router 內部導航與
+  Server Action 請求不受影響，見下方「靜態卡片頁子網域」）。
 - `/b/[token]`（公開分享）為唯讀，不需登入。
+
+## 靜態卡片頁子網域（`tools/card-pages/`，可選）
+
+卡片獨立頁的另一種對外服務方式：GitHub Actions（`.github/workflows/card-pages.yml`）每日以
+`tools/card-pages/generate.ts` 把全部卡片預先渲染成純 HTML（不 hydrate），差異同步到 Cloudflare R2，
+經自訂網域 `cards.pocketbindr.app` 直出，爬蟲流量完全不經過 Vercel。由 env
+`NEXT_PUBLIC_CARD_PAGES_ORIGIN` 作總開關（build-time），未設時本機/主站行為完全不受影響。
+落地頁提供「在 PocketBindr 開啟」按鈕，導回主站 `/cards?game=&language=&open=<externalId>` 開出
+互動版 Drawer。詳見 `tools/card-pages/README.md`。
 
 ## 命名規範
 

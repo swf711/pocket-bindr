@@ -10,9 +10,13 @@ import {
 // 強制 dynamic 改在 request time 渲染，快取改交給 src/lib/sitemap.ts 的 unstable_cache（86400 秒）負責。
 export const dynamic = 'force-dynamic'
 
+// 開關已設時卡片頁已搬到子網域，index 只列 static.xml，不需查卡片總數。
+const CARD_PAGES_ORIGIN = process.env.NEXT_PUBLIC_CARD_PAGES_ORIGIN
+
 export async function GET() {
-  const cardCount = await getCardCount()
-  const chunkCount = Math.max(1, Math.ceil(cardCount / SITEMAP_CHUNK_SIZE))
+  const chunkCount = CARD_PAGES_ORIGIN
+    ? 0
+    : Math.max(1, Math.ceil((await getCardCount()) / SITEMAP_CHUNK_SIZE))
   const body = buildSitemapIndex(sitemapChildPaths(chunkCount))
   return new Response(body, {
     headers: {

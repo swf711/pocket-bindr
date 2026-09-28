@@ -20,10 +20,16 @@ const XML_HEADERS = {
 // 錯誤回應不得進共享快取，比照 src/app/api/proxy-image/route.ts 的既有語意。
 const NOT_FOUND_HEADERS = { 'Cache-Control': 'no-store' } as const
 
+// 開關已設時卡片頁已搬到子網域自己的 sitemap，主站 cards-N.xml 一律 404。
+const CARD_PAGES_ORIGIN = process.env.NEXT_PUBLIC_CARD_PAGES_ORIGIN
+
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const target = parseSitemapChildId(id)
   if (!target) return new Response(null, { status: 404, headers: NOT_FOUND_HEADERS })
+  if (target.kind === 'cards' && CARD_PAGES_ORIGIN) {
+    return new Response(null, { status: 404, headers: NOT_FOUND_HEADERS })
+  }
 
   if (target.kind === 'static') {
     return new Response(buildUrlSet(STATIC_ROUTES), { headers: XML_HEADERS })

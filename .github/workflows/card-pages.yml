@@ -1,0 +1,97 @@
+name: Static Card Pages
+
+on:
+  schedule:
+    # 每日 04:00 UTC，錯開 backup-prod.yml 的 03:00 UTC。
+    - cron: "0 4 * * *"
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "dry-run（只印出差異）或 apply（實際寫入 R2）"
+        required: true
+        default: dry-run
+        type: choice
+        options:
+          - dry-run
+          - apply
+
+permissions:
+  contents: read
+
+concurrency:
+  group: card-pages
+  cancel-in-progress: false
+
+jobs:
+  generate:
+    name: Generate + sync to R2
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Check R2 secrets
+        id: check-r2
+        run: |
+          if [ -z "${{ secrets.R2_ACCOUNT_ID }}" ] || [ -z "${{ secrets.R2_ACCESS_KEY_ID }}" ] || \
+             [ -z "${{ secrets.R2_SECRET_ACCESS_KEY }}" ] || [ -z "${{ secrets.R2_BUCKET }}" ]; then
+            echo "::warning::R2 secrets 尚未設定（R2_ACCOUNT_ID/R2_ACCESS_KEY_ID/R2_SECRET_ACCESS_KEY/R2_BUCKET），略過本次執行"
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Generate card pages
+        if: steps.check-r2.outputs.ready == 'true'
+        env:
+          # Session Pooler（IPv4），唯讀連線；與 backup-prod.yml 慣例一致。
+          DATABASE_URL: ${{ secrets.PROD_DIRECT_URL }}
+          DIRECT_URL: ${{ secrets.PROD_DIRECT_URL }}
+          # og.ts / get-card-image-url.ts 於模組載入時就讀取，必須在 process 啟動前設好。
+          AUTH_URL: "https://pocketbindr.app"
+          NEXT_PUBLIC_CARD_PAGES_ORIGIN: "https://cards.pocketbindr.app"
+          NEXT_PUBLIC_IMAGE_PROXY_ORIGIN: ${{ vars.NEXT_PUBLIC_IMAGE_PROXY_ORIGIN }}
+          NEXT_PUBLIC_IMAGE_PROXY_WORKER_HOSTS: ${{ vars.NEXT_PUBLIC_IMAGE_PROXY_WORKER_HOSTS }}
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+        run: |
+          set -euo pipefail
+          # schedule 觸發（每日排程）無 inputs，預設等同 apply（每日全量產生本就是目的）；
+          # workflow_dispatch 手動觸發時依使用者選擇的 mode。
+          MODE="${{ inputs.mode || 'apply' }}"
+          if [ "$MODE" = "apply" ]; then
+            npx tsx tools/card-pages/generate.ts --apply
+          else
+            npx tsx tools/card-pages/generate.ts
+          fi
+
+      - name: Notify on failure (Resend)
+        if: failure()
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          ALERT_EMAIL: ${{ secrets.ALERT_EMAIL }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          if [ -z "${RESEND_API_KEY:-}" ] || [ -z "${ALERT_EMAIL:-}" ]; then
+            echo "::warning::RESEND_API_KEY or ALERT_EMAIL not set, skipping failure notification"
+            exit 0
+          fi
+          curl --fail https://api.resend.com/emails \
+            -H "Authorization: Bearer ${RESEND_API_KEY}" \
+            -H "Content-Type: application/json" \
+            -d "$(jq -n \
+                  --arg to "$ALERT_EMAIL" \
+                  --arg url "$RUN_URL" \
+                  '{from:"PocketBindr <noreply@send.pocketbindr.app>", to:[$to], subject:"[PocketBindr] Static card pages workflow 失敗", html:("<p>workflow 失敗，請檢查 Actions log：</p><p><a href=\"" + $url + "\">" + $url + "</a></p>")}')"

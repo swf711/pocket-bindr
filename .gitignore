@@ -59,6 +59,9 @@ scripts/
 /tmp/
 .cache/
 
+# 靜態卡片頁產生器本機預覽輸出（tools/card-pages/generate.ts 無 R2 憑證時的抽樣 HTML）
+tools/card-pages/.preview/
+
 # 內部開發文件（保留本機，不公開；對外文件改放根目錄與 .github/）
 /docs/
 /CLAUDE.md
