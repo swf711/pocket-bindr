@@ -1,16 +1,17 @@
 import { unstable_cache } from 'next/cache'
 import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { auth } from '@/lib/auth'
 import { parseLanguage } from '@/lib/language'
 import { Game, Language, Prisma } from '@prisma/client'
 import { groupAndSortSets } from '@/lib/sort-card-sets'
-import { getCollectionStatusMap, resolveCollectionLookupId } from '@/lib/card-collection-status'
 import { parseSetCardQueryFor, buildSetCardPrismaWhere, buildSetCardSql } from '@/lib/parse-set-card-query'
 import { buildCrossLangExpansion } from '@/lib/cross-language-search'
 import { CARD_NUMBER_ORDER_SQL } from '@/lib/public-card'
 import { gameSchema } from '@/lib/schemas/collection'
 import { cardsSearchIpLimiter, getClientIp } from '@/lib/rate-limit'
+
+/** 公開快取：回應與使用者無關（見 handleGet 內說明），s-maxage 對齊內層 unstable_cache 的 revalidate。 */
+export const CARDS_CACHE_CONTROL = 'public, max-age=0, s-maxage=60, stale-while-revalidate=300'
 
 export async function GET(req: NextRequest) {
   try {
@@ -138,26 +139,21 @@ async function handleGet(req: NextRequest) {
     return Response.json({ error: 'language must be one of EN, JA, ZH_TW' }, { status: 400 })
   }
 
-  // auth() 與卡片查詢並行，避免串行多一段 round trip（尤其跨 region 時）
-  const sessionPromise = auth()
+  const { cards, total } = await fetchCardPage(validGame, language, q, setId, pageNum, pageSizeNum)
 
-  const { cards, total, includeCanonical } = await fetchCardPage(validGame, language, q, setId, pageNum, pageSizeNum)
-
-  const session = await sessionPromise
-  const collectionMap = await getCollectionStatusMap(cards, session?.user?.id, includeCanonical)
-
-  return Response.json({
-    cards: cards.map(card => {
-      const lookupId = resolveCollectionLookupId(card)
-      return {
-        ...card,
-        collectionStatus: collectionMap[lookupId] ?? { owned: null, wanted: null },
-      }
-    }),
-    total,
-    page: pageNum,
-    pageSize: pageSizeNum,
-    totalPages: Math.ceil(total / pageSizeNum),
-  })
+  // 🔴 回應必須與使用者無關，才能掛 `public` 交給 CDN——`collectionStatus` 曾在此回傳，
+  // 一旦殘留就會被 CDN 存下並餵給別的使用者（跨使用者資料外洩）。收藏狀態改由消費端在需要時
+  // 以 GET /api/cards/[id] 補（搜尋格線本來就不顯示 owned/wanted，只有 Drawer 用得到）。
+  // s-maxage 對齊 fetchCardPage 內 unstable_cache 的 revalidate（60），兩層快取同壽命。
+  return Response.json(
+    {
+      cards,
+      total,
+      page: pageNum,
+      pageSize: pageSizeNum,
+      totalPages: Math.ceil(total / pageSizeNum),
+    },
+    { headers: { 'Cache-Control': CARDS_CACHE_CONTROL } },
+  )
 }
 

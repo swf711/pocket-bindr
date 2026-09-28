@@ -24,12 +24,13 @@ vi.mock('@/lib/cross-language-search', () => ({
   buildCrossLangExpansion: (...args: unknown[]) => mockBuildCrossLangExpansion(...args),
 }))
 
+const mockLimit = vi.fn().mockResolvedValue({ success: true })
 vi.mock('@/lib/rate-limit', () => ({
-  cardsSearchIpLimiter: { limit: vi.fn().mockResolvedValue({ success: true }) },
+  cardsSearchIpLimiter: { limit: (...args: unknown[]) => mockLimit(...args) },
   getClientIp: () => '127.0.0.1',
 }))
 
-import { GET } from '../route'
+import { GET, CARDS_CACHE_CONTROL } from '../route'
 import { prisma } from '@/lib/prisma'
 
 // 無 setId 路徑：route 會先 cardSet.findMany 取得排序，再 $queryRaw 取分頁卡 id，最後 card.findMany(byIds)。
@@ -104,103 +105,16 @@ describe('GET /api/cards', () => {
     })
   })
 
-  it('未登入時每張卡的 collectionStatus 均為 { owned: null, wanted: null }', async () => {
-    mockAuth.mockResolvedValue(null)
-    mockSingleCard({ id: 'card1', name: 'Pikachu', imageSmall: '', rarity: null, cardNumber: '001', set: { name: 'Base' } })
-    const req = new NextRequest('http://localhost/api/cards?game=PTCG')
-    const res = await GET(req)
-    expect(res.status).toBe(200)
-    const data = await res.json()
-    expect(data.cards[0].collectionStatus).toEqual({ owned: null, wanted: null })
-    expect(prisma.userCard.findMany).not.toHaveBeenCalled()
-  })
 
-  it('登入用戶有 owned 記錄時 collectionStatus.owned 為 quantity 值', async () => {
-    mockAuth.mockResolvedValue({ user: { id: 'u1' } })
-    mockSingleCard({ id: 'card1', name: 'Pikachu', imageSmall: '', rarity: null, cardNumber: '001', set: { name: 'Base' } })
-    vi.mocked(prisma.userCard.findMany).mockResolvedValue([
-      { cardId: 'card1', status: 'owned', quantity: 2 },
-    ] as never)
-    const req = new NextRequest('http://localhost/api/cards?game=PTCG')
-    const res = await GET(req)
-    expect(res.status).toBe(200)
-    const data = await res.json()
-    expect(data.cards[0].collectionStatus).toEqual({ owned: 2, wanted: null })
-  })
 
-  it('登入用戶有 wanted 記錄時 collectionStatus.wanted 為 quantity 值', async () => {
-    mockAuth.mockResolvedValue({ user: { id: 'u1' } })
-    mockSingleCard({ id: 'card1', name: 'Pikachu', imageSmall: '', rarity: null, cardNumber: '001', set: { name: 'Base' } })
-    vi.mocked(prisma.userCard.findMany).mockResolvedValue([
-      { cardId: 'card1', status: 'wanted', quantity: 1 },
-    ] as never)
-    const req = new NextRequest('http://localhost/api/cards?game=PTCG')
-    const res = await GET(req)
-    expect(res.status).toBe(200)
-    const data = await res.json()
-    expect(data.cards[0].collectionStatus).toEqual({ owned: null, wanted: 1 })
-  })
 
-  it('同一張卡同時有 owned 和 wanted 記錄時兩者均回傳 quantity', async () => {
-    mockAuth.mockResolvedValue({ user: { id: 'u1' } })
-    mockSingleCard({ id: 'card1', name: 'Pikachu', imageSmall: '', rarity: null, cardNumber: '001', set: { name: 'Base' } })
-    vi.mocked(prisma.userCard.findMany).mockResolvedValue([
-      { cardId: 'card1', status: 'owned', quantity: 3 },
-      { cardId: 'card1', status: 'wanted', quantity: 1 },
-    ] as never)
-    const req = new NextRequest('http://localhost/api/cards?game=PTCG')
-    const res = await GET(req)
-    expect(res.status).toBe(200)
-    const data = await res.json()
-    expect(data.cards[0].collectionStatus).toEqual({ owned: 3, wanted: 1 })
-  })
 
-  it('登入用戶無任何收藏記錄的卡牌 collectionStatus 均為 null', async () => {
-    mockAuth.mockResolvedValue({ user: { id: 'u1' } })
-    mockSingleCard({ id: 'card1', name: 'Pikachu', imageSmall: '', rarity: null, cardNumber: '001', set: { name: 'Base' } })
-    vi.mocked(prisma.userCard.findMany).mockResolvedValue([] as never)
-    const req = new NextRequest('http://localhost/api/cards?game=PTCG')
-    const res = await GET(req)
-    expect(res.status).toBe(200)
-    const data = await res.json()
-    expect(data.cards[0].collectionStatus).toEqual({ owned: null, wanted: null })
-  })
 })
 
 describe('GET /api/cards - OPCG ZH_TW alias canonicalization', () => {
   beforeEach(() => { vi.clearAllMocks(); resetDefaults() })
 
-  it('OPCG+ZH_TW alias 卡：collectionStatus 查 canonicalCardId 而非 alias id', async () => {
-    mockAuth.mockResolvedValue({ user: { id: 'u1' } })
-    mockSingleCard({
-      id: 'zhtw-c1', name: '魯夫', imageSmall: '', rarity: null, cardNumber: 'OP01-001',
-      isCollectible: false, canonicalCardId: 'ja-c1', set: { name: 'OP-01' },
-    })
-    vi.mocked(prisma.userCard.findMany).mockResolvedValue([
-      { cardId: 'ja-c1', status: 'owned', quantity: 3 },
-    ] as never)
-    const req = new NextRequest('http://localhost/api/cards?game=OPCG&language=ZH_TW')
-    const res = await GET(req)
-    expect(res.status).toBe(200)
-    const data = await res.json()
-    expect(data.cards[0].collectionStatus).toEqual({ owned: 3, wanted: null })
-  })
 
-  it('OPCG+ZH_TW：collectible 卡（台灣限定）使用自身 id 查 collectionStatus', async () => {
-    mockAuth.mockResolvedValue({ user: { id: 'u1' } })
-    mockSingleCard({
-      id: 'tw-limited-c1', name: '台灣限定卡', imageSmall: '', rarity: null, cardNumber: 'P-136',
-      isCollectible: true, canonicalCardId: null, set: { name: 'ZH-TW Limited' },
-    })
-    vi.mocked(prisma.userCard.findMany).mockResolvedValue([
-      { cardId: 'tw-limited-c1', status: 'owned', quantity: 1 },
-    ] as never)
-    const req = new NextRequest('http://localhost/api/cards?game=OPCG&language=ZH_TW')
-    const res = await GET(req)
-    expect(res.status).toBe(200)
-    const data = await res.json()
-    expect(data.cards[0].collectionStatus).toEqual({ owned: 1, wanted: null })
-  })
 
   it('OPCG+JA：response 不包含 canonicalCard include', async () => {
     mockAuth.mockResolvedValue(null)
@@ -544,5 +458,40 @@ describe('GET /api/cards - enum cast 索引正確性（回歸守門）', () => {
     const res = await GET(req)
     const data = await res.json()
     expect(data.cards.map((c: { id: string }) => c.id)).toEqual(['c2', 'c1'])
+  })
+  // 🔴 這些斷言守住「回應可掛 public 交給 CDN」的前提：只要 collectionStatus 之類的
+  // user-specific 欄位回到這個端點，CDN 就會把某個使用者的收藏狀態餵給其他人。
+  it('回應不含任何 user-specific 欄位，且完全不查收藏資料', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'u1' } })
+    mockSingleCard({ id: 'card1', name: 'Pikachu', imageSmall: '', rarity: null, cardNumber: '001', set: { name: 'Base' } })
+    const res = await GET(new NextRequest('http://localhost/api/cards?game=PTCG'))
+    const data = await res.json()
+    expect(data.cards[0]).not.toHaveProperty('collectionStatus')
+    expect(prisma.userCard.findMany).not.toHaveBeenCalled()
+  })
+
+  it('登入與未登入的回應內容完全相同', async () => {
+    mockSingleCard({ id: 'card1', name: 'Pikachu', imageSmall: '', rarity: null, cardNumber: '001', set: { name: 'Base' } })
+    mockAuth.mockResolvedValue(null)
+    const anon = await (await GET(new NextRequest('http://localhost/api/cards?game=PTCG'))).json()
+    mockSingleCard({ id: 'card1', name: 'Pikachu', imageSmall: '', rarity: null, cardNumber: '001', set: { name: 'Base' } })
+    mockAuth.mockResolvedValue({ user: { id: 'u1' } })
+    const authed = await (await GET(new NextRequest('http://localhost/api/cards?game=PTCG'))).json()
+    expect(authed).toEqual(anon)
+  })
+
+  it('掛上可共享的 Cache-Control，且 s-maxage 與內層 unstable_cache 同壽命', async () => {
+    mockAuth.mockResolvedValue(null)
+    const res = await GET(new NextRequest('http://localhost/api/cards?game=PTCG'))
+    expect(res.headers.get('Cache-Control')).toBe(CARDS_CACHE_CONTROL)
+    expect(CARDS_CACHE_CONTROL).toMatch(/^public,/)
+    expect(CARDS_CACHE_CONTROL).toContain('s-maxage=60')
+  })
+
+  it('被限流時回 no-store，不讓 429 進共享快取', async () => {
+    mockLimit.mockResolvedValueOnce({ success: false })
+    const res = await GET(new NextRequest('http://localhost/api/cards?game=PTCG'))
+    expect(res.status).toBe(429)
+    expect(res.headers.get('Cache-Control')).toBe('no-store')
   })
 })
