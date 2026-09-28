@@ -1,5 +1,6 @@
 'use client'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { Check } from 'lucide-react'
 import { CardWithCollectionStatus } from '@/types/card'
@@ -24,6 +25,7 @@ const cardItemBase =
 
 export function CardItem({ card, onClick, href, selectable, selected, onToggleSelect }: CardItemProps) {
   const t = useTranslations('cards')
+  const router = useRouter()
   const displayImageSmall = !card.isCollectible && card.canonicalCard
     ? card.canonicalCard.imageSmall
     : card.imageSmall
@@ -81,6 +83,11 @@ export function CardItem({ card, onClick, href, selectable, selected, onToggleSe
       <Link
         href={href}
         data-testid="card-item"
+        // 🔴 viewport prefetch 關閉：格線一次帶入數十張卡，每張都預抓攔截 modal，實測是 Active CPU
+        // 最大宗（12h 4.3K 次）。改為「滑鼠移上去才預抓」——桌面在 hover→click 的空檔就抓完，手感不變；
+        // 觸控裝置沒有 hover，點擊時才發請求，但該路由已是 on-demand ISR、多為 CDN 命中。
+        prefetch={false}
+        onMouseEnter={selectable ? undefined : () => router.prefetch(href)}
         {...(selectable ? { 'data-selected': selected, 'aria-pressed': selected } : {})}
         onClick={selectable ? (e) => { e.preventDefault(); onToggleSelect?.(card) } : undefined}
         className={cn(
