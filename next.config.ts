@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
 import { version } from "./package.json";
+import { SECURITY_HEADERS } from "./src/lib/security-headers";
 
 const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 
@@ -18,6 +19,10 @@ const nextConfig: NextConfig = {
   // Next 的比對是「以 . 逐段」的萬用字元匹配（server/app-render/csrf-protection.js），
   // 故 192.168.*.* 可涵蓋整個私有網段；localhost 為內建預設、不需列出。
   allowedDevOrigins: ['192.168.*.*'],
+  // Baseline security headers on every route (CSP is Report-Only, see src/lib/security-headers.ts).
+  async headers() {
+    return [{ source: '/:path*', headers: SECURITY_HEADERS }];
+  },
   ...(CARD_PAGES_ORIGIN
     ? {
         async redirects() {
