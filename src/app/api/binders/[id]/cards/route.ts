@@ -171,14 +171,14 @@ export async function POST(request: Request, context: RouteContext) {
       })
 
       if (placement.fillSlotIds.length > 0) {
-        await Promise.all(
-          placement.fillSlotIds.map((slotId) =>
-            tx.binderSlot.update({
-              where: { id: slotId },
-              data: { cardId: typedCardId, status: typedStatus, displayCardId },
-            }),
-          ),
-        )
+        // 序列 await：interactive transaction 共用同一條連線，pg 不支援對同一連線並發下 query
+        // （pg@9 起會直接報錯，非僅 deprecation warning）。
+        for (const slotId of placement.fillSlotIds) {
+          await tx.binderSlot.update({
+            where: { id: slotId },
+            data: { cardId: typedCardId, status: typedStatus, displayCardId },
+          })
+        }
       }
 
       let updatedTotalPages: number | undefined
