@@ -31,7 +31,7 @@ describe('resolveOgImageFetch', () => {
   })
 
   it('Supabase Storage 絕對 URL 原樣直連、不帶 Referer', () => {
-    const upstream = 'https://xacmjvesdmlfpgjmauvr.supabase.co/storage/v1/object/public/card-images/ja/PMCG1/008.webp'
+    const upstream = 'https://test-project.supabase.co/storage/v1/object/public/card-images/ja/PMCG1/008.webp'
     const result = resolveOgImageFetch(upstream)
     expect(result).toEqual({ url: upstream, headers: {} })
   })
