@@ -70,13 +70,14 @@ export function CardSearchClient({ initialParams, initialOpen }: CardSearchClien
   // 時若同樣悄悄沿用舊列表，畫面會「停住幾秒才突然換一批卡」——因為 isPlaceholderData 為 true 時
   // isPending 恆為 false，原本的 isPending skeleton 判斷完全不會觸發。用 filterKey（不含 page）
   // 比對「畫面上的舊資料是不是屬於目前這組篩選條件」：篩選條件變了才顯示 skeleton，純換頁維持原本
-  // 無縫行為不受影響。
+  // 無縫行為不受影響。🔴 追蹤值必須是 state（讀 useState），不能是 ref——render 期間讀
+  // ref.current 違反 react-hooks/refs（refs 只能在 render 外讀寫，CI lint 會擋下）。
   const filterKey = `${filters.game}|${filters.language}|${filters.setId ?? ''}|${filters.q ?? ''}`
-  const resolvedFilterKeyRef = useRef(filterKey)
+  const [resolvedFilterKey, setResolvedFilterKey] = useState(filterKey)
   useEffect(() => {
-    if (!isPlaceholderData) resolvedFilterKeyRef.current = filterKey
+    if (!isPlaceholderData) setResolvedFilterKey(filterKey)
   }, [isPlaceholderData, filterKey])
-  const isFilterTransitioning = isPlaceholderData && filterKey !== resolvedFilterKeyRef.current
+  const isFilterTransitioning = isPlaceholderData && filterKey !== resolvedFilterKey
 
   // `open` 入口：網址一律只在第一次使用，用完立刻從網址移除（否則 router.back() 會回到仍帶
   // open 的網址、modal 就永遠關不掉）。用 ref 保證即使 initialOpen 沒變也只處理一次。
