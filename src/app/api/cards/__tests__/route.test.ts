@@ -494,4 +494,70 @@ describe('GET /api/cards - enum cast 索引正確性（回歸守門）', () => {
     expect(res.status).toBe(429)
     expect(res.headers.get('Cache-Control')).toBe('no-store')
   })
+
+  describe('分頁參數驗證', () => {
+    it('page 非數字回 400、no-store（原本 parseInt("abc") 靜默產生 NaN）', async () => {
+      mockAuth.mockResolvedValue(null)
+      const res = await GET(new NextRequest('http://localhost/api/cards?game=PTCG&page=abc'))
+      expect(res.status).toBe(400)
+      expect(res.headers.get('Cache-Control')).toBe('no-store')
+    })
+
+    it('page=0 回 400', async () => {
+      mockAuth.mockResolvedValue(null)
+      const res = await GET(new NextRequest('http://localhost/api/cards?game=PTCG&page=0'))
+      expect(res.status).toBe(400)
+    })
+
+    it('page=-1 回 400', async () => {
+      mockAuth.mockResolvedValue(null)
+      const res = await GET(new NextRequest('http://localhost/api/cards?game=PTCG&page=-1'))
+      expect(res.status).toBe(400)
+    })
+
+    it('pageSize=1.5 回 400', async () => {
+      mockAuth.mockResolvedValue(null)
+      const res = await GET(new NextRequest('http://localhost/api/cards?game=PTCG&pageSize=1.5'))
+      expect(res.status).toBe(400)
+    })
+
+    it('pageSize 非數字回 400', async () => {
+      mockAuth.mockResolvedValue(null)
+      const res = await GET(new NextRequest('http://localhost/api/cards?game=PTCG&pageSize=xyz'))
+      expect(res.status).toBe(400)
+    })
+
+    it('pageSize=200 維持既有 clamp 成 100（不改既有契約）', async () => {
+      mockAuth.mockResolvedValue(null)
+      const res = await GET(new NextRequest('http://localhost/api/cards?game=PTCG&pageSize=200'))
+      expect(res.status).toBe(200)
+      const data = await res.json()
+      expect(data.pageSize).toBe(100)
+    })
+
+    it('q 超過 100 字回 400 query too long', async () => {
+      mockAuth.mockResolvedValue(null)
+      const res = await GET(new NextRequest(`http://localhost/api/cards?game=PTCG&q=${'a'.repeat(101)}`))
+      expect(res.status).toBe(400)
+      const data = await res.json()
+      expect(data.error).toBe('query too long')
+    })
+
+    it('q 剛好 100 字仍合法', async () => {
+      mockAuth.mockResolvedValue(null)
+      const res = await GET(new NextRequest(`http://localhost/api/cards?game=PTCG&q=${'a'.repeat(100)}`))
+      expect(res.status).toBe(200)
+    })
+
+    it('合法 page/pageSize 回應結構不變、不含 collectionStatus', async () => {
+      mockAuth.mockResolvedValue(null)
+      mockSingleCard({ id: 'card1', name: 'Pikachu', imageSmall: '', rarity: null, cardNumber: '001', set: { name: 'Base' } })
+      const res = await GET(new NextRequest('http://localhost/api/cards?game=PTCG&page=2&pageSize=10'))
+      expect(res.status).toBe(200)
+      const data = await res.json()
+      expect(data.page).toBe(2)
+      expect(data.pageSize).toBe(10)
+      expect(data.cards[0]).not.toHaveProperty('collectionStatus')
+    })
+  })
 })

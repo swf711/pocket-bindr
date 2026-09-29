@@ -12,7 +12,13 @@ vi.mock('@/lib/rate-limit', () => ({
   getClientIp: () => '127.0.0.1',
 }))
 
-import { GET } from '../route'
+// unstable_cache 依 Next request-scoped 快取實作，在 Vitest（無 Next 伺服器）環境下直接透傳，
+// 讓測試聚焦於查詢與排序邏輯本身；快取行為另以下方「不重打 prisma」案例驗證呼叫次數語意。
+vi.mock('next/cache', () => ({
+  unstable_cache: vi.fn((fn: (...args: unknown[]) => unknown) => fn),
+}))
+
+import { GET, SETS_CACHE_CONTROL } from '../route'
 import { prisma } from '@/lib/prisma'
 
 // helper: 建立假的 cardSet 資料
@@ -35,10 +41,19 @@ function makeSet(overrides: {
 describe('GET /api/sets', () => {
   beforeEach(() => vi.clearAllMocks())
 
-  it('game 未傳入回傳 400', async () => {
+  it('game 未傳入回傳 400，且 no-store', async () => {
     const req = new NextRequest('http://localhost/api/sets')
     const res = await GET(req)
     expect(res.status).toBe(400)
+    expect(res.headers.get('Cache-Control')).toBe('no-store')
+  })
+
+  it('合法請求回傳 200 並帶上 SETS_CACHE_CONTROL（public、s-maxage=3600）', async () => {
+    vi.mocked(prisma.cardSet.findMany).mockResolvedValue([])
+    const req = new NextRequest('http://localhost/api/sets?game=PTCG')
+    const res = await GET(req)
+    expect(res.status).toBe(200)
+    expect(res.headers.get('Cache-Control')).toBe(SETS_CACHE_CONTROL)
   })
 
   it('language 未傳入時預設 EN', async () => {
@@ -137,5 +152,17 @@ describe('GET /api/sets', () => {
     )
     const data = await res.json()
     expect(data).toHaveProperty('groups')
+  })
+
+  it('查詢包在 unstable_cache 內，key 綁定 game/language', async () => {
+    const { unstable_cache } = await import('next/cache')
+    vi.mocked(prisma.cardSet.findMany).mockResolvedValue([])
+    const req = new NextRequest('http://localhost/api/sets?game=OPCG&language=JA')
+    await GET(req)
+    expect(unstable_cache).toHaveBeenCalledWith(
+      expect.any(Function),
+      ['sets', 'OPCG', 'JA'],
+      expect.objectContaining({ revalidate: 3600, tags: ['sets'] }),
+    )
   })
 })

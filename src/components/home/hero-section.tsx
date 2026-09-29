@@ -2,15 +2,15 @@ import Link from 'next/link'
 import { getTranslations } from 'next-intl/server'
 import { Button } from '@/components/ui/button'
 import { HeroBinder } from './hero-binder'
+import { HeroMyBindersButton } from './hero-my-binders-button'
 import type { ShowcaseCard } from '@/types/homepage'
 import Image from 'next/image'
 
 interface HeroSectionProps {
-  isLoggedIn: boolean
   cards: ShowcaseCard[]
 }
 
-export async function HeroSection({ isLoggedIn, cards }: HeroSectionProps) {
+export async function HeroSection({ cards }: HeroSectionProps) {
   const t = await getTranslations('home')
   return (
     <section
@@ -44,11 +44,7 @@ export async function HeroSection({ isLoggedIn, cards }: HeroSectionProps) {
               <Button variant="default" size="lg" className="h-14 px-6 rounded-3xl" asChild>
                 <Link href="/cards">{t('startSearch')}</Link>
               </Button>
-              {isLoggedIn && (
-                <Button variant="tertiary" size="lg" className="h-14 px-6 rounded-3xl" asChild>
-                  <Link href="/binders">{t('myBinders')}</Link>
-                </Button>
-              )}
+              <HeroMyBindersButton />
             </div>
             <p className="text-sm text-muted-foreground">
               {t('supports')}

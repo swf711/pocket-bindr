@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { toParamLocale } from '@/i18n/locale'
-import { parseCardPathParams, cardPublicUrl, cardOgImagePath, CARD_OG_LOCALE } from '@/lib/card-url'
+import { parseCardRouteParams, cardPublicUrl, cardOgImagePath, CARD_OG_LOCALE } from '@/lib/card-url'
 import { ogImageMetadata } from '@/lib/og'
 import { getPublicCardByTriple, getSameSetCards } from '@/lib/public-card'
 import { formatCardSetLabel, hasCardNumber } from '@/lib/card-display'
@@ -24,9 +24,11 @@ export function generateStaticParams() {
 
 async function loadCard(params: Promise<PageParams>) {
   const { game, language, externalId } = await params
-  const parsed = parseCardPathParams(game, language)
+  // 參數驗證先於 DB 查詢：不合法的 game/language/externalId 直接視為找不到卡（不合法值原本就
+  // 不會命中任何卡，此檢查只是省下不必要的查詢並收斂 ISR 快取的 key 空間）。
+  const parsed = parseCardRouteParams(game, language, externalId)
   if (!parsed) return null
-  return getPublicCardByTriple(parsed.game, parsed.language, decodeURIComponent(externalId))
+  return getPublicCardByTriple(parsed.game, parsed.language, parsed.externalId)
 }
 
 export async function generateMetadata({

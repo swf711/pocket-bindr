@@ -66,6 +66,18 @@ export function CardSearchClient({ initialParams, initialOpen }: CardSearchClien
   const total = data?.total ?? 0
   const totalPages = data?.totalPages ?? 0
 
+  // 換頁沿用既有「保留舊資料、無縫換頁」手感（keepPreviousData），但切換遊戲／語言／系列／搜尋字
+  // 時若同樣悄悄沿用舊列表，畫面會「停住幾秒才突然換一批卡」——因為 isPlaceholderData 為 true 時
+  // isPending 恆為 false，原本的 isPending skeleton 判斷完全不會觸發。用 filterKey（不含 page）
+  // 比對「畫面上的舊資料是不是屬於目前這組篩選條件」：篩選條件變了才顯示 skeleton，純換頁維持原本
+  // 無縫行為不受影響。
+  const filterKey = `${filters.game}|${filters.language}|${filters.setId ?? ''}|${filters.q ?? ''}`
+  const resolvedFilterKeyRef = useRef(filterKey)
+  useEffect(() => {
+    if (!isPlaceholderData) resolvedFilterKeyRef.current = filterKey
+  }, [isPlaceholderData, filterKey])
+  const isFilterTransitioning = isPlaceholderData && filterKey !== resolvedFilterKeyRef.current
+
   // `open` 入口：網址一律只在第一次使用，用完立刻從網址移除（否則 router.back() 會回到仍帶
   // open 的網址、modal 就永遠關不掉）。用 ref 保證即使 initialOpen 沒變也只處理一次。
   //
@@ -232,7 +244,7 @@ export function CardSearchClient({ initialParams, initialOpen }: CardSearchClien
               />
             </div>
 
-            {isPending ? (
+            {isPending || isFilterTransitioning ? (
               <CardGrid cards={[]} onCardClick={() => {}} loading />
             ) : isError ? (
               <div className="text-center py-12 text-destructive">

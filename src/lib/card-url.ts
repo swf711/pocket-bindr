@@ -61,6 +61,42 @@ export function parseCardPathParams(
   return { game, language }
 }
 
+/**
+ * `Card.externalId` 字元集：現有資料以英數字加 `._-` 為主，少數卡（如 Unown 系列）另含 `!`／`?`。
+ * 長度上限取現有最長值並留有餘裕。用於卡片路由參數驗證，收斂攔截 modal／獨立頁的 ISR key 空間
+ * （不合法值直接 404，不為垃圾網址產生新的快取條目）。
+ */
+export const MAX_EXTERNAL_ID_LENGTH = 64
+
+const EXTERNAL_ID_PATTERN = /^[A-Za-z0-9._!?-]+$/
+
+export function isPlausibleExternalId(raw: string): boolean {
+  return raw.length > 0 && raw.length <= MAX_EXTERNAL_ID_LENGTH && EXTERNAL_ID_PATTERN.test(raw)
+}
+
+/**
+ * 卡片路由三段參數（game/language/externalId）一次驗證，供攔截 modal 與獨立卡片頁共用。
+ * externalId 經 decodeURIComponent（失敗視為不合法，非 throw）+ isPlausibleExternalId 檢查。
+ */
+export function parseCardRouteParams(
+  gameParam: string,
+  languageParam: string,
+  externalIdRaw: string,
+): { game: Game; language: Language; externalId: string } | null {
+  const parsed = parseCardPathParams(gameParam, languageParam)
+  if (!parsed) return null
+
+  let externalId: string
+  try {
+    externalId = decodeURIComponent(externalIdRaw)
+  } catch {
+    return null
+  }
+  if (!isPlausibleExternalId(externalId)) return null
+
+  return { ...parsed, externalId }
+}
+
 /** card Language → Open Graph locale。與 src/lib/og.ts 的 OG_LOCALE（UI locale 鍵）不同鍵域，故獨立命名。 */
 export const CARD_OG_LOCALE: Record<Language, string> = {
   EN: 'en_US',

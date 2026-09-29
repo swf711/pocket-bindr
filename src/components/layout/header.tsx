@@ -30,7 +30,8 @@ export function Header() {
     >
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         <div className="flex items-center gap-6">
-          <Link href="/">
+          {/* prefetch=false：同理見 nav-items.ts 的首頁 prefetch 註解，logo 連結同樣連到 `/` */}
+          <Link href="/" prefetch={false}>
             <Image
               src="/logo-light-sm.svg"
               alt='logo'

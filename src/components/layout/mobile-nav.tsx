@@ -83,6 +83,7 @@ export function MobileNav({ isLoggedIn, username, image }: MobileNavProps) {
                 <SheetClose asChild key={item.href}>
                   <Link
                     href={item.href}
+                    prefetch={item.prefetch}
                     data-testid={`mobile-${item.testId}`}
                     aria-current={navAriaCurrent(item.href)}
                     className={navLinkClass(item.href)}
