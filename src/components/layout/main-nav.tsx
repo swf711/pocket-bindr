@@ -24,6 +24,7 @@ export function MainNav({ isLoggedIn }: MainNavProps) {
           <PendingLink
             key={item.href}
             href={item.href}
+            prefetch={item.prefetch}
             data-testid={item.testId}
             aria-current={active ? 'page' : undefined}
             className={cn(

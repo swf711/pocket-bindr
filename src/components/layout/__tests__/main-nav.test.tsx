@@ -5,9 +5,14 @@ import '@testing-library/jest-dom/vitest'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 
+const linkPropsByHref = new Map<string, Record<string, unknown>>()
+
 vi.mock('next/link', () => ({
   __esModule: true,
-  default: ({ children, ...props }: { children: React.ReactNode }) => <a {...props}>{children}</a>,
+  default: ({ children, ...props }: { children: React.ReactNode; href: string }) => {
+    linkPropsByHref.set(props.href, props)
+    return <a {...props}>{children}</a>
+  },
   useLinkStatus: () => ({ pending: false }),
 }))
 
@@ -19,7 +24,10 @@ import { usePathname } from 'next/navigation'
 import { MainNav } from '../main-nav'
 
 describe('MainNav active 樣式', () => {
-  beforeEach(() => vi.clearAllMocks())
+  beforeEach(() => {
+    vi.clearAllMocks()
+    linkPropsByHref.clear()
+  })
 
   it('當前 route 的 link 帶 active class 與 aria-current="page"', () => {
     vi.mocked(usePathname).mockReturnValue('/cards')
@@ -49,5 +57,12 @@ describe('MainNav active 樣式', () => {
     expect(screen.getByTestId('nav-cards')).toBeInTheDocument()
     expect(screen.queryByTestId('nav-binders')).not.toBeInTheDocument()
     expect(screen.queryByTestId('nav-collection')).not.toBeInTheDocument()
+  })
+
+  it('首頁連結 prefetch 明確傳為 false，其餘連結未覆寫（沿用 Link 預設）', () => {
+    vi.mocked(usePathname).mockReturnValue('/cards')
+    render(<MainNav isLoggedIn />)
+    expect(linkPropsByHref.get('/')?.prefetch).toBe(false)
+    expect(linkPropsByHref.get('/cards')?.prefetch).toBeUndefined()
   })
 })

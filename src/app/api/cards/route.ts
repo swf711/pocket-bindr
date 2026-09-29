@@ -1,5 +1,6 @@
 import { unstable_cache } from 'next/cache'
 import { NextRequest } from 'next/server'
+import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { parseLanguage } from '@/lib/language'
 import { Game, Language, Prisma } from '@prisma/client'
@@ -12,6 +13,16 @@ import { cardsSearchIpLimiter, getClientIp } from '@/lib/rate-limit'
 
 /** 公開快取：回應與使用者無關（見 handleGet 內說明），s-maxage 對齊內層 unstable_cache 的 revalidate。 */
 export const CARDS_CACHE_CONTROL = 'public, max-age=0, s-maxage=60, stale-while-revalidate=300'
+
+/**
+ * 分頁參數上限：非數字／非正整數一律 400（原本 `parseInt('abc')` 會得到 NaN，Math.max(1, NaN) 仍是
+ * NaN，靜默產生壞掉的 SQL LIMIT/OFFSET）。pageSize 超過上限維持既有 clamp 成 100 的契約，不改為 400
+ * （既有前端行為依賴此 clamp）。
+ */
+const MAX_SEARCH_QUERY_LENGTH = 100
+const MAX_PAGE_SIZE = 100
+
+const pageSchema = z.coerce.number().int().positive()
 
 export async function GET(req: NextRequest) {
   try {
@@ -125,19 +136,32 @@ async function handleGet(req: NextRequest) {
   const game = searchParams.get('game')
   const q = searchParams.get('q') ?? ''
   const setId = searchParams.get('setId') ?? ''
-  const pageNum = Math.max(1, parseInt(searchParams.get('page') ?? '1', 10))
-  const pageSizeNum = Math.min(100, Math.max(1, parseInt(searchParams.get('pageSize') ?? '20', 10)))
 
   const gameResult = gameSchema.safeParse(game)
   if (!gameResult.success) {
-    return Response.json({ error: 'game is required' }, { status: 400 })
+    return Response.json({ error: 'game is required' }, { status: 400, headers: { 'Cache-Control': 'no-store' } })
   }
   const validGame = gameResult.data
 
   const language = parseLanguage(searchParams.get('language'))
   if (!language) {
-    return Response.json({ error: 'language must be one of EN, JA, ZH_TW' }, { status: 400 })
+    return Response.json(
+      { error: 'language must be one of EN, JA, ZH_TW' },
+      { status: 400, headers: { 'Cache-Control': 'no-store' } },
+    )
   }
+
+  if (q.length > MAX_SEARCH_QUERY_LENGTH) {
+    return Response.json({ error: 'query too long' }, { status: 400, headers: { 'Cache-Control': 'no-store' } })
+  }
+
+  const pageResult = pageSchema.safeParse(searchParams.get('page') ?? '1')
+  const pageSizeResult = pageSchema.safeParse(searchParams.get('pageSize') ?? '20')
+  if (!pageResult.success || !pageSizeResult.success) {
+    return Response.json({ error: 'invalid pagination' }, { status: 400, headers: { 'Cache-Control': 'no-store' } })
+  }
+  const pageNum = pageResult.data
+  const pageSizeNum = Math.min(MAX_PAGE_SIZE, pageSizeResult.data)
 
   const { cards, total } = await fetchCardPage(validGame, language, q, setId, pageNum, pageSizeNum)
 

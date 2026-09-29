@@ -9,6 +9,35 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+    # 首頁改為 on-demand ISR 後（perf/homepage-isr-and-cache），`[locale]` layout 既有的
+    # generateStaticParams（三語）會讓 Next 在 `next build` 當下就實際渲染首頁一次——
+    # 首頁會查詢卡片資料，故 build 需要一個「可連線、schema 完整」的資料庫，即使沒有任何資料
+    # （首頁查詢在空資料下皆回傳空結果，不會拋錯）。與 e2e job 一樣起 ephemeral Postgres，
+    # 但不需種子資料，只需跑 migration 補齊 schema。
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: build
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/build
+      DIRECT_URL: postgresql://postgres:postgres@localhost:5432/build
+      DATABASE_SSL: "false"
+      AUTH_SECRET: ci-placeholder-secret
+      AUTH_URL: http://localhost:3000
+      AUTH_TRUST_HOST: "true"
+      LINK_STATE_SECRET: ci-placeholder
+      RESET_TOKEN_SECRET: ci-placeholder
+      UPSTASH_REDIS_REST_URL: http://localhost
+      UPSTASH_REDIS_REST_TOKEN: ci-placeholder
     steps:
       - uses: actions/checkout@v5
 
@@ -28,20 +57,11 @@ jobs:
       - name: Unit tests
         run: pnpm test
 
+      - name: Apply migrations
+        run: npx prisma migrate deploy
+
       - name: Build
         run: pnpm build
-        env:
-          # Placeholder values so build-time module init does not fail.
-          # No real services are contacted during build.
-          DATABASE_URL: postgresql://user:pass@localhost:5432/db
-          DIRECT_URL: postgresql://user:pass@localhost:5432/db
-          AUTH_SECRET: ci-placeholder-secret
-          AUTH_URL: http://localhost:3000
-          AUTH_TRUST_HOST: "true"
-          LINK_STATE_SECRET: ci-placeholder
-          RESET_TOKEN_SECRET: ci-placeholder
-          UPSTASH_REDIS_REST_URL: http://localhost
-          UPSTASH_REDIS_REST_TOKEN: ci-placeholder
 
   e2e:
     runs-on: ubuntu-latest

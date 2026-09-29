@@ -3,6 +3,8 @@ import {
   cardPath,
   cardOgImagePath,
   parseCardPathParams,
+  parseCardRouteParams,
+  isPlausibleExternalId,
   pathToLang,
   pathToGame,
   langToPath,
@@ -75,5 +77,66 @@ describe('card-url', () => {
     expect(cardOgImagePath({ game: 'PTCG', language: 'EN', externalId: 'a b' })).toBe(
       '/cards/ptcg/en/a%20b/opengraph-image',
     )
+  })
+
+  describe('isPlausibleExternalId', () => {
+    it('接受各種實際出現過的 externalId 形態', () => {
+      expect(isPlausibleExternalId('sv3-1')).toBe(true)
+      expect(isPlausibleExternalId('tw-123')).toBe(true)
+      expect(isPlausibleExternalId('OP01-001_p1')).toBe(true)
+      expect(isPlausibleExternalId('DON-TCG-677570')).toBe(true)
+      // Unown 系列含 !/? 的 externalId
+      expect(isPlausibleExternalId('ex10-!')).toBe(true)
+      expect(isPlausibleExternalId('ex10-?')).toBe(true)
+    })
+
+    it('拒絕空字串', () => {
+      expect(isPlausibleExternalId('')).toBe(false)
+    })
+
+    it('拒絕超過 64 字元', () => {
+      expect(isPlausibleExternalId('a'.repeat(65))).toBe(false)
+      expect(isPlausibleExternalId('a'.repeat(64))).toBe(true)
+    })
+
+    it('拒絕含 / 空白 < > % 等非法字元的值', () => {
+      expect(isPlausibleExternalId('a/b')).toBe(false)
+      expect(isPlausibleExternalId('a b')).toBe(false)
+      expect(isPlausibleExternalId('<script>')).toBe(false)
+      expect(isPlausibleExternalId('a%20b')).toBe(false)
+    })
+  })
+
+  describe('parseCardRouteParams', () => {
+    it('合法三段回 game/language/externalId（含 decode）', () => {
+      expect(parseCardRouteParams('ptcg', 'en', 'sv3-1')).toEqual({
+        game: 'PTCG',
+        language: 'EN',
+        externalId: 'sv3-1',
+      })
+      expect(parseCardRouteParams('opcg', 'en', 'OP12-014_p2')).toEqual({
+        game: 'OPCG',
+        language: 'EN',
+        externalId: 'OP12-014_p2',
+      })
+    })
+
+    it('game 不合法回 null', () => {
+      expect(parseCardRouteParams('nope', 'en', 'sv3-1')).toBeNull()
+    })
+
+    it('language 不合法回 null', () => {
+      expect(parseCardRouteParams('ptcg', 'nope', 'sv3-1')).toBeNull()
+    })
+
+    it('externalId decode 失敗（非法 % escape）回 null 不 throw', () => {
+      expect(() => parseCardRouteParams('ptcg', 'en', '%E0%A4%A')).not.toThrow()
+      expect(parseCardRouteParams('ptcg', 'en', '%E0%A4%A')).toBeNull()
+    })
+
+    it('externalId 過長或含非法字元回 null', () => {
+      expect(parseCardRouteParams('ptcg', 'en', 'a'.repeat(65))).toBeNull()
+      expect(parseCardRouteParams('ptcg', 'en', 'a/b')).toBeNull()
+    })
   })
 })
