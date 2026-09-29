@@ -174,32 +174,30 @@ export async function POST(request: Request, context: RouteContext) {
         throw new PageLimitExceededError(placement.remainingCapacity)
       }
 
-      await Promise.all(
-        Array.from(aggregated.entries()).map(([resolvedCardId, agg]) =>
-          tx.userCard.upsert({
-            where: { userId_cardId_status: { userId, cardId: resolvedCardId, status: typedStatus } },
-            create: {
-              userId,
-              cardId: resolvedCardId,
-              status: typedStatus,
-              quantity: agg.totalQuantity,
-              displayCardId: agg.displayCardId,
-            },
-            update: { quantity: { increment: agg.totalQuantity } },
-          }),
-        ),
-      )
+      // 序列 await：interactive transaction 共用同一條連線，pg 不支援對同一連線並發下 query
+      // （pg@9 起會直接報錯，非僅 deprecation warning）。
+      for (const [resolvedCardId, agg] of aggregated.entries()) {
+        await tx.userCard.upsert({
+          where: { userId_cardId_status: { userId, cardId: resolvedCardId, status: typedStatus } },
+          create: {
+            userId,
+            cardId: resolvedCardId,
+            status: typedStatus,
+            quantity: agg.totalQuantity,
+            displayCardId: agg.displayCardId,
+          },
+          update: { quantity: { increment: agg.totalQuantity } },
+        })
+      }
 
       if (placement.fillSlotIds.length > 0) {
-        await Promise.all(
-          placement.fillSlotIds.map((slotId, i) => {
-            const card = fillList[i]
-            return tx.binderSlot.update({
-              where: { id: slotId },
-              data: { cardId: card.cardId, status: card.status, displayCardId: card.displayCardId },
-            })
-          }),
-        )
+        for (const [i, slotId] of placement.fillSlotIds.entries()) {
+          const card = fillList[i]
+          await tx.binderSlot.update({
+            where: { id: slotId },
+            data: { cardId: card.cardId, status: card.status, displayCardId: card.displayCardId },
+          })
+        }
       }
 
       let updatedTotalPages: number | undefined =

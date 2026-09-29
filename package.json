@@ -1,6 +1,6 @@
 {
   "name": "pocket-bindr",
-  "version": "1.13.1",
+  "version": "1.13.2",
   "private": false,
   "license": "MIT",
   "author": "邵尉夫 Brian Shao",
@@ -38,6 +38,7 @@
     "@upstash/ratelimit": "^2.0.8",
     "@upstash/redis": "^1.38.0",
     "@vercel/analytics": "^2.0.1",
+    "@vercel/functions": "^3.9.9",
     "@vercel/speed-insights": "^2.0.0",
     "bcryptjs": "^3.0.3",
     "class-variance-authority": "^0.7.1",
@@ -72,6 +73,7 @@
     "@types/bcryptjs": "^3.0.0",
     "@types/node": "^20.19.42",
     "@types/pdf-parse": "^1.1.5",
+    "@types/pg": "8.20.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@vitejs/plugin-react": "^6.0.2",
