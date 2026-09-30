@@ -15,7 +15,7 @@
   UI 語言與卡牌資料語言（EN/JA/ZH_TW，屬卡牌身份的一部分）是兩套獨立系統。
 - **渲染與快取**：公開的卡片獨立頁採 on-demand ISR——不預先產生，首次請求時渲染並由 CDN 快取一天，
   每種 UI 語言各一份；使用者相關狀態（登入態、收藏狀態）一律在瀏覽器端補上（Header 以 `useSession()` 取得
-  登入態），讓頁面本體可被快取。首頁、搜尋頁與登入後頁面維持每請求渲染。
+  登入態），讓頁面本體可被快取。首頁同為 ISR（每小時重新產生）；搜尋頁與登入後頁面維持每請求渲染。
   卡片頁另有一條可選的靜態化路徑：env `NEXT_PUBLIC_CARD_PAGES_ORIGIN` 已設時，`/cards/{game}/
   {language}/{externalId}` 會 301 轉址到 Cloudflare R2 自訂網域（純 HTML、GitHub Actions 每日產生，
   見下方「靜態卡片頁子網域」），Vercel 完全不再渲染這批頁面；未設此 env 則維持上述 ISR 行為，
@@ -72,6 +72,12 @@
 - **Rate limiting**：寫入端點、匿名讀取端點（卡牌搜尋/詳情/系列列表）與圖片代理皆經 Upstash Redis 限流
   （見 `src/lib/rate-limit.ts`）；圖片代理另檢查來源 Referer/Origin 防止外站盜連。
 
+- **安全 header**：全站回應帶 `X-Content-Type-Options`、`Referrer-Policy`、`X-Frame-Options`、`Permissions-Policy`，
+  以及僅回報、不阻擋的 `Content-Security-Policy-Report-Only`（定義於 `src/lib/security-headers.ts`）。CSP 尚未強制執行，
+  因為 Next.js 與主題切換的 inline script 需要 nonce 或 hash 方案才能安全收緊。
+- **伺服器錯誤通報**：production 的未處理伺服器錯誤經 `instrumentation.ts` 節流後推送到 Discord webhook（選填，
+  `DISCORD_WEBHOOK_URL`）。通報只含路由樣板、HTTP method、錯誤類別與訊息首行，不含網址、header、cookie 或請求內容。
+
 > 安全機制的強度建立在環境變數中的密鑰，而非演算法的隱蔽性——公開設計不削弱安全性。
 
 ## 受保護路由
@@ -93,6 +99,14 @@
 `NEXT_PUBLIC_CARD_PAGES_ORIGIN` 作總開關（build-time），未設時本機/主站行為完全不受影響。
 落地頁提供「在 PocketBindr 開啟」按鈕，導回主站 `/cards?game=&language=&open=<externalId>` 開出
 互動版 Drawer。詳見 `tools/card-pages/README.md`。
+
+## 卡圖代理（`workers/image-proxy/`，混合架構）
+
+卡圖來自第三方站台，不自存、不轉檔。`getCardImageUrl` 依圖片來源 host 分流：白名單內的 host 走
+Cloudflare Worker 暖存代理（純 passthrough，僅在 CDN 邊緣暫時快取），其餘走站內 `/api/proxy-image`
+（Vercel route，含限流與 Referer/Origin 防盜連）。分流由兩個 build-time env 控制
+（`NEXT_PUBLIC_IMAGE_PROXY_ORIGIN`、`NEXT_PUBLIC_IMAGE_PROXY_WORKER_HOSTS`，白名單依實測相容性決定）；
+未設時全部回退 `/api/proxy-image`。兩條路徑長期並存。
 
 ## 命名規範
 

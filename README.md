@@ -108,6 +108,7 @@ pnpm dev
 | `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY`                       | Storage 金鑰：本機維護腳本 + runtime 頭像上傳皆用                                                                                            | 選填             |
 | `NEXT_PUBLIC_IMAGE_PROXY_ORIGIN` / `_WORKER_HOSTS`                 | 官網卡圖走 Cloudflare Worker 暖存 proxy 的分流設定；未設時全部回退 `/api/proxy-image`                                                        | 選填             |
 | `NEXT_PUBLIC_CARD_PAGES_ORIGIN`                                    | 靜態卡片頁子網域總開關（build-time）；未設時卡片頁維持 Vercel 動態渲染，行為零變                                                              | 選填             |
+| `DISCORD_WEBHOOK_URL`                                              | 伺服器未處理錯誤的通報 webhook（僅 production 生效，節流後推送，不含 URL／cookie 等個資）；未設時不通報                                            | 選填             |
 
 > ⚠️ `.env` / `.env.local` 已被 `.gitignore` 排除，請勿提交任何真實金鑰。
 
@@ -145,6 +146,9 @@ E2E 以 `pnpm build && pnpm start` 啟動正式 build（非 dev mode），並需
 `.github/workflows/card-pages.yml` 每日以 GitHub Actions 產生純 HTML 並同步到 R2 bucket，經自訂網域
 `cards.pocketbindr.app` 服務；設定 `NEXT_PUBLIC_CARD_PAGES_ORIGIN` 後 Vercel 端會把舊網址 301 轉去該
 子網域。此功能為選填，未設定時卡片頁維持一般 Vercel 動態渲染。
+
+卡圖另可選擇性經 Cloudflare Worker 暖存代理（[`workers/image-proxy/`](./workers/image-proxy/)）服務，
+以 `NEXT_PUBLIC_IMAGE_PROXY_ORIGIN` / `_WORKER_HOSTS` 控制；未設定時全部走站內 `/api/proxy-image`。
 
 ## 貢獻
 
