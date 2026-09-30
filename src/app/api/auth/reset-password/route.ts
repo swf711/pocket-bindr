@@ -2,9 +2,16 @@ import { prisma } from '@/lib/prisma'
 import { verifyResetToken } from '@/lib/reset-password'
 import bcrypt from 'bcryptjs'
 import { resetPasswordSchema } from '@/lib/schemas/auth'
+import { resetPasswordIpLimiter } from '@/lib/rate-limit'
 
 export async function POST(request: Request) {
   try {
+    const ip = (request.headers.get('x-forwarded-for') ?? '127.0.0.1').split(',')[0].trim()
+    const ipResult = await resetPasswordIpLimiter.limit(ip)
+    if (!ipResult.success) {
+      return Response.json({ error: 'RATE_LIMITED' }, { status: 429 })
+    }
+
     const body = await request.json() as { token?: unknown; newPassword?: unknown }
 
     // 依原本順序逐欄位驗證：token 型別 → token 加解密驗證 → newPassword 強度，

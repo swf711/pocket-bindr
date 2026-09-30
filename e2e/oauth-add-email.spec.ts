@@ -52,10 +52,13 @@ test.describe('純 OAuth 使用者自助補填 email', () => {
     }
   })
 
-  test('email 已被他人使用 → verify 顯示已被使用錯誤', async ({ page }) => {
+  test('email 已被他人使用 → verify 顯示已被使用錯誤', async ({ page, browser }) => {
     const { userId: takenUserId } = await createOAuthUserNoEmail('e2eaddemail3taken', 'discord', 'discord-add-email-3taken')
     const { userId } = await createOAuthUserNoEmail('e2eaddemail3', 'discord', 'discord-add-email-3')
     const takenEmail = 'e2e-add-email-3-taken@pocketbindr.com'
+    // Second account gets its own browser context: switching accounts inside one context lets an
+    // in-flight router.refresh() response from the first session overwrite the new session cookie.
+    const otherContext = await browser.newContext({ extraHTTPHeaders: forwardedHeaders(TEST_IP) })
     try {
       // 先讓另一帳號真的持有這個 email（模擬 TOCTOU 中間被搶走的情境）。
       const takenToken = createValidEmailVerifyToken(takenUserId, takenEmail)
@@ -63,15 +66,17 @@ test.describe('純 OAuth 使用者自助補填 email', () => {
       await page.goto(`/verify-email?token=${encodeURIComponent(takenToken)}`)
       await expect(page.getByRole('heading', { name: 'Email 已驗證' })).toBeVisible()
 
-      // 換第二個帳號拿同一個 email 簽 token 去 verify。
+      // 第二個帳號（獨立 context）拿同一個 email 簽 token 去 verify。
+      const otherPage = await otherContext.newPage()
       const conflictToken = createValidEmailVerifyToken(userId, takenEmail)
-      await loginAsOAuthUserById(page, userId, 'e2eaddemail3')
-      await page.goto(`/verify-email?token=${encodeURIComponent(conflictToken)}`)
-      await expect(page.getByTestId('verify-email-error-alert')).toContainText('已被其他帳號使用')
+      await loginAsOAuthUserById(otherPage, userId, 'e2eaddemail3')
+      await otherPage.goto(`/verify-email?token=${encodeURIComponent(conflictToken)}`)
+      await expect(otherPage.getByTestId('verify-email-error-alert')).toContainText('已被其他帳號使用')
 
       const dbEmail = await getUserEmailById(userId)
       expect(dbEmail).toBeNull()
     } finally {
+      await otherContext.close()
       await deleteUserById(userId)
       await deleteUserById(takenUserId)
     }

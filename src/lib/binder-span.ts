@@ -295,11 +295,6 @@ export async function placeSpanGroupAt(
   })
 }
 
-/** 群組成員數 = cols × rows；用於容量估算與資料完整性檢查。 */
-export function spanSlotCount(layout: SpanLayout): number {
-  return layout.cols * layout.rows
-}
-
 /**
  * 查出某張卡的自然跨格佈局，並先以格線尺寸過濾——放不下的格線（如 grid_1x2 只有 1 欄）
  * 直接回 null，讓呼叫端走既有單格路徑，不必等到放置階段才回退。

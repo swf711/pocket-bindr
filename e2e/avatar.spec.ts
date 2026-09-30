@@ -2,7 +2,8 @@
 // (writes to the `avatars` bucket + User.image — see docs/TECH_DEBT.md if CI lacks Supabase).
 import { test, expect } from './helpers/test'
 import { getTestUser, loginAs } from './helpers/auth'
-import { clearUserAvatar } from './helpers/db'
+import { clearUserAvatar, clearAvatarRateLimit } from './helpers/db'
+import { uniqueTestIp, forwardedHeaders } from './helpers/rate-limit-ip'
 
 const USER = getTestUser('avatar')
 
@@ -11,6 +12,13 @@ const TINY_PNG_BASE64 =
   'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII='
 
 test.describe('頭像上傳', () => {
+  test.use({ extraHTTPHeaders: forwardedHeaders(uniqueTestIp()) })
+
+  // The per-user window is keyed by a stable id and accumulates across reruns.
+  test.beforeAll(async () => {
+    await clearAvatarRateLimit(USER.email)
+  })
+
   test.beforeEach(async ({ page }) => {
     await loginAs(page, USER)
     await page.goto('/settings')

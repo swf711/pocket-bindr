@@ -127,6 +127,26 @@ export const reportUserLimiter = new Ratelimit({
   prefix: rlPrefix('rl:report:user'),
 })
 
+// Reset password (POST /api/auth/reset-password): 10/15min per IP (guards bcrypt cost, the token itself is HMAC-signed)
+export const resetPasswordIpLimiter = new Ratelimit({
+  redis,
+  limiter: Ratelimit.slidingWindow(10, '15 m'),
+  prefix: rlPrefix('rl:reset-password:ip'),
+})
+
+// Avatar upload (POST /api/user/avatar): 20/hr per IP, 10/hr per userId
+export const avatarIpLimiter = new Ratelimit({
+  redis,
+  limiter: Ratelimit.slidingWindow(20, '60 m'),
+  prefix: rlPrefix('rl:avatar:ip'),
+})
+
+export const avatarUserLimiter = new Ratelimit({
+  redis,
+  limiter: Ratelimit.slidingWindow(10, '60 m'),
+  prefix: rlPrefix('rl:avatar:user'),
+})
+
 // Batch add cards to binder (POST /api/binders/[id]/cards/batch): 40/min per IP, 20/min per userId
 export const batchAddIpLimiter = new Ratelimit({
   redis,

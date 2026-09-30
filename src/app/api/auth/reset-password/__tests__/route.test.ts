@@ -8,6 +8,11 @@ vi.mock('@/lib/prisma', () => ({
   },
 }))
 
+const mockIpLimit = vi.fn()
+vi.mock('@/lib/rate-limit', () => ({
+  resetPasswordIpLimiter: { limit: (...args: unknown[]) => mockIpLimit(...args) },
+}))
+
 vi.mock('bcryptjs', () => ({
   default: {
     hash: vi.fn(async () => '$2b$12$newhash'),
@@ -34,7 +39,17 @@ function makeRequest(body: unknown) {
 describe('POST /api/auth/reset-password', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mockIpLimit.mockResolvedValue({ success: true })
     vi.mocked(prisma.user.update).mockResolvedValue(MOCK_USER as never)
+  })
+
+  it('IP 超限 → 429 RATE_LIMITED，且不做任何 DB／bcrypt 工作', async () => {
+    mockIpLimit.mockResolvedValue({ success: false })
+    const res = await POST(makeRequest({ token: 'x', newPassword: 'newpassword1' }))
+    expect(res.status).toBe(429)
+    expect(await res.json()).toEqual({ error: 'RATE_LIMITED' })
+    expect(prisma.user.findUnique).not.toHaveBeenCalled()
+    expect(bcrypt.hash).not.toHaveBeenCalled()
   })
 
   it('有效 token + 合格密碼 → 200 success，DB 更新', async () => {

@@ -25,23 +25,3 @@ export function subscribeCardNavList(listener: () => void): () => void {
 export function getCardNavListSnapshot(): CardWithCollectionStatus[] {
   return cardNavList
 }
-
-export interface CardNavNeighbors {
-  cards: CardWithCollectionStatus[]
-  index: number
-  total: number
-}
-
-/** store 內以 (game, language, externalId) 定位當前卡；找不到（store 空或不在當頁列表）回 null。 */
-export function getCardNavNeighbors(
-  game: string,
-  language: string,
-  externalId: string,
-): CardNavNeighbors | null {
-  if (cardNavList.length === 0) return null
-  const index = cardNavList.findIndex(
-    (c) => c.game === game && c.language === language && c.externalId === externalId,
-  )
-  if (index === -1) return null
-  return { cards: cardNavList, index, total: cardNavList.length }
-}
