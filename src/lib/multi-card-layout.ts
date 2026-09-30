@@ -37,9 +37,6 @@ export interface SpanLayout {
   rotation: SpanRotation
 }
 
-/** 群組成員上限 = 最大的 cols×rows（V-UNION 2×2）。 */
-export const MAX_SPAN_SLOTS = 4
-
 /**
  * 卡片的自然跨格佈局；非複數卡回 null。
  *

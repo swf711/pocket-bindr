@@ -1,5 +1,6 @@
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { avatarIpLimiter, avatarUserLimiter } from '@/lib/rate-limit'
 import { ensureAvatarBucket, uploadAvatar, deleteAvatar } from '@/lib/avatar-storage'
 
 const MAX_AVATAR_BYTES = 5 * 1024 * 1024
@@ -10,6 +11,15 @@ export async function POST(request: Request) {
     const session = await auth()
     if (!session?.user?.id) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const ip = (request.headers.get('x-forwarded-for') ?? '127.0.0.1').split(',')[0].trim()
+    const [ipResult, userResult] = await Promise.all([
+      avatarIpLimiter.limit(ip),
+      avatarUserLimiter.limit(session.user.id),
+    ])
+    if (!ipResult.success || !userResult.success) {
+      return Response.json({ error: 'RATE_LIMITED' }, { status: 429 })
     }
 
     const formData = await request.formData()

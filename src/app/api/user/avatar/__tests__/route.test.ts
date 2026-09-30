@@ -13,6 +13,13 @@ vi.mock('@/lib/auth', () => ({
   auth: () => mockAuth(),
 }))
 
+const mockIpLimit = vi.fn()
+const mockUserLimit = vi.fn()
+vi.mock('@/lib/rate-limit', () => ({
+  avatarIpLimiter: { limit: (...args: unknown[]) => mockIpLimit(...args) },
+  avatarUserLimiter: { limit: (...args: unknown[]) => mockUserLimit(...args) },
+}))
+
 const mockEnsureAvatarBucket = vi.fn()
 const mockUploadAvatar = vi.fn()
 const mockDeleteAvatar = vi.fn()
@@ -37,6 +44,8 @@ function makeFormDataRequest(file: File | null): Request {
 describe('POST /api/user/avatar', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mockIpLimit.mockResolvedValue({ success: true })
+    mockUserLimit.mockResolvedValue({ success: true })
     mockEnsureAvatarBucket.mockResolvedValue(undefined)
     mockUploadAvatar.mockResolvedValue('https://example.supabase.co/storage/v1/object/public/avatars/user-1.webp?v=123')
   })
@@ -46,6 +55,19 @@ describe('POST /api/user/avatar', () => {
     const file = new File(['x'], 'avatar.webp', { type: 'image/webp' })
     const res = await POST(makeFormDataRequest(file))
     expect(res.status).toBe(401)
+  })
+
+  it.each([
+    ['IP', () => mockIpLimit.mockResolvedValue({ success: false })],
+    ['user', () => mockUserLimit.mockResolvedValue({ success: false })],
+  ])('%s 維度超限回傳 429 且不上傳', async (_name, trip) => {
+    mockAuth.mockResolvedValue({ user: { id: 'user-1' } })
+    trip()
+    const file = new File(['x'], 'avatar.webp', { type: 'image/webp' })
+    const res = await POST(makeFormDataRequest(file))
+    expect(res.status).toBe(429)
+    expect(await res.json()).toEqual({ error: 'RATE_LIMITED' })
+    expect(mockUploadAvatar).not.toHaveBeenCalled()
   })
 
   it('缺少檔案回傳 400 AVATAR_INVALID', async () => {
