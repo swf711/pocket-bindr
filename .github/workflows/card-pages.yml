@@ -14,6 +14,15 @@ on:
         options:
           - dry-run
           - apply
+      indexnow:
+        description: "IndexNow 推送範圍：changed（只推本次新增/變動的卡片頁）、all（全量回填）、off"
+        required: true
+        default: changed
+        type: choice
+        options:
+          - changed
+          - all
+          - "off"
 
 permissions:
   contents: read
@@ -68,15 +77,18 @@ jobs:
           R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
           R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
           R2_BUCKET: ${{ secrets.R2_BUCKET }}
+          # 未設時產生器自動略過 IndexNow（不影響頁面同步）。
+          INDEXNOW_KEY: ${{ secrets.INDEXNOW_KEY }}
         run: |
           set -euo pipefail
           # schedule 觸發（每日排程）無 inputs，預設等同 apply（每日全量產生本就是目的）；
           # workflow_dispatch 手動觸發時依使用者選擇的 mode。
           MODE="${{ inputs.mode || 'apply' }}"
+          INDEXNOW_MODE="${{ inputs.indexnow || 'changed' }}"
           if [ "$MODE" = "apply" ]; then
-            npx tsx tools/card-pages/generate.ts --apply
+            npx tsx tools/card-pages/generate.ts --apply --indexnow="$INDEXNOW_MODE"
           else
-            npx tsx tools/card-pages/generate.ts
+            npx tsx tools/card-pages/generate.ts --indexnow="$INDEXNOW_MODE"
           fi
 
       - name: Notify on failure (Resend)

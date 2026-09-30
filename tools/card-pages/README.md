@@ -18,6 +18,8 @@ tools/card-pages/
   render.ts     renderCardPage()：純字串模板產出一頁 HTML
   css.ts        extractThemeTokens()：從 src/app/globals.css 抽色彩 token
   sync.ts       objectKeyFor() / planSync() / assertSafeRemoval()
+  seo.ts        robots.txt / sitemap 產出，cardPageUrl()（對外網址單一來源）
+  indexnow.ts   IndexNow 推送（fail-open，失敗不影響同步）
   r2.ts         R2（S3 相容 API）client 封裝
   messages.ts   三語文案（use-intl/core，不經 next-intl 的 React provider）
 ```
@@ -30,6 +32,21 @@ tools/card-pages/
   會拿到與該系列其他長尾卡相同的 6 張連結，這是刻意的簡化，換取零 N+1 查詢。
 - 排序刻意用 SQL（`ORDER BY`）而非撈回 JS 後 `Array.sort`：JS 字串排序與 Postgres collation
   可能不一致，兩處排序結果不一致會讓「同系列其他卡」與卡冊/搜尋頁看到的順序對不上。
+
+## 對外網址與 R2 key 是兩種形式
+
+- **R2 物件 key**（`objectKeyFor`）刻意用**解碼後**的 externalId——Cloudflare 會先解碼請求路徑再對 key。
+- **對外網址**（sitemap、IndexNow、canonical）一律經 `cardPageUrl` → `cardPublicPath`，externalId 已編碼。
+  不可拿 R2 key 直接拼網址：含 `?` 的 externalId 會被當成 query 起點。
+
+## IndexNow
+
+- 設定 GitHub secret `INDEXNOW_KEY`（8–128 個英數字或 `-`）後啟用；未設時完全略過。
+- 產生器會把 `{key}.txt`（內容＝key）一併同步到子網域根目錄，作為協定要求的所有權驗證檔。
+- 推送範圍：`--indexnow=changed`（預設，只推本次新增或內容變動的卡片頁）、`--indexnow=all`
+  （全量回填，首次啟用時手動觸發一次）、`--indexnow=off`。只在 `--apply` 上傳完成後推送；
+  dry-run 只印出將推送的筆數。
+- 推送失敗只記 warning，不讓 workflow 失敗。IndexNow 由 Bing／Yandex 採用，Google 不支援。
 
 ## 首次設定
 

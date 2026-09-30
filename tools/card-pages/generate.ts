@@ -13,6 +13,19 @@ import { extractThemeTokens } from './css'
 import { objectKeyFor, planSync, assertSafeRemoval } from './sync'
 import { createR2Client, listRemoteObjects, md5Hex, deleteObjects } from './r2'
 import { uploadAll } from './upload'
+import {
+  cardPageUrl,
+  buildSubdomainRobotsTxt,
+  buildSubdomainSitemapIndex,
+  buildSubdomainUrlSet,
+} from './seo'
+import {
+  parseIndexNowMode,
+  isValidIndexNowKey,
+  indexNowKeyObjectKey,
+  buildIndexNowPayloads,
+  submitIndexNow,
+} from './indexnow'
 
 const SAME_SET_FETCH_LIMIT = 7
 const SAME_SET_DISPLAY_LIMIT = 6
@@ -27,6 +40,11 @@ if (!CARD_PAGES_ORIGIN) {
 }
 
 const APPLY = process.argv.includes('--apply')
+const INDEXNOW_MODE = parseIndexNowMode(process.argv)
+const INDEXNOW_KEY = process.env.INDEXNOW_KEY || undefined
+if (INDEXNOW_KEY && !isValidIndexNowKey(INDEXNOW_KEY)) {
+  throw new Error('INDEXNOW_KEY 格式不符（須為 8–128 個英數字或 -）')
+}
 const PREVIEW_DIR = join(process.cwd(), 'tools/card-pages/.preview')
 const PREVIEW_SAMPLE_SIZE = 8
 
@@ -63,29 +81,6 @@ function toSameSetRow(card: PublicCardRow): SameSetCardRow {
   }
 }
 
-function buildSubdomainRobotsTxt(): string {
-  return `User-agent: *\nAllow: /\nSitemap: ${CARD_PAGES_ORIGIN}/sitemap.xml\n`
-}
-
-function xmlEscape(value: string): string {
-  return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-}
-
-function buildSubdomainSitemapIndex(chunkCount: number): string {
-  const entries = Array.from(
-    { length: chunkCount },
-    (_, i) => `  <sitemap>\n    <loc>${xmlEscape(`${CARD_PAGES_ORIGIN}/sitemaps/cards-${i}.xml`)}</loc>\n  </sitemap>`,
-  ).join('\n')
-  return `<?xml version="1.0" encoding="UTF-8"?>\n<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${entries}\n</sitemapindex>`
-}
-
-function buildSubdomainUrlSet(paths: readonly string[]): string {
-  const urls = paths
-    .map(p => `  <url>\n    <loc>${xmlEscape(`${CARD_PAGES_ORIGIN}${p}`)}</loc>\n  </url>`)
-    .join('\n')
-  return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>`
-}
-
 async function main() {
   console.log(`[card-pages] 模式：${APPLY ? 'apply' : 'dry-run'}`)
 
@@ -104,6 +99,7 @@ async function main() {
   console.log(`[card-pages] 卡片數：${allCards.length}`)
 
   const local = new Map<string, string>() // key -> html content
+  const urlByCardKey = new Map<string, string>() // R2 key -> public (encoded) URL
   const md5ByKey = new Map<string, string>()
 
   for (const card of allCards) {
@@ -123,22 +119,29 @@ async function main() {
     const html = renderCardPage({ card, sameSet, locale, css, breadcrumbItems, jsonLd })
 
     const key = objectKeyFor(card)
+    urlByCardKey.set(key, cardPageUrl(CARD_PAGES_ORIGIN!, card))
     local.set(key, html)
     md5ByKey.set(key, md5Hex(html))
   }
 
   const chunkCount = Math.max(1, Math.ceil(allCards.length / SITEMAP_CHUNK_SIZE))
   const cardKeysSorted = [...local.keys()].sort()
-  local.set('robots.txt', buildSubdomainRobotsTxt())
-  local.set('sitemap.xml', buildSubdomainSitemapIndex(chunkCount))
+  local.set('robots.txt', buildSubdomainRobotsTxt(CARD_PAGES_ORIGIN!))
+  local.set('sitemap.xml', buildSubdomainSitemapIndex(CARD_PAGES_ORIGIN!, chunkCount))
   for (let i = 0; i < chunkCount; i++) {
-    const chunkPaths = cardKeysSorted
+    const chunkUrls = cardKeysSorted
       .slice(i * SITEMAP_CHUNK_SIZE, (i + 1) * SITEMAP_CHUNK_SIZE)
-      .map(key => `/${key}`)
-    local.set(`sitemaps/cards-${i}.xml`, buildSubdomainUrlSet(chunkPaths))
+      .map(key => urlByCardKey.get(key)!)
+    local.set(`sitemaps/cards-${i}.xml`, buildSubdomainUrlSet(chunkUrls))
   }
   for (const key of ['robots.txt', 'sitemap.xml', ...Array.from({ length: chunkCount }, (_, i) => `sitemaps/cards-${i}.xml`)]) {
     md5ByKey.set(key, md5Hex(local.get(key)!))
+  }
+
+  if (INDEXNOW_KEY) {
+    const keyObject = indexNowKeyObjectKey(INDEXNOW_KEY)
+    local.set(keyObject, INDEXNOW_KEY)
+    md5ByKey.set(keyObject, md5Hex(INDEXNOW_KEY))
   }
 
   const assetFiles = [
@@ -182,7 +185,9 @@ async function main() {
 
   assertSafeRemoval(plan.remove, local.size)
 
+  const indexNowUrls = pickIndexNowUrls(plan.upload, urlByCardKey)
   if (!APPLY) {
+    console.log(`[card-pages] IndexNow（${describeIndexNow()}）：將推送 ${indexNowUrls.length} 筆`)
     await prisma.$disconnect()
     return
   }
@@ -191,7 +196,29 @@ async function main() {
   await deleteObjects(client, bucket!, plan.remove)
 
   console.log('[card-pages] 上傳完成')
+
+  if (INDEXNOW_KEY && indexNowUrls.length > 0) {
+    const result = await submitIndexNow(buildIndexNowPayloads(CARD_PAGES_ORIGIN!, INDEXNOW_KEY, indexNowUrls))
+    console.log(`[card-pages] IndexNow（${INDEXNOW_MODE}）：成功 ${result.submitted}、失敗 ${result.failed}`)
+  } else {
+    console.log(`[card-pages] IndexNow（${describeIndexNow()}）：無需推送`)
+  }
   await prisma.$disconnect()
+}
+
+function describeIndexNow(): string {
+  if (!INDEXNOW_KEY) return '未設定 INDEXNOW_KEY，略過'
+  return INDEXNOW_MODE
+}
+
+/** Card pages only (never robots/sitemaps/assets/key file); `all` resubmits every card page. */
+function pickIndexNowUrls(uploadKeys: readonly string[], urlByCardKey: Map<string, string>): string[] {
+  if (!INDEXNOW_KEY || INDEXNOW_MODE === 'off') return []
+  if (INDEXNOW_MODE === 'all') return [...urlByCardKey.values()]
+  return uploadKeys.flatMap(key => {
+    const url = urlByCardKey.get(key)
+    return url ? [url] : []
+  })
 }
 
 main().catch(err => {
