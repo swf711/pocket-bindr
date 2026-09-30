@@ -24,8 +24,8 @@ const input: ServerErrorInput = {
 
 describe('isAlertingEnabled', () => {
   it('僅 production 且有 webhook URL 才啟用', () => {
-    expect(isAlertingEnabled({ VERCEL_ENV: 'production', ERROR_ALERT_WEBHOOK_URL: 'https://x' })).toBe(true)
-    expect(isAlertingEnabled({ VERCEL_ENV: 'preview', ERROR_ALERT_WEBHOOK_URL: 'https://x' })).toBe(false)
+    expect(isAlertingEnabled({ VERCEL_ENV: 'production', DISCORD_WEBHOOK_URL: 'https://x' })).toBe(true)
+    expect(isAlertingEnabled({ VERCEL_ENV: 'preview', DISCORD_WEBHOOK_URL: 'https://x' })).toBe(false)
     expect(isAlertingEnabled({ VERCEL_ENV: 'production' })).toBe(false)
     expect(isAlertingEnabled({})).toBe(false)
   })
@@ -69,7 +69,7 @@ describe('reportServerError', () => {
     vi.clearAllMocks()
     vi.stubGlobal('fetch', fetchMock)
     vi.stubEnv('VERCEL_ENV', 'production')
-    vi.stubEnv('ERROR_ALERT_WEBHOOK_URL', 'https://discord.example/webhook')
+    vi.stubEnv('DISCORD_WEBHOOK_URL', 'https://discord.example/webhook')
     mockSet.mockResolvedValue('OK')
     fetchMock.mockResolvedValue({ ok: true })
   })
@@ -96,7 +96,7 @@ describe('reportServerError', () => {
   })
 
   it('未設 webhook URL 不送', async () => {
-    vi.stubEnv('ERROR_ALERT_WEBHOOK_URL', '')
+    vi.stubEnv('DISCORD_WEBHOOK_URL', '')
     await reportServerError(input)
     expect(fetchMock).not.toHaveBeenCalled()
   })

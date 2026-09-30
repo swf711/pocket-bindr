@@ -47,14 +47,14 @@ export function buildAlertContent(input: ServerErrorInput): string {
 }
 
 export function isAlertingEnabled(env: Record<string, string | undefined> = process.env): boolean {
-  return env.VERCEL_ENV === 'production' && Boolean(env.ERROR_ALERT_WEBHOOK_URL)
+  return env.VERCEL_ENV === 'production' && Boolean(env.DISCORD_WEBHOOK_URL)
 }
 
 /** Never throws: alerting must not be able to break (or slow down) the request that failed. */
 export async function reportServerError(input: ServerErrorInput): Promise<void> {
   try {
     if (!isAlertingEnabled()) return
-    const url = process.env.ERROR_ALERT_WEBHOOK_URL as string
+    const url = process.env.DISCORD_WEBHOOK_URL as string
 
     const acquired = await redis.set(throttleKey(input), '1', { nx: true, ex: THROTTLE_SECONDS })
     if (!acquired) return

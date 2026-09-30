@@ -3,7 +3,7 @@
  *
  * The CSP ships as Report-Only: it never blocks anything, violations only show up in the
  * browser console. Enforcing it needs a nonce for the inline scripts Next.js and next-themes
- * emit (see docs/TECH_DEBT.md), so that is a separate change.
+ * emit, so that is a separate change.
  */
 
 // OAuth providers a form POST may end up redirecting to (Chrome applies form-action to the

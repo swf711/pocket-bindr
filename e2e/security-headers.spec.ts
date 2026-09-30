@@ -13,7 +13,7 @@ test.describe('安全 header', () => {
       expect(headers['permissions-policy']).toContain('camera=()')
 
       expect(headers['content-security-policy-report-only']).toContain("frame-ancestors 'none'")
-      // Report-Only 階段不可有會實際阻擋的 CSP
+      // Must stay report-only: an enforcing CSP would block the inline scripts
       expect(headers['content-security-policy']).toBeUndefined()
     })
   }
