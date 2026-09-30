@@ -108,6 +108,7 @@ pnpm dev
 | `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY`                       | Storage 金鑰：本機維護腳本 + runtime 頭像上傳皆用                                                                                            | 選填             |
 | `NEXT_PUBLIC_IMAGE_PROXY_ORIGIN` / `_WORKER_HOSTS`                 | 官網卡圖走 Cloudflare Worker 暖存 proxy 的分流設定；未設時全部回退 `/api/proxy-image`                                                        | 選填             |
 | `NEXT_PUBLIC_CARD_PAGES_ORIGIN`                                    | 靜態卡片頁子網域總開關（build-time）；未設時卡片頁維持 Vercel 動態渲染，行為零變                                                              | 選填             |
+| `DISCORD_WEBHOOK_URL`                                              | 伺服器未處理錯誤的通報 webhook（僅 production 生效，節流後推送，不含 URL／cookie 等個資）；未設時不通報                                            | 選填             |
 
 > ⚠️ `.env` / `.env.local` 已被 `.gitignore` 排除，請勿提交任何真實金鑰。
 
