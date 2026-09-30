@@ -147,6 +147,9 @@ E2E 以 `pnpm build && pnpm start` 啟動正式 build（非 dev mode），並需
 `cards.pocketbindr.app` 服務；設定 `NEXT_PUBLIC_CARD_PAGES_ORIGIN` 後 Vercel 端會把舊網址 301 轉去該
 子網域。此功能為選填，未設定時卡片頁維持一般 Vercel 動態渲染。
 
+卡圖另可選擇性經 Cloudflare Worker 暖存代理（[`workers/image-proxy/`](./workers/image-proxy/)）服務，
+以 `NEXT_PUBLIC_IMAGE_PROXY_ORIGIN` / `_WORKER_HOSTS` 控制；未設定時全部走站內 `/api/proxy-image`。
+
 ## 貢獻
 
 歡迎貢獻。請先閱讀 [貢獻指南](./.github/CONTRIBUTING.md)；架構概覽見 [ARCHITECTURE.md](./ARCHITECTURE.md)。
