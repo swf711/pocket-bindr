@@ -28,19 +28,20 @@ export const STATIC_ROUTES: readonly string[] = ['/', '/cards', '/terms', '/priv
 const CARD_PAGES_ORIGIN = process.env.NEXT_PUBLIC_CARD_PAGES_ORIGIN
 
 /**
- * 🔴 暫時性止血（2026-09-22）：Fluid Active CPU 逼近 Hobby 上限，爬蟲長尾抓取卡片頁幾乎全是
- * ISR cold render。前綴比對一次涵蓋 `/cards` 列表、卡片獨立頁與卡片 OG 圖。
- * **開關已設時解除**：卡片頁已 301 轉去子網域，Vercel 不再渲染，此止血失去意義；
- * 改擋列表頁本身（`/cards$`、`/cards?`），讓爬蟲可以跟隨舊卡片網址的 301，
- * 但仍不索引本站的 `/cards` 搜尋列表（無獨立內容價值）。
+ * robots rules for the `/cards` list page.
+ * - Switch set: card pages 301 to the static subdomain. Only block `/cards?*` (unbounded
+ *   filter combinations, a crawl trap) and allow the bare `/cards` list page, which is also
+ *   listed in `STATIC_ROUTES` — robots and the sitemap must not contradict each other.
+ *   Old `/cards/...` URLs stay crawlable so their 301s can be followed.
+ * - Switch unset: keep the `/cards` prefix block (card pages are rendered here in that case).
  */
-export const EMERGENCY_DISALLOWED_PATHS: readonly string[] = CARD_PAGES_ORIGIN
-  ? ['/cards$', '/cards?*']
+export const CARD_LIST_DISALLOWED_PATHS: readonly string[] = CARD_PAGES_ORIGIN
+  ? ['/cards?*']
   : ['/cards']
 
 /** robots Disallow 清單：受保護路由（見 src/lib/auth.config.ts）+ API + token 流程頁。 */
 export const DISALLOWED_PATHS: readonly string[] = [
-  ...EMERGENCY_DISALLOWED_PATHS,
+  ...CARD_LIST_DISALLOWED_PATHS,
   '/api/',
   '/binders',
   '/settings',
