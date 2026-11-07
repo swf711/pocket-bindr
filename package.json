@@ -1,6 +1,6 @@
 {
   "name": "pocket-bindr",
-  "version": "1.13.6",
+  "version": "1.13.7",
   "private": false,
   "license": "MIT",
   "author": "邵尉夫 Brian Shao",
@@ -64,7 +64,7 @@
   },
   "devDependencies": {
     "@aws-sdk/client-s3": "^3.1141.0",
-    "@playwright/test": "^1.60.0",
+    "@playwright/test": "^1.64.1",
     "@tailwindcss/postcss": "^4",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
