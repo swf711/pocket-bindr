@@ -25,6 +25,7 @@ import { CardImage } from '@/components/cards/card-image'
 import { useIsMobile } from '@/hooks/use-is-mobile'
 import { useCardTilt } from '@/hooks/use-card-tilt'
 import { cn } from '@/lib/utils'
+import { toSetFaceCode } from '@/lib/set-face-code'
 
 interface CardDetailDrawerProps {
   card: CardWithCollectionStatus | null
@@ -176,12 +177,12 @@ export function CardDetailDrawer({ card, open, onClose, onAddToBinder, onLoginSu
             className="w-fit text-left text-primary underline-offset-4 hover:underline"
           >
             {card.set.name}{' '}
-            <span className="text-xs text-muted-foreground">{card.set.externalId}</span>
+            <span className="text-xs text-muted-foreground">{toSetFaceCode(card.set.externalId)}</span>
           </button>
         ) : (
           <span>
             {card.set.name}{' '}
-            <span className="text-xs text-muted-foreground">{card.set.externalId}</span>
+            <span className="text-xs text-muted-foreground">{toSetFaceCode(card.set.externalId)}</span>
           </span>
         )}
       </div>

@@ -32,4 +32,9 @@ describe('formatCardSetLabel', () => {
   it('null 卡號同樣不留尾空格', () => {
     expect(formatCardSetLabel({ set: { externalId: 'ja-DP-P' }, cardNumber: null })).toBe('ja-DP-P')
   })
+
+  it('撞碼而改名的 externalId 顯示卡面碼（MG-MEGA → MG）', () => {
+    expect(formatCardSetLabel({ set: { externalId: 'MG-MEGA' }, cardNumber: '001/038' })).toBe('MG 001/038')
+    expect(formatCardSetLabel({ set: { externalId: 'MG-MEGA' }, cardNumber: '' })).toBe('MG')
+  })
 })

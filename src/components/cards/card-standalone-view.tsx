@@ -13,6 +13,7 @@ import { CardImage } from '@/components/cards/card-image'
 import { CardBreadcrumb } from '@/components/cards/card-breadcrumb'
 import type { PublicCardRow, SameSetCardRow } from '@/lib/public-card'
 import type { CardBreadcrumbItem } from '@/lib/card-jsonld'
+import { toSetFaceCode } from '@/lib/set-face-code'
 
 interface CardStandaloneViewProps {
   card: PublicCardRow
@@ -56,7 +57,7 @@ export async function CardStandaloneView({ card, sameSetCards, breadcrumbItems }
                 className="text-primary underline-offset-4 hover:underline"
                 data-testid="standalone-series-filter"
               >
-                {card.set.name} <span className="text-xs">{card.set.externalId}</span>
+                {card.set.name} <span className="text-xs">{toSetFaceCode(card.set.externalId)}</span>
               </Link>
             </p>
           </div>

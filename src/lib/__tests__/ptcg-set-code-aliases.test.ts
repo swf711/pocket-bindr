@@ -52,6 +52,17 @@ describe('resolvePtcgSetCodeCandidates — 白名單/範圍防護', () => {
     expect(resolvePtcgSetCodeCandidates('XYF', 'PTCG', 'JA')).toEqual(['xyf'])
   })
 
+  it('PTCG JA：跨世代撞碼的卡面碼 → 展開為全部共用該碼的 externalId', () => {
+    expect(resolvePtcgSetCodeCandidates('MG', 'PTCG', 'JA')).toEqual(['mg', 'mg-mega'])
+    expect(resolvePtcgSetCodeCandidates('mg', 'PTCG', 'JA')).toEqual(['mg', 'mg-mega'])
+  })
+
+  it('JA 撞碼表不外溢到其他語言／遊戲', () => {
+    expect(resolvePtcgSetCodeCandidates('MG', 'PTCG', 'ZH_TW')).toEqual(['mg'])
+    expect(resolvePtcgSetCodeCandidates('MG', 'PTCG', 'EN')).toEqual(['mg'])
+    expect(resolvePtcgSetCodeCandidates('MG', 'OPCG', 'JA')).toEqual(['mg'])
+  })
+
   it('非 PTCG（OPCG）：不套任何規則，一律原碼', () => {
     expect(resolvePtcgSetCodeCandidates('op16', 'OPCG', 'ZH_TW')).toEqual(['op16'])
     expect(resolvePtcgSetCodeCandidates('obf', 'OPCG', 'EN')).toEqual(['obf'])
