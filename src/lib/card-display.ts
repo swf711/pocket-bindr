@@ -11,6 +11,8 @@
  * 對應的排序 SQL 片段放在 server-only 的 `src/lib/public-card.ts`。
  */
 
+import { toSetFaceCode } from './set-face-code'
+
 /** cardNumber 是否有可顯示的值。空字串與 null 都算沒有（supertype 已有「空字串非 null」的前例）。 */
 export function hasCardNumber(cardNumber: string | null | undefined): boolean {
   return Boolean(cardNumber && cardNumber.trim())
@@ -18,13 +20,12 @@ export function hasCardNumber(cardNumber: string | null | undefined): boolean {
 
 /**
  * 「系列碼 + 卡號」的單行標籤，供 metadata title / OG 圖 / 回報表單共用。
- * 無卡號時只回系列碼，不留尾空格。
+ * 無卡號時只回系列碼，不留尾空格。系列碼顯示卡面碼（`toSetFaceCode`），非內部 externalId。
  */
 export function formatCardSetLabel(card: {
   set: { externalId: string }
   cardNumber: string | null | undefined
 }): string {
-  return hasCardNumber(card.cardNumber)
-    ? `${card.set.externalId} ${card.cardNumber}`
-    : card.set.externalId
+  const code = toSetFaceCode(card.set.externalId)
+  return hasCardNumber(card.cardNumber) ? `${code} ${card.cardNumber}` : code
 }

@@ -311,6 +311,16 @@ describe('buildSetCardPrismaWhere', () => {
     })
   })
 
+  it('PTCG JA + 撞碼卡面碼 MG → set filter 為候選 OR（externalId mg 或 mg-mega）', () => {
+    const result = buildSetCardPrismaWhere({ setCode: 'mg', num: '001', fullSlash: null }, 'PTCG', 'JA')
+    expect(result.set).toEqual({
+      OR: [
+        { externalId: { equals: 'mg', mode: 'insensitive' } },
+        { externalId: { equals: 'mg-mega', mode: 'insensitive' } },
+      ],
+    })
+  })
+
   it('PTCG EN + 卡面縮寫 OBF → set filter 解析為 externalId sv3', () => {
     const result = buildSetCardPrismaWhere({ setCode: 'obf', num: '1', fullSlash: null }, 'PTCG', 'EN')
     expect(result.set).toEqual({ externalId: { equals: 'sv3', mode: 'insensitive' } })
@@ -324,6 +334,11 @@ describe('buildSetCardSql（語言相依候選展開）', () => {
     expect(text).toContain('m5')
     expect(text).toContain('m5f')
     expect(text).toContain('externalId')
+  })
+
+  it('PTCG JA MG → SQL 同時比對 mg 與 mg-mega', () => {
+    const sql = buildSetCardSql({ setCode: 'mg', num: '001', fullSlash: null }, 'PTCG', 'JA')
+    expect(sql.values).toEqual(expect.arrayContaining(['mg', 'mg-mega']))
   })
 
   it('PTCG EN OBF → SQL 比對 sv3', () => {

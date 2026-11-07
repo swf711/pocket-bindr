@@ -4,6 +4,7 @@ import { CARD_JSONLD_LANG } from '@/lib/card-jsonld'
 import { resolveCardDisplayImage } from '@/lib/resolve-card-image'
 import { getCardImageUrl } from '@/lib/get-card-image-url'
 import { hasCardNumber, formatCardSetLabel } from '@/lib/card-display'
+import { toSetFaceCode } from '@/lib/set-face-code'
 import { isMultiNumberCard } from '@/lib/card-number'
 import { SITE_URL, ogImageMetadata, toAbsoluteUrl } from '@/lib/og'
 import type { Locale } from '@/i18n/locale'
@@ -148,7 +149,7 @@ ${STATIC_CSS}</style>
     </div>
     <div class="card-info">
       <h1>${escapeHtml(card.name)}</h1>
-      <p class="series"><a href="${escapeHtml(seriesHref)}">${escapeHtml(card.set.name)} <span class="set-code">${escapeHtml(card.set.externalId)}</span></a></p>
+      <p class="series"><a href="${escapeHtml(seriesHref)}">${escapeHtml(card.set.name)} <span class="set-code">${escapeHtml(toSetFaceCode(card.set.externalId))}</span></a></p>
       <dl class="attrs">${attrRows.join('')}</dl>
       <a class="button-primary" href="${escapeHtml(openInAppHref)}">${escapeHtml(t('cardStandalone.openInApp'))}</a>
     </div>

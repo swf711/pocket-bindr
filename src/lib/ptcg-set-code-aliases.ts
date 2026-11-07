@@ -1,5 +1,6 @@
 import type { Game, Language } from '@prisma/client'
 import { PTCG_EN_PTCGO_CODE_ALIASES } from './ptcg-en-ptcgo-aliases.generated'
+import { SET_FACE_CODE_OVERRIDES } from './set-face-code'
 
 /**
  * 卡面印刷的 set 碼 → DB `CardSet.externalId` 候選清單（搜尋用；語言/遊戲相依）。
@@ -11,10 +12,26 @@ import { PTCG_EN_PTCGO_CODE_ALIASES } from './ptcg-en-ptcgo-aliases.generated'
  *   → 尾 `f` 者展開為 [剝尾, 原碼]；保留原碼避免使用者直接輸入真實 set code（如 `svf`）被剝成不存在碼而漏搜。
  * - **PTCG EN**：卡面印三碼縮寫（pokemontcg.io `ptcgoCode`，如 `OBF`），與 externalId（`sv3`）無規則關係
  *   → 查對照表 PTCG_EN_PTCGO_CODE_ALIASES（一碼可對多候選：主 set + Trainer Gallery/子集）。
- * - **PTCG JA**：卡面碼 = externalId，無落差 → 原碼。
+ * - **PTCG JA**：卡面碼 = externalId，無落差 → 原碼；例外為跨世代撞碼（不同商品印同一卡面碼，
+ *   DB 以後綴區分 externalId）→ 查 PTCG_JA_FACE_CODE_ALIASES 展開為全部候選。
  *
  * 回傳一律 lowercase、去重；externalId 比對為大小寫不敏感。非 PTCG（如 OPCG）一律回原碼、不套任何規則。
  */
+/**
+ * PTCG JA face codes printed by more than one product across generations,
+ * derived from SET_FACE_CODE_OVERRIDES: face code → [face code, ...externalIds sharing it].
+ */
+const PTCG_JA_FACE_CODE_ALIASES: Record<string, string[]> = (() => {
+  const out: Record<string, string[]> = {}
+  for (const [externalId, face] of Object.entries(SET_FACE_CODE_OVERRIDES)) {
+    const key = face.toLowerCase()
+    out[key] ??= [key]
+    const id = externalId.toLowerCase()
+    if (!out[key].includes(id)) out[key].push(id)
+  }
+  return out
+})()
+
 export function resolvePtcgSetCodeCandidates(
   setCode: string,
   game?: Game | null,
@@ -30,6 +47,10 @@ export function resolvePtcgSetCodeCandidates(
 
   if (language === 'EN') {
     return PTCG_EN_PTCGO_CODE_ALIASES[code] ?? [code]
+  }
+
+  if (language === 'JA') {
+    return PTCG_JA_FACE_CODE_ALIASES[code] ?? [code]
   }
 
   return [code]

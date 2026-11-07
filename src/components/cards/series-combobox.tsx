@@ -16,6 +16,7 @@ import {
 import { Fragment } from 'react'
 import { ResponsivePopover } from '@/components/common/responsive-popover'
 import { cn } from '@/lib/utils'
+import { toSetFaceCode } from '@/lib/set-face-code'
 import { SetGroup } from '@/types/card'
 
 const ALL_SETS = 'all'
@@ -93,13 +94,13 @@ export function SeriesCombobox({ groups, selectedSetId, onSetChange }: SeriesCom
                 <CommandItem
                   key={set.id}
                   value={set.id}
-                  keywords={[set.name, set.externalId]}
+                  keywords={[set.name, set.externalId, toSetFaceCode(set.externalId)]}
                   onSelect={() => handleSelect(set.id)}
                   className={cn('min-h-(--m3-touch-min) justify-between text-left', selectedSetId === set.id && 'bg-secondary-container text-on-secondary-container font-medium')}
                 >
                   <span className="whitespace-nowrap">
                     {set.name}{' '}
-                    <span className="text-muted-foreground">{set.externalId}</span>
+                    <span className="text-muted-foreground">{toSetFaceCode(set.externalId)}</span>
                   </span>
                   <Check
                     className={cn('ml-2 shrink-0', selectedSetId === set.id ? 'opacity-100' : 'opacity-0')}
