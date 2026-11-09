@@ -33,6 +33,7 @@ export const PTCG_EN_PTCGO_CODE_ALIASES: Record<string, string[]> = {
   "det": ["det1"],
   "dex": ["bw5"],
   "df": ["ex15"],
+  "dlr": ["me6"],
   "dp": ["dp1"],
   "dr": ["ex3"],
   "dri": ["sv10"],
