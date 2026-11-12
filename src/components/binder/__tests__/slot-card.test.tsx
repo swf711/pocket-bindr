@@ -281,4 +281,37 @@ describe('SlotCard compact（小螢幕）', () => {
     expect(await screen.findByTestId('slot-copy-menu-slot1')).toBeInTheDocument()
     expect(screen.queryByTestId('slot-span-menu-slot1')).not.toBeInTheDocument()
   })
+
+  describe('locked（卡冊鎖定）', () => {
+    it('不渲染任何操作按鈕', () => {
+      renderWithProviders(
+        <SlotCard slot={makeSlot()} onDelete={() => {}} onToggleStatus={() => {}} onView={() => {}} onCopy={() => {}} locked />,
+      )
+      expect(screen.queryByLabelText('切換為想要')).not.toBeInTheDocument()
+      expect(screen.queryByTestId('slot-view-btn-slot1')).not.toBeInTheDocument()
+      expect(screen.queryByTestId('slot-more-btn-slot1')).not.toBeInTheDocument()
+      expect(screen.getByTestId('slot-card-slot1')).toHaveAttribute('data-locked', 'true')
+    })
+
+    it('點擊格位直接呼叫 onView(cardId)，不走 tap-to-reveal', () => {
+      const onView = vi.fn()
+      const onTap = vi.fn()
+      renderWithProviders(
+        <SlotCard slot={makeSlot()} onDelete={() => {}} onToggleStatus={() => {}} onView={onView} onTap={onTap} locked />,
+      )
+      fireEvent.click(screen.getByTestId('slot-card-slot1'))
+      expect(onView).toHaveBeenCalledWith('card1')
+      expect(onTap).not.toHaveBeenCalled()
+    })
+
+    it('不掛拖曳 listeners（無 role=button 的 dnd attributes）', () => {
+      renderWithProviders(
+        <SlotCard slot={makeSlot()} onDelete={() => {}} onToggleStatus={() => {}} locked />,
+      )
+      const el = screen.getByTestId('slot-card-slot1')
+      expect(el).not.toHaveAttribute('aria-roledescription')
+      expect(el.style.touchAction).toBe('auto')
+    })
+  })
 })
+

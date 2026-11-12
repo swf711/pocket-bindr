@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { GridType, CardStatus } from '@prisma/client'
 import { toast } from 'sonner'
-import { RefreshCw } from 'lucide-react'
+import { Lock, LockOpen, RefreshCw } from 'lucide-react'
 import { BinderSpreadView } from './binder-spread-view'
 import { BinderMobileView } from './binder-mobile-view'
 import { BinderSettingsDrawer } from './binder-settings-drawer'
@@ -25,6 +25,7 @@ import { isMultiNumberCard } from '@/lib/card-number'
 import { useIsMobile } from '@/hooks/use-is-mobile'
 import { useSwapSlots } from '@/hooks/use-swap-slots'
 import { useAddToBinder } from '@/hooks/use-add-to-binder'
+import { useBinderLock } from '@/hooks/use-binder-lock'
 
 const OPTIMISTIC_SLOT_PREFIX = 'optimistic-span-'
 
@@ -46,6 +47,8 @@ export function BinderView({ binder }: { binder: BinderDetailResponse }) {
   const [expandingGroupId, setExpandingGroupId] = useState<string | null>(null)
   const expandTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [isRefreshing, setIsRefreshing] = useState(false)
+  // Per-device read-only lock (localStorage) — guards against accidental drags while browsing.
+  const { locked, toggle: toggleLock } = useBinderLock(binder.id)
   // 正在編輯標籤的格位（跨格群組一律是 anchor）
   const [labelTargetId, setLabelTargetId] = useState<string | null>(null)
   // 插入／移除空格撞到跨格群組時，先問使用者要整組一起移動還是先收合
@@ -767,16 +770,34 @@ export function BinderView({ binder }: { binder: BinderDetailResponse }) {
     onSwap: handleSwap,
     onToggleStatus: handleToggleStatus,
     onMove: handleMove,
-    onAddCard: handleAddCard,
+    onAddCard: locked ? undefined : handleAddCard,
     onView: handleViewCard,
     onCopy: handleCopyCard,
     onToggleSpan: handleToggleSpan,
     onInsertSlot: isShifting ? undefined : handleInsertSlot,
     onEditLabel: handleEditLabel,
-    onRemoveSlot: isShifting ? undefined : handleRemoveEmptySlot,
+    onRemoveSlot: isShifting || locked ? undefined : handleRemoveEmptySlot,
     highlightedSlotId,
     expandingGroupId,
   }
+
+  const handleToggleLock = () => {
+    toast.success(locked ? t('unlockedToast') : t('lockedToast'))
+    toggleLock()
+  }
+
+  const lockButton = (
+    <IconTooltipButton
+      data-testid="binder-lock-btn"
+      variant={locked ? 'secondary' : 'outline'}
+      size="icon-lg"
+      onClick={handleToggleLock}
+      aria-pressed={locked}
+      tooltip={locked ? t('unlock') : t('lock')}
+    >
+      {locked ? <Lock className="size-5" /> : <LockOpen className="size-5" />}
+    </IconTooltipButton>
+  )
 
   const refreshButton = (
     <IconTooltipButton
@@ -836,6 +857,8 @@ export function BinderView({ binder }: { binder: BinderDetailResponse }) {
         settingsSlot={settingsDrawer}
         pageManagerSlot={pageManagerDialog}
         refreshSlot={refreshButton}
+        lockSlot={lockButton}
+        locked={locked}
         {...sharedHandlers}
       />
       <BinderMobileView
@@ -853,6 +876,8 @@ export function BinderView({ binder }: { binder: BinderDetailResponse }) {
         settingsSlot={settingsDrawer}
         pageManagerSlot={pageManagerDialog}
         refreshSlot={refreshButton}
+        lockSlot={lockButton}
+        locked={locked}
         {...sharedHandlers}
       />
       <SlotCardPickerDialog

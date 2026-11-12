@@ -331,6 +331,10 @@
     "swapSlotFailed": "交換卡片失敗，請重試",
     "refresh": "重新整理",
     "refreshFailed": "重新整理失敗，請重試",
+    "lock": "鎖定卡冊（唯讀）",
+    "unlock": "解除鎖定",
+    "lockedToast": "已鎖定卡冊，格位無法拖曳或編輯",
+    "unlockedToast": "已解除鎖定，可以編輯卡冊",
     "slotCard": {
       "switchToWanted": "切換為想要",
       "switchToOwned": "切換為擁有",

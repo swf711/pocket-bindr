@@ -52,6 +52,8 @@ interface SlotCardProps {
   onTap?: () => void
   /** 小螢幕（行動裝置單頁 view）：格位過窄容不下橫排按鈕，僅保留切換狀態＋查看，其餘收進 ⋯ 選單 */
   compact?: boolean
+  /** Read-only binder lock: no drag/drop, no action overlay; tapping opens the card detail instead */
+  locked?: boolean
 }
 
 export function SlotCard({
@@ -70,6 +72,7 @@ export function SlotCard({
   isTapped = false,
   onTap,
   compact = false,
+  locked = false,
 }: SlotCardProps) {
   const t = useTranslations('binder.slotCard')
   const [open, setOpen] = useState(false)
@@ -79,11 +82,11 @@ export function SlotCard({
     listeners,
     setNodeRef: setDragRef,
     isDragging,
-  } = useDraggable({ id: `slot-${slot.id}`, disabled: isDragOverlay })
+  } = useDraggable({ id: `slot-${slot.id}`, disabled: isDragOverlay || locked })
 
   const { setNodeRef: setDropRef, isOver } = useDroppable({
     id: `drop-${slot.id}`,
-    disabled: isDragOverlay,
+    disabled: isDragOverlay || locked,
   })
 
   const imageUrl = getCardImageUrl(slot.card.imageSmall)
@@ -211,12 +214,20 @@ export function SlotCard({
         setDragRef(node)
         setDropRef(node)
       }}
-      {...attributes}
-      {...listeners}
+      {...(locked ? {} : attributes)}
+      {...(locked ? {} : listeners)}
       data-testid={isDragOverlay ? 'drag-overlay-card' : `slot-card-${slot.id}`}
-      onClick={!isDragOverlay && onTap ? (e) => { e.stopPropagation(); onTap() } : undefined}
-      style={{ touchAction: 'none' }}
-      className={`relative group w-full aspect-5/7 overflow-hidden rounded-md border border-border bg-card cursor-grab active:cursor-grabbing transition-opacity ${isDragging ? 'opacity-40' : 'opacity-100'
+      data-locked={locked || undefined}
+      onClick={
+        isDragOverlay
+          ? undefined
+          : locked
+            ? onView ? (e) => { e.stopPropagation(); onView(slot.cardId) } : undefined
+            : onTap ? (e) => { e.stopPropagation(); onTap() } : undefined
+      }
+      // Locked slots never drag, so let the browser handle touch gestures normally.
+      style={{ touchAction: locked ? 'auto' : 'none' }}
+      className={`relative group w-full aspect-5/7 overflow-hidden rounded-md border border-border bg-card ${locked ? 'cursor-pointer' : 'cursor-grab active:cursor-grabbing'} transition-opacity ${isDragging ? 'opacity-40' : 'opacity-100'
         } ${isOver && !isDragOverlay ? 'ring-2 ring-primary' : ''} ${isHighlighted ? 'ring-2 ring-primary animate-pulse' : ''
         } ${isExpanding ? 'animate-in fade-in zoom-in-90 duration-300 motion-reduce:animate-none' : ''}`}
     >
@@ -244,12 +255,12 @@ export function SlotCard({
         <SlotLabelBadges
           slot={slot}
           counterScale={counterScale}
-          className={`transition-opacity ${isTapped ? 'opacity-0' : 'group-hover:opacity-0'}`}
+          className={locked ? undefined : `transition-opacity ${isTapped ? 'opacity-0' : 'group-hover:opacity-0'}`}
         />
       )}
 
       {/* 操作按鈕 overlay — ButtonGroup 底部中央，counter-scale 保持自然視覺尺寸；桌面 hover 顯示，行動裝置 tap 顯示 */}
-      {!isDragOverlay && (
+      {!isDragOverlay && !locked && (
         <div className={`absolute inset-0 flex items-end justify-center pb-2 transition-opacity pointer-events-none ${isTapped ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
           <div
             style={{ transform: `scale(${counterScale})`, transformOrigin: 'bottom center' }}
@@ -313,7 +324,7 @@ export function SlotCard({
       )}
 
       {/* 刪除確認 — 單一受控 AlertDialog，供桌面刪除鈕與小螢幕 ⋯ 選單刪除項共用（不 nested 於 trigger/選單項） */}
-      {!isDragOverlay && (
+      {!isDragOverlay && !locked && (
         <AlertDialog open={open} onOpenChange={setOpen}>
           <AlertDialogContent size="sm">
             <AlertDialogHeader>

@@ -331,6 +331,10 @@
     "swapSlotFailed": "カードの入れ替えに失敗しました。もう一度お試しください",
     "refresh": "更新",
     "refreshFailed": "更新に失敗しました。もう一度お試しください",
+    "lock": "バインダーをロック（閲覧のみ）",
+    "unlock": "ロックを解除",
+    "lockedToast": "バインダーをロックしました。カードの移動・編集はできません",
+    "unlockedToast": "ロックを解除しました。編集できます",
     "slotCard": {
       "switchToWanted": "欲しいに切り替え",
       "switchToOwned": "所有に切り替え",

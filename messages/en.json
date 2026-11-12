@@ -331,6 +331,10 @@
     "swapSlotFailed": "Failed to swap cards, please try again",
     "refresh": "Refresh",
     "refreshFailed": "Failed to refresh, please try again",
+    "lock": "Lock binder (read-only)",
+    "unlock": "Unlock binder",
+    "lockedToast": "Binder locked: slots can no longer be dragged or edited",
+    "unlockedToast": "Binder unlocked: editing is enabled",
     "slotCard": {
       "switchToWanted": "Mark as wanted",
       "switchToOwned": "Mark as owned",
