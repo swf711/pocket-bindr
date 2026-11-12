@@ -1,16 +1,30 @@
 import { Skeleton } from '@/components/ui/skeleton'
 
 /**
- * header 右側的動作按鈕：重整 / 管理內頁 / 設定（見 BinderSpreadView、BinderMobileView 的
- * refreshSlot / pageManagerSlot / settingsSlot）。新增或移除該排按鈕時要同步這裡，
+ * header 右側的動作按鈕：鎖定 / 重整 / 管理內頁 / 設定（見 BinderSpreadView、BinderMobileView 的
+ * lockSlot / refreshSlot / pageManagerSlot / settingsSlot）。新增或移除該排按鈕時要同步這裡，
  * 否則載入骨架與實際版面的按鈕數量會對不上。
  */
-const HEADER_ACTION_KEYS = ['refresh', 'page-manager', 'settings'] as const
+const HEADER_ACTION_KEYS = ['lock', 'refresh', 'page-manager', 'settings'] as const
+
+/**
+ * Pagination cluster placeholder. The real control is two ButtonGroups (first+prev, next+last),
+ * each rendering as one joined 80×40 pill, with the "N / M" counter in between.
+ */
+function PaginationSkeleton() {
+  return (
+    <div data-testid="pagination-skeleton" className="flex items-center gap-1">
+      <Skeleton className="h-10 w-20 rounded-full" />
+      <Skeleton className="h-5 w-10" />
+      <Skeleton className="h-10 w-20 rounded-full" />
+    </div>
+  )
+}
 
 interface BinderSpreadSkeletonProps {
   /** 是否顯示返回按鈕（詳情頁有、公開分享頁無） */
   showBackButton?: boolean
-  /** 是否顯示右側 header 動作按鈕群（重整／管理內頁／設定；詳情頁有、公開分享頁無） */
+  /** 是否顯示右側 header 動作按鈕群（鎖定／重整／管理內頁／設定；詳情頁有、公開分享頁無） */
   showHeaderActions?: boolean
   /** 是否在名稱上方顯示 owner banner 佔位（僅公開分享頁） */
   showOwnerBanner?: boolean
@@ -45,16 +59,8 @@ export function BinderSpreadSkeleton({
             </div>
           </div>
           <div className="flex items-center gap-2">
-            {showDesktopPagination && (
-              <>
-                <Skeleton className="h-10 w-10 rounded-full" />
-                <Skeleton className="h-10 w-10 rounded-full" />
-                <Skeleton className="h-5 w-10" />
-                <Skeleton className="h-10 w-10 rounded-full" />
-                <Skeleton className="h-10 w-10 rounded-full" />
-              </>
-            )}
-            {/* 重整 / 管理內頁 / 設定，皆為 size-10 的 pill icon 鈕 */}
+            {showDesktopPagination && <PaginationSkeleton />}
+            {/* 鎖定 / 重整 / 管理內頁 / 設定，皆為 size-10 的 pill icon 鈕 */}
             {showHeaderActions &&
               HEADER_ACTION_KEYS.map((key) => (
                 <Skeleton key={key} className="h-10 w-10 rounded-full" />
@@ -77,38 +83,39 @@ export function BinderSpreadSkeleton({
 
       {/* ── 行動裝置單頁 ── */}
       <div className="md:hidden flex flex-col flex-1 min-h-0">
-        <div className="flex items-center justify-between" style={{ height: 56 }}>
-          <div className="flex min-w-0 items-center gap-3">
-            {showBackButton && <Skeleton className="h-10 w-20 shrink-0 rounded-full" />}
-            <div className="min-w-0">
-              {showOwnerBanner && <Skeleton className="h-3 w-20 mb-1" />}
-              <Skeleton className="h-6 w-32" />
+        {/* header 與面板共用同一個置中欄：實際版面的 header 位於 Snowglobe innerRef 內、與卡冊面板同寬，
+            故骨架的 header 也要跟面板左右對齊，而不是撐滿整個容器 */}
+        <div data-testid="mobile-skeleton-column" className="mx-auto w-full max-w-sm flex flex-col flex-1 min-h-0">
+          <div className="flex items-center justify-between" style={{ height: 56 }}>
+            <div className="flex min-w-0 items-center gap-3">
+              {/* 行動版返回鍵為純圖示的 size-10 鈕（桌面版才帶「返回」文字） */}
+              {showBackButton && <Skeleton className="h-10 w-10 shrink-0 rounded-full" />}
+              <div className="min-w-0">
+                {showOwnerBanner && <Skeleton className="h-3 w-20 mb-1" />}
+                <Skeleton className="h-6 w-32" />
+              </div>
+            </div>
+            <div className="flex shrink-0 items-center gap-1">
+              {showHeaderActions &&
+                HEADER_ACTION_KEYS.map((key) => (
+                  <Skeleton key={key} className="h-10 w-10 rounded-full" />
+                ))}
             </div>
           </div>
-          <div className="flex shrink-0 items-center gap-1">
-            {showHeaderActions &&
-              HEADER_ACTION_KEYS.map((key) => (
-                <Skeleton key={key} className="h-10 w-10 rounded-full" />
-              ))}
+
+          <div className="flex-1 min-h-0">
+            <div className="w-full h-full rounded-lg border-4 border-muted overflow-hidden p-4">
+              <div className="grid grid-cols-3 gap-1">
+                {Array.from({ length: 9 }).map((_, i) => (
+                  <Skeleton key={i} className="aspect-5/7 w-full rounded-md" />
+                ))}
+              </div>
+            </div>
           </div>
         </div>
 
-        <div className="flex-1 min-h-0 flex items-center justify-center">
-          <div className="w-full h-full max-w-sm rounded-lg border-4 border-muted overflow-hidden p-4">
-            <div className="grid grid-cols-3 gap-1">
-              {Array.from({ length: 9 }).map((_, i) => (
-                <Skeleton key={i} className="aspect-5/7 w-full rounded-md" />
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <div className="shrink-0 flex items-center justify-center gap-2 py-2">
-          <Skeleton className="h-10 w-10 rounded-full" />
-          <Skeleton className="h-10 w-10 rounded-full" />
-          <Skeleton className="h-5 w-10" />
-          <Skeleton className="h-10 w-10 rounded-full" />
-          <Skeleton className="h-10 w-10 rounded-full" />
+        <div className="shrink-0 flex items-center justify-center py-2">
+          <PaginationSkeleton />
         </div>
       </div>
     </div>
