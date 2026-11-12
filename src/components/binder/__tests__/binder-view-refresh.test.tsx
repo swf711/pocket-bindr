@@ -41,15 +41,27 @@ vi.mock('../binder-spread-view', () => ({
     spreadIndex,
     slots,
     refreshSlot,
+    lockSlot,
+    locked,
+    onAddCard,
+    onRemoveSlot,
   }: {
     spreadIndex: number
     slots: SlotWithCard[]
     refreshSlot?: React.ReactNode
+    lockSlot?: React.ReactNode
+    locked?: boolean
+    onAddCard?: unknown
+    onRemoveSlot?: unknown
   }) => (
     <div>
       <div data-testid="spread-index">{spreadIndex}</div>
       <div data-testid="slots-count">{slots.length}</div>
+      <div data-testid="locked">{String(!!locked)}</div>
+      <div data-testid="has-add-card">{String(!!onAddCard)}</div>
+      <div data-testid="has-remove-slot">{String(!!onRemoveSlot)}</div>
       {refreshSlot}
+      {lockSlot}
     </div>
   ),
 }))
@@ -134,5 +146,30 @@ describe('BinderView 重整鍵', () => {
 
     await waitFor(() => expect(toast.error).toHaveBeenCalled())
     expect(screen.getByTestId('slots-count')).toHaveTextContent('0')
+  })
+})
+
+describe('BinderView 鎖定鈕', () => {
+  beforeEach(() => {
+    window.localStorage.clear()
+    vi.stubGlobal('fetch', vi.fn())
+  })
+
+  it('切換鎖定：aria-pressed 變化，並停用空格的加入卡片／移除空格', () => {
+    render(<TooltipProvider><BinderView binder={makeBinder()} /></TooltipProvider>)
+    const btn = screen.getByTestId('binder-lock-btn')
+    expect(btn).toHaveAttribute('aria-pressed', 'false')
+    expect(screen.getByTestId('has-add-card')).toHaveTextContent('true')
+    expect(screen.getByTestId('has-remove-slot')).toHaveTextContent('true')
+
+    fireEvent.click(btn)
+    expect(btn).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByTestId('locked')).toHaveTextContent('true')
+    expect(screen.getByTestId('has-add-card')).toHaveTextContent('false')
+    expect(screen.getByTestId('has-remove-slot')).toHaveTextContent('false')
+
+    fireEvent.click(btn)
+    expect(btn).toHaveAttribute('aria-pressed', 'false')
+    expect(screen.getByTestId('has-add-card')).toHaveTextContent('true')
   })
 })

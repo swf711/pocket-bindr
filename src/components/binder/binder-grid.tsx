@@ -26,6 +26,8 @@ interface BinderGridSlotsProps {
   onTapSlot?: (key: string) => void
   /** 小螢幕：格位操作按鈕收合為 ⋯ 選單（僅行動裝置單頁 view 傳入） */
   compact?: boolean
+  /** Read-only binder lock, forwarded to every SlotCard */
+  locked?: boolean
 }
 
 /** Pure slot grid rendering — no DndContext. Use inside a parent DndContext. */
@@ -48,6 +50,7 @@ export function BinderGridSlots({
   tappedSlotId,
   onTapSlot,
   compact = false,
+  locked = false,
 }: BinderGridSlotsProps) {
   const cols = GRID_TYPE_COLS[gridType]
   return (
@@ -87,6 +90,7 @@ export function BinderGridSlots({
                 isTapped={tappedSlotId === slot.id}
                 onTap={onTapSlot ? () => onTapSlot(slot.id!) : undefined}
                 compact={compact}
+                locked={locked}
               />
             )}
           </div>

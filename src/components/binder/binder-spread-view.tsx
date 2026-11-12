@@ -67,6 +67,9 @@ interface BinderSpreadViewProps {
   settingsSlot: React.ReactNode
   pageManagerSlot?: React.ReactNode
   refreshSlot?: React.ReactNode
+  lockSlot?: React.ReactNode
+  /** Read-only binder lock: slots cannot be dragged or edited */
+  locked?: boolean
 }
 
 function SpreadPanelContent({
@@ -94,6 +97,7 @@ function SpreadPanelContent({
   tappedSlotId,
   onTapSlot,
   compact,
+  locked,
 }: {
   content: SpreadPageContent
   coverColor: string
@@ -119,6 +123,7 @@ function SpreadPanelContent({
   tappedSlotId?: string | null
   onTapSlot?: (key: string) => void
   compact?: boolean
+  locked?: boolean
 }) {
   const t = useTranslations('binder')
   if (content.type === 'cover') {
@@ -167,6 +172,7 @@ function SpreadPanelContent({
         tappedSlotId={tappedSlotId}
         onTapSlot={onTapSlot}
         compact={compact}
+        locked={locked}
       />
     </div>
   )
@@ -201,6 +207,8 @@ export function BinderSpreadView({
   settingsSlot,
   pageManagerSlot,
   refreshSlot,
+  lockSlot,
+  locked = false,
 }: BinderSpreadViewProps) {
   const t = useTranslations('binder')
   const spread = spreads[spreadIndex]
@@ -424,6 +432,7 @@ export function BinderSpreadView({
                     </PaginationItem>
                   </PaginationContent>
                 </Pagination>
+                {lockSlot}
                 {refreshSlot}
                 {pageManagerSlot}
                 {settingsSlot}
@@ -464,6 +473,7 @@ export function BinderSpreadView({
                     tappedSlotId={noHover ? tappedSlotId : undefined}
                     onTapSlot={noHover ? handleTapSlot : undefined}
                     compact={compactActions}
+                    locked={locked}
                   />
                 </div>
                 <div
@@ -495,6 +505,7 @@ export function BinderSpreadView({
                     tappedSlotId={noHover ? tappedSlotId : undefined}
                     onTapSlot={noHover ? handleTapSlot : undefined}
                     compact={compactActions}
+                    locked={locked}
                   />
                 </div>
               </div>

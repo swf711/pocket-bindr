@@ -15,7 +15,7 @@ import {
   useSensor,
   useSensors,
 } from '@dnd-kit/core'
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Plus } from 'lucide-react'
+import { ArrowLeft, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Pagination,
@@ -64,6 +64,9 @@ interface BinderMobileViewProps {
   settingsSlot: React.ReactNode
   pageManagerSlot?: React.ReactNode
   refreshSlot?: React.ReactNode
+  lockSlot?: React.ReactNode
+  /** Read-only binder lock: slots cannot be dragged or edited */
+  locked?: boolean
 }
 
 export function BinderMobileView({
@@ -94,6 +97,8 @@ export function BinderMobileView({
   settingsSlot,
   pageManagerSlot,
   refreshSlot,
+  lockSlot,
+  locked = false,
 }: BinderMobileViewProps) {
   const t = useTranslations('binder')
   const content = mobilePages[pageIndex]
@@ -232,15 +237,17 @@ export function BinderMobileView({
             >
               {/* min-w-0 + truncate：header 右側有三顆按鈕，長卡冊名稱必須讓步而非撐破版面 */}
               <div className="flex min-w-0 items-center gap-1">
-                <Button variant="outline" size="lg" className="mr-2 shrink-0" asChild>
+                {/* Icon-only on mobile (same ArrowLeft as desktop): the header row is shared with
+                    four icon buttons, so a text label would squeeze the binder name further. */}
+                <Button variant="outline" size="icon-lg" className="mr-1 shrink-0" asChild>
                   <Link href="/binders" aria-label={t('backToList')} data-testid="back-to-binders-mobile">
-                    <ChevronLeft className="size-4" />
-                    <span>{t('back')}</span>
+                    <ArrowLeft className="size-5" />
                   </Link>
                 </Button>
                 <h1 className="truncate text-xl font-bold">{binderName}</h1>
               </div>
               <div className="flex shrink-0 items-center gap-1">
+                {lockSlot}
                 {refreshSlot}
                 {pageManagerSlot}
                 {settingsSlot}
@@ -306,6 +313,7 @@ export function BinderMobileView({
                     tappedSlotId={tappedSlotId}
                     onTapSlot={handleTapSlot}
                     compact
+                    locked={locked}
                   />
                 </div>
               )}
